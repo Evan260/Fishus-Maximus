@@ -1,0 +1,74 @@
+[
+	{
+		"id": "worm",
+		"name": "Worm",
+		"price": 1,
+		"per": 5,
+		"shop": true,
+		"text": "Most bottom fish take a worm."
+	},
+	{
+		"id": "shrimp",
+		"name": "Shrimp",
+		"price": 2,
+		"per": 5,
+		"shop": true,
+		"text": "Bream, wrasse and scorpionfish love shrimp."
+	},
+	{
+		"id": "bread",
+		"name": "Bread",
+		"price": 1,
+		"per": 10,
+		"shop": true,
+		"text": "Mullet and small shoal fish nibble bread."
+	},
+	{
+		"id": "squid",
+		"name": "Squid",
+		"price": 3,
+		"per": 5,
+		"shop": true,
+		"text": "Morays and congers come out for squid."
+	},
+	{
+		"id": "sardine_strip",
+		"name": "Sardine strip",
+		"price": 2,
+		"per": 5,
+		"shop": true,
+		"text": "Cut from netted sardines; mackerel and traps."
+	},
+	{
+		"id": "live_sardine",
+		"name": "Live sardine",
+		"price": 4,
+		"per": 3,
+		"shop": true,
+		"text": "Kept alive in the well; the big hunters take nothing else."
+	},
+	{
+		"id": "salted_fish",
+		"name": "Salted fish",
+		"price": 2,
+		"per": 3,
+		"shop": true,
+		"text": "From the hold's salted catch."
+	},
+	{
+		"id": "oyster",
+		"name": "Oyster",
+		"price": 6,
+		"per": 2,
+		"shop": true,
+		"text": "From the Lucrine traps; a golden fish is said to love them."
+	},
+	{
+		"id": "seaweed",
+		"name": "Sea lettuce",
+		"price": 2,
+		"per": 5,
+		"shop": true,
+		"text": "Parrotfish graze on weed."
+	}
+]

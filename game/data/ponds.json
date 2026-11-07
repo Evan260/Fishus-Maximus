@@ -1,0 +1,112 @@
+{
+	"sizes": {
+		"small": {
+			"room": 6,
+			"price": 80
+		},
+		"large": {
+			"room": 14,
+			"price": 220
+		}
+	},
+	"sites": [
+		{
+			"site": 0,
+			"name": "The first pond",
+			"water": "sea"
+		},
+		{
+			"site": 1,
+			"name": "The rock pool",
+			"water": "sea"
+		},
+		{
+			"site": 2,
+			"name": "The ledge pond",
+			"water": "sea"
+		},
+		{
+			"site": 3,
+			"name": "The deep pond",
+			"water": "sea"
+		},
+		{
+			"site": 4,
+			"name": "The cave pond",
+			"water": "sea"
+		},
+		{
+			"site": 5,
+			"name": "The Lucrine pond",
+			"water": "brackish"
+		}
+	],
+	"features": [
+		{
+			"id": "rocks",
+			"name": "Rocks",
+			"price": 20,
+			"text": "Somewhere to hide and graze."
+		},
+		{
+			"id": "caves",
+			"name": "Caves",
+			"price": 45,
+			"text": "Morays, congers and lobsters need a cave."
+		},
+		{
+			"id": "weed",
+			"name": "Weed",
+			"price": 15,
+			"text": "Mullet and parrotfish graze on it."
+		},
+		{
+			"id": "sand",
+			"name": "Sand",
+			"price": 15,
+			"text": "Flatfish and bream like a sandy floor."
+		},
+		{
+			"id": "shade",
+			"name": "A shade roof",
+			"price": 35,
+			"text": "Keeps the water cool in summer; every fish grows a little faster."
+		},
+		{
+			"id": "channel",
+			"name": "A sea channel",
+			"price": 80,
+			"text": "Fresh sea water with every tide; fish grow faster."
+		},
+		{
+			"id": "tunnel",
+			"name": "Lucullus's tunnel",
+			"price": 400,
+			"needs": "channel",
+			"text": "A tunnel cut through the rock to the open sea, as Lucullus had."
+		}
+	],
+	"growth_bonus": {
+		"shade": 0.1,
+		"channel": 0.2,
+		"tunnel": 0.4
+	},
+	"show": {
+		"year_day": 21,
+		"rival": [
+			40,
+			70,
+			110,
+			160,
+			220
+		],
+		"prize": [
+			80,
+			150,
+			260,
+			400,
+			600
+		],
+		"reputation": 15
+	}
+}

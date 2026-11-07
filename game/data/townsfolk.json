@@ -1,0 +1,102 @@
+[
+	{
+		"id": "rufus",
+		"name": "Rufus",
+		"trade": "net mender",
+		"look": "an old Roman fisherman with a white beard and a mended net over his shoulder",
+		"lines": [
+			"Bream like a shrimp on the hook, and they bite best in the morning.",
+			"Rain brings the fish up. Don't stay home when it rains."
+		]
+	},
+	{
+		"id": "prima",
+		"name": "Prima",
+		"trade": "fishwife",
+		"look": "a sturdy Roman fishwife in a brown tunic carrying a basket of fish",
+		"lines": [
+			"Sell a bit of everything. Nobody wants ten mullet at once.",
+			"The market forgets by morning. Prices climb back overnight."
+		]
+	},
+	{
+		"id": "tertius",
+		"name": "Tertius",
+		"trade": "boy who runs errands",
+		"look": "a barefoot Roman boy of ten in a short tunic, grinning",
+		"lines": [
+			"I'd pull your pots for you if you paid me!",
+			"Old Rufus says morays only come out for squid."
+		]
+	},
+	{
+		"id": "aulus",
+		"name": "Aulus",
+		"trade": "salt seller",
+		"look": "a thin Roman salt seller in a pale tunic with a sack of salt",
+		"lines": [
+			"Salt your catch and it keeps. Not as dear, but it keeps.",
+			"Garum needs salt by the measure, and patience by the week."
+		]
+	},
+	{
+		"id": "secunda",
+		"name": "Secunda",
+		"trade": "baker",
+		"look": "a young Roman woman baker in a flour-dusted apron holding round loaves",
+		"lines": [
+			"The mullet in the harbour come for my crusts.",
+			"Sardines nibble bread near the surface. Easy to net, they say."
+		]
+	},
+	{
+		"id": "marcus",
+		"name": "Marcus",
+		"trade": "sailor from the fleet",
+		"look": "a tanned Roman sailor in a red tunic with a coil of rope",
+		"lines": [
+			"Off Misenum the water goes down forever. You'll need a long line.",
+			"The swordfish run when the storms come through."
+		]
+	},
+	{
+		"id": "faustina",
+		"name": "Faustina",
+		"trade": "flower seller",
+		"look": "a Roman girl flower seller with a basket of roses and myrtle",
+		"lines": [
+			"My grandmother saw a golden bream in the Lucrine. She swore it ate oysters.",
+			"Ladies at Baiae put earrings on their morays. Truly!"
+		]
+	},
+	{
+		"id": "gaius",
+		"name": "Gaius",
+		"trade": "potter",
+		"look": "a Roman potter with clay on his hands carrying an amphora",
+		"lines": [
+			"Every amphora of garum I make goes to Umbricius.",
+			"The ship to Rome sails every seventh day."
+		]
+	},
+	{
+		"id": "livia",
+		"name": "Livia",
+		"trade": "innkeeper",
+		"look": "a smiling Roman innkeeper woman with a jug of wine",
+		"lines": [
+			"The tuna come in spring. The whole town nets the bay together.",
+			"At night the squid come to a lamp like moths."
+		]
+	},
+	{
+		"id": "decimus",
+		"name": "Decimus",
+		"trade": "old diver",
+		"look": "a wiry old Roman diver with a sponge bag and a knife at his belt",
+		"lines": [
+			"There's a wreck off the rocky shore. Something huge lives in it.",
+			"The blue caves of Capri hide parrotfish."
+		]
+	}
+]

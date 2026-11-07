@@ -1,0 +1,50 @@
+{
+	"time": {
+		"day_minutes": 20,
+		"night_minutes": 5,
+		"dawn_hour": 5,
+		"dusk_hour": 20,
+		"season_days": 7,
+		"away_cap_hours": 8
+	},
+	"start": {
+		"denarii": 20
+	},
+	"market": {
+		"prize_bonus": 3.0,
+		"stale_floor": 0.4,
+		"drop": 0.08,
+		"floor": 0.4,
+		"recover": 0.3
+	},
+	"fishing": {
+		"strike_window": 1.0,
+		"bite_reach": 40,
+		"sink_speed": 30,
+		"cast_seconds": 1.5
+	},
+	"traps": {
+		"hours_per_catch": 2.0
+	},
+	"idle": {
+		"rate": 0.33,
+		"active_rate": 1.0
+	},
+	"hold": {
+		"fresh_loss_per_hour": 0.08,
+		"salted": 0.6
+	},
+	"trident": {
+		"reach": 6
+	},
+	"orders": {
+		"board": 3
+	},
+	"ponds": {
+		"growth": 0.04,
+		"breed_days": 5,
+		"adult_days": 5,
+		"max_size": 1.3,
+		"breed_happiness": 0.7
+	}
+}

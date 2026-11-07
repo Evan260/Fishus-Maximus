@@ -1,0 +1,28 @@
+{
+	"spring": {
+		"clear": 5,
+		"cloudy": 3,
+		"rain": 2,
+		"wind": 1
+	},
+	"summer": {
+		"clear": 8,
+		"cloudy": 2,
+		"rain": 1,
+		"wind": 1
+	},
+	"autumn": {
+		"clear": 3,
+		"cloudy": 3,
+		"rain": 3,
+		"wind": 2,
+		"storm": 1
+	},
+	"winter": {
+		"clear": 2,
+		"cloudy": 4,
+		"rain": 3,
+		"wind": 2,
+		"storm": 2
+	}
+}

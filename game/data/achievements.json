@@ -1,0 +1,253 @@
+[
+	{
+		"id": "first_fish",
+		"name": "First catch",
+		"text": "Land your first fish.",
+		"logbook": 1
+	},
+	{
+		"id": "chapter_2",
+		"name": "The rocky shore",
+		"text": "Open chapter 2.",
+		"chapter": 2
+	},
+	{
+		"id": "chapter_3",
+		"name": "The lake and the bay",
+		"text": "Open chapter 3.",
+		"chapter": 3
+	},
+	{
+		"id": "chapter_4",
+		"name": "Capri",
+		"text": "Open chapter 4.",
+		"chapter": 4
+	},
+	{
+		"id": "chapter_5",
+		"name": "The deep",
+		"text": "Open chapter 5.",
+		"chapter": 5
+	},
+	{
+		"id": "legend_carteia_octopus",
+		"name": "The octopus of Carteia",
+		"text": "Catch the octopus of Carteia.",
+		"legend": "carteia_octopus"
+	},
+	{
+		"id": "legend_tiberius_mullet",
+		"name": "Tiberius's mullet",
+		"text": "Catch tiberius's mullet.",
+		"legend": "tiberius_mullet"
+	},
+	{
+		"id": "legend_hortensius_moray",
+		"name": "The moray of Hortensius",
+		"text": "Catch the moray of Hortensius.",
+		"legend": "hortensius_moray"
+	},
+	{
+		"id": "legend_great_tuna",
+		"name": "The great tuna",
+		"text": "Catch the great tuna.",
+		"legend": "great_tuna"
+	},
+	{
+		"id": "legend_orata_bream",
+		"name": "Orata's golden bream",
+		"text": "Catch orata's golden bream.",
+		"legend": "orata_bream"
+	},
+	{
+		"id": "legend_claudius_parrotfish",
+		"name": "Claudius's parrotfish",
+		"text": "Catch claudius's parrotfish.",
+		"legend": "claudius_parrotfish"
+	},
+	{
+		"id": "legend_misenum_swordfish",
+		"name": "The swordfish of Misenum",
+		"text": "Catch the swordfish of Misenum.",
+		"legend": "misenum_swordfish"
+	},
+	{
+		"id": "legend_senator_grouper",
+		"name": "The Senator",
+		"text": "Catch the Senator.",
+		"legend": "senator_grouper"
+	},
+	{
+		"id": "legend_wreck_conger",
+		"name": "The conger of the wreck",
+		"text": "Catch the conger of the wreck.",
+		"legend": "wreck_conger"
+	},
+	{
+		"id": "legend_numbing_ray",
+		"name": "The numbing ray",
+		"text": "Catch the numbing ray.",
+		"legend": "numbing_ray"
+	},
+	{
+		"id": "legend_sleeping_sunfish",
+		"name": "The sleeping sunfish",
+		"text": "Catch the sleeping sunfish.",
+		"legend": "sleeping_sunfish"
+	},
+	{
+		"id": "legend_neptune_lobster",
+		"name": "Neptune's lobster",
+		"text": "Catch neptune's lobster.",
+		"legend": "neptune_lobster"
+	},
+	{
+		"id": "all_legends",
+		"name": "Every legend of the bay",
+		"text": "Catch all twelve legends.",
+		"legends": 12
+	},
+	{
+		"id": "logbook_10",
+		"name": "A fisherman's eye",
+		"text": "Catch ten kinds of fish.",
+		"logbook": 10
+	},
+	{
+		"id": "logbook_25",
+		"name": "Half the bay",
+		"text": "Catch twenty-five kinds of fish.",
+		"logbook": 25
+	},
+	{
+		"id": "logbook_full",
+		"name": "The whole logbook",
+		"text": "Catch every ordinary kind of fish.",
+		"logbook_full": true
+	},
+	{
+		"id": "prize_all",
+		"name": "A prize of every kind",
+		"text": "Land a prize-grade fish of every ordinary kind.",
+		"prize_all": true
+	},
+	{
+		"id": "first_pond",
+		"name": "A pond of your own",
+		"text": "Cut your first pond.",
+		"ponds": 1
+	},
+	{
+		"id": "all_ponds",
+		"name": "Six ponds",
+		"text": "Cut all six ponds.",
+		"ponds": 6
+	},
+	{
+		"id": "all_tanks",
+		"name": "The works restored",
+		"text": "Restore all eight garum tanks.",
+		"tanks": 8
+	},
+	{
+		"id": "sociorum",
+		"name": "Garum sociorum",
+		"text": "Bottle the finest garum.",
+		"stat": "garum_sociorum",
+		"at_least": 1
+	},
+	{
+		"id": "pond_show",
+		"name": "Best in show",
+		"text": "Win the pond show.",
+		"stat": "shows_won",
+		"at_least": 1
+	},
+	{
+		"id": "neptunalia",
+		"name": "Champion of the Neptunalia",
+		"text": "Win the Neptunalia contest.",
+		"stat": "neptunalia_won",
+		"at_least": 1
+	},
+	{
+		"id": "moray_earrings",
+		"name": "Antonia's moray",
+		"text": "Keep a named moray wearing earrings.",
+		"moray_earrings": true
+	},
+	{
+		"id": "fishing_boat",
+		"name": "A real boat",
+		"text": "Buy the fishing boat.",
+		"boat": "fishing_boat"
+	},
+	{
+		"id": "sailing_boat",
+		"name": "Under sail",
+		"text": "Buy the sailing boat.",
+		"boat": "sailing_boat"
+	},
+	{
+		"id": "big_boat",
+		"name": "The big boat",
+		"text": "Buy the big boat.",
+		"boat": "big_boat"
+	},
+	{
+		"id": "orders_10",
+		"name": "Known on the quay",
+		"text": "Fill ten orders from the harbour board.",
+		"stat": "orders",
+		"at_least": 10
+	},
+	{
+		"id": "orders_50",
+		"name": "The town's fisherman",
+		"text": "Fill fifty orders.",
+		"stat": "orders",
+		"at_least": 50
+	},
+	{
+		"id": "rich",
+		"name": "A purse of silver",
+		"text": "Have a thousand denarii at once.",
+		"denarii": 1000
+	},
+	{
+		"id": "client_cook",
+		"name": "Verecunda's story",
+		"text": "Finish everything Verecunda asks of you.",
+		"client": "cook"
+	},
+	{
+		"id": "client_trimalchio",
+		"name": "Trimalchio's story",
+		"text": "Finish everything Trimalchio asks of you.",
+		"client": "trimalchio"
+	},
+	{
+		"id": "client_umbricius",
+		"name": "Umbricius Scaurus's story",
+		"text": "Finish everything Umbricius Scaurus asks of you.",
+		"client": "umbricius"
+	},
+	{
+		"id": "client_senator",
+		"name": "Senator Licinius's story",
+		"text": "Finish everything Senator Licinius asks of you.",
+		"client": "senator"
+	},
+	{
+		"id": "client_priest",
+		"name": "Gnaeus Pollius's story",
+		"text": "Finish everything Gnaeus Pollius asks of you.",
+		"client": "priest"
+	},
+	{
+		"id": "client_widow",
+		"name": "Calpurnia's story",
+		"text": "Finish everything Calpurnia asks of you.",
+		"client": "widow"
+	}
+]

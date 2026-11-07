@@ -1,0 +1,155 @@
+[
+	{
+		"chapter": 1,
+		"name": "The harbour",
+		"reputation": 0,
+		"places": [
+			"harbour"
+		],
+		"clients": [
+			"cook",
+			"trimalchio"
+		],
+		"bait": [
+			"worm",
+			"shrimp",
+			"bread"
+		],
+		"gear": [
+			"ash_rod",
+			"horsehair_line",
+			"barbed_hook",
+			"bait_box_2"
+		],
+		"boats": [],
+		"ponds": 1,
+		"tanks": 1,
+		"methods": [
+			"line"
+		],
+		"text": "Your uncle's skiff, a line, the market and the first pond."
+	},
+	{
+		"chapter": 2,
+		"name": "The rocky shore",
+		"reputation": 10,
+		"places": [
+			"rocky_shore"
+		],
+		"clients": [
+			"umbricius"
+		],
+		"bait": [
+			"squid",
+			"sardine_strip",
+			"salted_fish"
+		],
+		"gear": [
+			"trap_3",
+			"trap_4",
+			"yew_rod"
+		],
+		"boats": [],
+		"ponds": 2,
+		"tanks": 3,
+		"methods": [
+			"line",
+			"trap"
+		],
+		"text": "Pots among the rocks, morays in the caves, and the first garum tanks restored."
+	},
+	{
+		"chapter": 3,
+		"name": "The lake and the bay",
+		"reputation": 55,
+		"places": [
+			"lucrine",
+			"open_bay"
+		],
+		"clients": [
+			"senator"
+		],
+		"bait": [
+			"seaweed",
+			"live_sardine",
+			"oyster"
+		],
+		"gear": [
+			"small_net",
+			"cast_net",
+			"twisted_line",
+			"trap_5"
+		],
+		"boats": [
+			"fishing_boat"
+		],
+		"ponds": 4,
+		"tanks": 5,
+		"methods": [
+			"line",
+			"trap",
+			"net"
+		],
+		"text": "The fishing boat, the cast net, the tuna run and more ponds."
+	},
+	{
+		"chapter": 4,
+		"name": "Capri",
+		"reputation": 160,
+		"places": [
+			"capri"
+		],
+		"clients": [
+			"priest"
+		],
+		"bait": [],
+		"gear": [
+			"clay_lamp",
+			"bronze_lamp",
+			"iron_hook",
+			"wide_net",
+			"masters_rod",
+			"trap_6",
+			"bait_box_3"
+		],
+		"boats": [
+			"sailing_boat"
+		],
+		"ponds": 5,
+		"tanks": 7,
+		"methods": [
+			"line",
+			"trap",
+			"net",
+			"trident"
+		],
+		"text": "The sailing boat, the blue caves, the trident and night fishing."
+	},
+	{
+		"chapter": 5,
+		"name": "The deep",
+		"reputation": 310,
+		"places": [
+			"misenum"
+		],
+		"clients": [
+			"widow"
+		],
+		"bait": [],
+		"gear": [
+			"fine_line"
+		],
+		"boats": [
+			"big_boat"
+		],
+		"ponds": 6,
+		"tanks": 8,
+		"methods": [
+			"line",
+			"trap",
+			"net",
+			"trident"
+		],
+		"text": "The big boat, the deep water off Cape Misenum and the hunt for the legends."
+	}
+]

@@ -1,0 +1,41 @@
+{
+	"tanks": 8,
+	"restore": {
+		"price": 150
+	},
+	"salt_per_pound": 0.25,
+	"salt": {
+		"price": 1,
+		"per": 2
+	},
+	"grades": [
+		{
+			"id": "allec",
+			"name": "Allec",
+			"days": 3,
+			"price": 4
+		},
+		{
+			"id": "muria",
+			"name": "Muria",
+			"days": 5,
+			"price": 9
+		},
+		{
+			"id": "garum",
+			"name": "Garum",
+			"days": 10,
+			"price": 22
+		},
+		{
+			"id": "sociorum",
+			"name": "Garum sociorum",
+			"days": 20,
+			"price": 60,
+			"only": "mackerel"
+		}
+	],
+	"pounds_per_amphora": 5,
+	"stir_quality": 0.05,
+	"export_bonus": 1.5
+}

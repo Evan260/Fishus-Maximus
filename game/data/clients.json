@@ -1,0 +1,284 @@
+[
+	{
+		"id": "cook",
+		"name": "Verecunda",
+		"title": "cook of the Elephant tavern in Pompeii",
+		"pronoun": "she",
+		"chapter": 1,
+		"portrait": "res://assets/art/portraits/cook.png",
+		"look": "a stout cheerful Roman woman cook in her forties with a stained apron, rolled sleeves and her hair tied in a cloth",
+		"steps": [
+			{
+				"text": "Two pounds of red mullet, no less. The patina waits for nobody.",
+				"fish": "mullet",
+				"min_pounds": 2.0,
+				"alive": false,
+				"reward": 30,
+				"reputation": 3,
+				"thanks": "Lovely and red. Come back tomorrow!"
+			},
+			{
+				"text": "A gilt-head bream for the magistrate's table, three pounds at least.",
+				"fish": "bream",
+				"min_pounds": 3.0,
+				"alive": false,
+				"reward": 45,
+				"reputation": 4,
+				"thanks": "He'll think I'm a genius."
+			},
+			{
+				"text": "An octopus, a big one, for stewing with leeks.",
+				"fish": "octopus",
+				"min_pounds": 4.0,
+				"alive": false,
+				"reward": 70,
+				"reputation": 5,
+				"thanks": "Look at those arms!"
+			},
+			{
+				"text": "A sea bass of eight pounds, for the aedile's wedding feast.",
+				"fish": "sea_bass",
+				"min_pounds": 8.0,
+				"alive": false,
+				"reward": 140,
+				"reputation": 8,
+				"thanks": "The whole of Pompeii will taste your fish."
+			}
+		]
+	},
+	{
+		"id": "trimalchio",
+		"name": "Trimalchio",
+		"title": "the freedman with the biggest dinners on the bay",
+		"pronoun": "he",
+		"chapter": 1,
+		"portrait": "res://assets/art/portraits/trimalchio.png",
+		"look": "a fat smug Roman freedman with a shaved head, gold rings on every finger and a bright scarlet napkin around his neck",
+		"steps": [
+			{
+				"text": "A red mullet as long as my arm! My guests must gasp.",
+				"fish": "mullet",
+				"min_pounds": 2.2,
+				"alive": false,
+				"reward": 50,
+				"reputation": 3,
+				"thanks": "They will gasp. Then they will eat."
+			},
+			{
+				"text": "A moray, alive, swimming in a silver dish at the table.",
+				"fish": "moray",
+				"min_pounds": 6.0,
+				"alive": true,
+				"reward": 120,
+				"reputation": 6,
+				"thanks": "Marvellous. It bit a guest."
+			},
+			{
+				"text": "A whole tuna, carved at the table by my best slave.",
+				"fish": "tuna",
+				"min_pounds": 80.0,
+				"alive": false,
+				"reward": 300,
+				"reputation": 10,
+				"thanks": "Now that is a dinner."
+			},
+			{
+				"text": "A dolphinfish, to be served dressed as Pegasus.",
+				"fish": "dolphinfish",
+				"min_pounds": 12.0,
+				"alive": false,
+				"reward": 250,
+				"reputation": 10,
+				"thanks": "Wings of pastry. Genius."
+			}
+		]
+	},
+	{
+		"id": "umbricius",
+		"name": "Umbricius Scaurus",
+		"title": "the great garum merchant of Pompeii",
+		"pronoun": "he",
+		"chapter": 2,
+		"portrait": "res://assets/art/portraits/umbricius.png",
+		"look": "a shrewd lean human Roman man, a garum merchant in his fifties with a hooked nose and short grey hair, in a fine blue tunic, holding a wax tablet",
+		"steps": [
+			{
+				"text": "Show me a white bream fine enough that I might trust your eye.",
+				"fish": "white_bream",
+				"min_pounds": 1.5,
+				"alive": false,
+				"reward": 40,
+				"reputation": 4,
+				"thanks": "Good. You know a fish."
+			},
+			{
+				"text": "Mackerel, fine ones. Garum sociorum begins with mackerel.",
+				"fish": "mackerel",
+				"min_pounds": 1.2,
+				"alive": false,
+				"reward": 60,
+				"reputation": 5,
+				"thanks": "Now we can talk business."
+			},
+			{
+				"text": "A bonito, firm and fresh, for my own table.",
+				"fish": "bonito",
+				"min_pounds": 6.0,
+				"alive": false,
+				"reward": 110,
+				"reputation": 6,
+				"thanks": "My cook thanks you."
+			},
+			{
+				"text": "A great amberjack. My partners in Rome want to see one.",
+				"fish": "amberjack",
+				"min_pounds": 40.0,
+				"alive": false,
+				"reward": 280,
+				"reputation": 10,
+				"thanks": "They will hear your name in Rome."
+			}
+		]
+	},
+	{
+		"id": "senator",
+		"name": "Senator Licinius",
+		"title": "who is building fish ponds at his villa in Baiae",
+		"pronoun": "he",
+		"chapter": 3,
+		"portrait": "res://assets/art/portraits/senator.png",
+		"look": "a dignified elderly Roman senator with white hair, a toga with a broad purple stripe and a gold signet ring",
+		"steps": [
+			{
+				"text": "A live gilt-head bream for my new pond. Alive, mind you.",
+				"fish": "bream",
+				"min_pounds": 2.5,
+				"alive": true,
+				"reward": 90,
+				"reputation": 6,
+				"thanks": "It swims! Splendid."
+			},
+			{
+				"text": "A golden grey mullet from the Lucrine, alive.",
+				"fish": "golden_mullet",
+				"min_pounds": 1.2,
+				"alive": true,
+				"reward": 110,
+				"reputation": 6,
+				"thanks": "It catches the light beautifully."
+			},
+			{
+				"text": "A moray for my rock caves, alive and at least fifteen pounds.",
+				"fish": "moray",
+				"min_pounds": 15.0,
+				"alive": true,
+				"reward": 260,
+				"reputation": 10,
+				"thanks": "Hortensius would weep with envy."
+			},
+			{
+				"text": "A parrotfish from Capri, alive. Claudius himself praised them.",
+				"fish": "parrotfish",
+				"min_pounds": 2.0,
+				"alive": true,
+				"reward": 300,
+				"reputation": 12,
+				"thanks": "My ponds are the talk of Baiae."
+			}
+		]
+	},
+	{
+		"id": "priest",
+		"name": "Gnaeus Pollius",
+		"title": "priest of Neptune at the harbour temple",
+		"pronoun": "he",
+		"chapter": 4,
+		"portrait": "res://assets/art/portraits/priest.png",
+		"look": "a solemn bearded Roman priest with his toga drawn over his head and a wreath of sea lavender",
+		"steps": [
+			{
+				"text": "The god asks for a dentex, the toothed fish, of ten pounds.",
+				"fish": "dentex",
+				"min_pounds": 10.0,
+				"alive": false,
+				"reward": 160,
+				"reputation": 8,
+				"thanks": "Neptune is pleased."
+			},
+			{
+				"text": "A John Dory, the fish with the god's thumbprint on its side.",
+				"fish": "john_dory",
+				"min_pounds": 3.0,
+				"alive": false,
+				"reward": 150,
+				"reputation": 8,
+				"thanks": "See the mark? The god touched it."
+			},
+			{
+				"text": "A swordfish for the Neptunalia offering.",
+				"fish": "swordfish",
+				"min_pounds": 80.0,
+				"alive": false,
+				"reward": 400,
+				"reputation": 14,
+				"thanks": "The sea will be kind this year."
+			},
+			{
+				"text": "They say a sunfish sleeps on the open sea. Bring the god one.",
+				"fish": "sleeping_sunfish",
+				"min_pounds": 800.0,
+				"alive": false,
+				"reward": 1200,
+				"reputation": 30,
+				"thanks": "I have never seen its like."
+			}
+		]
+	},
+	{
+		"id": "widow",
+		"name": "Calpurnia",
+		"title": "a rich widow with the finest ponds on the bay",
+		"pronoun": "she",
+		"chapter": 5,
+		"portrait": "res://assets/art/portraits/widow.png",
+		"look": "an elegant proud Roman widow in her sixties in dark violet silk with a pearl necklace and her grey hair piled high",
+		"steps": [
+			{
+				"text": "A grouper for my deepest pond, alive and at least twenty pounds.",
+				"fish": "grouper",
+				"min_pounds": 20.0,
+				"alive": true,
+				"reward": 400,
+				"reputation": 12,
+				"thanks": "Hm. Acceptable."
+			},
+			{
+				"text": "A prize bream, alive. Six pounds or don't trouble me.",
+				"fish": "bream",
+				"min_pounds": 6.0,
+				"alive": true,
+				"reward": 380,
+				"reputation": 12,
+				"thanks": "My bream will envy it."
+			},
+			{
+				"text": "A spiny lobster as long as my forearm, alive.",
+				"fish": "lobster",
+				"min_pounds": 6.0,
+				"alive": true,
+				"reward": 360,
+				"reputation": 12,
+				"thanks": "Perhaps you are a rival after all."
+			},
+			{
+				"text": "Orata's golden bream. They say it lives in the Lucrine still.",
+				"fish": "orata_bream",
+				"min_pounds": 10.0,
+				"alive": true,
+				"reward": 1500,
+				"reputation": 30,
+				"thanks": "I concede. Your ponds are the finest."
+			}
+		]
+	}
+]
