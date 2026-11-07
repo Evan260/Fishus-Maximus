@@ -6,7 +6,7 @@
 		"pronoun": "she",
 		"chapter": 1,
 		"portrait": "res://assets/art/portraits/cook.png",
-		"look": "a stout cheerful Roman woman cook in her forties with a stained apron, rolled sleeves and her hair tied in a cloth",
+		"look": "a cheerful slim Roman woman cook in her forties in a rust red dress with rolled sleeves under a stained cream apron, her dark hair tied in a cream cloth",
 		"steps": [
 			{
 				"text": "Two pounds of red mullet, no less. The patina waits for nobody.",
@@ -53,7 +53,7 @@
 		"pronoun": "he",
 		"chapter": 1,
 		"portrait": "res://assets/art/portraits/trimalchio.png",
-		"look": "a fat smug Roman freedman with a shaved head, gold rings on every finger and a bright scarlet napkin around his neck",
+		"look": "a smug slim rich Roman freedman in his fifties with a shaved head, a fine white tunic with a gold border, gold rings on every finger and a bright scarlet napkin around his neck",
 		"steps": [
 			{
 				"text": "A red mullet as long as my arm! My guests must gasp.",
@@ -147,7 +147,7 @@
 		"pronoun": "he",
 		"chapter": 3,
 		"portrait": "res://assets/art/portraits/senator.png",
-		"look": "a dignified elderly Roman senator with white hair, a toga with a broad purple stripe and a gold signet ring",
+		"look": "a dignified elderly Roman senator with white hair and a short white beard, a cream toga with a broad purple stripe and a gold signet ring",
 		"steps": [
 			{
 				"text": "A live gilt-head bream for my new pond. Alive, mind you.",
