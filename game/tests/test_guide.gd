@@ -14,13 +14,29 @@ func _clear_ui() -> void:
 		c.free()
 
 
-func test_a_new_game_starts_with_casting() -> void:
+func test_a_new_game_starts_with_rowing() -> void:
 	Game.new_game("Test", "mutt")
-	check(Guide.step(Game.state).get("id", "") == "cast", "the first lesson is how to cast")
+	check(Guide.step(Game.state).get("id", "") == "row", "the first lesson is how to row")
+	check("arrow keys" in str(Guide.step(Game.state)["text"]), "and it names the arrow keys")
+
+
+func test_rowing_a_little_way_counts() -> void:
+	_clear_ui()
+	Game.new_game("Test", "mutt")
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": "harbour"})
+	for i in 30:
+		s.row(1.0, 0.05)
+	check(int(Game.state["stats"].get("rowed", 0)) >= 1, "rowing along the shore is counted")
+	_clear_ui()
+	s.free()
 
 
 func test_each_lesson_clears_once_it_is_done_and_stays_cleared() -> void:
 	Game.new_game("Test", "mutt")
+	Game.state["stats"]["rowed"] = 1
+	check(Guide.step(Game.state).get("id", "") == "cast", "after rowing comes casting")
 	Game.state["stats"]["casts"] = 1
 	check(Guide.step(Game.state).get("id", "") == "strike", "after a cast comes the strike")
 	Game.state["stats"]["hooked"] = 1
@@ -90,7 +106,7 @@ func test_rufus_gives_the_lesson_on_its_own_screen() -> void:
 	coast.enter({"place": "harbour", "first": true})
 	var note: GuideNote = GuideNote.find()
 	note.refresh()
-	check(note != null and note.visible and "cast" in note.text(), "on the boat he explains casting")
+	check(note != null and note.visible and "arrow keys" in note.text(), "on the boat he explains rowing")
 	_clear_ui()
 	coast.free()
 	var town: Node = load("res://scripts/town/town_screen.gd").new()
@@ -98,7 +114,7 @@ func test_rufus_gives_the_lesson_on_its_own_screen() -> void:
 	town.enter({})
 	note = GuideNote.find()
 	note.refresh()
-	check(not note.visible, "in town he waits, since casting is done from the boat")
+	check(not note.visible, "in town he waits, since rowing is done from the boat")
 	_clear_ui()
 	town.free()
 
@@ -150,9 +166,9 @@ func test_got_it_hides_the_lesson_until_the_next() -> void:
 	note.got_it()
 	note.refresh()
 	check(not note.visible, "Got it puts the advice away")
-	Game.state["stats"]["casts"] = 1
+	Game.state["stats"]["rowed"] = 1
 	note.refresh()
-	check(note.visible and "strike" in note.text(), "and he comes back with the next lesson")
+	check(note.visible and "cast" in note.text(), "and he comes back with the next lesson")
 	_clear_ui()
 	coast.free()
 

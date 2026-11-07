@@ -1,9 +1,17 @@
 {
 	"steps": [
 		{
+			"id": "row",
+			"screen": "coast",
+			"text": "Salve! I'm Rufus, I mended your uncle's nets. Row with the Left and Right arrow keys, or A and D, to look for fish.",
+			"done": {
+				"stat": "rowed"
+			}
+		},
+		{
 			"id": "cast",
 			"screen": "coast",
-			"text": "Salve! I'm Rufus, I mended your uncle's nets. Hold Space or the mouse over the water, then let go to cast.",
+			"text": "Good. Now hold Space or the mouse over the water, then let go to cast your line.",
 			"done": {
 				"stat": "casts"
 			}
@@ -28,7 +36,7 @@
 		{
 			"id": "ashore",
 			"screen": "coast",
-			"text": "Catch a few more, then row back to the jetty with A and D, and go ashore to sell them.",
+			"text": "Catch a few more, then row back to the jetty with the arrow keys and go ashore to sell them.",
 			"done": {
 				"stat": "town_visits"
 			},

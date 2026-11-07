@@ -5,6 +5,8 @@ extends Node2D
 signal caught(fish: String, pounds: float)
 
 const RAIN_LIGHT := Color(0.72, 0.75, 0.8)
+## How far a stretch of rowing is, for the guide's rowing lesson.
+const ROWED := 30.0
 const REEL_SPEED := 70.0
 const CAST_NEAR := 20.0
 const CAST_FAR := 140.0
@@ -51,6 +53,8 @@ var _line: LineView
 var _rain: Array = []
 var _ashore: Button
 var _sail: Button
+## How far the boat has been rowed since that last counted as a stretch of rowing.
+var _rowed := 0.0
 ## The quay is where the boat ties up to go into town, in the harbour only.
 const QUAY_REACH := 200.0
 ## How far below the seabed the ground turns to solid shadow, which hides the bottom edges of pieces in front of it.
@@ -262,7 +266,12 @@ func row(dir: float, seconds: float) -> void:
 	_state = "reeled"
 	_boat.facing = signf(dir)
 	var speed := float(Data.boats.get(str(Game.state.get("boat", "skiff")), {}).get("speed", 40))
+	var was := boat_x
 	boat_x = clampf(boat_x + dir * speed * seconds, 0.0, _end())
+	_rowed += absf(boat_x - was)
+	if _rowed >= ROWED:
+		_rowed = 0.0
+		Game.state["stats"]["rowed"] = int(Game.state["stats"].get("rowed", 0)) + 1
 	_row_sound -= seconds
 	if _row_sound <= 0.0:
 		_row_sound = 1.1
