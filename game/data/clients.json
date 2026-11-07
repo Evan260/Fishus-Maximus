@@ -194,7 +194,7 @@
 		"pronoun": "he",
 		"chapter": 4,
 		"portrait": "res://assets/art/portraits/priest.png",
-		"look": "a solemn bearded Roman priest with his toga drawn over his head and a wreath of sea lavender",
+		"look": "a solemn elderly Roman priest with a kind lined face and a short grey beard, a pale toga drawn over the back of his head and a wreath of sea lavender",
 		"steps": [
 			{
 				"text": "The god asks for a dentex, the toothed fish, of ten pounds.",

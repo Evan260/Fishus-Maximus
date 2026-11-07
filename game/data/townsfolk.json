@@ -23,7 +23,7 @@
 		"id": "tertius",
 		"name": "Tertius",
 		"trade": "boy who runs errands",
-		"look": "a barefoot Roman boy of ten in a short tunic, grinning",
+		"look": "a barefoot Roman boy of ten with tousled brown hair in a short pale tunic with a red belt, grinning",
 		"lines": [
 			"I'd pull your pots for you if you paid me!",
 			"Old Rufus says morays only come out for squid."
@@ -93,7 +93,7 @@
 		"id": "decimus",
 		"name": "Decimus",
 		"trade": "old diver",
-		"look": "a wiry old Roman diver with a sponge bag and a knife at his belt",
+		"look": "a weathered old Roman sponge diver with a grey beard and tanned skin in a short faded blue tunic, a net bag of sponges over his shoulder",
 		"lines": [
 			"There's a wreck off the rocky shore. Something huge lives in it.",
 			"The blue caves of Capri hide parrotfish."
