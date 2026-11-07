@@ -1,5 +1,5 @@
-"""Paints every fish in game/data/fish.json without outlines, trims it to its pixels and halves the smallest, into
-game/assets/art/fish/<id>.png. A fish already painted is skipped. Usage: python tools/art/make_fish.py [ID...]"""
+"""Paints every fish in game/data/fish.json without outlines in the sea bass's natural look, trims it to its pixels
+and halves the smallest, into game/assets/art/fish/<id>.png. A fish already painted is skipped. Usage: python tools/art/make_fish.py [ID...]"""
 import json
 import subprocess
 import sys
@@ -16,6 +16,7 @@ REUSE = {"mullet": "mullet", "bream": "bream", "sardine": "sardine", "moray": "m
 SIDE = "seen exactly from the side facing right, realistic and natural, not cartoon"
 FLAT = "seen from above lying flat, head to the right, realistic and natural, not cartoon"
 STYLE = "cozy pixel art, soft daylight, gentle shading, no outlines"
+STYLE_REF = "game/assets/art/fish/sea_bass.png"
 
 # id: (look, canvas, halve)
 LOOKS = {
@@ -34,7 +35,7 @@ LOOKS = {
     "comber": ("a comber fish, reddish-brown body with pale vertical bands", "48x32", False),
     "lobster": ("a spiny lobster, reddish-brown spiny shell, long thick antennae, no big claws", "64x32", False),
     "urchin": ("a dark purple sea urchin covered in long spines", "32x32", False),
-    "dentex": ("a dentex fish, large silvery-pink body with blue spots and strong teeth", "64x32", False),
+    "dentex": ("a large common dentex fish, silvery grey body with a faint pink tinge, small dark spots and a strong jaw", "64x32", False),
     "damselfish": ("a tiny dark brown damselfish with a forked tail", "32x32", True),
     "picarel": ("a tiny picarel fish, slim silvery body with a dark spot on its side", "32x32", True),
     "conger": ("a conger eel, long thick grey body with a dark-edged fin along its back", "64x32", False),
@@ -49,9 +50,9 @@ LOOKS = {
     "amberjack": ("a greater amberjack fish, large sleek silver body with a golden stripe and a dark band through the eye", "96x48", False),
     "garfish": ("a garfish, very long slim green-silver body with a long thin beak of a mouth", "64x32", False),
     "horse_mackerel": ("a horse mackerel fish, silver body with a row of bony scutes along its side and big eyes", "48x32", False),
-    "dolphinfish": ("a dolphinfish, bright golden-green body with blue spots, a steep blunt forehead and a long back fin", "64x32", False),
-    "john_dory": ("a John Dory fish, tall flat olive-gold body with a black spot ringed in yellow and long spiny back fins", "48x48", False),
-    "weever": ("a greater weever fish, slim sandy body with blue-brown slanted stripes and a black spiny back fin", "48x32", False),
+    "dolphinfish": ("a dolphinfish, muted olive-green back fading to a pale yellow belly with small dark flecks, a steep blunt forehead and a long back fin", "64x32", False),
+    "john_dory": ("a John Dory fish, tall flat body in muted olive-grey and dull gold with one dark spot on its side and long spiny back fins", "48x48", False),
+    "weever": ("a greater weever fish, slim pale sandy body with faint thin grey slanted lines and a small black spiny back fin", "48x32", False),
     "thornback": ("a thornback ray, wide diamond-shaped mottled brown body with a long thorny tail", "64x48", False),
     "parrotfish": ("a Mediterranean parrotfish, bright red and grey body with large scales and a beak-like mouth", "48x32", False),
     "cardinalfish": ("a tiny red cardinalfish with big eyes", "32x32", True),
@@ -64,15 +65,15 @@ LOOKS = {
     "red_porgy": ("a red porgy fish, pinkish red body with small blue spots", "48x32", False),
     "carteia_octopus": ("a gigantic old octopus with deep red mottled skin, huge arms curling, scarred and ancient", "96x48", False),
     "tiberius_mullet": ("a large magnificent red mullet fish, glowing deep scarlet and gold with yellow stripes", "64x32", False),
-    "hortensius_moray": ("a huge old moray eel, brown speckled with gold, wearing small gold earrings on its gills", "96x48", False),
+    "hortensius_moray": ("a huge old Mediterranean moray eel, dark brown body mottled with dull gold flecks, wearing small gold earrings on its gills", "96x48", False),
     "great_tuna": ("an enormous bluefin tuna fish, gleaming dark blue back with a silver belly and golden finlets", "96x48", False),
     "orata_bream": ("a large gilt-head sea bream fish, silver body that shines gold all over with a bright gold band between the eyes", "64x32", False),
-    "claudius_parrotfish": ("a splendid Mediterranean parrotfish, vivid scarlet and violet with shining scales and a beak-like mouth", "64x32", False),
+    "claudius_parrotfish": ("a large old Mediterranean parrotfish, deep muted red-brown body with grey edges to its scales and a beak-like mouth", "64x32", False),
     "misenum_swordfish": ("an enormous swordfish, deep midnight blue with a shining silver belly and a very long sword", "96x48", False),
     "senator_grouper": ("an enormous old dusky grouper fish, dark brown with pale blotches, a vast mouth and a stern look", "96x48", False),
     "wreck_conger": ("a gigantic conger eel, dark grey-black, thick as a mast, with pale eyes", "96x48", False),
-    "numbing_ray": ("an electric torpedo ray, round smooth brown body with five blue eye spots, seen from above", "64x48", False),
-    "sleeping_sunfish": ("an enormous ocean sunfish, tall rounded silver-grey body with a tall fin above and below and no tail", "96x48", False),
+    "numbing_ray": ("an electric torpedo ray, round smooth body in muted sandy brown with five small dark spots ringed in dull blue, seen from above", "64x48", False),
+    "sleeping_sunfish": ("an enormous ocean sunfish, tall rounded grey body with rough mottled skin, a small eye and small mouth, a tall fin above and below and a short frilled rear edge instead of a tail", "96x48", False),
     "neptune_lobster": ("a huge spiny lobster, deep blue and gold shell with very long antennae", "96x48", False),
 }
 FLATFISH = {"sole", "flounder", "thornback", "numbing_ray"}
@@ -104,10 +105,11 @@ def main(ids):
             view = FLAT if fid in FLATFISH else SIDE
             failures = 0
             while failures < 4 and not raw.exists():
-                r = subprocess.run([sys.executable, str(Path(__file__).with_name("pixellab.py")), "pixen",
+                # A natural fish already in the game sets the look, since a text prompt alone drifts towards cartoon.
+                r = subprocess.run([sys.executable, str(Path(__file__).with_name("pixellab.py")), "proflash",
                                     f"{look}, {view}, alone on an empty background, {STYLE}", canvas,
-                                    "--out", str(raw.relative_to(ROOT)), "--transparent", "--raw", "--view", "side",
-                                    "--outline", "lineless", "--detail", "highly detailed"],
+                                    "--out", str(raw.relative_to(ROOT)), "--transparent", "--style", STYLE_REF,
+                                    "--style-use", "match this fish's natural colours, soft shading and pixel style, with no dark outline"],
                                    cwd=ROOT, capture_output=True, text=True, timeout=600)
                 if "cost:" in r.stdout:
                     break
