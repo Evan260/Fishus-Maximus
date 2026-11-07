@@ -18,6 +18,7 @@ var _clients: Array = []
 var _bubble: Label
 var _rng: RandomNumberGenerator
 var _top: Label
+var _sleep: Button
 var _painter: Node2D
 var _stage: Node2D
 
@@ -67,7 +68,18 @@ func _build_ui() -> void:
 	Ui.hang(back, "bottom_right", Vector2(4, 4), Vector2(108, 18))
 	var ponds := Ui.button(Nav.ui, "To the ponds", func(): Nav.go("shore"))
 	Ui.hang(ponds, "bottom_right", Vector2(116, 4), Vector2(88, 18))
+	_sleep = Ui.button(Nav.ui, "Sleep till dawn", _sleep_now)
+	Ui.hang(_sleep, "bottom_right", Vector2(208, 4), Vector2(88, 18))
 	_refresh_ui()
+
+
+## A night at the inn: the pots fill, the ponds and tanks have their morning, and the day starts fresh.
+func _sleep_now() -> void:
+	World.sleep(Game.state, Seeds.rng(int(Game.state["seed"]), "sleep", Clock.day_of(float(Game.state["time"]))))
+	Audio.play("click", -6.0)
+	Toast.say("You sleep at the inn and wake at dawn.")
+	Game.changed.emit()
+	Nav.go("town")
 
 
 func _place() -> void:
@@ -79,6 +91,7 @@ func _refresh_ui() -> void:
 	if not is_instance_valid(_top):
 		return
 	var day := Clock.day_of(float(Game.state["time"]))
+	_sleep.visible = Clock.hour(float(Game.state["time"])) >= 16.0 or Clock.is_night(float(Game.state["time"]))
 	var ch: Dictionary = Data.chapters[int(Game.state["chapter"]) - 1]
 	_top.text = "%s   Day %d, %s   %s: name %d   Hold %d/%d" % [Ui.coins_text(int(Game.state["denarii"])), day + 1,
 		Clock.season(day), ch["name"], int(Game.state["reputation"]), Game.state["hold"].size(),
