@@ -7,7 +7,6 @@ builds/
 
 # The trimmed engine, copied from Mosaicus Maximus
 tools/engine/*.exe
-tools/engine/rcedit/
 
 # Recordings, the scratch frames they are cut from, and the window size the recording scripts set
 recordings/
