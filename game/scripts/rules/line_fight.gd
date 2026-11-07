@@ -1,13 +1,12 @@
 class_name LineFight
 extends RefCounted
-## A fish on the line. It runs and rests by turns until it tires; reeling while it runs strains the line, reeling
-## while it rests brings it in, and leaving the line slack too long lets the hook slip.
-
-const SNAP_AFTER := 0.4
-const SLACK := 0.1
+## A fish on the line. It runs and rests by turns until it tires, a big or strong fish running more often and for
+## longer. Reeling while it runs soon breaks the line, giving line keeps it safe, reeling while it rests brings it in,
+## and a line left slack too long lets the hook slip.
 
 var fish := ""
 var pounds := 0.0
+## How hard the line is pulled, as a share of what it can bear: 1 is breaking.
 var tension := 0.0
 var distance := 120.0
 var state := "fighting"
@@ -16,13 +15,15 @@ var _power := 0.5
 var _energy := 1.0
 var _full_energy := 1.0
 var _pull := 1.0
-var _strength := 0.6
+var _rise := 1.0
 var _slip_after := 2.5
 var _running := true
 var _phase_left := 1.0
 var _over := 0.0
 var _slack := 0.0
 var _rng: RandomNumberGenerator
+## The fight's numbers from balance.json, read once.
+var _k := {}
 
 
 func setup(id: String, lb: float, gear: Dictionary, is_gentle: bool, rng: RandomNumberGenerator) -> void:
@@ -30,20 +31,30 @@ func setup(id: String, lb: float, gear: Dictionary, is_gentle: bool, rng: Random
 	pounds = lb
 	gentle = is_gentle
 	_rng = rng
+	_k = Data.value("fishing.fight", {})
 	var f: Dictionary = Data.fish[id]
 	var size := clampf((lb - float(f["pounds"][0])) / maxf(0.01, float(f["pounds"][1]) - float(f["pounds"][0])), 0.0, 1.0)
 	_pull = float(gear.get("pull", 1))
-	_strength = float(gear.get("strength", 0.6))
-	_slip_after = 1.5 + 0.5 * float(gear.get("hold", 1))
-	_power = float(f["strength"]) / 10.0 * (0.55 + 0.45 * size) / (0.8 + 0.2 * _pull)
-	_full_energy = float(f["stamina"]) * (0.6 + 0.8 * size) / (1.0 + 0.3 * (_pull - 1.0))
+	_slip_after = _n("slip_seconds") + _n("slip_per_hold") * float(gear.get("hold", 1))
+	var by_size: Array = _pair("size_power")
+	_power = clampf(float(f["strength"]) / 10.0 * lerpf(by_size[0], by_size[1], size) / (1.0 + _n("rod_eases") * (_pull - 1.0)), 0.0, 1.0)
+	by_size = _pair("size_energy")
+	_full_energy = (_n("energy") + _n("energy_per_stamina") * float(f["stamina"])) * lerpf(by_size[0], by_size[1], size) \
+		/ (1.0 + _n("rod_tires") * (_pull - 1.0))
 	_energy = _full_energy
+	var breaks: Array = _pair("break_seconds")
+	_rise = (1.0 - _n("rest_tension")) / (lerpf(breaks[0], breaks[1], _power) * float(gear.get("strength", 0.6)))
+	tension = _n("rest_tension")
 	_running = true
-	_phase_left = _rng.randf_range(1.0, 3.0)
+	_phase_left = _run_seconds()
 
 
 func resting() -> bool:
 	return state == "fighting" and not _running
+
+
+func running() -> bool:
+	return state == "fighting" and _running
 
 
 func tired() -> float:
@@ -56,29 +67,54 @@ func step(reeling: bool, delta: float) -> void:
 	_phase_left -= delta
 	if _phase_left <= 0.0:
 		_running = not _running and _energy > 0.0
-		_phase_left = _rng.randf_range(1.0, 3.0) if _running else _rng.randf_range(1.0, 2.0)
-	var fresh := _energy / maxf(0.01, _full_energy)
-	var target := 0.0
+		_phase_left = _run_seconds() if _running else _rest_seconds()
 	if _running:
-		_energy = maxf(0.0, _energy - delta * (1.5 if reeling else 1.0))
+		var fresh := _energy / maxf(0.01, _full_energy)
+		_energy = maxf(0.0, _energy - delta * (_n("tire_against") if reeling else 1.0))
 		if _energy <= 0.0:
 			_running = false
-			_phase_left = 9999.0
-		var run_speed := (15.0 + _power * 40.0) * (0.4 + 0.6 * fresh)
-		distance += run_speed * (0.4 if reeling else 1.0) * delta
-		target = (0.35 + _power * 0.9) if reeling else (0.15 + _power * 0.35)
+			_phase_left = INF
+		var speeds: Array = _pair("run_speed")
+		distance += lerpf(speeds[0], speeds[1], _power) * (0.4 + 0.6 * fresh) * (_n("against_run") if reeling else 1.0) * delta
 	elif reeling:
-		distance -= (18.0 + _pull * 8.0) * delta
-		target = 0.25 + _power * 0.25
-	tension = lerpf(tension, target, minf(1.0, 2.5 * delta))
+		distance -= (_n("reel_speed") + _n("reel_per_pull") * _pull) * delta
+	if _running and reeling:
+		tension += _rise * delta
+	else:
+		var target := _n("run_tension") if _running else (_n("rest_tension") if reeling else 0.0)
+		tension = lerpf(tension, target, minf(1.0, _n("ease") * delta))
 	if gentle:
-		tension = minf(tension, _strength * 0.9)
-	_over = _over + delta if tension > _strength else 0.0
-	_slack = _slack + delta if tension < SLACK else 0.0
+		tension = minf(tension, _n("gentle_cap"))
+	_over = _over + delta if tension > 1.0 else 0.0
+	_slack = _slack + delta if tension < _n("slack") else 0.0
 	if distance <= 0.0:
 		distance = 0.0
 		state = "landed"
-	elif not gentle and _over >= SNAP_AFTER:
+	elif not gentle and _over >= _n("snap_after"):
 		state = "snapped"
 	elif not gentle and _slack >= _slip_after:
 		state = "slipped"
+
+
+## A run is longer for a stronger fish and shorter as it tires.
+func _run_seconds() -> float:
+	var r: Array = _pair("run_seconds")
+	return lerpf(r[0], r[1], _power) * _vary() * (0.5 + 0.5 * _energy / maxf(0.01, _full_energy))
+
+
+## A rest is shorter for a stronger fish, so it runs more often.
+func _rest_seconds() -> float:
+	var r: Array = _pair("rest_seconds")
+	return lerpf(r[0], r[1], _power) * _vary()
+
+
+func _vary() -> float:
+	return _rng.randf_range(1.0 - _n("vary"), 1.0 + _n("vary"))
+
+
+func _n(key: String) -> float:
+	return float(_k.get(key, 0.0))
+
+
+func _pair(key: String) -> Array:
+	return _k.get(key, [0.0, 0.0])

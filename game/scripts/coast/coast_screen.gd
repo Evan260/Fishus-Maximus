@@ -10,6 +10,8 @@ const ROWED := 30.0
 const REEL_SPEED := 70.0
 const CAST_NEAR := 20.0
 const CAST_FAR := 140.0
+## Seconds the float dips for at each nibble.
+const TWITCH := 0.25
 
 var place := {}
 var place_id := ""
@@ -33,9 +35,13 @@ var _click := false
 var _mouse_held := false
 var _weather_check := 0.0
 var _day := -1
-## The fish nibbling at the hook while the strike window is open, and how long is left to strike.
+## The fish at the hook, first nibbling and then with the bait taken, and how long is left to strike once it has it.
 var biter := {}
 var bite_left := 0.0
+## How long the float's current twitch has left, while a fish nibbles.
+var twitch := 0.0
+var _nibbles_left := 0
+var _nibble_in := 0.0
 var _state := "reeled"
 var _time := 0.0
 var _pinned := false
@@ -331,19 +337,53 @@ func _line_length() -> float:
 	return float(Data.gear.get(str(Game.state["gear"].get("line", "flax_line")), {}).get("length", 260))
 
 
+## A fish reaches the hook and nibbles at the bait, twitching the float, before it takes it.
 func _on_bite(f: Dictionary) -> void:
 	if not _state in ["waiting", "sinking"] or not biter.is_empty():
 		swimmers.release(f, false)
 		return
 	biter = f
-	bite_left = Bite.window()
-	_state = "bite"
-	dog.bark()
-	Audio.play("cork", -4.0)
+	var count: Array = Data.value("fishing.nibbles", [1, 3])
+	_nibbles_left = _rng.randi_range(int(count[0]), int(count[1]))
+	_nibble_in = 0.0
+	_state = "nibble"
 
 
-## Strikes while a fish has the bait: the fish is hooked and the fight begins.
+## The nibbles, then the fish taking the bait and the float going under, then the fish going if nobody strikes.
+func bite_step(delta: float) -> void:
+	twitch = maxf(0.0, twitch - delta)
+	if _state == "nibble":
+		_nibble_in -= delta
+		if _nibble_in > 0.0:
+			return
+		if _nibbles_left > 0:
+			_nibbles_left -= 1
+			twitch = TWITCH
+			var gap: Array = Data.value("fishing.nibble_gap", [0.5, 1.2])
+			_nibble_in = _rng.randf_range(float(gap[0]), float(gap[1]))
+			Audio.play("cork", -16.0, 1.5)
+		else:
+			_state = "bite"
+			bite_left = Bite.window()
+			dog.bark()
+			Audio.play("cork", -4.0)
+	elif _state == "bite":
+		bite_left -= delta
+		if bite_left <= 0.0:
+			_let_go()
+			_use_bait()
+			_state = "waiting"
+			Toast.say("Too slow! It took the bait." if bait() != "" else "Too slow! It took your last bait.")
+
+
+## Strikes at the fish at the hook: hooked once it has taken the bait, but scared off while it only nibbles.
 func strike() -> void:
+	if _state == "nibble":
+		_let_go()
+		_state = "waiting"
+		Audio.play("splash_small", -12.0, 1.4)
+		Toast.say("Too soon! Wait for the float to go under.")
+		return
 	if _state != "bite" or biter.is_empty():
 		return
 	fight = LineFight.new()
@@ -359,9 +399,10 @@ func strike() -> void:
 
 
 func _let_go() -> void:
-	if not biter.is_empty() and _state == "bite":
-		swimmers.release(biter, false)
+	if not biter.is_empty() and _state in ["nibble", "bite"]:
+		swimmers.release(biter, false, true)
 	biter = {}
+	twitch = 0.0
 
 
 func _use_bait() -> void:
@@ -373,7 +414,7 @@ func _use_bait() -> void:
 func _fight_step(delta: float, reeling: bool) -> void:
 	fight.step(reeling, delta)
 	var tip := _boat.rod_tip(boat_x)
-	var sway := Vector2(sin(_time * 5.0) * 6.0, cos(_time * 3.0) * 3.0) * (0.0 if fight.resting() else 1.0)
+	var sway := Vector2(sin(_time * 9.0) * 7.0, cos(_time * 6.0) * 3.0) if fight.running() else Vector2.ZERO
 	hook = seabed.clamp_hook(tip + _fight_dir * fight.distance + sway)
 	if fight.state == "fighting":
 		return
@@ -393,7 +434,7 @@ func _fight_step(delta: float, reeling: bool) -> void:
 		if record["where"] == "full":
 			HoldChoice.ask(record["fish"])
 	else:
-		Toast.say("The line snapped." if how == "snapped" else "It slipped the hook.")
+		Toast.say("The line snapped. Let go while it runs!" if how == "snapped" else "It slipped the hook. Reel in while it rests!")
 
 
 ## Puts everything back in place for the camera, after a move or a change to the window.
@@ -446,13 +487,12 @@ func _process(delta: float) -> void:
 				_state = "reeled"
 		"reeled":
 			hook = _boat.rod_tip(boat_x)
-		"bite":
-			bite_left -= delta
-			if bite_left <= 0.0:
+		"nibble", "bite":
+			if methods.idle:
 				_let_go()
-				_use_bait()
 				_state = "waiting"
-				Toast.say("It took the bait." if bait() == "" else "Missed it.")
+			else:
+				bite_step(delta)
 		"fighting":
 			_fight_step(delta, _reeling_input())
 	camera.view = Nav.view()
@@ -548,7 +588,7 @@ func _handle_input(delta: float) -> void:
 					Toast.say("No bait on the hook.")
 				cast(charge)
 				charge = -1.0
-		"bite":
+		"nibble", "bite":
 			if _pressed():
 				strike()
 		"waiting", "sinking":

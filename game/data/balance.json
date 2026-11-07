@@ -21,7 +21,34 @@
 		"strike_window": 1.0,
 		"bite_reach": 40,
 		"sink_speed": 30,
-		"cast_seconds": 1.5
+		"cast_seconds": 1.5,
+		"nibbles": [1, 3],
+		"nibble_gap": [0.5, 1.2],
+		"fight": {
+			"rest_tension": 0.4,
+			"run_tension": 0.5,
+			"break_seconds": [0.85, 0.5],
+			"snap_after": 0.3,
+			"ease": 3.0,
+			"slack": 0.15,
+			"slip_seconds": 1.5,
+			"slip_per_hold": 0.5,
+			"run_seconds": [1.0, 3.0],
+			"rest_seconds": [2.4, 1.0],
+			"vary": 0.25,
+			"size_power": [0.55, 1.0],
+			"rod_eases": 0.2,
+			"energy": 2.0,
+			"energy_per_stamina": 0.6,
+			"size_energy": [0.6, 1.4],
+			"rod_tires": 0.2,
+			"run_speed": [15, 55],
+			"against_run": 0.4,
+			"tire_against": 1.5,
+			"reel_speed": 18,
+			"reel_per_pull": 8,
+			"gentle_cap": 0.9
+		}
 	},
 	"traps": {
 		"hours_per_catch": 2.0

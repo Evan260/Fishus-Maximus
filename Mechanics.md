@@ -41,15 +41,18 @@ The bay is six fishing places. Each is one long stretch of coast, 3 to 5 screens
 1. **Bait.** Choose the bait before you cast: worm, shrimp, bread, a strip of sardine, squid, a live sardine, or a special bait for a legend. Every fish has the baits it likes, and on the wrong bait it rarely bites.
 2. **Cast.** Hold to build up the cast and let go. The float lands that far from the boat and the hook starts to sink.
 3. **Depth.** The hook sinks until you stop it or it reaches the seabed. The line's length sets how deep it can go.
-4. **A bite.** A fish near the hook may take the bait. The float twitches and dips, and the dog barks. Strike within about a second; too early or too late and the fish takes the bait and goes.
-5. **The fight.** A strip shows the line's tension:
-   - holding reels in and raises it;
-   - letting go gives line and lowers it;
-   - the fish pulls in runs, by its own strength and stamina, and rests between them.
-
-   Reel while it rests, and give line when it runs. Too much tension snaps the line, and too little for too long lets the hook slip. Big fish fight for longer.
-   - **Gear:** the rod adds pull, the line adds strength and the hook holds better.
-   - **Gentle fishing,** in the settings, never snaps a line.
+4. **A bite.** A fish that likes the bait comes to look, swims in to the hook and nibbles: the float twitches one to three times. Then it takes the bait, the float goes under and the dog barks. Strike within a second.
+   - Strike while it only nibbles and it darts off, but the line stays in the water with its bait.
+   - Too late, and the fish takes the bait and goes.
+   - Pressing with no fish at the hook reels the line in.
+5. **The fight.** A bar over the hooked fish shows the line's tension, and turns red as the line nears breaking. The fish runs and rests by turns until it tires. Running, it faces away, thrashes and takes line; resting, it lets itself be reeled in.
+   - Reeling while it runs strains the starting line to breaking point within about half a second, so a run means let go.
+   - Giving line while it runs is always safe.
+   - Reeling while it rests brings it in.
+   - Leaving the line slack for a couple of seconds lets the hook slip.
+   - Big and strong fish run more often and for longer.
+   - **Gear:** the rod tires the fish and reels faster, a stronger line takes longer to break, and a better hook holds a slack line for longer.
+   - **Gentle fishing,** in the settings, never snaps a line or lets a fish slip.
 6. **Landing.** The fish comes up with the camera, and goes into the hold, or into the live well if there is room and you want it alive.
 
 ## Traps

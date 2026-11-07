@@ -15,6 +15,8 @@ const LEGEND_CHANCE := 0.05
 ## How far off a fish notices a bait it likes and comes to look at it.
 const NOTICE := 110.0
 const CURIOUS_FOR := 7.0
+## How many times its usual speed a scared fish darts away at.
+const FLEE_SPEED := 3.0
 
 var place_id := ""
 var place := {}
@@ -184,7 +186,8 @@ func _move(f: Dictionary, delta: float, bait) -> void:
 				if _rng.randf() < 0.4:
 					f["heading"] = -f["heading"]
 				f["goal_y"] = _rng.randf_range(float(f["band"][0]), float(f["band"][1]))
-			f["pos"].x += f["heading"] * f["speed"] * delta
+			f["flee"] = maxf(0.0, float(f.get("flee", 0.0)) - delta)
+			f["pos"].x += f["heading"] * f["speed"] * (FLEE_SPEED if f["flee"] > 0.0 else 1.0) * delta
 			if f["pos"].x < 10.0 or f["pos"].x > float(place["width"]) - 10.0:
 				f["heading"] = signf(float(place["width"]) / 2.0 - f["pos"].x)
 			if "dolphins" in events and Data.fish[f["id"]].get("shoal", false):
@@ -217,11 +220,12 @@ func _keep_y(f: Dictionary, x: float, y: float) -> float:
 	return clampf(y, minf(lo, hi), hi)
 
 
-## Takes a fish off the swimmers, when it is hooked or has given up on the bait.
-func release(f: Dictionary, hooked: bool) -> void:
+## Takes a fish off the swimmers, when it is hooked or has given up on the bait; a scared fish darts away.
+func release(f: Dictionary, hooked: bool, scared := false) -> void:
 	if hooked:
 		f["state"] = "gone"
 	else:
 		f["state"] = "swim"
 		f["heading"] = -f["heading"]
-		f["look"] = 4.0
+		f["look"] = 8.0 if scared else 4.0
+		f["flee"] = 1.5 if scared else 0.0

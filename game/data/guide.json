@@ -19,7 +19,7 @@
 		{
 			"id": "strike",
 			"screen": "coast",
-			"text": "When the float dips and your dog barks, a fish has the bait. Press again, quick, to strike!",
+			"text": "A twitching float is a fish nibbling, so wait. When it goes under and your dog barks, press, quick, to strike!",
 			"done": {
 				"stat": "hooked"
 			}
