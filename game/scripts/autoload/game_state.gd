@@ -66,7 +66,11 @@ func demo_state() -> void:
 			{"fish": "moray", "pounds": 12.5, "name": "Hortensia", "finery": "earrings", "age_days": 60, "fed": true}]}]
 	state["tanks"][0] = {"restored": true, "fish": {"sardine": 12.0}, "pounds": 12.0, "days": 6, "quality": 0.6, "stirred": false}
 	for f in [["mullet", 1.2], ["bream", 2.4], ["sardine", 0.15], ["octopus", 3.5]]:
-		Hold.add(state, {"fish": f[0], "pounds": f[1], "fresh": 0.9})
+		Catches.record(state, f[0], f[1])
+	for f in state["hold"]:
+		f["fresh"] = 0.9
+	for f in [["mullet", 6, 1.9], ["bream", 5, 4.2], ["sardine", 14, 0.2], ["salema", 3, 0.9], ["sole", 1, 1.1], ["moray", 1, 12.5], ["crab", 4, 0.6]]:
+		state["logbook"][f[0]] = {"count": f[1], "best": f[2]}
 	changed.emit()
 
 
