@@ -18,7 +18,7 @@ func test_a_message_shows_above_a_window_opened_after_it() -> void:
 func test_leaving_the_coast_stops_him_fishing_on_his_own() -> void:
 	Game.new_game("Test", "mutt")
 	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
-	Nav.add_child(s)
+	Nav.port.add_child(s)
 	s.enter({"place": "harbour"})
 	s.methods.set_idle(true)
 	s.prepare_to_leave()
@@ -31,7 +31,7 @@ func test_leaving_the_coast_stops_him_fishing_on_his_own() -> void:
 func test_the_town_says_good_morning_after_a_night_at_the_inn() -> void:
 	Game.new_game("Test", "mutt")
 	var s: Node = load("res://scripts/town/town_screen.gd").new()
-	Nav.add_child(s)
+	Nav.port.add_child(s)
 	s.enter({"slept": true})
 	var box: Control = Toast._box
 	check(is_instance_valid(box) and box.get_children().any(func(l): return "dawn" in l.text), "the message comes with the new morning")

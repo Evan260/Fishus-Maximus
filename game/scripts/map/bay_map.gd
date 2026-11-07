@@ -55,7 +55,8 @@ func enter(_args: Dictionary) -> void:
 	_painter = Node2D.new()
 	_painter.draw.connect(_draw_pins)
 	_stage.add_child(_painter)
-	_stage.position = Nav.offset()
+	Windowing.view_changed.connect(_place)
+	_place()
 	var stay := Ui.button(Nav.ui, "Stay here", func(): Nav.go("coast"))
 	Ui.hang(stay, "bottom_right", Vector2(4, 4), Vector2(70, 18))
 	var day := Clock.day_of(float(Game.state["time"]))
@@ -66,6 +67,11 @@ func enter(_args: Dictionary) -> void:
 		"saturnalia": "the Saturnalia feasts", "pond_show": "the pond show", "dolphins": "dolphins in the bay"}[e])
 	Ui.label(note, "Day %d, %s, %s%s" % [day + 1, Clock.season(day), Weather.for_day(int(Game.state["seed"]), day),
 		(". Today: " + ", ".join(events)) if not events.is_empty() else ""])
+
+
+func _place() -> void:
+	if is_instance_valid(_stage):
+		_stage.position = Nav.offset()
 
 
 func _pin(place: String) -> Vector2:

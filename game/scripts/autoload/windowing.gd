@@ -46,6 +46,8 @@ var _slide_start := 0
 var _click_wait := 0.0
 ## Set when a run started with --strip asks for it before its first screen has opened.
 var _strip_on_arrival := false
+## The window size the view was last fitted to.
+var _fitted := Vector2i.ZERO
 
 
 func _ready() -> void:
@@ -108,6 +110,9 @@ func _input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
+	# The view keeps its size when the window is maximised, so Godot sends no resize signal and the window is watched here.
+	if get_window().size != _fitted:
+		_fit()
 	if not (strip and transparent) or strip_dragging or not _windowed():
 		return
 	_click_wait -= delta
@@ -119,15 +124,16 @@ func _process(delta: float) -> void:
 ## Sizes the view to the window: the whole-number scale that keeps 270 rows, and as many columns as fit, so a window
 ## of any shape is filled to its edges with no bars. The strip's view is its own width by its few rows.
 func _fit() -> void:
+	_fitted = get_window().size
 	if strip:
-		get_window().content_scale_size = Vector2i(strip_view(), STRIP.y)
+		Nav.fit(Vector2i(strip_view(), STRIP.y), scale)
 		view_changed.emit()
 		return
 	var size := get_window().size
 	var s := maxi(1, size.y / BASE.y)
 	while s > 1 and size.x / s < 400:
 		s -= 1
-	get_window().content_scale_size = Vector2i(maxi(400, size.x / s), maxi(BASE.y, size.y / s))
+	Nav.fit(Vector2i(maxi(400, size.x / s), maxi(BASE.y, size.y / s)), s)
 	view_changed.emit()
 
 
@@ -143,7 +149,7 @@ func set_strip(on: bool) -> void:
 		return
 	strip = on
 	# The coast is laid out for the full screen, so the strip shows the band of it around the waterline.
-	get_viewport().canvas_transform = Transform2D(0.0, Vector2(0, -STRIP_TOP if strip else 0))
+	Nav.port.canvas_transform = Transform2D(0.0, Vector2(0, -STRIP_TOP if strip else 0))
 	if strip:
 		_enter_strip()
 	else:
@@ -332,7 +338,7 @@ func _place_strip() -> void:
 	var auto := clampi(int(usable.size.y * 0.2) / STRIP.y, 1, max_strip_scale())
 	scale = clampi(strip_scale if strip_scale > 0 else auto, 1, max_strip_scale())
 	var size := Vector2i(strip_view() * scale, STRIP.y * scale)
-	win.content_scale_size = Vector2i(strip_view(), STRIP.y)
+	Nav.fit(Vector2i(strip_view(), STRIP.y), scale)
 	win.size = size
 	# The strip never slides off the screen, and its offsets are held to what fits so a later drag starts from there.
 	var room := (usable.size.x - size.x) / 2
@@ -346,7 +352,7 @@ func _place_strip() -> void:
 ## On Windows the outline that lets clicks through the see-through strip also clips what the strip draws, so it follows
 ## everything drawn in the last frame, column by column, plus the strip's controls the moment they appear.
 func _set_click_area() -> void:
-	var img := get_viewport().get_texture().get_image()
+	var img := Nav.port.get_texture().get_image()
 	if img == null or img.is_empty():
 		return
 	const STEP := 4

@@ -59,7 +59,7 @@ func test_the_mouse_never_casts_through_a_button() -> void:
 func test_fishing_on_his_own_leaves_no_bait_for_the_swimmers() -> void:
 	Game.new_game("Test", "mutt")
 	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
-	Nav.add_child(s)
+	Nav.port.add_child(s)
 	s.enter({"place": "harbour"})
 	s.cast(0.5)
 	check(s.hook_baited(), "a cast line is baited")

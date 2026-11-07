@@ -23,7 +23,7 @@ func test_achievements_are_earned_as_you_play() -> void:
 func test_the_strip_mid_cast_keeps_the_cast() -> void:
 	Game.new_game("Test", "mutt")
 	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
-	Nav.add_child(s)
+	Nav.port.add_child(s)
 	s.enter({"place": "harbour"})
 	s.cast(0.8)
 	Windowing.set_strip(true)

@@ -32,7 +32,7 @@ func test_every_place_has_a_boat_end_stop() -> void:
 	Game.new_game("Test", "mutt")
 	for p in Data.places.values():
 		var s: Node = load("res://scripts/coast/coast_screen.gd").new()
-		Nav.add_child(s)
+		Nav.port.add_child(s)
 		s.enter({"place": p["id"]})
 		s.row(-1.0, 100.0)
 		check(s.boat_x >= 0.0, p["id"] + ": the boat stops at the start")
@@ -44,7 +44,7 @@ func test_every_place_has_a_boat_end_stop() -> void:
 func test_a_cast_sinks_to_the_seabed_and_no_further() -> void:
 	Game.new_game("Test", "mutt")
 	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
-	Nav.add_child(s)
+	Nav.port.add_child(s)
 	s.enter({"place": "harbour"})
 	s.cast(0.5)
 	check(s.line_state() == "sinking", "a cast sinks")

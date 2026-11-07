@@ -94,7 +94,7 @@ func test_a_new_day_comes_to_town() -> void:
 func test_the_town_opens_with_every_building_clickable() -> void:
 	Game.new_game("Test", "mutt")
 	var s: Node = load("res://scripts/town/town_screen.gd").new()
-	Nav.add_child(s)
+	Nav.port.add_child(s)
 	s.enter({})
 	for id in ["market", "netmaker", "boatwright", "board", "goldsmith"]:
 		check(s._masks.has(id), id + " can be clicked on its outline")

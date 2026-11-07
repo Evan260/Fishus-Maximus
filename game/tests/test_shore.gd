@@ -86,7 +86,7 @@ func test_the_shore_opens_with_its_six_pond_sites() -> void:
 	Game.state["denarii"] = 500
 	Ponds.build(Game.state, 0, "small")
 	var s: Node = load("res://scripts/shore/shore_screen.gd").new()
-	Nav.add_child(s)
+	Nav.port.add_child(s)
 	s.enter({})
 	check(s.views.size() == 6 and s.views[0].pond().size() > 0 and s.views[1].pond().is_empty(), "six sites, the first one cut")
 	for c in Nav.ui.get_children():
