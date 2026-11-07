@@ -1,8 +1,9 @@
 """Paints the harbour town seen side on like the fishing places: an empty waterfront street, then each of its five
 buildings painted straight into it inside a building-shaped outline, so every one shares the street's angle, light and
-style, and is cut out by that outline to be clicked and lit when the mouse is over it. Writes
+style. Wall and paving painted inside an outline are given back to the street, so each building ends at its own edges,
+and what is left is cut out to be clicked and lit when the mouse is over it. Writes
 game/assets/art/town/street.png, <id>.png for each building, and town.json with where each stands.
-Usage: python tools/art/make_town.py"""
+Usage: python tools/art/make_town.py [--no-paint]   (--no-paint only cuts out what is already painted)"""
 import json
 import shutil
 import subprocess
@@ -10,6 +11,7 @@ import sys
 import time
 from pathlib import Path
 
+import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -25,12 +27,12 @@ STREET = ("the waterfront street of an ancient Roman harbour town seen exactly f
 PAVING = 236
 # id: (outline as shapes in street pixels, what is painted there)
 BUILDINGS = {
-    "market": ([("rect", (10, 130, 166, PAVING)), ("ellipse", (34, 84, 142, 176)), ("rect", (82, 72, 94, 88))],
-               f"the fish market of a Roman town {FRONT}: a round fish hall with a tiled dome on white columns, stone counters of fish under a striped awning, a marble water basin in front"),
+    "market": ([("rect", (64, 121, 168, 210))],
+               f"the front of a small Roman fish market hall {FRONT}, the building filling the whole shape: a white stone cornice along the top, a white column at each side, a striped blue and white awning between the columns, fish hanging under it over stone counters of fresh fish, its stone step at the bottom"),
     "netmaker": ([("rect", (174, 150, 256, PAVING)), ("poly", [(170, 152), (260, 152), (215, 122)])],
                  f"a small Roman netmaker's shop {FRONT} with a red tiled gable roof, an open front hung with fishing nets, rods leaning by the door, baskets of bait"),
-    "boatwright": ([("rect", (264, 178, 356, PAVING)), ("poly", [(300, 180), (356, 180), (356, 150), (328, 136), (300, 150)])],
-                   f"a Roman boatwright's yard {FRONT}: a wooden boat being built on trestles in front of a small timber shed with a tiled roof, planks and ropes"),
+    "boatwright": ([("rect", (266, 170, 356, 226)), ("poly", [(262, 172), (360, 172), (311, 140)])],
+                   f"a Roman boatwright's open timber shed {FRONT}, the building filling the whole shape: a red tiled gable roof on a thick wooden post at each side, a small wooden boat on trestles inside, planks leaning on its back wall, coils of rope, its plank floor at the bottom"),
     "board": ([("rect", (362, 150, 404, PAVING))],
               f"a wooden notice board on two posts against the wall {FRONT}, wax tablets and scraps of papyrus pinned to it, a little tiled roof on top"),
     "goldsmith": ([("rect", (410, 116, 474, PAVING)), ("poly", [(406, 118), (478, 118), (442, 98)])],
@@ -68,6 +70,43 @@ def shape_mask(size, shapes) -> Image.Image:
     return mask
 
 
+# How close, over red, green and blue together, a painted pixel must be to the empty street's to count as street, and
+# how close its surroundings must be on the pale wall and paving, where repainting keeps the colours but moves the cracks.
+NEAR = 44
+NEAR_AROUND = 36
+PALE = 140
+# Building left in pieces smaller than this after the street is given back is only stray paint.
+SPECK = 16
+
+
+def settle(town: np.ndarray, street: np.ndarray, outline: np.ndarray) -> np.ndarray:
+    """The part of an outline that is really building: wall and paving painted inside it that run on from the street
+    outside go back to the street, so the building ends at its own edges and never at the outline's straight sides."""
+    a, b = town[:, :, :3].astype(np.float32), street[:, :, :3].astype(np.float32)
+    around = np.abs(cv2.blur(a, (5, 5)) - cv2.blur(b, (5, 5))).sum(axis=2)
+    pale = b @ np.array([0.3, 0.59, 0.11], dtype=np.float32) > PALE
+    near = (np.abs(a - b).sum(axis=2) < NEAR) | ((around < NEAR_AROUND) & pale)
+    open_ = (~outline | near).astype(np.uint8)
+    _n, labels = cv2.connectedComponents(open_, connectivity=4)
+    outside = np.unique(labels[~outline])
+    keep = outline & ~np.isin(labels, outside)
+    n, labels, stats, _c = cv2.connectedComponentsWithStats(keep.astype(np.uint8), connectivity=8)
+    for i in range(1, n):
+        if stats[i][cv2.CC_STAT_AREA] < SPECK:
+            keep[labels == i] = False
+    return keep
+
+
+def hover_shape(keep: np.ndarray) -> np.ndarray:
+    """Where the mouse finds a building and its gold outline is drawn: its shape with the ragged edges smoothed and the
+    holes filled, which changes nothing on screen since the picture there is the street's own either way."""
+    k = cv2.morphologyEx(keep.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+    filled = np.pad(k, 1)
+    cv2.floodFill(filled, None, (0, 0), 2)
+    k = (filled[1:-1, 1:-1] != 2).astype(np.uint8)
+    return cv2.morphologyEx(k, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)) > 0
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     WORK.mkdir(exist_ok=True)
@@ -87,20 +126,29 @@ def main():
         mask_path = WORK / f"{bid}_side_mask.png"
         mask.save(mask_path)
         if bid not in done:
-            if not run(["inpaint", str(town.relative_to(ROOT)), str(mask_path.relative_to(ROOT)), f"{prompt}, {STYLE}",
-                        "--out", str(town.relative_to(ROOT))]):
-                print("FAILED", bid)
+            if "--no-paint" in sys.argv or not run(["inpaint", str(town.relative_to(ROOT)), str(mask_path.relative_to(ROOT)),
+                                                    f"{prompt}, {STYLE}", "--out", str(town.relative_to(ROOT))]):
+                print("not painted", bid)
                 continue
             done.append(bid)
             done_path.write_text(json.dumps(done))
-        im = np.array(Image.open(town).convert("RGBA"))
-        m = np.array(mask) > 0
-        im[:, :, 3] = np.where(m, 255, 0)
-        ys, xs = np.where(m)
+    painted = np.array(Image.open(town).convert("RGBA"))
+    empty = np.array(Image.open(street).convert("RGBA"))
+    final = painted.copy()
+    for bid, (shapes, _prompt) in BUILDINGS.items():
+        if bid not in done:
+            continue
+        outline = np.array(shape_mask(final.shape[1::-1], shapes)) > 0
+        keep = settle(painted, empty, outline)
+        final[outline & ~keep] = empty[outline & ~keep]
+        shape = hover_shape(keep)
+        im = final.copy()
+        im[:, :, 3] = np.where(shape, 255, 0)
+        ys, xs = np.where(shape)
         Image.fromarray(im).crop((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1)).save(OUT / f"{bid}.png")
         spots[bid] = [int(xs.min()), int(ys.min())]
-        print("painted", bid)
-    Image.open(town).convert("RGBA").crop((0, 0, 480, 270)).save(OUT / "street.png")
+        print("cut out", bid)
+    Image.fromarray(final).crop((0, 0, 480, 270)).save(OUT / "street.png")
     (OUT / "town.json").write_text(json.dumps(spots, indent=1))
     print("town written")
 
