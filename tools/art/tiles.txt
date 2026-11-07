@@ -1,0 +1,5 @@
+# Edges that may touch their picture's edge: file, then the edges, then why.
+places/harbour/amphora.png left  # the jar's round belly touches its picture's edge
+places/lucrine/oyster_frames.png left right  # the end posts of the frames are straight wooden posts
+places/harbour/quay.png right top  # the pier ends course by course at its mortar joints, and its paved top is flat
+props/amphorae.png left right bottom  # two whole jars cropped close, standing on the quay
