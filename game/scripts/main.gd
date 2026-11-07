@@ -20,6 +20,13 @@ func _ready() -> void:
 		Game.demo_state()
 		if Dev.has("boat"):
 			Game.state["boat"] = Dev.get_arg("boat")
+	if Dev.has("guide"):
+		# A new game with old Rufus's lessons learned up to the one named, for checking that lesson on screen.
+		Game.new_game("Marcus", "mutt")
+		for s in Data.guide["steps"]:
+			if s["id"] == Dev.get_arg("guide"):
+				break
+			Guide.progress(Game.state)["done"].append(s["id"])
 	Nav.go.call_deferred(Dev.get_arg("screen", "title"), Dev.args)
 	if Dev.has("strip"):
 		Windowing.set_strip.call_deferred(true)

@@ -7,6 +7,8 @@ var screen: Node
 var _info: Label
 var _method: Label
 var _idle: Button
+## The method buttons along the bottom, by method.
+var method_buttons := {}
 var _left := 0.0
 
 
@@ -29,6 +31,7 @@ func setup(s: Node) -> void:
 		var id: String = m[0]
 		var b := Ui.button(bar, m[1], func(): screen.methods.set_method(id))
 		b.tooltip_text = "Keys 1 to 4"
+		method_buttons[id] = b
 	_idle = Ui.button(bar, "Fish on his own", func():
 		screen.methods.set_idle(not screen.methods.idle)
 		if screen.methods.idle and screen.line_state() == "reeled":

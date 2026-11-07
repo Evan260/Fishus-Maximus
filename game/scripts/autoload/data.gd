@@ -14,6 +14,7 @@ var ponds := {}
 var garum := {}
 var weather := {}
 var achievements: Array = []
+var guide := {}
 
 
 func _ready() -> void:
@@ -34,6 +35,7 @@ func reload() -> void:
 	garum = _read("garum.json", {})
 	weather = _read("weather.json", {})
 	achievements = _read("achievements.json", [])
+	guide = _read("guide.json", {})
 
 
 ## A balance number by its dotted path, such as "time.day_minutes".

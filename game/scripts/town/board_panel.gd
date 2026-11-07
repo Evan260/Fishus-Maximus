@@ -3,6 +3,7 @@ class_name BoardPanel
 
 
 static func open() -> void:
+	Game.state["stats"]["board_viewed"] = int(Game.state["stats"].get("board_viewed", 0)) + 1
 	var list := Ui.window("The harbour board", 330, 200)
 	if Game.state["orders"].is_empty():
 		Ui.label(list, "No orders today. Come back in the morning.", "MutedLabel")

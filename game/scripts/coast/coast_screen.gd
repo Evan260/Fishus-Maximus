@@ -50,6 +50,7 @@ var _ground: Node2D
 var _line: LineView
 var _rain: Array = []
 var _ashore: Button
+var _sail: Button
 ## The quay is where the boat ties up to go into town, in the harbour only.
 const QUAY_REACH := 200.0
 ## How far below the seabed the ground turns to solid shadow, which hides the bottom edges of pieces in front of it.
@@ -96,21 +97,29 @@ func enter(args: Dictionary) -> void:
 		hud.setup(self)
 	Windowing.view_changed.connect(_on_view_changed)
 	_on_view_changed()
-	if args.get("first", false):
+	if args.get("first", false) and not Settings.guide:
 		Toast.say("Your uncle's skiff. Hold Space or the mouse to cast, A and D to row.")
 	elif float(args.get("away", 0.0)) >= 1.0:
 		var days := float(args["away"]) / Clock.minutes_per_day()
 		Toast.say(("While you were away, %d days went by." % int(days)) if days >= 2.0 else "Time has passed while you were away.")
 	if Nav.ui and not Dev.has("no-hud"):
-		var sail := Ui.button(Nav.ui, "Bay map", func():
+		_sail = Ui.button(Nav.ui, "Bay map", func():
 			if fight == null:
 				prepare_to_leave()
 				Nav.go("map"))
-		Ui.hang(sail, "bottom_left", Vector2(4, 4), Vector2(60, 18))
+		Ui.hang(_sail, "bottom_left", Vector2(4, 4), Vector2(60, 18))
 	if place_id == "harbour" and Nav.ui and not Dev.has("no-hud"):
 		_ashore = Ui.button(Nav.ui, "Go ashore", go_ashore)
 		Ui.hang(_ashore, "bottom_right", Vector2(4, 4), Vector2(76, 18))
+	if Nav.ui and not Dev.has("no-hud"):
+		GuideNote.add(self, "coast")
 	relayout()
+
+
+## Where a lesson of the guide points, in interface pixels: the button to press, or nothing while it is hidden.
+func guide_target(id: String) -> Rect2:
+	var b: Control = {"ashore": _ashore, "map": _sail, "pots": hud.method_buttons.get("trap") if hud else null}.get(id)
+	return b.get_global_rect() if is_instance_valid(b) and b.is_visible_in_tree() else Rect2()
 
 
 func go_ashore() -> void:
@@ -265,6 +274,9 @@ func cast(power: float) -> void:
 	var tip := _boat.rod_tip(boat_x)
 	hook = seabed.clamp_hook(Vector2(tip.x + _boat.facing * lerpf(CAST_NEAR, CAST_FAR, clampf(power, 0.0, 1.0)), 0.0))
 	_state = "sinking"
+	# Only a cast by the player's own hand counts as learning to cast.
+	if not methods.idle and not _demo:
+		Game.state["stats"]["casts"] = int(Game.state["stats"].get("casts", 0)) + 1
 	Audio.play("splash_small", -4.0)
 
 
@@ -325,6 +337,7 @@ func strike() -> void:
 	_use_bait()
 	swimmers.release(biter, true)
 	_state = "fighting"
+	Game.state["stats"]["hooked"] = int(Game.state["stats"].get("hooked", 0)) + 1
 	Audio.play("reel")
 
 

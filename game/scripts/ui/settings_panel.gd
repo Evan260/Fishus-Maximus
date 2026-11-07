@@ -1,5 +1,5 @@
 class_name SettingsPanel
-## The settings: the volumes, full screen, gentle fishing, larger messages and the desktop strip.
+## The settings: the volumes, full screen, gentle fishing, larger messages, old Rufus's guide and the desktop strip.
 
 
 static func open() -> void:
@@ -29,7 +29,7 @@ static func open() -> void:
 	var gap := Control.new()
 	gap.custom_minimum_size = Vector2(0, 3)
 	list.add_child(gap)
-	for key in [["fullscreen", "Full screen (F11)"], ["gentle", "Gentle fishing: lines never snap"], ["large_text", "Larger text for messages"]]:
+	for key in [["fullscreen", "Full screen (F11)"], ["gentle", "Gentle fishing: lines never snap"], ["large_text", "Larger text for messages"], ["guide", "Old Rufus's advice for new players"]]:
 		var check := CheckBox.new()
 		check.text = key[1]
 		check.focus_mode = Control.FOCUS_NONE

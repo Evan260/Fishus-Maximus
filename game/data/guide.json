@@ -1,0 +1,87 @@
+{
+	"steps": [
+		{
+			"id": "cast",
+			"screen": "coast",
+			"text": "Salve! I'm Rufus, I mended your uncle's nets. Hold Space or the mouse over the water, then let go to cast.",
+			"done": {
+				"stat": "casts"
+			}
+		},
+		{
+			"id": "strike",
+			"screen": "coast",
+			"text": "When the float dips and your dog barks, a fish has the bait. Press again, quick, to strike!",
+			"done": {
+				"stat": "hooked"
+			}
+		},
+		{
+			"id": "reel",
+			"screen": "coast",
+			"text": "Hold to reel him in, and let go when he runs. Too hard and the line snaps; too soft and he slips off.",
+			"praise": "Your first fish! Your uncle would have liked to see that.",
+			"done": {
+				"logbook": 1
+			}
+		},
+		{
+			"id": "ashore",
+			"screen": "coast",
+			"text": "Catch a few more, then row back to the jetty with A and D, and go ashore to sell them.",
+			"done": {
+				"stat": "town_visits"
+			},
+			"target": "ashore"
+		},
+		{
+			"id": "sell",
+			"screen": "town",
+			"text": "Click the fish market to sell your catch. Sell too many of one kind and the price drops.",
+			"done": {
+				"stat": "sold"
+			},
+			"target": "market"
+		},
+		{
+			"id": "bait",
+			"screen": "town",
+			"text": "Each fish likes its own bait. The netmaker sells shrimp and bread too. Buy some and see who bites.",
+			"done": {
+				"stat": "bought"
+			},
+			"target": "netmaker"
+		},
+		{
+			"id": "board",
+			"screen": "town",
+			"text": "The villas post orders on the harbour board, and they pay far better than the market.",
+			"done": {
+				"stat": "board_viewed"
+			},
+			"target": "board"
+		},
+		{
+			"id": "pots",
+			"screen": "coast",
+			"text": "Pots fish while you do. Pick Pots, then press Space to sink one. Row over it later to lift it.",
+			"done": {
+				"stat": "pots_set"
+			},
+			"target": "pots"
+		},
+		{
+			"id": "map",
+			"screen": "coast",
+			"when": {
+				"chapter": 2
+			},
+			"text": "Folk are talking about you, and the rocky shore is open. Sail there from the bay map.",
+			"done": {
+				"stat": "sails"
+			},
+			"target": "map"
+		}
+	],
+	"farewell": "Mehercule, you hardly need old Rufus now. The bay is yours, my friend. Fair winds, and vale!"
+}

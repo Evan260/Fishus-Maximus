@@ -145,6 +145,7 @@ func _set_or_lift_trap() -> void:
 		Game.state["bait"][bait] = int(Game.state["bait"][bait]) - 1
 	Game.state["traps"].append({"place": screen.place_id, "x": roundf(mid), "depth": screen.seabed.depth_at(mid),
 		"set_time": float(Game.state["time"]), "catch": [], "size": 3, "hours": 0.0, "bait": bait})
+	Game.state["stats"]["pots_set"] = int(Game.state["stats"].get("pots_set", 0)) + 1
 	Toast.say("Pot set on the seabed%s." % ((", baited with " + str(Data.bait[bait]["name"]).to_lower()) if bait != "" else ""))
 
 

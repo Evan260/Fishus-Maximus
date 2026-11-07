@@ -331,3 +331,5 @@ time,kind,name,cost_usd,cost_generations,usd_left
 2026-11-07T12:30:47,proflash,tools/art/title_parts/cloud_a.png,0.0281,0,4.5783
 2026-11-07T12:31:16,proflash,tools/art/title_parts/cloud_b.png,0.0242,0,4.5541
 2026-11-07T12:31:44,proflash,tools/art/title_parts/cloud_c.png,0.0282,0,4.5259
+2026-11-07T12:43:46,pixen,tools\art\people_raw\portrait_rufus.png,0.0090,0,4.5169
+2026-11-07T12:44:40,pixen,tools\art\people_raw\portrait_rufus.png,0.0083,0,4.5086

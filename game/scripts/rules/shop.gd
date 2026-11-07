@@ -44,6 +44,7 @@ static func buy(state: Dictionary, id: String) -> bool:
 	if Data.bait.has(id) and bait_count(state) + int(Data.bait[id]["per"]) > bait_capacity(state):
 		return false
 	state["denarii"] = int(state["denarii"]) - price(id)
+	state["stats"]["bought"] = int(state["stats"].get("bought", 0)) + 1
 	if Data.bait.has(id):
 		state["bait"][id] = int(state["bait"].get(id, 0)) + int(Data.bait[id]["per"])
 	elif Data.boats.has(id):

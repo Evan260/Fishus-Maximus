@@ -1,6 +1,6 @@
 extends Node
 ## The player's settings, kept apart from the save slots so they apply to every game: the volumes, the window, gentle
-## fishing and the text size.
+## fishing, the text size and old Rufus's guide.
 
 signal changed
 
@@ -14,6 +14,8 @@ var maximized := false
 ## Gentle fishing never snaps a line or lets a hook slip.
 var gentle := false
 var large_text := false
+## Old Rufus's lessons for a new player.
+var guide := true
 var _before := DisplayServer.WINDOW_MODE_WINDOWED
 
 
@@ -27,6 +29,7 @@ func _ready() -> void:
 		maximized = cfg.get_value("display", "maximized", maximized)
 		gentle = cfg.get_value("play", "gentle", gentle)
 		large_text = cfg.get_value("play", "large_text", large_text)
+		guide = cfg.get_value("play", "guide", guide)
 	apply()
 	_restore_window.call_deferred()
 
@@ -73,6 +76,7 @@ func save() -> void:
 	cfg.set_value("display", "maximized", maximized)
 	cfg.set_value("play", "gentle", gentle)
 	cfg.set_value("play", "large_text", large_text)
+	cfg.set_value("play", "guide", guide)
 	cfg.save(PATH)
 
 

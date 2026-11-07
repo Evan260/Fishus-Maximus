@@ -26,7 +26,7 @@ func defaults() -> Dictionary:
 		"gear": {"rod": "cane_rod", "line": "flax_line", "hook": "bronze_hook", "net": "", "traps": 2, "lamp": "", "bait_box": 1},
 		"bait": {"worm": 20}, "current_bait": "worm", "method": "line",
 		"hold": [], "live_well": [], "traps": [], "ponds": [], "tanks": [], "orders": [], "clients": {}, "logbook": {},
-		"legends": {}, "market": {}, "achievements": [], "dog": "", "helpers": [], "stats": {}, "finery": [], "salt": 6, "garum": {},
+		"legends": {}, "market": {}, "achievements": [], "dog": "", "helpers": [], "stats": {}, "finery": [], "salt": 6, "garum": {}, "guide": {"done": [], "finished": false},
 		"last_real_time": Time.get_unix_time_from_system()}
 
 
@@ -43,6 +43,9 @@ func from_dict(d: Dictionary) -> void:
 	for k in d:
 		if k != "version":
 			state[k] = d[k]
+	# A save from before the guide that has fish in its logbook belongs to someone who already knows how to fish.
+	if not d.has("guide"):
+		state["guide"]["finished"] = not state["logbook"].is_empty()
 	changed.emit()
 
 
@@ -50,6 +53,7 @@ func from_dict(d: Dictionary) -> void:
 ## hold of fish.
 func demo_state() -> void:
 	new_game("Marcus", "mutt")
+	state["guide"]["finished"] = true
 	state["chapter"] = 3
 	state["reputation"] = 90
 	state["denarii"] = 640

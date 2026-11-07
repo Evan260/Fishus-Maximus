@@ -47,7 +47,8 @@ func enter(args: Dictionary) -> void:
 		b.position = Vector2(spots[id][0], spots[id][1])
 		_stage.add_child(b)
 		var img: Image = b.texture.get_image()
-		_masks[id] = {"image": img, "at": b.position}
+		var used := img.get_used_rect()
+		_masks[id] = {"image": img, "at": b.position, "rect": Rect2(b.position + Vector2(used.position), used.size)}
 		_outlines[id] = _outline(img, b.position)
 	_painter = Node2D.new()
 	_painter.draw.connect(_draw_over)
@@ -56,6 +57,7 @@ func enter(args: Dictionary) -> void:
 	_spawn_folk()
 	_place_clients()
 	_build_ui()
+	Game.state["stats"]["town_visits"] = int(Game.state["stats"].get("town_visits", 0)) + 1
 	Game.changed.connect(_refresh_ui)
 	if args.get("slept", false):
 		Toast.say("You sleep at the inn and wake at dawn.")
@@ -72,6 +74,8 @@ func _build_ui() -> void:
 	Ui.hang(ponds, "bottom_right", Vector2(116, 4), Vector2(88, 18))
 	_sleep = Ui.button(Nav.ui, "Sleep till dawn", _sleep_now)
 	Ui.hang(_sleep, "bottom_right", Vector2(208, 4), Vector2(88, 18))
+	if not Dev.has("no-hud"):
+		GuideNote.add(self, "town")
 	_refresh_ui()
 
 
@@ -81,6 +85,14 @@ func _sleep_now() -> void:
 	Audio.play("click", -6.0)
 	Game.changed.emit()
 	Nav.go("town", {"slept": true})
+
+
+## Where a lesson of the guide points, in interface pixels: one of the buildings, or nothing.
+func guide_target(id: String) -> Rect2:
+	if not _masks.has(id):
+		return Rect2()
+	var r: Rect2 = _masks[id]["rect"]
+	return Rect2(r.position + _stage.position, r.size)
 
 
 func _place() -> void:
