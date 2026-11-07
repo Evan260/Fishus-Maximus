@@ -51,3 +51,15 @@ func test_the_strip_hides_the_full_window_buttons() -> void:
 	for c in Nav.ui.get_children():
 		c.free()
 	s.free()
+
+
+func test_a_window_between_whole_sizes_is_covered_to_its_edges() -> void:
+	var win := Windowing.get_window()
+	var before := win.size
+	win.size = Vector2i(2404, 1503)
+	Windowing._process(0.0)
+	var frame: Control = Nav.port.get_parent()
+	check(frame.position.x <= 0.0 and frame.position.y <= 0.0, "the game starts at or past the window's top left")
+	check(frame.position.x + Nav.view().x * Nav.zoom >= 2404 and frame.position.y + Nav.view().y * Nav.zoom >= 1503, "and reaches past its bottom right")
+	win.size = before
+	Windowing._process(0.0)

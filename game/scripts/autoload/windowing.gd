@@ -57,6 +57,7 @@ func _ready() -> void:
 	strip_scale = int(Dev.num("strip-scale", strip_scale))
 	strip_width = int(Dev.num("strip-width", strip_width))
 	get_window().size_changed.connect(_fit)
+	get_viewport().transparent_bg = false
 	Settings.changed.connect(_apply_volume)
 	Nav.screen_changed.connect(_on_screen_changed)
 	_fit.call_deferred()
@@ -133,7 +134,8 @@ func _fit() -> void:
 	var s := maxi(1, size.y / BASE.y)
 	while s > 1 and size.x / s < 400:
 		s -= 1
-	Nav.fit(Vector2i(maxi(400, size.x / s), maxi(BASE.y, size.y / s)), s)
+	# The view is rounded up, so the game covers the window to its edges and loses under a game pixel at each side.
+	Nav.fit(Vector2i(maxi(400, ceili(size.x / float(s))), maxi(BASE.y, ceili(size.y / float(s)))), s)
 	view_changed.emit()
 
 

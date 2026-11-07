@@ -78,7 +78,7 @@ func fit(size: Vector2i, scale: int) -> void:
 	_frame.size = Vector2(size)
 	_frame.scale = Vector2(scale, scale)
 	var room := Vector2(get_window().size) - Vector2(size * scale)
-	_frame.position = (room / 2.0).floor().max(Vector2.ZERO)
+	_frame.position = (room / 2.0).floor()
 	sky.transform = Transform2D(0.0, Vector2(scale, scale), 0.0, _frame.position)
 
 
