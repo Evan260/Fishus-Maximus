@@ -59,7 +59,7 @@ static func open() -> void:
 		var id: String = g["id"]
 		var n := int(Game.state["garum"].get(id, 0))
 		if n > 0:
-			var p := Garum.price(id, float(Game.state.get("garum_quality", 0.5)), export)
+			var p := Garum.price(id, Garum.quality(Game.state, id), export)
 			Ui.row(list, "%d amphorae of %s, %s each%s" % [n, str(g["name"]).to_lower(), Ui.coins_text(p), " to the ship" if export else ""], "Sell one", func():
 				Garum.sell(Game.state, id, export)
 				Game.changed.emit()

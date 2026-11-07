@@ -6,16 +6,22 @@ extends Node2D
 const ART := "res://assets/art/map/bay.png"
 
 var _hover := ""
+var _sailing := false
 var _painter: Node2D
 var _stage: Node2D
 
 
+## How long the sail to a place takes in minutes of the clock: an hour in the rowing skiff, less in a faster boat.
+static func travel_minutes(place: String, boat: String) -> float:
+	return float(Data.places[place].get("travel_minutes", 60)) * float(Data.boats["skiff"]["speed"]) / maxf(1.0, float(Data.boats[boat]["speed"]))
+
+
 ## Sails to a place you can reach; says whether you went.
 static func sail(state: Dictionary, place: String) -> bool:
-	if not place in Story.reachable(state):
+	if locked_reason(state, place) != "":
 		return false
 	if place != state["place"]:
-		var hours := float(Data.places[place].get("travel_minutes", 60)) / 60.0
+		var hours := travel_minutes(place, str(state["boat"])) / 60.0
 		World.advance(state, hours * Clock.minutes_per_day() / 24.0, Seeds.rng(int(state["seed"]), "sail", Clock.day_of(float(state["time"]))))
 	state["place"] = place
 	state["boat_x"] = 150.0
@@ -24,6 +30,8 @@ static func sail(state: Dictionary, place: String) -> bool:
 
 ## Why a place cannot be reached yet, or nothing when it can.
 static func locked_reason(state: Dictionary, place: String) -> String:
+	if state.get("weather", "clear") == "storm" and place != "harbour" and place != state["place"]:
+		return "The storm keeps the boats in harbour"
 	var open: Array = Story.unlocks(int(state["chapter"]))["places"]
 	if not place in open:
 		for c in Data.chapters:
@@ -96,8 +104,9 @@ func _draw_pins() -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
-	if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT and _hover != "":
+	if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT and _hover != "" and not _sailing:
 		if sail(Game.state, _hover):
+			_sailing = true
 			Nav.go("coast", {"place": _hover, "boat_x": 150.0})
 		else:
 			Toast.say(locked_reason(Game.state, _hover))

@@ -4,7 +4,12 @@ class_name Orders
 
 
 static func board_size(state: Dictionary) -> int:
-	return int(Data.num("orders.board", 3)) + int(state["chapter"]) - 1
+	return int(Data.num("orders.board", 3)) + int(state["chapter"]) - 1 + (2 if _feast(state) else 0)
+
+
+## The Saturnalia, when the town orders fish for its feasts.
+static func _feast(state: Dictionary) -> bool:
+	return "saturnalia" in Events.on(Clock.day_of(float(state["time"])))
 
 
 static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
@@ -29,8 +34,9 @@ static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
 		var catchable_alive: bool = f.get("live", false) and f["methods"].any(func(m): return m in ["line", "trap"])
 		var alive: bool = catchable_alive and Hold.well_room(state) + state["live_well"].size() > 0 and rng.randf() < 0.3
 		var worth := Catalog.value(fish, min_lb, 1.0)
-		state["orders"].append({"fish": fish, "min_pounds": min_lb, "alive": alive,
-			"reward": int(worth * (2.4 if alive else 1.8)) + 4, "reputation": clampi(11 - int(f["rarity"]), 1, 8),
+		var feast := _feast(state)
+		state["orders"].append({"fish": fish, "min_pounds": min_lb, "alive": alive, "feast": feast,
+			"reward": (int(worth * (2.4 if alive else 1.8)) + 4) * (2 if feast else 1), "reputation": clampi(11 - int(f["rarity"]), 1, 8),
 			"due": today + rng.randi_range(0, 2)})
 
 

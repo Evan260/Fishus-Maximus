@@ -87,9 +87,12 @@ static func take(state: Dictionary, tank: int) -> Dictionary:
 	if g == "":
 		return {}
 	var n := maxi(1, int(float(t["pounds"]) / float(Data.garum.get("pounds_per_amphora", 5))))
-	state["garum"][g] = int(state["garum"].get(g, 0)) + n
+	var had := int(state["garum"].get(g, 0))
+	var qualities: Dictionary = state["garum_quality"] if state.get("garum_quality") is Dictionary else {}
+	qualities[g] = (quality(state, g) * had + float(t["quality"]) * n) / float(had + n)
+	state["garum_quality"] = qualities
+	state["garum"][g] = had + n
 	state["stats"]["garum_" + g] = int(state["stats"].get("garum_" + g, 0)) + n
-	state["garum_quality"] = float(t["quality"])
 	t["fish"] = {}
 	t["pounds"] = 0.0
 	t["days"] = 0
@@ -105,7 +108,7 @@ static func price(grade_id: String, quality: float, export: bool) -> int:
 static func sell(state: Dictionary, grade_id: String, export: bool) -> int:
 	if int(state["garum"].get(grade_id, 0)) <= 0:
 		return 0
-	var paid := price(grade_id, float(state.get("garum_quality", 0.5)), export)
+	var paid := price(grade_id, quality(state, grade_id), export)
 	state["garum"][grade_id] = int(state["garum"][grade_id]) - 1
 	state["denarii"] = int(state["denarii"]) + paid
 	return paid
@@ -113,3 +116,9 @@ static func sell(state: Dictionary, grade_id: String, export: bool) -> int:
 
 static func export_day(day: int) -> bool:
 	return day > 0 and day % 7 == 0
+
+
+## How well the amphorae of a grade in store were made, on average.
+static func quality(state: Dictionary, grade_id: String) -> float:
+	var q = state.get("garum_quality", {})
+	return float(q.get(grade_id, 0.5)) if q is Dictionary else float(q)

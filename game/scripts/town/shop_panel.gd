@@ -31,7 +31,7 @@ static func market() -> void:
 
 static func netmaker() -> void:
 	var list := Ui.window("The netmaker", 320, 210)
-	Ui.label(list, "BAIT", "Heading")
+	Ui.label(list, "BAIT (box %d of %d)" % [Shop.bait_count(Game.state), Shop.bait_capacity(Game.state)], "Heading")
 	for id in Data.bait:
 		if Shop.on_sale(Game.state, id):
 			var b: Dictionary = Data.bait[id]
@@ -97,6 +97,8 @@ static func _buy_row(list: Control, id: String, text: String, reopen: Callable) 
 	Ui.row(list, text, "Buy", func():
 		if Shop.buy(Game.state, id):
 			Game.changed.emit()
+		elif Data.bait.has(id) and int(Game.state["denarii"]) >= Shop.price(id):
+			Toast.say("The bait box is full.")
 		else:
 			Toast.say("Not enough denarii.")
 		reopen.call(), int(Game.state["denarii"]) >= Shop.price(id))

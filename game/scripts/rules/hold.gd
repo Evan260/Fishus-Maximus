@@ -44,6 +44,16 @@ static func salt(state: Dictionary, index: int) -> void:
 	f["fresh"] = minf(float(f["fresh"]), Data.num("hold.salted", 0.6))
 
 
+## Lets go of one particular fish, wherever it now is in the hold or the well; says whether it was there.
+static func release_fish(state: Dictionary, fish: Dictionary) -> bool:
+	for list in [state["hold"], state["live_well"]]:
+		for i in list.size():
+			if is_same(list[i], fish):
+				list.remove_at(i)
+				return true
+	return false
+
+
 static func release(state: Dictionary, index: int, from_well := false) -> void:
 	var list: Array = state["live_well"] if from_well else state["hold"]
 	if index >= 0 and index < list.size():

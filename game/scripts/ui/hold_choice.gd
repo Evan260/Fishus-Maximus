@@ -18,9 +18,11 @@ static func ask(fish: Dictionary) -> void:
 		if shown >= 6:
 			break
 		var held: Dictionary = list[i]
-		var idx: int = i
+
 		Ui.button(col, "Let go a %s (%s lb)" % [Data.fish[held["fish"]]["name"].to_lower(), CatchCard.pounds_text(float(held["pounds"]))], func():
-			Hold.release(Game.state, idx, from_well)
+			if not Hold.release_fish(Game.state, held):
+				panel.queue_free()
+				return
 			Hold.add(Game.state, fish)
 			panel.queue_free())
 		shown += 1

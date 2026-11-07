@@ -4,6 +4,7 @@ class_name Helpers
 
 const HELP := {
 	"boy": {"name": "Tertius, the errand boy", "price": 60, "chapter": 1, "text": "Pulls your pots into the hold and stirs the garum tanks each morning."},
+	"feeder": {"name": "Lucilla, a pond keeper", "price": 120, "chapter": 2, "text": "Feeds every pond each morning."},
 	"fisherman": {"name": "A second fisherman", "price": 400, "chapter": 4, "text": "Fishes the harbour on his own all day while you are busy elsewhere."},
 }
 
@@ -17,14 +18,16 @@ static func hire(state: Dictionary, id: String) -> bool:
 	return true
 
 
-## The morning's work: the boy empties every pot with something in it and stirs every tank.
+## The morning's work: the boy empties the pots and stirs the tanks, and the pond keeper feeds the ponds.
 static func morning(state: Dictionary) -> void:
-	if not "boy" in state["helpers"]:
-		return
-	for t in state["traps"]:
-		Traps.empty_into(state, t)
-	for i in state["tanks"].size():
-		Garum.stir(state, i)
+	if "boy" in state["helpers"]:
+		for t in state["traps"]:
+			Traps.empty_into(state, t)
+		for i in state["tanks"].size():
+			Garum.stir(state, i)
+	if "feeder" in state["helpers"]:
+		for p in state["ponds"].size():
+			Ponds.feed(state, p)
 
 
 ## The second fisherman's catch over some minutes of the day, at the rate of fishing on one's own, into the hold.

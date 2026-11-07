@@ -43,14 +43,15 @@ static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
 	state["live_well"] = []
 	if died > 0:
 		state["_lost"] = died
+	var day := Clock.day_of(float(state["time"]))
+	state["weather"] = Weather.for_day(int(state["seed"]), day)
+	# The show judges the ponds as they stood last evening, before the night makes the fish hungry again.
+	if "pond_show" in Events.on(day) and not state["ponds"].is_empty():
+		state["_show"] = Ponds.show(state)
 	Orders.new_day(state, rng)
 	Helpers.morning(state)
 	Ponds.day(state, rng)
 	Garum.day(state)
-	var day := Clock.day_of(float(state["time"]))
-	state["weather"] = Weather.for_day(int(state["seed"]), day)
-	if "pond_show" in Events.on(day) and not state["ponds"].is_empty():
-		state["_show"] = Ponds.show(state)
 
 
 ## A legend that is caught in pots may wander into one baited with what it likes, while its hours last.
@@ -58,5 +59,12 @@ static func _trap_legend(state: Dictionary, trap: Dictionary, hours: float, hour
 	if trap["catch"].size() >= int(trap.get("size", 3)):
 		return
 	for id in Legends.here(str(trap["place"]), hour, season, str(state.get("weather", "clear")), state, "trap"):
-		if str(trap.get("bait", "")) in Data.fish[id]["baits"] and rng.randf() < 0.08 * hours 				and not trap["catch"].any(func(c): return c["fish"] == id):
+		if str(trap.get("bait", "")) in Data.fish[id]["baits"] and rng.randf() < 0.08 * hours \
+				and not state["traps"].any(func(t): return t["catch"].any(func(c): return c["fish"] == id)):
 			trap["catch"].append(Pick.catch_of(id, rng, true))
+
+
+## Goes to bed in town and wakes at the next dawn, with everything that happens overnight.
+static func sleep(state: Dictionary, rng: RandomNumberGenerator) -> void:
+	var t := float(state["time"])
+	advance(state, (Clock.day_of(t) + 1) * Clock.minutes_per_day() - t, rng)

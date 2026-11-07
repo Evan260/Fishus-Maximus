@@ -165,7 +165,7 @@ func _throw_net() -> void:
 	centre /= shoal.size()
 	var size := int(Data.gear.get(_net(), {}).get("size", 4))
 	var error := aim.distance_to(centre) / (NetView.RADIUS * 1.6) * (0.6 if "dolphins" in screen.swimmers.events else 1.0)
-	var n := Nets.throw(shoal.size(), {"size": size}, error, _rng)
+	var n := Nets.throw(shoal.size(), {"size": size}, error, _rng, screen.weather)
 	for i in n:
 		var f: Dictionary = shoal[i]
 		screen.swimmers.release(f, true)

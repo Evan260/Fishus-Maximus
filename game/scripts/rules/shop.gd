@@ -41,6 +41,8 @@ static func owned(state: Dictionary, id: String) -> bool:
 static func buy(state: Dictionary, id: String) -> bool:
 	if not on_sale(state, id) or owned(state, id) or int(state["denarii"]) < price(id):
 		return false
+	if Data.bait.has(id) and bait_count(state) + int(Data.bait[id]["per"]) > bait_capacity(state):
+		return false
 	state["denarii"] = int(state["denarii"]) - price(id)
 	if Data.bait.has(id):
 		state["bait"][id] = int(state["bait"].get(id, 0)) + int(Data.bait[id]["per"])
@@ -56,3 +58,15 @@ static func buy(state: Dictionary, id: String) -> bool:
 			_:
 				state["gear"][g["kind"]] = id
 	return true
+
+
+## How much bait the box holds: 30 at the start, more in a bigger box.
+static func bait_capacity(state: Dictionary) -> int:
+	return int(Data.gear.get(str(state["gear"].get("bait_box", "")), {}).get("capacity", 30))
+
+
+static func bait_count(state: Dictionary) -> int:
+	var n := 0
+	for b in state["bait"]:
+		n += int(state["bait"][b])
+	return n

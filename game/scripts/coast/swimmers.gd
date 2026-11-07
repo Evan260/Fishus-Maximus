@@ -29,6 +29,8 @@ var _spawn_left := 0.0
 var _textures := {}
 var _groups := 0
 var events: Array[String] = []
+## How far the lamp's light draws the night fish, by the lamp.
+var light_reach := 100.0
 ## Where the lamp's light falls at night, which the night fish swim up to; null when it is not lit.
 var light = null
 
@@ -145,7 +147,7 @@ func step(delta: float, bait, bait_id: String) -> void:
 				if f["state"] == "swim" and likes and away < NOTICE and _rng.randf() < 0.35:
 					f["state"] = "curious"
 					f["curious"] = CURIOUS_FOR
-				elif f["state"] == "curious" and _rng.randf() < Bite.chance(f["id"], bait_id, away):
+				elif f["state"] == "curious" and _rng.randf() < Bite.chance(f["id"], bait_id, away, weather):
 					f["state"] = "approach"
 					biting = true
 		keep.append(f)
@@ -186,7 +188,7 @@ func _move(f: Dictionary, delta: float, bait) -> void:
 			if "dolphins" in events and Data.fish[f["id"]].get("shoal", false):
 				f["goal_y"] = minf(f["goal_y"], 30.0)
 			f["pos"].y = move_toward(f["pos"].y, f["goal_y"], 4.0 * delta) + sin(t * 1.3 + f["phase"]) * 0.08
-			if light != null and "trident" in Data.fish[f["id"]]["methods"] and f["pos"].distance_to(light) < 160.0:
+			if light != null and "trident" in Data.fish[f["id"]]["methods"] and f["pos"].distance_to(light) < light_reach:
 				var near: Vector2 = light + Vector2(sin(t * 0.5 + f["phase"]) * 30.0, cos(t * 0.4 + f["phase"]) * 14.0)
 				f["pos"] = f["pos"].move_toward(near, f["speed"] * 0.6 * delta)
 				f["heading"] = signf(near.x - f["pos"].x) if absf(near.x - f["pos"].x) > 3.0 else f["heading"]

@@ -14,6 +14,16 @@ var _announced := false
 
 func setup(s: Node) -> void:
 	screen = s
+	screen.caught.connect(_on_caught)
+	refresh()
+
+
+## Sets out the day's events at this place: on arrival, and again each morning while the boat stays out.
+func refresh() -> void:
+	_dolphins.clear()
+	if is_instance_valid(_haul_button):
+		_haul_button.queue_free()
+	_announced = false
 	var day := Clock.day_of(float(Game.state["time"]))
 	var events := Events.on(day)
 	if "dolphins" in events and screen.place_id in ["open_bay", "capri", "misenum"]:
@@ -26,7 +36,6 @@ func setup(s: Node) -> void:
 		Game.state["contest"] = Game.state.get("contest", {"day": day, "best": 0.0, "fish": "", "done": false})
 		if int(Game.state["contest"]["day"]) != day:
 			Game.state["contest"] = {"day": day, "best": 0.0, "fish": "", "done": false}
-	screen.caught.connect(_on_caught)
 
 
 func _announce() -> void:

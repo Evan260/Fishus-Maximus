@@ -30,6 +30,7 @@ var charge := -1.0
 var _click := false
 var _mouse_held := false
 var _weather_check := 0.0
+var _day := -1
 ## The fish nibbling at the hook while the strike window is open, and how long is left to strike.
 var biter := {}
 var bite_left := 0.0
@@ -416,6 +417,11 @@ func _process(delta: float) -> void:
 	methods.tick(delta)
 	_update_swimmer_world()
 	swimmers.light = methods.trident_view.light_at() if methods.trident_view.lit else null
+	swimmers.light_reach = Trident.reach(str(Game.state["gear"].get("lamp", "")))
+	var today := Clock.day_of(float(Game.state.get("time", 0.0)))
+	if today != _day:
+		_day = today
+		events.refresh()
 	swimmers.step(delta, hook if hook_baited() else null, bait())
 	_weather_check -= delta
 	if _weather_check <= 0.0 and not Dev.has("weather"):
