@@ -111,8 +111,7 @@ func _add_fish(x: float) -> void:
 	var path := "res://assets/art/fish/%s.png" % id
 	if not ResourceLoader.exists(path):
 		return
-	var s := Sprite2D.new()
-	s.texture = load(path)
+	var s := Swimmers.sprite_for(id, load(path))
 	var dir := 1.0 if randf() < 0.5 else -1.0
 	s.flip_h = dir < 0.0
 	var water := float(_info["waterline"]) - float(_info["pad"])
@@ -121,7 +120,7 @@ func _add_fish(x: float) -> void:
 	s.scale = Vector2.ONE * randf_range(0.6, 0.85)
 	_stage.add_child(s)
 	_painter.move_to_front()
-	_fish.append({"node": s, "x": x, "y": y, "dir": dir, "speed": randf_range(6.0, 14.0), "phase": randf() * TAU})
+	_fish.append({"node": s, "x": x, "y": y, "dir": dir, "speed": randf_range(6.0, 14.0), "phase": randf() * TAU, "swim": randf() * TAU})
 
 
 func _process(delta: float) -> void:
@@ -138,8 +137,10 @@ func _process(delta: float) -> void:
 		node.position = Vector2(c["x"], c["y"] + c["lift"] * sin(_time * TAU / c["period"] + c["phase"]))
 	for f in _fish:
 		f["x"] += f["dir"] * f["speed"] * delta
+		f["swim"] += delta * (3.0 + f["speed"] * 0.5)
 		var node: Sprite2D = f["node"]
-		node.position = Vector2(roundf(f["x"]), roundf(f["y"] + sin(_time * 1.3 + f["phase"]) * 1.5))
+		node.position = Vector2(f["x"], f["y"] + sin(_time * 1.3 + f["phase"]) * 1.5)
+		Pixels.set_swim(node, f["swim"])
 		if f["x"] < -40.0 or f["x"] > 520.0:
 			f["dir"] = -f["dir"]
 			node.flip_h = f["dir"] < 0.0
@@ -166,11 +167,11 @@ func _draw_life() -> void:
 		var x := fposmod(i * 37.0 + _time * (5.0 + i % 3 * 2.0), 480.0)
 		_painter.draw_rect(Rect2(roundf(x), water + (i % 2), 3 + i % 3, 1), Color(1.0, 0.93, 0.85, 0.45))
 	for b in _bubbles:
-		var p: Vector2 = b["pos"].round()
+		var p: Vector2 = b["pos"]
 		if b["r"] < 1.2:
 			_painter.draw_rect(Rect2(p, Vector2.ONE), Color(0.9, 1.0, 1.0, 0.75))
 		else:
-			_painter.draw_arc(p, b["r"], 0.0, TAU, 8, Color(0.9, 1.0, 1.0, 0.7), 1.0)
+			Pixels.ring(_painter, p, b["r"], Color(0.9, 1.0, 1.0, 0.7))
 
 
 func _show_menu() -> void:

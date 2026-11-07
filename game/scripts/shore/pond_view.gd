@@ -20,7 +20,7 @@ func _ready() -> void:
 	# Textures are loaded ahead of drawing; one first loaded inside a draw call shows as a blank square.
 	for feature in PROPS:
 		if ResourceLoader.exists(PROPS[feature][0]):
-			_props[feature] = load(PROPS[feature][0])
+			_props[feature] = Pixels.shrunk(load(PROPS[feature][0]), PROPS[feature][1])
 
 
 func pond() -> Dictionary:
@@ -44,6 +44,8 @@ func sync() -> void:
 		var s: Sprite2D = _fish[i]["sprite"]
 		var path := "res://assets/art/fish/%s.png" % f["fish"]
 		s.texture = load(path) if ResourceLoader.exists(path) else null
+		if s.texture:
+			s.material = Pixels.look(maxf(0.0, Swimmers.wave_for(f["fish"], s.texture) - 1.0))
 		s.scale = Vector2.ONE * (0.45 + 0.35 * Catalog.share(f["fish"], float(f["pounds"])))
 		_fish[i]["data"] = f
 
@@ -62,7 +64,9 @@ func _process(delta: float) -> void:
 				one["dir"] = -one["dir"]
 			one["pos"].y += sin(_time * 1.2 + one["phase"]) * 0.05
 		s.flip_h = one["dir"] < 0.0
-		s.position = one["pos"].round()
+		s.position = one["pos"]
+		one["swim"] = float(one.get("swim", one["phase"])) + delta * 6.0
+		Pixels.set_swim(s, one["swim"])
 	queue_redraw()
 
 
@@ -78,16 +82,15 @@ func _draw() -> void:
 	for feature in p["features"]:
 		if _props.has(feature):
 			var tex: Texture2D = _props[feature]
-			var sc: float = PROPS[feature][1]
-			var size := tex.get_size() * sc
-			var x: float = PROPS[feature][2] * (SIZE.x - size.x)
-			draw_texture_rect(tex, Rect2(Vector2(x, SIZE.y - 12 - size.y), size), false)
+			var size := tex.get_size()
+			var x: float = roundf(PROPS[feature][2] * (SIZE.x - size.x))
+			draw_texture(tex, Vector2(x, SIZE.y - 12 - size.y))
 	if "channel" in p["features"]:
 		for i in 5:
 			var bx := fposmod(_time * 14.0 + i * 13.0, SIZE.x)
 			draw_rect(Rect2(bx, 3 + (i % 2), 2, 1), Color(1, 1, 1, 0.5))
 	if "tunnel" in p["features"]:
-		draw_circle(Vector2(SIZE.x - 2, SIZE.y - 30), 9.0, Color(0.03, 0.08, 0.12, 0.9))
+		Pixels.disc(self, Vector2(SIZE.x - 2, SIZE.y - 30), 9.0, Color(0.03, 0.08, 0.12, 0.9))
 	for i in 5:
 		var gx := fposmod(i * 17.0 + _time * 4.0, SIZE.x)
 		draw_rect(Rect2(gx, 1, 4, 1), Color(1.0, 0.95, 0.8, 0.5))
