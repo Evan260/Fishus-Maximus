@@ -68,6 +68,7 @@ static func build() -> Theme:
 	t.set_color("font_color", "MutedLabel", MUTED)
 	t.set_color("font_color", "LineEdit", INK)
 	t.set_color("caret_color", "LineEdit", INK)
+	t.set_color("font_placeholder_color", "LineEdit", MUTED)
 	t.set_stylebox("normal", "LineEdit", _box(CREAM, WOOD, 3))
 	t.set_stylebox("focus", "LineEdit", _box(CREAM, GOLD, 3))
 	_check_box(t)
