@@ -6,11 +6,14 @@ extends Node2D
 var texture: Texture2D
 
 
-func _init(tex: Texture2D) -> void:
+## With `around_only` the middle copy is left out, for a picture that is drawn on its own over the backdrop.
+func _init(tex: Texture2D, around_only := false) -> void:
 	texture = tex
 	var size := tex.get_size()
 	for dy in [-1, 0, 1]:
 		for dx in [-1, 0, 1]:
+			if around_only and dx == 0 and dy == 0:
+				continue
 			var s := Sprite2D.new()
 			s.texture = tex
 			s.centered = false

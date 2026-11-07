@@ -1,6 +1,6 @@
 extends Node2D
-## The title: the harbour at sunset, alive, with Continue, New game, Load, Settings and Quit. Clouds drift behind the
-## land, the palms and the weed sway, the sun glitters on the sea, fish swim and bubbles rise.
+## The title: the harbour at sunset, alive, with Continue, New game, Load, Settings and Quit. A few clouds drift slowly
+## behind the land, the palms and the weed sway, the sun glitters on the sea, fish swim and bubbles rise.
 
 const ART := "res://assets/art/title/"
 const SWAY := """
@@ -12,10 +12,26 @@ void fragment() {
 	COLOR = texture(TEXTURE, UV - vec2(off * TEXTURE_PIXEL_SIZE.x, 0.0));
 }
 """
+## Keeps each pixel of a cloud a crisp block while the cloud drifts by fractions of a game pixel, as in Farmus Maximus.
+const CRISP := """
+shader_type canvas_item;
+void fragment() {
+	vec2 size = vec2(textureSize(TEXTURE, 0));
+	vec2 texel = UV * size;
+	vec2 seam = floor(texel + 0.5);
+	vec2 width = max(fwidth(texel), vec2(0.0001));
+	texel = seam + clamp((texel - seam) / width, -0.5, 0.5);
+	COLOR = texture(TEXTURE, texel / size);
+}
+"""
 const FISH := ["mullet", "bream", "white_bream", "salema", "parrotfish", "wrasse", "golden_mullet", "red_porgy"]
 
 var _stage: Node2D
+## The sky and its clouds, drawn behind the game at the window's own resolution.
+var _sky_stage: Node2D
 var _menu: VBoxContainer
+var _heading: Label
+var _sub: Label
 var _info := {"waterline": 164, "pad": 40, "horizon": 126}
 var _clouds: Array = []
 var _fish: Array = []
@@ -30,23 +46,29 @@ func enter(_args: Dictionary) -> void:
 	_stage = Node2D.new()
 	add_child(_stage)
 	var pad := float(_info["pad"])
-	var around := Backdrop.new(load(ART + "base.png"))
+	_sky_stage = Node2D.new()
+	Nav.sky.add_child(_sky_stage)
+	var sky := Backdrop.new(load(ART + "sky.png"))
+	sky.position = Vector2(0, -pad)
+	_sky_stage.add_child(sky)
+	var crisp := ShaderMaterial.new()
+	crisp.shader = Shader.new()
+	crisp.shader.code = CRISP
+	var clouds: Array = _info.get("clouds", [])
+	for i in clouds.size():
+		var c := Sprite2D.new()
+		c.texture = load(ART + str(clouds[i]["file"]))
+		c.centered = false
+		c.material = crisp
+		c.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		_sky_stage.add_child(c)
+		var y := float(clouds[i]["y"]) - pad
+		# Higher clouds are nearer and drift faster, and each rises and sinks a little over a minute or two.
+		_clouds.append({"node": c, "x": float(clouds[i]["x"]), "y": y, "speed": lerpf(1.3, 0.45, clampf(y / 60.0, 0.0, 1.0)),
+			"lift": 1.0 + i % 3 * 0.6, "period": 70.0 + i * 23.0, "phase": i * 1.9})
+	var around := Backdrop.new(load(ART + "land.png"), true)
 	around.position = Vector2(0, -pad)
 	_stage.add_child(around)
-	var sky := Sprite2D.new()
-	sky.texture = load(ART + "sky.png")
-	sky.centered = false
-	sky.position = Vector2(0, -pad)
-	_stage.add_child(sky)
-	var cloud_tex: Texture2D = load("res://assets/art/places/common/clouds.png")
-	for i in 2:
-		var c := Sprite2D.new()
-		c.texture = cloud_tex
-		c.centered = false
-		c.modulate = Color(1.0, 0.82, 0.78, 0.55 - i * 0.15)
-		c.scale = Vector2.ONE * (1.0 - i * 0.3)
-		_stage.add_child(c)
-		_clouds.append({"node": c, "x": -i * 300.0, "y": -pad + 6.0 + i * 26.0, "speed": 3.0 - i * 1.2})
 	var land := Sprite2D.new()
 	land.texture = load(ART + "land.png")
 	land.centered = false
@@ -69,9 +91,19 @@ func enter(_args: Dictionary) -> void:
 	_show_menu()
 
 
+func _exit_tree() -> void:
+	if is_instance_valid(_sky_stage):
+		_sky_stage.queue_free()
+
+
 func _place() -> void:
 	if is_instance_valid(_stage):
 		_stage.position = Nav.offset()
+		_sky_stage.position = Nav.offset()
+	if is_instance_valid(_menu):
+		Ui.hang(_heading, "top", Vector2(0, 26 + Nav.offset().y), Vector2(480, 20))
+		Ui.hang(_sub, "top", Vector2(0, 46 + Nav.offset().y), Vector2(480, 14))
+		Ui.hang(_menu, "top", Vector2(0, 120 + Nav.offset().y), Vector2(100, 0))
 
 
 func _add_fish(x: float) -> void:
@@ -94,11 +126,16 @@ func _add_fish(x: float) -> void:
 
 func _process(delta: float) -> void:
 	_time += delta
+	# A cloud goes round only once it is wholly out of view, so none is ever seen cut off at the edge.
+	var left := -_stage.position.x
+	var right := Nav.view().x - _stage.position.x
 	for c in _clouds:
 		var node: Sprite2D = c["node"]
-		var w: float = node.texture.get_width() * node.scale.x
-		c["x"] = fposmod(c["x"] + c["speed"] * delta + w, 480.0 + w) - w
-		node.position = Vector2(roundf(c["x"]), c["y"])
+		var w := float(node.texture.get_width())
+		c["x"] += c["speed"] * delta
+		if c["x"] > right:
+			c["x"] = left - w - fmod(c["x"] - right, 40.0)
+		node.position = Vector2(c["x"], c["y"] + c["lift"] * sin(_time * TAU / c["period"] + c["phase"]))
 	for f in _fish:
 		f["x"] += f["dir"] * f["speed"] * delta
 		var node: Sprite2D = f["node"]
@@ -139,16 +176,14 @@ func _draw_life() -> void:
 func _show_menu() -> void:
 	for c in Nav.ui.get_children():
 		c.queue_free()
-	var title := Ui.label(Nav.ui, "FISHUS MAXIMUS", "Title")
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_color_override("font_outline_color", UiTheme.INK)
-	title.add_theme_constant_override("outline_size", 4)
-	Ui.hang(title, "top", Vector2(0, 26 + Nav.offset().y), Vector2(480, 20))
-	var sub := Ui.label(Nav.ui, "A fishing life on the Bay of Naples, AD 72", "LightLabel")
-	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sub.add_theme_color_override("font_outline_color", UiTheme.INK)
-	sub.add_theme_constant_override("outline_size", 2)
-	Ui.hang(sub, "top", Vector2(0, 46 + Nav.offset().y), Vector2(480, 14))
+	_heading = Ui.label(Nav.ui, "FISHUS MAXIMUS", "Title")
+	_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_heading.add_theme_color_override("font_outline_color", UiTheme.INK)
+	_heading.add_theme_constant_override("outline_size", 4)
+	_sub = Ui.label(Nav.ui, "A fishing life on the Bay of Naples, AD 72", "LightLabel")
+	_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_sub.add_theme_color_override("font_outline_color", UiTheme.INK)
+	_sub.add_theme_constant_override("outline_size", 2)
 	_menu = VBoxContainer.new()
 	_menu.custom_minimum_size = Vector2(100, 0)
 	_menu.add_theme_constant_override("separation", 4)
@@ -161,7 +196,7 @@ func _show_menu() -> void:
 		Ui.button(_menu, "Load", _load)
 	Ui.button(_menu, "Settings", func(): SettingsPanel.open())
 	Ui.button(_menu, "Quit", func(): get_tree().quit())
-	Ui.hang(_menu, "top", Vector2(0, 120 + Nav.offset().y), Vector2(100, 0))
+	_place()
 
 
 ## The slot played most recently, or 0 when there are no saves.
