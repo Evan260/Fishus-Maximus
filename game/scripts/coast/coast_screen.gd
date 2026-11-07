@@ -412,6 +412,7 @@ func relayout() -> void:
 		_water.rays = 0.3
 	else:
 		_water.rays = 1.0
+	_layers.rough = 1.8 if weather in ["rain", "storm"] else 1.0
 	_lit.modulate = Color(light, 1.0)
 	_ground.queue_redraw()
 	_line.queue_redraw()
