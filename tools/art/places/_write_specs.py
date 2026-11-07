@@ -8,6 +8,9 @@ LOW_ENDS = "low at the far left and far right ends"
 FAR = "faded by distance and haze, flat straight bottom edge, nothing below the mountains"
 WHOLE = "a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene"
 FLOOR = "seamless flat even texture filling the whole picture, seen from the side"
+# A piece of the harbour town, so land painted to match it shares the town's palette, light and soft natural rock.
+LIKE_TOWN = "tools/art/places/style_land.png"
+ROCK = "natural weathered rock with soft rounded shading and no outlines, empty transparent background"
 
 
 def bands(far, mid, near=None):
@@ -28,9 +31,14 @@ def mid(prompts, w):
             "land": True, "haze": ["#a9bcc4", 0.18], "at": [-16, 38], "factor": [0.3, 0.3], "z": -16}
 
 
-def near(prompts, w, h=112):
-    return {"file": "near.png", "strip": [{"prompt": f"{p}, {LOW_ENDS}, {LAND}", "size": f"{w}x{h}"} for p in prompts],
-            "land": True, "at": [-16, 136 - h + 2], "factor": [0.55, 0.55], "z": -14}
+def near(prompts, w, h=112, style=None, gap=0):
+    out = {"file": "near.png", "strip": [{"prompt": f"{p}, {LOW_ENDS}, {LAND}", "size": f"{w}x{h}"} for p in prompts],
+           "land": True, "at": [-16, 136 - h + 2], "factor": [0.55, 0.55], "z": -14}
+    if style:
+        out["style"] = style
+    if gap:
+        out["gap"] = gap
+    return out
 
 
 def floor(prompt):
@@ -72,7 +80,8 @@ specs[p] = {
         {"file": "far.png", "use": "coast/far.png", "at": [-40, 36], "factor": [0.12, 0.12], "z": -18},
         {"file": "mid.png", "use": "coast/mid.png", "at": [0, 38], "factor": [0.3, 0.3], "z": -16},
         {"file": "town.png", "from": "coast/town.png", "land": True, "at": [-190, 28], "factor": [0.55, 0.55], "z": -14},
-        {"file": "cape.png", "from": "coast/cape.png", "land": True, "at": [700, 38], "factor": [0.55, 0.55], "z": -14},
+        {"file": "cape.png", "prompt": f"a green headland seen from the sea with pale golden limestone cliffs down to the water, grass and scrub on top, two umbrella pines and a small round ancient Roman stone watchtower, {LOW_ENDS}, {LAND}, {ROCK}",
+         "size": "256x100", "style": LIKE_TOWN, "land": True, "at": [700, 38], "factor": [0.55, 0.55], "z": -14},
         deep([300, 420]),
     ] + bed(p, "seagrass.png", "a wide clump of tall green Posidonia seagrass ribbons growing up from the sand", "96x48", [250, 560, 830, 1120])
       + bed(p, "tuft.png", "a small tuft of short green seagrass with a few pale stones on the sand", "64x40", [420, 700, 980])
@@ -81,9 +90,7 @@ specs[p] = {
       + bed(p, "anchor.png", "an old Roman anchor with a lead stock and a wooden shank lying on the sand, encrusted with weed", "64x48", [940])
       + bed(p, "reef.png", "a big natural rough rounded sea rock with an irregular lumpy outline, covered in red sea fans, orange sponges and green weed", "160x112", [1150], sink=10)
       + bed(p, "boulders.png", "a few big rounded boulders with brown seaweed in dim light, sitting on the sand", "128x64", [1320, 60], sink=8)
-      + [{"file": "jetty.png", "use": "places/harbour/jetty.png", "world": [0, -58], "z": -9, "through": True},
-         {"file": "amphorae.png", "use": "props/amphorae.png", "world": [22, -44], "z": -7},
-         {"file": "bollard.png", "use": "props/bollard.png", "world": [64, -44], "z": -7}],
+      + [{"file": "jetty.png", "use": "places/harbour/jetty.png", "world": [0, -22], "z": -9, "through": True}],
 
 }
 
@@ -96,9 +103,11 @@ specs[p] = {
         far("distant mountains across the bay of Naples, the green cone of Mount Vesuvius in the middle, low hills on both sides", 704),
         mid(["a row of green coastal hills at a middle distance with umbrella pines, olive groves and a few small white Roman farmhouses",
              "a row of rocky wooded headlands at a middle distance with pines and scrub"], 480),
-        near(["tall golden limestone sea cliffs with dark cave mouths at the waterline, scrub and umbrella pines on top",
-              "a rocky headland of grey and golden rock with a small ancient Roman stone watchtower and pines",
-              "rugged sea cliffs with a deep cave at the waterline and wild fig trees"], 448),
+        near([f"tall pale golden limestone sea cliffs with a dark cave mouth at the waterline, green scrub and umbrella pines on top, {ROCK}",
+              f"a rocky headland of weathered pale golden and grey limestone with a small round ancient Roman stone watchtower and pines on top, {ROCK}",
+              f"rugged pale limestone sea cliffs with a deep cave at the waterline and wild fig trees growing from the rock, {ROCK}",
+              f"a low rocky point of pale limestone with green scrub, a few pines and a small stone fisherman's hut, {ROCK}"],
+             256, style=LIKE_TOWN, gap=96),
         deep([200, 470]),
     ] + bed(p, "rock.png", "an underwater rock with ledges covered in green and brown seaweed, red sea fans and orange sponges, rounded on both sides, sitting on the sand", "160x96", [300, 1100], sink=10)
       + bed(p, "boulders.png", "a pile of big rounded underwater boulders with sea urchins and anemones, sitting on the sand", "128x80", [640, 1620], sink=8)

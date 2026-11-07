@@ -145,16 +145,20 @@
    "file": "near.png",
    "strip": [
     {
-     "prompt": "tall golden limestone sea cliffs with dark cave mouths at the waterline, scrub and umbrella pines on top, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "448x112"
+     "prompt": "tall pale golden limestone sea cliffs with a dark cave mouth at the waterline, green scrub and umbrella pines on top, natural weathered rock with soft rounded shading and no outlines, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x112"
     },
     {
-     "prompt": "a rocky headland of grey and golden rock with a small ancient Roman stone watchtower and pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "448x112"
+     "prompt": "a rocky headland of weathered pale golden and grey limestone with a small round ancient Roman stone watchtower and pines on top, natural weathered rock with soft rounded shading and no outlines, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x112"
     },
     {
-     "prompt": "rugged sea cliffs with a deep cave at the waterline and wild fig trees, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "448x112"
+     "prompt": "rugged pale limestone sea cliffs with a deep cave at the waterline and wild fig trees growing from the rock, natural weathered rock with soft rounded shading and no outlines, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x112"
+    },
+    {
+     "prompt": "a low rocky point of pale limestone with green scrub, a few pines and a small stone fisherman's hut, natural weathered rock with soft rounded shading and no outlines, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x112"
     }
    ],
    "land": true,
@@ -167,6 +171,8 @@
     0.55
    ],
    "z": -14,
+   "style": "tools/art/places/style_land.png",
+   "gap": 96,
    "shore": {
     "rocks": 4,
     "plain": 1

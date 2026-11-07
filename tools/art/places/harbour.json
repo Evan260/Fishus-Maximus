@@ -139,7 +139,9 @@
   },
   {
    "file": "cape.png",
-   "from": "coast/cape.png",
+   "prompt": "a green headland seen from the sea with pale golden limestone cliffs down to the water, grass and scrub on top, two umbrella pines and a small round ancient Roman stone watchtower, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water, natural weathered rock with soft rounded shading and no outlines, empty transparent background",
+   "size": "256x100",
+   "style": "tools/art/places/style_land.png",
    "land": true,
    "at": [
     700,
@@ -285,28 +287,10 @@
    "use": "places/harbour/jetty.png",
    "world": [
     0,
-    -58
+    -22
    ],
    "z": -9,
    "through": true
-  },
-  {
-   "file": "amphorae.png",
-   "use": "props/amphorae.png",
-   "world": [
-    22,
-    -44
-   ],
-   "z": -7
-  },
-  {
-   "file": "bollard.png",
-   "use": "props/bollard.png",
-   "world": [
-    64,
-    -44
-   ],
-   "z": -7
   }
  ]
 }

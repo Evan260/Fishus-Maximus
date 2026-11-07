@@ -24,9 +24,7 @@
 			{"file": "places/harbour/reef.png", "z": -9, "world": [1150, 177]},
 			{"file": "places/harbour/boulders.png", "z": -9, "world": [1320, 245]},
 			{"file": "places/harbour/boulders.png", "z": -9, "mirror": true, "world": [60, 18]},
-			{"file": "places/harbour/jetty.png", "world": [0, -58], "z": -9, "through": true},
-			{"file": "props/amphorae.png", "world": [22, -44], "z": -7},
-			{"file": "props/bollard.png", "world": [64, -44], "z": -7}
+			{"file": "places/harbour/jetty.png", "world": [0, -22], "z": -9, "through": true}
 		]
 	},
 	{"id": "rocky_shore", "name": "The rocky shore", "boat": "skiff", "width": 1920, "depth": 420, "travel_minutes": 60, "order": 2, "text": "Cliffs and reefs north of the town, full of caves.", "spots": {"wreck": 1380}, "floor": {"file": "places/rocky_shore/floor.png", "surface": 6}, "ground_below": 40, "map": [282, 192],

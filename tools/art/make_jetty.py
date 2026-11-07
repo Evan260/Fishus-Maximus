@@ -9,10 +9,10 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "game" / "assets" / "art" / "props" / "jetty.png"
 OUT = ROOT / "game" / "assets" / "art" / "places" / "harbour" / "jetty.png"
-# The last painted row of the posts above their pale painted ends, and how many rows above it are post alone.
-CUT = 97
-GRAIN = 30
-HEIGHT = 160
+# The last painted row of the posts above their painted ends, and how many rows above it are the weedy foot of the post.
+CUT = 55
+GRAIN = 14
+HEIGHT = 126
 
 
 def main():

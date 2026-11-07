@@ -5,7 +5,10 @@ Each layer in a spec is one of:
   {"file", "use": "coast/far.png", ...}            a picture already painted
   {"file", "prompt", "size", ...}                  one picture
   {"file", "strip": [{"prompt", "size"}, ...], "seam": text, ...}
-                                                   pieces joined side by side, each join repainted across
+                                                   pieces joined side by side, each join repainted across, or
+                                                   for land, set "gap" pixels of sea apart
+A picture or strip with "style": path is painted to match that picture, which keeps it in the look of the land
+painted before it far better than words alone.
   {"file", "from": "coast/cape.png", "extend": {"left": text}, ...}
                                                    a copy of a picture, its cut sides painted on outwards
   {"on_bed": x, "sink": n, ...}                    a seabed piece whose bottom is set into the sand at x
@@ -69,12 +72,19 @@ def boxed(path: Path) -> bool:
     return a.mean() > 0.8 or max(a[:, 0].sum(), a[:, -1].sum()) > 0.6 * a.shape[0] or a[0].sum() > 0.6 * a.shape[1]
 
 
-def paint(out: Path, prompt: str, size: str, clear: bool, alone: bool = False):
+LIKE = "match this picture's palette, soft shading, warm light and pixel style exactly, with no outlines"
+
+
+def paint(out: Path, prompt: str, size: str, clear: bool, alone: bool = False, style: str = None):
     if out.exists():
         return True
     out.parent.mkdir(parents=True, exist_ok=True)
-    args = ["pixen", f"{prompt}, {STYLE}", size, "--out", str(out.relative_to(ROOT)), "--raw", "--view", "side",
-            "--outline", "lineless", "--detail", "highly detailed"]
+    if style:
+        args = ["proflash", f"{prompt}, {STYLE}", size, "--out", str(out.relative_to(ROOT)), "--style", style,
+                "--style-use", LIKE]
+    else:
+        args = ["pixen", f"{prompt}, {STYLE}", size, "--out", str(out.relative_to(ROOT)), "--raw", "--view", "side",
+                "--outline", "lineless", "--detail", "highly detailed"]
     if clear:
         args.append("--transparent")
     for attempt in range(3):
@@ -181,7 +191,11 @@ def finish_land(pid, layer, path: Path):
     mark = PARTS / pid / f"{path.stem}.finished"
     if mark.exists() or not path.exists():
         return
-    Image.fromarray(fade_top(taper_ends(np.array(Image.open(path).convert("RGBA"))))).save(path)
+    arr = np.array(Image.open(path).convert("RGBA"))
+    # A strip of land set apart by sea is tapered piece by piece, since its ends would be cut back to the first gap.
+    if not layer.get("gap"):
+        arr = taper_ends(arr)
+    Image.fromarray(fade_top(arr)).save(path)
     if "haze" in layer:
         haze(path, layer["haze"][0], float(layer["haze"][1]))
     mark.parent.mkdir(parents=True, exist_ok=True)
@@ -212,22 +226,26 @@ def make_strip(pid, layer, out: Path, clear: bool):
     if out.exists():
         return True
     pieces = []
+    h = 0
     for i, piece in enumerate(layer["strip"]):
         part = PARTS / pid / f"{out.stem}_{i}.png"
-        if not paint(part, piece["prompt"], piece["size"], clear):
+        if not paint(part, piece["prompt"], piece["size"], clear, style=layer.get("style")):
             return False
         im = Image.open(part).convert("RGBA")
+        h = max(h, im.height)
         if layer.get("land"):
+            # Land painted above clear rows is set down onto the picture's bottom, where it meets the sea.
+            im = im.crop((0, 0, im.width, (im.getbbox() or (0, 0, 0, im.height))[3]))
             im = Image.fromarray(taper_ends(np.array(im)))
         pieces.append(im)
-    w = sum(p.width for p in pieces)
-    h = max(p.height for p in pieces)
+    gap = int(layer.get("gap", 0))
+    w = sum(p.width for p in pieces) + gap * (len(pieces) - 1)
     joined = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     x = 0
     joins = []
     for p in pieces:
         joined.paste(p, (x, h - p.height))
-        x += p.width
+        x += p.width + gap
         joins.append(x)
     work = PARTS / pid / f"{out.stem}_joined.png"
     joined.save(work)
@@ -343,12 +361,12 @@ def build(pid, place_only=False):
                 elif "strip" in layer:
                     make_strip(pid, layer, path, clear)
                 elif "prompt" in layer:
-                    paint(path, layer["prompt"], layer["size"], clear, alone="on_bed" in layer)
+                    paint(path, layer["prompt"], layer["size"], clear, alone="on_bed" in layer, style=layer.get("style"))
         if layer.get("land") and not place_only:
             finish_land(pid, layer, ART / rel)
         if "shore" in layer and not place_only:
             shore_land(pid, layer, ART / rel)
-        for k in ("prompt", "size", "strip", "seam", "wrap", "from", "extend", "land", "haze", "shore"):
+        for k in ("prompt", "size", "strip", "seam", "wrap", "from", "extend", "land", "haze", "shore", "style", "gap"):
             layer.pop(k, None)
         layer["file"] = rel
         pads = PARTS / pid / (Path(rel).stem + ".pads.json")
