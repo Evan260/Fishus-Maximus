@@ -63,3 +63,18 @@ func test_a_window_between_whole_sizes_is_covered_to_its_edges() -> void:
 	check(frame.position.x + Nav.view().x * Nav.zoom >= 2404 and frame.position.y + Nav.view().y * Nav.zoom >= 1503, "and reaches past its bottom right")
 	win.size = before
 	Windowing._process(0.0)
+
+
+func test_the_dog_is_drawn_at_its_painted_size() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "hound")
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": "harbour"})
+	s.dog._process(0.0)
+	check(s.dog.scale.abs() == Vector2.ONE, "the dog is to scale beside the fisherman, not shrunk to %s" % s.dog.scale)
+	check(s.dog.rect().size.y >= 30.0, "and can be petted anywhere on it")
+	for c in Nav.ui.get_children():
+		c.free()
+	s.free()

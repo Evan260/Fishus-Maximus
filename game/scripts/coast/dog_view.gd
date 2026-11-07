@@ -3,8 +3,6 @@ extends Node2D
 ## The dog in the boat: it sits, barks at a bite, wags when a shoal passes below or when petted, and naps while the
 ## fisherman fishes on his own.
 
-const SCALE := 0.5
-
 var screen: Node
 var mood := "sit"
 var _frames := {}
@@ -37,7 +35,7 @@ func pet() -> void:
 
 ## Where the dog is on screen, for petting it with a click.
 func rect() -> Rect2:
-	return Rect2(position + Vector2(-12, -22), Vector2(24, 24))
+	return Rect2(position + Vector2(-18, -40), Vector2(36, 42))
 
 
 func _process(delta: float) -> void:
@@ -52,7 +50,7 @@ func _process(delta: float) -> void:
 		mood = "sit_east"
 	var facing: float = screen.facing()
 	position = (screen.boat_screen_position() + screen.dog_seat()).round()
-	scale = Vector2(SCALE * (1.0 if facing > 0.0 else -1.0), SCALE)
+	scale = Vector2(1.0 if facing > 0.0 else -1.0, 1.0)
 	queue_redraw()
 
 
@@ -63,6 +61,4 @@ func _draw() -> void:
 	var tex: Texture2D = frames[int(_t * 8.0) % frames.size()]
 	draw_texture(tex, -Vector2(tex.get_width() / 2.0, tex.get_height() - 8.0))
 	if _bark_left > 0.0:
-		draw_set_transform(Vector2(0, -50), 0.0, Vector2(1.0 / SCALE, 1.0 / SCALE))
-		draw_string(UiTheme.title_font(), Vector2(-4, 0), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
-		draw_set_transform(Vector2.ZERO)
+		draw_string(UiTheme.title_font(), Vector2(-2, -44), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
