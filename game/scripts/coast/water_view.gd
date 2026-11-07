@@ -43,4 +43,4 @@ static func draw_surface(node: CanvasItem, cam: Vector2, time: float) -> void:
 		return
 	for i in 40:
 		var x := fposmod(i * 37.0 - cam.x + time * (6.0 + i % 3 * 2.0), view.x)
-		node.draw_rect(Rect2(roundf(x), surface + (i % 2), 3 + i % 3, 1), Color(1.0, 0.93, 0.8, 0.5))
+		node.draw_rect(Rect2(x, surface + (i % 2), 3 + i % 3, 1), Color(1.0, 0.93, 0.8, 0.5))

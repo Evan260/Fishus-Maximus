@@ -172,7 +172,7 @@ func _turned() -> bool:
 ## The top left of his picture in the world, for a boat whose left edge is at x.
 func _person_at(x: float, turned: bool) -> Vector2:
 	var middle := 64.0 - _middle if turned else _middle
-	return Vector2(x + _along(seat.x) - middle, -ride + bob + seat.y + 3.0 - _hip)
+	return Vector2(x, -ride + bob) + Vector2(_along(seat.x) - middle, seat.y + 3.0 - _hip).round()
 
 
 ## A point on his picture, in the world, for a boat whose left edge is at x.
@@ -232,13 +232,14 @@ func _process(delta: float) -> void:
 
 
 func place(x: float, cam: Vector2, time: float) -> void:
-	bob = roundf(sin(time * 1.6))
+	bob = sin(time * 1.6)
 	boat.flip_h = facing < 0.0
 	hull.flip_h = boat.flip_h
 	front.flip_h = boat.flip_h
-	boat.position = (Vector2(x, -ride + bob) - cam).round()
+	boat.position = Vector2(x, -ride + bob) - cam
 	var h := float(boat.texture.get_height())
-	var cut := clampf(ride - bob + 1.0, 0.0, h - 1.0)
+	# The tint starts on a whole row of the hull, so its pixels lie exactly over the boat's.
+	var cut := clampf(roundf(ride - bob + 1.0), 0.0, h - 1.0)
 	hull.region_rect = Rect2(0, cut, boat.texture.get_width(), h - cut)
 	hull.position = boat.position + Vector2(0, cut)
 	front.visible = person.visible
@@ -248,7 +249,7 @@ func place(x: float, cam: Vector2, time: float) -> void:
 		# He is cut off just under the gunwale, so his feet never show below a hull shallower than his legs.
 		person.region_rect = Rect2(0, 0, 64, _hip - 1.0)
 		person.flip_h = _turned()
-		person.position = (_person_at(x, _turned()) - cam).round()
+		person.position = _person_at(x, _turned()) - cam
 		front.region_rect = Rect2(0, seat.y, boat.texture.get_width(), h - seat.y)
 		front.position = boat.position + Vector2(0, seat.y)
 	_cam = cam
@@ -269,21 +270,21 @@ func _draw() -> void:
 func _draw_in_hands() -> void:
 	if not person.visible:
 		return
-	var hands := (_hands_at(_x) - _cam).round()
+	var hands := _hands_at(_x) - _cam
 	if pose()[0] != "row":
-		_rod(_overlay, hands, (rod_tip(_x) - _cam).round())
+		_rod(_overlay, hands, rod_tip(_x) - _cam)
 		return
-	var lock := (_on_person(_x, OARLOCK) - _cam).round()
+	var lock := _on_person(_x, OARLOCK) - _cam
 	var along := (lock - hands).normalized()
 	var blade := lock + along * OAR_OUT
 	var water := -_cam.y
-	_overlay.draw_line(hands, blade, OAR_COLOUR, 2.0)
-	_overlay.draw_line(hands, lock, OAR_LIGHT, 1.0)
+	Pixels.line(_overlay, hands, blade, OAR_COLOUR, 2)
+	Pixels.line(_overlay, hands, lock, OAR_LIGHT)
 	# The blade is the last third of the oar, broader, and tinted where it is under the water.
 	var root := lock + along * OAR_OUT * 0.62
 	var side := Vector2(-along.y, along.x)
 	var shape := PackedVector2Array([root - side, blade - side * 2.0, blade + side * 2.0, root + side])
-	_overlay.draw_colored_polygon(shape, OAR_COLOUR if blade.y < water else OAR_COLOUR.lerp(TINT, 0.55))
+	Pixels.polygon(_overlay, shape, OAR_COLOUR if blade.y < water else OAR_COLOUR.lerp(TINT, 0.55), hands)
 
 
 ## The rod from its butt to its tip, curved when a fish bends it: the butt stays pointing where he holds it.
@@ -295,5 +296,6 @@ func _rod(on: CanvasItem, from: Vector2, to: Vector2) -> void:
 	for k in range(1, 9):
 		var u := k / 8.0
 		var point := from.lerp(held, u).lerp(held.lerp(to, u), u) if bent else from.lerp(to, u)
-		on.draw_line(last.round(), point.round(), ROD_LIGHT if k <= 3 else ROD_COLOUR, 1.0)
+		point = from + (point - from).round()
+		Pixels.line(on, last, point, ROD_LIGHT if k <= 3 else ROD_COLOUR)
 		last = point

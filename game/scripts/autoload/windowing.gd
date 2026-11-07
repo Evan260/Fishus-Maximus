@@ -357,29 +357,31 @@ func _set_click_area() -> void:
 	var img := Nav.port.get_texture().get_image()
 	if img == null or img.is_empty():
 		return
-	const STEP := 4
+	# The port is drawn at the window's resolution, so the outline is measured in window pixels, four game pixels a column.
+	var step := 4 * scale
 	var w := img.get_width()
 	var h := img.get_height()
 	var tops := PackedInt32Array()
-	for x in range(0, w, STEP):
-		var used := img.get_region(Rect2i(x, 0, mini(STEP, w - x), h)).get_used_rect()
+	for x in range(0, w, step):
+		var used := img.get_region(Rect2i(x, 0, mini(step, w - x), h)).get_used_rect()
 		tops.append(used.position.y if used.has_area() else h)
 	for node in get_tree().get_nodes_in_group("strip_area"):
-		var r: Rect2 = node.area()
-		if not r.has_area():
+		var area: Rect2 = node.area()
+		if not area.has_area():
 			continue
-		for i in range(maxi(0, int(r.position.x) / STEP), mini(tops.size(), int(ceilf(r.end.x / STEP)))):
+		var r := Rect2(area.position * scale, area.size * scale)
+		for i in range(maxi(0, int(r.position.x) / step), mini(tops.size(), int(ceilf(r.end.x / step)))):
 			tops[i] = mini(tops[i], maxi(0, int(r.position.y)))
-	var points := PackedVector2Array([Vector2(0, h * scale)])
+	var points := PackedVector2Array([Vector2(0, h)])
 	var i := 0
 	while i < tops.size():
 		var end := i
 		while end < tops.size() and tops[end] == tops[i]:
 			end += 1
-		points.append(Vector2(i * STEP, tops[i]) * scale)
-		points.append(Vector2(mini(end * STEP, w), tops[i]) * scale)
+		points.append(Vector2(i * step, tops[i]))
+		points.append(Vector2(mini(end * step, w), tops[i]))
 		i = end
-	points.append(Vector2(w, h) * scale)
+	points.append(Vector2(w, h))
 	DisplayServer.window_set_mouse_passthrough(points)
 
 

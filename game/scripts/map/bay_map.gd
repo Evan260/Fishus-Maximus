@@ -94,10 +94,10 @@ func _draw_pins() -> void:
 		var at := _pin(id)
 		var locked := locked_reason(Game.state, id) != ""
 		var here: bool = id == Game.state["place"]
-		_painter.draw_circle(at + Vector2(1, 1), 6.0, Color(0, 0, 0, 0.35))
-		_painter.draw_circle(at, 6.0, UiTheme.CREAM)
-		_painter.draw_circle(at, 5.0, UiTheme.MUTED if locked else (UiTheme.GOLD if here else UiTheme.RED))
-		_painter.draw_circle(at, 2.0, UiTheme.CREAM)
+		Pixels.disc(_painter, at + Vector2(1, 1), 6.0, Color(0, 0, 0, 0.35))
+		Pixels.disc(_painter, at, 6.0, UiTheme.CREAM)
+		Pixels.disc(_painter, at, 5.0, UiTheme.MUTED if locked else (UiTheme.GOLD if here else UiTheme.RED))
+		Pixels.disc(_painter, at, 2.0, UiTheme.CREAM)
 		if locked:
 			_painter.draw_rect(Rect2(at + Vector2(-2, -1), Vector2(4, 3)), UiTheme.INK)
 	if _hover != "":

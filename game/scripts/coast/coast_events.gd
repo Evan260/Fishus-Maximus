@@ -20,15 +20,22 @@ func setup(s: Node) -> void:
 
 ## Sets out the day's events at this place: on arrival, and again each morning while the boat stays out.
 func refresh() -> void:
+	for d in _dolphins:
+		d["sprite"].queue_free()
 	_dolphins.clear()
 	if is_instance_valid(_haul_button):
 		_haul_button.queue_free()
 	_announced = false
 	var day := Clock.day_of(float(Game.state["time"]))
 	var events := Events.on(day)
-	if "dolphins" in events and screen.place_id in ["open_bay", "capri", "misenum"]:
+	if "dolphins" in events and screen.place_id in ["open_bay", "capri", "misenum"] and _dolphin != null:
 		for i in 4:
-			_dolphins.append({"x": randf_range(0, Nav.view().x), "phase": i * 1.7, "speed": randf_range(30, 45)})
+			var s := Sprite2D.new()
+			s.texture = _dolphin
+			s.material = Pixels.look()
+			s.scale = Vector2.ONE * 0.8
+			add_child(s)
+			_dolphins.append({"x": randf_range(0, Nav.view().x), "phase": i * 1.7, "speed": randf_range(30, 45), "sprite": s})
 	if "tuna_run" in events and screen.place_id == "open_bay" and Nav.ui and int(Game.state.get("tuna_haul_day", -1)) != day:
 		_haul_button = Ui.button(Nav.ui, "Join the town's net", _open_haul)
 		Ui.hang(_haul_button, "top_right", Vector2(4, 24), Vector2(120, 18))
@@ -61,24 +68,16 @@ func _announce() -> void:
 func _process(delta: float) -> void:
 	if not _announced and screen.time() > 1.0:
 		_announce()
-	for d in _dolphins:
-		d["x"] = fposmod(d["x"] + d["speed"] * delta, Nav.view().x + 80.0)
-	_check_contest()
-	queue_redraw()
-
-
-func _draw() -> void:
-	if _dolphin == null:
-		return
 	var surface: float = -screen.camera.cam.y
 	var t: float = screen.time()
 	for d in _dolphins:
+		d["x"] = fposmod(d["x"] + d["speed"] * delta, Nav.view().x + 80.0)
 		var arc := sin(t * 1.6 + d["phase"])
-		if arc > 0.0:
-			var at := Vector2(d["x"] - 40.0, surface - arc * 16.0 - 6.0)
-			draw_set_transform(at, -cos(t * 1.6 + d["phase"]) * 0.5, Vector2.ONE * 0.8)
-			draw_texture(_dolphin, -_dolphin.get_size() / 2.0)
-			draw_set_transform(Vector2.ZERO)
+		var s: Sprite2D = d["sprite"]
+		s.visible = arc > 0.0
+		s.position = Vector2(d["x"] - 40.0, surface - arc * 16.0 - 6.0)
+		s.rotation = -cos(t * 1.6 + d["phase"]) * 0.5
+	_check_contest()
 
 
 func _on_caught(fish: String, pounds: float) -> void:

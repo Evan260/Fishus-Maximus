@@ -31,7 +31,7 @@ func follow(boat_x: float, hook: Vector2, hooked: bool, delta: float) -> void:
 	if hooked:
 		want.y = clampf(hook.y - HOOK_ROOM, HOME_Y, maxf(HOME_Y, world.y - view.y))
 	cam = cam.lerp(want, minf(1.0, delta * 3.0))
-	if cam.distance_to(want) < 0.5:
+	if cam.distance_to(want) < 0.02:
 		cam = want
 
 

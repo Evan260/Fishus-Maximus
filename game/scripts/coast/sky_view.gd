@@ -294,7 +294,7 @@ func _scatter_clouds() -> void:
 func _lay_out() -> void:
 	var view := Nav.view()
 	# The sky rises with the waterline as the camera goes down, and moves with the coast in the desktop strip.
-	position = Vector2(-_cam.x * DRIFT, -roundf(_cam.y - CoastCamera.HOME_Y) + Nav.port.canvas_transform.origin.y)
+	position = Vector2(-_cam.x * DRIFT, -(_cam.y - CoastCamera.HOME_Y) + Nav.port.canvas_transform.origin.y)
 	_gradient.position = Vector2(floorf(-position.x) - 2.0, TOP)
 	_gradient.scale = Vector2(view.x + 4.0, HORIZON + BELOW - TOP)
 	var paint := _gradient.material as ShaderMaterial

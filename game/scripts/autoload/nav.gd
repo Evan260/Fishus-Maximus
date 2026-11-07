@@ -1,7 +1,8 @@
 extends Node
-## Switches between screens with a short fade. The game is laid out for 480 by 270 and drawn at its own pixels in
-## `port`, which is scaled up by a whole number to the window; the view grows a little past that to fill a window of
-## another shape, so screens centre their scenery with `offset()` and the interface hangs from the view's edges.
+## Switches between screens with a short fade. The game is laid out for 480 by 270 game pixels and drawn in `port` at
+## the window's resolution, each game pixel a whole number of window pixels; the view grows a little past that to fill
+## a window of another shape, so screens centre their scenery with `offset()` and the interface hangs from the view's
+## edges.
 
 signal screen_changed(screen: String)
 
@@ -14,7 +15,8 @@ const SCREENS := {
 	"map": "res://scripts/map/bay_map.gd",
 }
 
-## The game's own pixels: every screen, its interface and the fade are drawn here, at the view's size, and scaled up.
+## Every screen, its interface and the fade, laid out in game pixels and drawn at the window's resolution, so a picture
+## stays crisp while it moves by fractions of a game pixel.
 var port: SubViewport
 ## Drawn behind the game at the window's own resolution, so clouds there drift by fractions of a game pixel.
 var sky: CanvasLayer
@@ -40,6 +42,12 @@ func _ready() -> void:
 	add_child(_frame)
 	port = SubViewport.new()
 	port.size = SIZE
+	port.size_2d_override = SIZE
+	port.size_2d_override_stretch = true
+	# Every corner lands on a whole window pixel, so a picture's texels stay whole wherever between game pixels it is.
+	port.snap_2d_vertices_to_pixel = true
+	# Text is drawn at the font's own size and scaled up with everything else, so the pixel fonts keep their pixels.
+	port.oversampling = false
 	port.transparent_bg = true
 	port.canvas_item_default_texture_filter = Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
 	_frame.add_child(port)
@@ -67,16 +75,16 @@ func _ready() -> void:
 
 ## The view's size in game pixels: at least 480 by 270 tall, and as wide or tall as the window's shape allows.
 func view() -> Vector2:
-	return Vector2(port.size) if port else SIZE
+	return Vector2(port.size_2d_override) if port else SIZE
 
 
 ## Shows the game at `size` game pixels, each `scale` window pixels wide, in the middle of the window, with the sky
 ## layer scaled to match.
 func fit(size: Vector2i, scale: int) -> void:
 	zoom = scale
-	port.size = size
-	_frame.size = Vector2(size)
-	_frame.scale = Vector2(scale, scale)
+	port.size_2d_override = size
+	port.size = size * scale
+	_frame.size = Vector2(size * scale)
 	var room := Vector2(get_window().size) - Vector2(size * scale)
 	_frame.position = (room / 2.0).floor()
 	sky.transform = Transform2D(0.0, Vector2(scale, scale), 0.0, _frame.position)

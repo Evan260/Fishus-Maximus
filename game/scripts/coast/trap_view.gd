@@ -14,15 +14,15 @@ func _draw() -> void:
 		if trap["place"] != screen.place_id:
 			continue
 		var x := float(trap["x"])
-		var bed := Vector2(x, screen.seabed.depth_at(x)) - cam
-		var top := Vector2(x, -cam.y + roundf(sin(t * 1.7 + x)))
-		draw_line(top + Vector2(0, 2), bed + Vector2(0, -6), Color(0.75, 0.68, 0.5, 0.7), 1.0)
+		var bed := Vector2(x, roundf(screen.seabed.depth_at(x))) - cam
+		var top := Vector2(x, -cam.y + sin(t * 1.7 + x))
+		Pixels.line(self, top + Vector2(0, 2), bed + Vector2(0, -6), Color(0.75, 0.68, 0.5, 0.7))
 		if _pot:
-			draw_texture(_pot, (bed - Vector2(_pot.get_width() / 2.0, _pot.get_height() - 3)).round())
+			draw_texture(_pot, bed - Vector2(floorf(_pot.get_width() / 2.0), _pot.get_height() - 3))
 		else:
 			draw_rect(Rect2(bed + Vector2(-6, -10), Vector2(12, 10)), Color("#8a6236"))
 		if _buoy:
-			draw_texture(_buoy, (top - Vector2(_buoy.get_width() / 2.0, _buoy.get_height() * 0.6)).round())
+			draw_texture(_buoy, top - Vector2(floorf(_buoy.get_width() / 2.0), roundf(_buoy.get_height() * 0.6)))
 		else:
 			draw_rect(Rect2(top + Vector2(-2, -3), Vector2(5, 4)), Color("#c8443a"))
 		if not trap["catch"].is_empty():

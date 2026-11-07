@@ -182,4 +182,4 @@ func _draw_arrow() -> void:
 	for layer in [[0.0, UiTheme.CREAM], [1.5, UiTheme.INK], [3.0, UiTheme.GOLD]]:
 		var k: float = layer[0]
 		var points := PackedVector2Array([Vector2(k * 1.4, k * 0.8), Vector2(19.0 - k * 1.4, k * 0.8), Vector2(9.5, 13.0 - k * 1.3)].map(flip))
-		_arrow.draw_colored_polygon(points, layer[1])
+		Pixels.polygon(_arrow, points, layer[1], Vector2.ZERO)

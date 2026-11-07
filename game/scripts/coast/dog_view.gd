@@ -90,7 +90,7 @@ func _process(delta: float) -> void:
 	else:
 		mood = "sit_east"
 	var facing: float = screen.facing()
-	position = (screen.boat_screen_position() + screen.dog_seat()).round()
+	position = screen.boat_screen_position() + screen.dog_seat().round()
 	scale = Vector2(1.0 if facing > 0.0 else -1.0, 1.0)
 	queue_redraw()
 
