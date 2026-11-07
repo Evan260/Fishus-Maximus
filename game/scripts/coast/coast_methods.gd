@@ -8,6 +8,8 @@ const METHODS := ["line", "trap", "net", "trident"]
 const PULL_REACH := 26.0
 const NET_REACH := 170.0
 const SPEAR_REACH := 150.0
+## Seconds he waits with the fish landed, fishing on his own, before he casts again.
+const RECAST_AFTER := 1.5
 
 var screen: Node
 var method := "line"
@@ -16,6 +18,9 @@ var traps_view: TrapView
 var net_view: NetView
 var trident_view: TridentView
 var _idle_minutes := 0.0
+## The fish he has caught on his own that are still coming in on the line, each told of once it is in the boat.
+var _landing: Array[String] = []
+var _recast_in := RECAST_AFTER
 var _rng: RandomNumberGenerator
 
 
@@ -25,6 +30,9 @@ func setup(s: Node, rng: RandomNumberGenerator) -> void:
 	method = str(Game.state.get("method", "line"))
 	if not method in METHODS:
 		method = "line"
+	# --idle starts him fishing on his own, and --idle-speed=N runs his fishing N times faster, for checks.
+	if Dev.has("idle"):
+		set_idle.call_deferred(true)
 
 
 func set_method(m: String) -> void:
@@ -48,7 +56,16 @@ func set_idle(on: bool) -> void:
 		Game.state["idle"] = {"place": screen.place_id, "bait": screen.bait(), "depth": maxf(10.0, screen.hook.y)}
 	else:
 		Game.state.erase("idle")
+		if screen.line_state() in ["taken", "landing"]:
+			screen.reel_in()
 	Toast.say("Fishing on his own." if on else "Back at the rod.")
+
+
+## Stops him fishing on his own as the boat leaves, with word of any fish still coming in on the line.
+func leave() -> void:
+	_announce()
+	idle = false
+	Game.state.erase("idle")
 
 
 func _net() -> String:
@@ -63,10 +80,19 @@ func traps_here() -> Array:
 func tick(delta: float) -> void:
 	var minutes := delta / 60.0
 	if idle:
-		_idle_minutes += minutes
-		if _idle_minutes >= 0.25:
+		_idle_minutes += minutes * Dev.num("idle-speed", 1.0)
+		# While a fish is coming in the minutes add up, so the line in the water catches at the same rate.
+		if _idle_minutes >= 0.25 and screen.line_state() in ["waiting", "sinking"] and screen.flight <= 0.0:
 			_idle_step(_idle_minutes)
 			_idle_minutes = 0.0
+	if not _landing.is_empty() and not screen.line_state() in ["taken", "landing"]:
+		_announce()
+	if idle and screen.line_state() == "reeled":
+		_recast_in -= delta
+		if _recast_in <= 0.0:
+			screen.cast(0.6)
+	else:
+		_recast_in = RECAST_AFTER
 	trident_view.lit = Trident.can_use(screen.hour, str(Game.state["gear"].get("lamp", "")))
 	if method == "trident" and not trident_view.lit:
 		method = "line"
@@ -96,8 +122,21 @@ func _idle_step(minutes: float) -> void:
 	for c in got:
 		Game.state["bait"][bait] = maxi(0, int(Game.state["bait"].get(bait, 0)) - 1)
 		Catches.record(Game.state, c["fish"], float(c["pounds"]), false)
-		Toast.say("+ " + Data.fish[c["fish"]]["name"])
-	if Hold.room(Game.state) <= 0:
+		_landing.append(str(c["fish"]))
+	# The catch is kept at once, and shown coming in on the line before it is told of.
+	if not got.is_empty():
+		screen.idle_catch(str(got[0]["fish"]))
+	elif Hold.room(Game.state) <= 0:
+		set_idle(false)
+		Toast.say("The hold is full.")
+
+
+## Tells of the fish he has brought in on his own, and stops him once the hold is full.
+func _announce() -> void:
+	for id in _landing:
+		Toast.say("+ " + Data.fish[id]["name"])
+	_landing.clear()
+	if idle and Hold.room(Game.state) <= 0:
 		set_idle(false)
 		Toast.say("The hold is full.")
 

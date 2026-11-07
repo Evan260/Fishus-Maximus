@@ -15,6 +15,8 @@ const FLIGHT_SECONDS := 0.45
 const FLIGHT_ARC := 28.0
 ## Seconds the float dips for at each nibble.
 const TWITCH := 0.25
+## Seconds the float stays under when a fish takes his bait while he fishes on his own, before he brings it in.
+const TAKEN_SECONDS := 1.2
 
 var place := {}
 var place_id := ""
@@ -48,6 +50,9 @@ var bite_left := 0.0
 var twitch := 0.0
 var _nibbles_left := 0
 var _nibble_in := 0.0
+## The fish he has caught on his own and is bringing in on the line, and how long the float stays under first.
+var landing := ""
+var _taken_left := 0.0
 var _state := "reeled"
 var _time := 0.0
 var _pinned := false
@@ -144,9 +149,7 @@ func go_ashore() -> void:
 ## Remembers where the boat lies, and stops him fishing on his own, since he is going with you.
 func prepare_to_leave() -> void:
 	Game.state["boat_x"] = boat_x
-	if methods.idle:
-		methods.idle = false
-		Game.state.erase("idle")
+	methods.leave()
 
 
 func _exit_tree() -> void:
@@ -334,6 +337,15 @@ func sink(delta: float) -> void:
 	# The hook's position is kept in single precision, so it only ever reaches the floor to within a rounding.
 	if hook.y >= floor_y - 0.01:
 		_state = "waiting"
+
+
+## A fish he has caught on his own takes the bait: the float goes under, then he brings it in on the line.
+func idle_catch(fish: String) -> void:
+	landing = fish
+	_state = "taken"
+	_taken_left = TAKEN_SECONDS
+	dog.bark()
+	Audio.play("cork", -4.0)
 
 
 func reel_in() -> void:
@@ -525,6 +537,19 @@ func _process(delta: float) -> void:
 				bite_step(delta)
 		"fighting":
 			_fight_step(delta, _reeling_input())
+		"taken":
+			_taken_left -= delta
+			if _taken_left <= 0.0:
+				_state = "landing"
+				Audio.play("reel")
+		"landing":
+			var tip := _boat.rod_tip(boat_x)
+			hook = hook.move_toward(tip, REEL_SPEED * delta)
+			if hook.distance_to(tip) < 1.0:
+				hook = tip
+				_state = "reeled"
+				dog.cheer()
+				Audio.play("splash_big", -6.0)
 	camera.view = Nav.view()
 	if not _pinned:
 		camera.follow(boat_x, hook, _state != "reeled" and not Windowing.strip, delta)
@@ -633,10 +658,13 @@ func _handle_input(delta: float) -> void:
 					_state = "sinking"
 
 
-## The demo for screenshots and checks: cast, wait for a bite, strike at once and reel only while the fish rests.
+## The demo for screenshots and checks: cast, wait for a bite (or with --hook=ID have that fish take the bait at once),
+## strike at once and reel only while the fish rests.
 func _demo_step() -> void:
 	if _state == "reeled" and not CatchCard.is_open() and _time > 0.8:
 		cast(0.7)
+	elif _state == "waiting" and Dev.has("hook"):
+		_on_bite({"id": Dev.get_arg("hook", "mullet"), "lb": 1.5, "state": "bit", "heading": 1.0})
 	elif _state == "bite":
 		strike()
 
@@ -668,8 +696,8 @@ func _draw_ground(node: Node2D) -> void:
 	var view := Nav.view()
 	while x0 < cam.x + view.x:
 		var x1 := x0 + 8.0
-		var a := Vector2(roundf(x0 - cam.x), roundf(seabed.depth_at(x0) + _ground_below - cam.y))
-		var b := Vector2(roundf(x1 - cam.x), roundf(seabed.depth_at(x1) + _ground_below - cam.y))
+		var a := Vector2(x0, roundf(seabed.depth_at(x0) + _ground_below)) - cam
+		var b := Vector2(x1, roundf(seabed.depth_at(x1) + _ground_below)) - cam
 		var bottom := maxf(view.y + 10.0, maxf(a.y, b.y) + 1.0)
 		node.draw_colored_polygon(PackedVector2Array([a, b, Vector2(b.x, bottom), Vector2(a.x, bottom)]), FloorView.SHADOW)
 		for k in 8:
