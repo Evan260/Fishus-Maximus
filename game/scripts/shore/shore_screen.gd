@@ -26,7 +26,8 @@ func enter(_args: Dictionary) -> void:
 	for name in ["back", "ground"]:
 		if ResourceLoader.exists(ART + name + ".png"):
 			var b := Backdrop.new(load(ART + name + ".png"))
-			b.position = Vector2(0, 0 if name == "back" else WALL_TOP)
+			# The grass along the ground's top stands in front of the terrace, so the gaps between its blades show stone.
+			b.position = Vector2(0, 0 if name == "back" else WALL_TOP - 13.0)
 			# The view above carries on into sky, and below into more ground, never the other picture.
 			for c in b.get_children():
 				if (name == "back" and c.position.y > 0.0) or (name == "ground" and c.position.y < 0.0):
@@ -101,13 +102,15 @@ func _draw_over() -> void:
 			_painter.draw_rect(Rect2(r.position + Vector2(-lip, -7), Vector2(r.size.x + 2 * lip, 2)), Color("#e8dcc0"))
 		else:
 			# An empty site is a plot marked out on the grass with two pegs and a rope.
-			var y := WALL_TOP + 7.0
-			for px in [r.position.x + 4.0, r.end.x - 5.0]:
-				_painter.draw_rect(Rect2(px, y - 8, 2, 9), Color("#7a5532"))
-				_painter.draw_rect(Rect2(px, y - 8, 2, 1), Color("#a87a4a"))
-			for k in int(r.size.x - 9):
-				var sag := sin(float(k) / (r.size.x - 9) * PI) * 2.0
-				_painter.draw_rect(Rect2(r.position.x + 5 + k, roundf(y - 6 + sag), 1, 1), Color("#c9a66b"))
+			var y := WALL_TOP + 12.0
+			for px in [r.position.x + 4.0, r.end.x - 6.0]:
+				_painter.draw_rect(Rect2(px, y - 13, 3, 14), Color("#6b4526"))
+				_painter.draw_rect(Rect2(px, y - 13, 1, 14), Color("#a87a4a"))
+				_painter.draw_rect(Rect2(px, y - 14, 3, 1), Color("#c79a62"))
+			for k in int(r.size.x - 10):
+				var sag := sin(float(k) / (r.size.x - 10) * PI) * 3.0
+				_painter.draw_rect(Rect2(r.position.x + 7 + k, roundf(y - 11 + sag), 1, 1), Color("#f0dca8"))
+				_painter.draw_rect(Rect2(r.position.x + 7 + k, roundf(y - 10 + sag), 1, 1), Color("#a8845a"))
 		if _hover == site:
 			var label := str(Data.ponds["sites"][site]["name"]) if built else ("Dig a pond here" if Game.state["ponds"].size() < Ponds.allowed(Game.state) else "Not yet")
 			_tip(r.position + Vector2(r.size.x / 2.0, -14), label)
