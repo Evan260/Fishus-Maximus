@@ -25,7 +25,7 @@
 			{"file": "places/harbour/reef.png", "z": -9, "world": [1150, 177]},
 			{"file": "places/harbour/boulders.png", "z": -9, "world": [1320, 245]},
 			{"file": "places/harbour/boulders.png", "z": -9, "mirror": true, "world": [60, 18]},
-			{"file": "places/harbour/jetty.png", "world": [0, -58], "z": -7, "through": true},
+			{"file": "places/harbour/jetty.png", "world": [0, -58], "z": -9, "through": true},
 			{"file": "props/amphorae.png", "world": [22, -44], "z": -7},
 			{"file": "props/bollard.png", "world": [64, -44], "z": -7}
 		]
