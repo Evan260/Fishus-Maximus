@@ -1,6 +1,9 @@
 class_name Ui
 ## Small helpers for building the interface the same way everywhere.
 
+## As wide as a button is tall, so a button of one letter comes out square.
+const BUTTON_MIN_WIDTH := 22.0
+
 
 static func coins_text(n: int) -> String:
 	return "1 denarius" if n == 1 else "%d denarii" % n
@@ -18,6 +21,7 @@ static func button(parent: Node, text: String, action: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.focus_mode = Control.FOCUS_NONE
+	b.custom_minimum_size.x = BUTTON_MIN_WIDTH
 	b.pressed.connect(Audio.play.bind("click", -6.0))
 	b.pressed.connect(action)
 	parent.add_child(b)
@@ -61,21 +65,7 @@ static func panel(parent: Node, title: String) -> VBoxContainer:
 
 ## A window with a heading, a scrolling list and a close button, replacing any window already open. Returns the list.
 static func window(title: String, width := 300.0, height := 200.0) -> VBoxContainer:
-	close_window()
-	var p := PanelContainer.new()
-	p.name = "Window"
-	p.custom_minimum_size = Vector2(width, 0)
-	p.size = Vector2(width, height)
-	p.position = ((Nav.view() - Vector2(width, height)) / 2.0).round()
-	Nav.ui.add_child(p)
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 3)
-	p.add_child(col)
-	var top := HBoxContainer.new()
-	col.add_child(top)
-	var head := label(top, title.to_upper(), "Heading")
-	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button(top, "x", close_window)
+	var col := frame(title, width, height)
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(width - 12, height - 28)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -85,6 +75,43 @@ static func window(title: String, width := 300.0, height := 200.0) -> VBoxContai
 	list.add_theme_constant_override("separation", 2)
 	scroll.add_child(list)
 	return list
+
+
+## An empty, centred window with a heading and a close button, replacing any window already open, over a clear
+## backdrop that closes it when clicked. Returns its column, whose first row holds the heading.
+static func frame(title: String, width := 300.0, height := 200.0) -> VBoxContainer:
+	close_window()
+	var back := Control.new()
+	back.mouse_filter = Control.MOUSE_FILTER_STOP
+	# The backdrop keeps the click, so a click beside a window closes it without also casting or opening a building.
+	back.gui_input.connect(func(e: InputEvent):
+		if e is InputEventMouseButton and e.pressed and e.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
+			back.accept_event()
+			close_window())
+	Nav.ui.add_child(back)
+	back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var p := PanelContainer.new()
+	p.name = "Window"
+	p.custom_minimum_size = Vector2(width, 0)
+	p.tree_exiting.connect(back.queue_free)
+	Nav.ui.add_child(p)
+	# Sized before anything goes in, so wrapped words are measured at its width, and grown evenly both ways if taller.
+	p.set_anchors_preset(Control.PRESET_CENTER)
+	p.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	p.grow_vertical = Control.GROW_DIRECTION_BOTH
+	p.offset_left = -roundf(width / 2.0)
+	p.offset_right = p.offset_left + width
+	p.offset_top = -roundf(height / 2.0)
+	p.offset_bottom = p.offset_top + height
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 3)
+	p.add_child(col)
+	var top := HBoxContainer.new()
+	col.add_child(top)
+	var head := label(top, title.to_upper(), "Heading")
+	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button(top, "x", close_window)
+	return col
 
 
 static func close_window() -> void:
