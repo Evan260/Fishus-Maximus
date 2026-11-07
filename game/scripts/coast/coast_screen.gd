@@ -244,6 +244,8 @@ func _on_view_changed() -> void:
 			cast(0.6)
 	if hud:
 		hud.visible = not Windowing.strip
+	if is_instance_valid(_sail):
+		_sail.visible = not Windowing.strip
 	# The see-through strip shows only the sea and what is on it, so the sky and the land behind the water are hidden.
 	var see_through := Windowing.strip and Windowing.transparent
 	_sky.visible = not see_through
@@ -457,7 +459,7 @@ func _process(delta: float) -> void:
 	_rain_step(delta)
 	_sounds(delta)
 	if _ashore:
-		_ashore.visible = boat_x < QUAY_REACH and _state == "reeled"
+		_ashore.visible = boat_x < QUAY_REACH and _state == "reeled" and not Windowing.strip
 	_click = false
 	relayout()
 

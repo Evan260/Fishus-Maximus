@@ -33,3 +33,21 @@ func test_the_buttons_along_the_bottom_line_up() -> void:
 	for c in Nav.ui.get_children():
 		c.free()
 	s.free()
+
+
+func test_the_strip_hides_the_full_window_buttons() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "mutt")
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": "harbour"})
+	Windowing.strip = true
+	s._on_view_changed()
+	check(not s._sail.visible, "no Bay map button over the strip's view")
+	Windowing.strip = false
+	s._on_view_changed()
+	check(s._sail.visible, "it comes back in the full window")
+	for c in Nav.ui.get_children():
+		c.free()
+	s.free()
