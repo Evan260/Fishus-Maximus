@@ -17,3 +17,6 @@ __pycache__/
 *.pyc
 Thumbs.db
 .DS_Store
+
+# Worktrees made for helper agents.
+.claude/worktrees/
