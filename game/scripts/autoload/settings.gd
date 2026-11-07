@@ -57,7 +57,7 @@ func _restore_window() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		var mode := DisplayServer.window_get_mode()
+		var mode := Windowing.normal_mode()
 		maximized = mode == DisplayServer.WINDOW_MODE_MAXIMIZED or (mode == DisplayServer.WINDOW_MODE_FULLSCREEN and _before == DisplayServer.WINDOW_MODE_MAXIMIZED)
 		save()
 

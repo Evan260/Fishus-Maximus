@@ -171,16 +171,22 @@ func _enter_strip() -> void:
 	get_viewport().transparent_bg = transparent
 	if _windowed():
 		var win := get_window()
-		_size_before = win.size
-		_pos_before = win.position
 		_mode_before = win.mode
 		# Windows keeps a maximized window's frame and size whatever is asked of it, so the strip starts from a plain window.
 		if win.mode != Window.MODE_WINDOWED:
 			win.mode = Window.MODE_WINDOWED
+		# The plain window's own size is remembered, not the full screen's, so leaving the strip gives it back.
+		_size_before = win.size
+		_pos_before = win.position
 		win.borderless = true
 		win.always_on_top = true
 	_place_strip()
 	_click_wait = 0.0
+
+
+## The window's mode as the player left it: while the strip is on, the mode it had before.
+func normal_mode() -> int:
+	return _mode_before if strip and _windowed() else get_window().mode
 
 
 func _leave_strip() -> void:
