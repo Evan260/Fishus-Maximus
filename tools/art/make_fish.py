@@ -11,7 +11,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "game" / "assets" / "art" / "fish"
 RAW = Path(__file__).with_name("fish_raw")
-REUSE = {"mullet": "mullet", "bream": "bream", "sardine": "sardine", "octopus": "octopus", "grouper": "grouper",
+REUSE = {"bream": "bream", "sardine": "sardine", "octopus": "octopus", "grouper": "grouper",
          "tuna": "tuna"}
 SIDE = "seen exactly from the side facing right, realistic and natural, not cartoon"
 FLAT = "seen from above lying flat, head to the right, realistic and natural, not cartoon"
@@ -20,6 +20,7 @@ STYLE_REF = "game/assets/art/fish/sea_bass.png"
 
 # id: (look, canvas, halve)
 LOOKS = {
+    "mullet": ("a red mullet fish, soft rose-pink body with a faint yellow stripe along its side, two short chin barbels and a small eye", "48x32", False),
     "moray": ("a Mediterranean moray eel, long body in dark brown mottled with small pale yellow flecks, its mouth a little open", "64x32", False),
     "grey_mullet": ("a grey mullet fish, silver-grey body with faint dark stripes along its sides, blunt head", "48x32", False),
     "white_bream": ("a white sea bream fish, silver body with dark vertical bands and a black spot near the tail", "48x32", False),
@@ -55,17 +56,17 @@ LOOKS = {
     "john_dory": ("a John Dory fish, tall flat body in muted olive-grey and dull gold with one dark spot on its side and long spiny back fins", "48x48", False),
     "weever": ("a greater weever fish, slim pale sandy body with faint thin grey slanted lines and a small black spiny back fin", "48x32", False),
     "thornback": ("a thornback ray, wide diamond-shaped mottled brown body with a long thorny tail", "64x48", False),
-    "parrotfish": ("a Mediterranean parrotfish, bright red and grey body with large scales and a beak-like mouth", "48x32", False),
-    "cardinalfish": ("a tiny red cardinalfish with big eyes", "32x32", True),
+    "parrotfish": ("a Mediterranean parrotfish, muted grey-red body with large scales, a small eye and a beak-like mouth", "48x32", False),
+    "cardinalfish": ("a tiny cardinalfish, dull orange-brown body with a small dark spot near the tail", "32x32", True),
     "brown_meagre": ("a brown meagre fish, deep bronze-brown body with pale-edged fins", "48x32", False),
     "forkbeard": ("a forkbeard fish, long brown body with a long thin chin barbel and forked fin feelers", "48x32", False),
     "slipper_lobster": ("a slipper lobster, flat broad shell in brown and orange with flat plate-like antennae", "48x32", False),
-    "red_scorpionfish": ("a red scorpionfish, bright red mottled spiny body with skin flaps on its head", "48x32", False),
+    "red_scorpionfish": ("a red scorpionfish lying still, mottled dull red-brown and cream body with spiny fins and small skin flaps, camouflaged like a rock, a small eye", "48x32", False),
     "swordfish": ("a swordfish, long dark blue-grey body with a silver belly, a tall sickle back fin and a long flat sword", "96x48", False),
     "hake": ("a hake fish, long slim silver-grey body with a dark back and a big mouth", "64x32", False),
-    "red_porgy": ("a red porgy fish, pinkish red body with small blue spots", "48x32", False),
+    "red_porgy": ("a red porgy fish, soft pinkish silver body with faint small spots and a small eye", "48x32", False),
     "carteia_octopus": ("a gigantic old octopus with deep red mottled skin, huge arms curling, scarred and ancient", "96x48", False),
-    "tiberius_mullet": ("a large magnificent red mullet fish, glowing deep scarlet and gold with yellow stripes", "64x32", False),
+    "tiberius_mullet": ("a large old red mullet fish, deep rose-red body with a faint gold stripe and two short chin barbels, a small eye", "64x32", False),
     "hortensius_moray": ("a huge old Mediterranean moray eel, dark brown body mottled with dull gold flecks, wearing small gold earrings on its gills", "96x48", False),
     "great_tuna": ("an enormous bluefin tuna fish, gleaming dark blue back with a silver belly and golden finlets", "96x48", False),
     "orata_bream": ("a large gilt-head sea bream fish, silver body that shines gold all over with a bright gold band between the eyes", "64x32", False),
