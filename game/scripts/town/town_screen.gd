@@ -5,8 +5,10 @@ extends Node2D
 const ART := "res://assets/art/town/"
 const BUILDINGS := {"market": "The fish market", "netmaker": "The netmaker", "boatwright": "The boatwright",
 	"board": "The harbour board", "goldsmith": "The goldsmith"}
-const STREET_Y := 252.0
-const CLIENT_SPOTS := [128.0, 330.0, 220.0]
+## Where people's feet are on the paving, and where waiting clients stand.
+const STREET_Y := 250.0
+const CLIENT_SPOTS := [146.0, 318.0]
+const PEOPLE := "res://assets/art/people/"
 
 var hovered := ""
 var _masks := {}
@@ -100,36 +102,41 @@ func _outline(img: Image, at: Vector2) -> PackedVector2Array:
 	return out
 
 
+## The townsfolk who walk the street, each with their walk and a standing pose for when they stop to talk.
 func _spawn_folk() -> void:
-	var ids := Data.townsfolk.keys()
+	var ids := Data.townsfolk.keys().filter(func(id): return ResourceLoader.exists(PEOPLE + id + "/walk_east/frame_00.png"))
 	ids.shuffle()
 	for i in mini(5, ids.size()):
-		var path := "res://assets/art/folk/%s.png" % ids[i]
-		if not ResourceLoader.exists(path):
-			continue
+		var walk: Array[Texture2D] = []
+		for k in 12:
+			var path := PEOPLE + "%s/walk_east/frame_%02d.png" % [ids[i], k]
+			if not ResourceLoader.exists(path):
+				break
+			walk.append(load(path))
 		var s := Sprite2D.new()
-		s.texture = load(path)
+		s.texture = walk[0]
 		s.centered = false
 		s.z_index = 1
 		_stage.add_child(s)
-		_folk.append({"id": ids[i], "sprite": s, "x": _rng.randf_range(20, 440), "dir": -1.0 if _rng.randf() < 0.5 else 1.0,
-			"speed": _rng.randf_range(9, 16), "pause": 0.0, "phase": _rng.randf() * TAU})
+		_folk.append({"id": ids[i], "sprite": s, "walk": walk, "stand": load(PEOPLE + ids[i] + "/east.png"),
+			"x": _rng.randf_range(20, 420), "dir": -1.0 if _rng.randf() < 0.5 else 1.0, "speed": _rng.randf_range(12, 18),
+			"pause": 0.0, "phase": _rng.randf() * 8.0})
 
 
 ## Clients with something to ask stand in the street; at most two come to town on any one day.
 func _place_clients() -> void:
 	var waiting := Story.visiting(Game.state, Clock.day_of(float(Game.state["time"])))
 	for i in waiting.size():
+		var path: String = PEOPLE + waiting[i] + "/south.png"
+		if not ResourceLoader.exists(path):
+			continue
 		var pic := Sprite2D.new()
-		var path: String = Data.clients[waiting[i]]["portrait"]
-		if ResourceLoader.exists(path):
-			pic.texture = load(path)
+		pic.texture = load(path)
 		pic.centered = false
-		pic.scale = Vector2(0.5, 0.5)
-		pic.position = Vector2(CLIENT_SPOTS[i], STREET_Y - 46)
-		pic.z_index = 3
+		pic.position = Vector2(CLIENT_SPOTS[i] - 24.0, STREET_Y - 46.0)
+		pic.z_index = 2
 		_stage.add_child(pic)
-		_clients.append({"id": waiting[i], "x": CLIENT_SPOTS[i]})
+		_clients.append({"id": waiting[i], "x": CLIENT_SPOTS[i], "sprite": pic})
 
 
 func _process(delta: float) -> void:
@@ -143,13 +150,15 @@ func _process(delta: float) -> void:
 			f["pause"] -= delta
 		else:
 			f["x"] += f["dir"] * f["speed"] * delta
-			if f["x"] < 4.0 or f["x"] > 476.0 - s.texture.get_width():
+			if f["x"] < -8.0 or f["x"] > 440.0:
 				f["dir"] = -f["dir"]
 			if _rng.randf() < delta * 0.08:
 				f["pause"] = _rng.randf_range(1.5, 4.0)
 		var walking: bool = f["pause"] <= 0.0
+		f["phase"] += delta * 9.0 if walking else 0.0
+		s.texture = f["walk"][int(f["phase"]) % f["walk"].size()] if walking else f["stand"]
 		s.flip_h = f["dir"] < 0.0
-		s.position = Vector2(roundf(f["x"]), STREET_Y - s.texture.get_height() - (roundf(absf(sin(Time.get_ticks_msec() / 160.0 + f["phase"]))) if walking else 0.0))
+		s.position = Vector2(roundf(f["x"]), STREET_Y - 46.0)
 	var mouse := _stage.get_local_mouse_position()
 	hovered = "" if Ui.window_open() else _building_at(mouse)
 	_painter.queue_redraw()
@@ -176,12 +185,12 @@ func _draw_over() -> void:
 		var at := _stage.get_local_mouse_position() + Vector2(-w / 2.0, -10)
 		_painter.draw_rect(Rect2(at + Vector2(-3, -8), Vector2(w + 6, 11)), Color(UiTheme.INK, 0.85))
 		_painter.draw_string(font, at, name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.CREAM)
+	# A gold mark bobs over each client who has something to ask.
 	for c in _clients:
-		var at := Vector2(c["x"], STREET_Y - 46)
-		_painter.draw_rect(Rect2(at - Vector2(2, 2), Vector2(36, 36)), UiTheme.WOOD)
-		_painter.draw_rect(Rect2(at, Vector2(32, 32)), UiTheme.PARCHMENT)
 		var bob := roundf(sin(Time.get_ticks_msec() / 300.0) * 1.5)
-		_painter.draw_string(UiTheme.title_font(), at + Vector2(13, -5 + bob), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
+		var at := Vector2(c["x"] - 2.0, STREET_Y - 46.0 + bob)
+		_painter.draw_rect(Rect2(at + Vector2(-3, -9), Vector2(10, 11)), Color(UiTheme.INK, 0.8))
+		_painter.draw_string(UiTheme.title_font(), at + Vector2(0, 0), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
 
 
 func _unhandled_input(e: InputEvent) -> void:
@@ -189,12 +198,12 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	var at: Vector2 = _stage.get_local_mouse_position()
 	for c in _clients:
-		if Rect2(Vector2(c["x"], STREET_Y - 46), Vector2(32, 32)).has_point(at):
+		if Rect2(Vector2(c["x"] - 12.0, STREET_Y - 40.0), Vector2(24, 40)).has_point(at):
 			ClientVisit.open(c["id"])
 			return
 	for f in _folk:
 		var s: Sprite2D = f["sprite"]
-		if Rect2(s.position, s.texture.get_size()).has_point(at):
+		if Rect2(s.position + Vector2(12, 8), Vector2(24, 40)).has_point(at):
 			_gossip(f)
 			return
 	match _building_at(at):
