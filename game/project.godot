@@ -4,6 +4,9 @@ config_version=5
 
 [application]
 
+config/icon="res://icon.png"
+config/windows_native_icon="res://icon.ico"
+
 config/name="Fishus Maximus"
 config/description="A cozy Roman fishing game on the Bay of Naples."
 config/version="0.1.0"
