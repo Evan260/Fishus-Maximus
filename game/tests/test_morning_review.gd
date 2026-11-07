@@ -61,3 +61,13 @@ func test_a_sail_takes_an_hour_on_the_clock_by_day_and_by_night() -> void:
 		var before := Clock.hour(float(Game.state["time"]))
 		BayMap.sail(Game.state, "rocky_shore")
 		check(absf(fposmod(Clock.hour(float(Game.state["time"])) - before, 24.0) - 1.0) < 0.02, "an hour passes when sailing from %d o'clock" % int(start))
+
+
+func test_the_big_boat_braves_a_storm_for_the_swordfish() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["chapter"] = 5
+	Game.state["weather"] = "storm"
+	Game.state["boat"] = "sailing_boat"
+	check(not BayMap.sail(Game.state, "capri"), "a smaller boat stays in harbour")
+	Game.state["boat"] = "big_boat"
+	check(BayMap.sail(Game.state, "misenum"), "the big boat puts out to the cape")

@@ -30,8 +30,9 @@ static func sail(state: Dictionary, place: String) -> bool:
 
 ## Why a place cannot be reached yet, or nothing when it can.
 static func locked_reason(state: Dictionary, place: String) -> String:
-	if state.get("weather", "clear") == "storm" and place != "harbour" and place != state["place"]:
-		return "The storm keeps the boats in harbour"
+	# Only a boat built for the open sea puts out in a storm, which is when the swordfish rises off the cape.
+	if state.get("weather", "clear") == "storm" and place != "harbour" and place != state["place"] 			and not Data.boats.get(str(state["boat"]), {}).get("storm", false):
+		return "The storm keeps the smaller boats in harbour"
 	var open: Array = Story.unlocks(int(state["chapter"]))["places"]
 	if not place in open:
 		for c in Data.chapters:
