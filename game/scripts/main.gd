@@ -17,6 +17,8 @@ func _ready() -> void:
 		return
 	if Dev.has("demo-state"):
 		Game.demo_state()
+		if Dev.has("boat"):
+			Game.state["boat"] = Dev.get_arg("boat")
 	Nav.go.call_deferred(Dev.get_arg("screen", "title"), Dev.args)
 	if Dev.has("strip"):
 		Windowing.set_strip.call_deferred(true)

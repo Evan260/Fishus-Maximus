@@ -1,6 +1,6 @@
 [
 	{"id": "skiff", "name": "The skiff", "hold": 10, "well": 0, "speed": 40, "price": 0, "text": "Your uncle's rowing skiff."},
-	{"id": "fishing_boat", "name": "The fishing boat", "hold": 20, "well": 2, "speed": 50, "price": 300, "text": "Reaches the Lucrine Lake and the open bay, and keeps two fish alive."},
-	{"id": "sailing_boat", "name": "The sailing boat", "hold": 30, "well": 4, "speed": 70, "price": 900, "text": "A sail to reach Capri."},
-	{"id": "big_boat", "name": "The big boat", "hold": 40, "well": 6, "speed": 70, "price": 2200, "text": "Strong enough for the deep water off Cape Misenum, with a post for the lamp."}
+	{"id": "fishing_boat", "name": "The fishing boat", "hold": 20, "well": 2, "speed": 50, "dog": [0.3, 2], "price": 300, "text": "Reaches the Lucrine Lake and the open bay, and keeps two fish alive."},
+	{"id": "sailing_boat", "name": "The sailing boat", "hold": 30, "well": 4, "speed": 70, "seat": [0.74, 71], "price": 900, "text": "A sail to reach Capri."},
+	{"id": "big_boat", "name": "The big boat", "hold": 40, "well": 6, "speed": 70, "seat": [0.45, 64], "dog": [0.24, 61], "price": 2200, "text": "Strong enough for the deep water off Cape Misenum, with a post for the lamp."}
 ]
