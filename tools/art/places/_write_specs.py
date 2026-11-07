@@ -70,9 +70,9 @@ specs[p] = {
     "floor": floor("pale harbour sand on the sea floor with fine grains, small pebbles and broken shells"),
     "layers": bands("#8fa0a8", "#6f93a0", "#4f8494") + [
         {"file": "far.png", "use": "coast/far.png", "at": [-40, 36], "factor": [0.12, 0.12], "z": -18},
-        {"file": "mid.png", "use": "coast/mid.png", "at": [0, 36], "factor": [0.3, 0.3], "z": -16},
-        {"file": "town.png", "from": "coast/town.png", "land": True, "at": [-190, 26], "factor": [0.55, 0.55], "z": -14},
-        {"file": "cape.png", "from": "coast/cape.png", "land": True, "at": [700, 24], "factor": [0.55, 0.55], "z": -14},
+        {"file": "mid.png", "use": "coast/mid.png", "at": [0, 38], "factor": [0.3, 0.3], "z": -16},
+        {"file": "town.png", "from": "coast/town.png", "land": True, "at": [-190, 28], "factor": [0.55, 0.55], "z": -14},
+        {"file": "cape.png", "from": "coast/cape.png", "land": True, "at": [700, 38], "factor": [0.55, 0.55], "z": -14},
         deep([300, 420]),
     ] + bed(p, "seagrass.png", "a wide clump of tall green Posidonia seagrass ribbons growing up from the sand", "96x48", [250, 560, 830, 1120])
       + bed(p, "tuft.png", "a small tuft of short green seagrass with a few pale stones on the sand", "64x40", [420, 700, 980])
@@ -179,6 +179,32 @@ specs[p] = {
       + bed(p, "seapens.png", "a few tall pale sea pens and a sea star on dark sand", "64x48", [700, 1200, 1800])
       + bed(p, "amphorae.png", "a heap of ancient clay amphorae from a sunken cargo half buried in dark sand", "96x48", [1650], sink=8),
 }
+
+# What each row of land has along the water, by weight: the cliffs get rocks, the lake reeds, the hills beaches.
+SHORES = {
+    "harbour": {"far.png": {"beach": 2, "rocks": 1, "bushes": 1, "plain": 2},
+                "mid.png": {"beach": 2, "rocks": 2, "bushes": 3, "plain": 1},
+                "town.png": {"rocks": 2, "plain": 3},
+                "cape.png": {"rocks": 4, "plain": 1}},
+    "rocky_shore": {"far.png": {"beach": 2, "rocks": 1, "bushes": 1, "plain": 2},
+                    "mid.png": {"beach": 1, "rocks": 3, "bushes": 2},
+                    "near.png": {"rocks": 4, "plain": 1}},
+    "lucrine": {"far.png": {"reeds": 1, "beach": 1, "bushes": 2, "plain": 2},
+                "mid.png": {"reeds": 3, "bushes": 2, "beach": 1},
+                "near.png": {"reeds": 3, "beach": 2, "rocks": 1, "plain": 1}},
+    "open_bay": {"far.png": {"beach": 1, "rocks": 1, "plain": 2},
+                 "mid.png": {"beach": 2, "rocks": 2, "bushes": 2, "plain": 1}},
+    "capri": {"far.png": {"rocks": 1, "beach": 1, "plain": 2},
+              "mid.png": {"rocks": 3, "bushes": 1, "plain": 1},
+              "near.png": {"rocks": 3, "bushes": 1, "plain": 1}},
+    "misenum": {"far.png": {"rocks": 1, "beach": 1, "plain": 2},
+                "mid.png": {"rocks": 2, "beach": 2, "bushes": 1, "plain": 1},
+                "near.png": {"rocks": 3, "plain": 2}},
+}
+for pid, files in SHORES.items():
+    for layer in specs[pid]["layers"]:
+        if layer.get("file") in files and "at" in layer:
+            layer["shore"] = files[layer["file"]]
 
 for pid, spec in specs.items():
     (D / f"{pid}.json").write_text(json.dumps(spec, indent=1), encoding="utf-8")

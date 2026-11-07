@@ -97,7 +97,13 @@
    "haze": [
     "#b4c4cc",
     0.35
-   ]
+   ],
+   "shore": {
+    "reeds": 1,
+    "beach": 1,
+    "bushes": 2,
+    "plain": 2
+   }
   },
   {
    "file": "mid.png",
@@ -124,7 +130,12 @@
     0.3,
     0.3
    ],
-   "z": -16
+   "z": -16,
+   "shore": {
+    "reeds": 3,
+    "bushes": 2,
+    "beach": 1
+   }
   },
   {
    "file": "near.png",
@@ -147,7 +158,13 @@
     0.55,
     0.55
    ],
-   "z": -14
+   "z": -14,
+   "shore": {
+    "reeds": 3,
+    "beach": 2,
+    "rocks": 1,
+    "plain": 1
+   }
   },
   {
    "file": "reeds.png",

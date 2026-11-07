@@ -94,7 +94,12 @@
    "haze": [
     "#b4c4cc",
     0.35
-   ]
+   ],
+   "shore": {
+    "rocks": 1,
+    "beach": 1,
+    "plain": 2
+   }
   },
   {
    "file": "mid.png",
@@ -121,7 +126,13 @@
     0.3,
     0.3
    ],
-   "z": -16
+   "z": -16,
+   "shore": {
+    "rocks": 2,
+    "beach": 2,
+    "bushes": 1,
+    "plain": 1
+   }
   },
   {
    "file": "near.png",
@@ -148,7 +159,11 @@
     0.55,
     0.55
    ],
-   "z": -14
+   "z": -14,
+   "shore": {
+    "rocks": 3,
+    "plain": 2
+   }
   },
   {
    "file": "deep_far.png",

@@ -9,6 +9,7 @@ Each layer in a spec is one of:
   {"file", "from": "coast/cape.png", "extend": {"left": text}, ...}
                                                    a copy of a picture, its cut sides painted on outwards
   {"on_bed": x, "sink": n, ...}                    a seabed piece whose bottom is set into the sand at x
+A land layer with "shore": {"beach": 2, "rocks": 1, ...} gets a shore of those kinds along its bottom (shore.py).
 Pictures are painted once; delete a file (and its parts) to paint it again. Usage:
   python tools/art/make_places.py [PLACE...] [--place-only]
 """
@@ -17,12 +18,14 @@ import math
 import subprocess
 import sys
 import time
+import zlib
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
 
 import places_json
+import shore
 
 ROOT = Path(__file__).resolve().parents[2]
 SPECS = Path(__file__).with_name("places")
@@ -185,6 +188,24 @@ def finish_land(pid, layer, path: Path):
     mark.write_text("done")
 
 
+def shore_land(pid, layer, path: Path):
+    """Once per picture: gives a land row its shore, sized by how far off it is. The picture as it was is kept in
+    parts, so deleting the mark shores it again from there."""
+    mark = PARTS / pid / f"{path.stem}.shore"
+    if mark.exists() or not path.exists():
+        return
+    inland = PARTS / pid / f"{path.stem}_inland.png"
+    mark.parent.mkdir(parents=True, exist_ok=True)
+    if not inland.exists():
+        Image.open(path).save(inland)
+    f = layer["factor"][1]
+    scale = 1 if f < 0.2 else 2 if f < 0.45 else 3
+    rel = path.relative_to(ART).as_posix()
+    shore.shore(Image.open(inland), scale, layer["shore"], zlib.crc32(rel.encode()), layer.get("haze")).save(path)
+    mark.write_text("done")
+    print("shored", rel)
+
+
 def make_strip(pid, layer, out: Path, clear: bool):
     """Paints the pieces and sets them side by side on their bottom edges. Land pieces each end low, so the sea shows
     between them; other strips are repainted across every join so they run on seamlessly."""
@@ -325,7 +346,9 @@ def build(pid, place_only=False):
                     paint(path, layer["prompt"], layer["size"], clear, alone="on_bed" in layer)
         if layer.get("land") and not place_only:
             finish_land(pid, layer, ART / rel)
-        for k in ("prompt", "size", "strip", "seam", "wrap", "from", "extend", "land", "haze"):
+        if "shore" in layer and not place_only:
+            shore_land(pid, layer, ART / rel)
+        for k in ("prompt", "size", "strip", "seam", "wrap", "from", "extend", "land", "haze", "shore"):
             layer.pop(k, None)
         layer["file"] = rel
         pads = PARTS / pid / (Path(rel).stem + ".pads.json")

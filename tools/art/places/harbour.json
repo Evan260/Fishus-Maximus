@@ -92,20 +92,32 @@
     0.12,
     0.12
    ],
-   "z": -18
+   "z": -18,
+   "shore": {
+    "beach": 2,
+    "rocks": 1,
+    "bushes": 1,
+    "plain": 2
+   }
   },
   {
    "file": "mid.png",
    "use": "coast/mid.png",
    "at": [
     0,
-    36
+    38
    ],
    "factor": [
     0.3,
     0.3
    ],
-   "z": -16
+   "z": -16,
+   "shore": {
+    "beach": 2,
+    "rocks": 2,
+    "bushes": 3,
+    "plain": 1
+   }
   },
   {
    "file": "town.png",
@@ -113,13 +125,17 @@
    "land": true,
    "at": [
     -190,
-    26
+    28
    ],
    "factor": [
     0.55,
     0.55
    ],
-   "z": -14
+   "z": -14,
+   "shore": {
+    "rocks": 2,
+    "plain": 3
+   }
   },
   {
    "file": "cape.png",
@@ -127,13 +143,17 @@
    "land": true,
    "at": [
     700,
-    24
+    38
    ],
    "factor": [
     0.55,
     0.55
    ],
-   "z": -14
+   "z": -14,
+   "shore": {
+    "rocks": 4,
+    "plain": 1
+   }
   },
   {
    "file": "deep_far.png",
