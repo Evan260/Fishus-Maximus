@@ -16,6 +16,9 @@ PICTURES = {
              "green coast under a blue sky with soft clouds, umbrella pines on the rocks, on the right the stone building "
              "of a Roman garum works with an open colonnaded front, rows of stone tanks and clay amphorae stacked outside, "
              "the bottom of the picture is a flat stone terrace edge", "480x136"),
+    "ground": ("cross-section of the ground seen exactly from the side: a strip of short green grass with a few small "
+               "flowers along the very top edge, under it brown earth with small stones, roots and darker layers of soil, "
+               "flat even texture filling the whole picture, no sky", "480x136"),
     "wall": ("a long straight terrace wall of big cut pale limestone blocks seen straight on, mossy joints, a little "
              "seaweed at the bottom, flat even wall filling the whole picture, no openings, no doors", "480x136"),
 }

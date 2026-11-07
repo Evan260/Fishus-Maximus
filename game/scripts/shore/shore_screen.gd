@@ -1,6 +1,6 @@
 extends Node2D
-## The shore below the villa: the garum works above the terrace, and the six ponds cut into the terrace wall, each
-## seen through the stone as if cut away.
+## The shore below the villa: the garum works above, and below the grass a cut through the ground showing the six pond
+## sites, each either a stone-lined basin of water with its fish, or a plot marked out with pegs and rope.
 
 const ART := "res://assets/art/shore/"
 const WALL_TOP := 134.0
@@ -12,6 +12,7 @@ var _top: Label
 var _hover := -2
 var _painter: Node2D
 var _stage: Node2D
+var _lining: Texture2D
 
 
 func enter(_args: Dictionary) -> void:
@@ -21,13 +22,14 @@ func enter(_args: Dictionary) -> void:
 	_rng = Seeds.rng(int(Game.state["seed"]), "shore", Clock.day_of(float(Game.state["time"])))
 	_stage = Node2D.new()
 	add_child(_stage)
-	for name in ["back", "wall"]:
+	_lining = load(ART + "wall.png")
+	for name in ["back", "ground"]:
 		if ResourceLoader.exists(ART + name + ".png"):
 			var b := Backdrop.new(load(ART + name + ".png"))
 			b.position = Vector2(0, 0 if name == "back" else WALL_TOP)
-			# The view above carries on into sky, and below into more wall, never the other picture.
+			# The view above carries on into sky, and below into more ground, never the other picture.
 			for c in b.get_children():
-				if (name == "back" and c.position.y > 0.0) or (name == "wall" and c.position.y < 0.0):
+				if (name == "back" and c.position.y > 0.0) or (name == "ground" and c.position.y < 0.0):
 					c.queue_free()
 			_stage.add_child(b)
 	Windowing.view_changed.connect(_place)
@@ -53,9 +55,9 @@ func enter(_args: Dictionary) -> void:
 	_refresh()
 
 
-## Where a pond's window is cut into the terrace wall.
+## Where a pond's basin is dug into the ground, its water starting just below the grass.
 static func window(site: int) -> Rect2:
-	return Rect2(Vector2(12 + site * 76, WALL_TOP + 26), PondView.SIZE)
+	return Rect2(Vector2(12 + site * 76, WALL_TOP + 20), PondView.SIZE)
 
 
 func _place() -> void:
@@ -91,15 +93,25 @@ func _draw_over() -> void:
 		var r := window(site)
 		var built := Ponds.site_of(Game.state, site) >= 0
 		if built:
-			# The stone lip and inner shadow of a basin cut into the wall.
-			_painter.draw_rect(Rect2(r.position - Vector2(3, 3), Vector2(r.size.x + 6, 3)), Color("#e8dcc0"))
-			_painter.draw_rect(Rect2(r.position - Vector2(3, 0), Vector2(3, r.size.y + 3)), Color("#8a7a62"))
-			_painter.draw_rect(Rect2(r.position + Vector2(r.size.x, 0), Vector2(3, r.size.y + 3)), Color("#6e5f4a"))
-			_painter.draw_rect(Rect2(r.position + Vector2(-3, r.size.y), Vector2(r.size.x + 6, 3)), Color("#5a4c3a"))
+			# The basin's lining of cut stone, from the grass down its sides and across its floor.
+			var lip := 4.0
+			_painter.draw_texture_rect_region(_lining, Rect2(r.position + Vector2(-lip, -6), Vector2(lip, r.size.y + 6 + lip)), Rect2(site * 40, 0, lip, r.size.y + 6 + lip))
+			_painter.draw_texture_rect_region(_lining, Rect2(r.position + Vector2(r.size.x, -6), Vector2(lip, r.size.y + 6 + lip)), Rect2(site * 40 + 20, 0, lip, r.size.y + 6 + lip))
+			_painter.draw_texture_rect_region(_lining, Rect2(r.position + Vector2(0, r.size.y), Vector2(r.size.x, lip)), Rect2(site * 30, 60, r.size.x, lip))
+			_painter.draw_rect(Rect2(r.position + Vector2(-lip, -7), Vector2(r.size.x + 2 * lip, 2)), Color("#e8dcc0"))
+		else:
+			# An empty site is a plot marked out on the grass with two pegs and a rope.
+			var y := WALL_TOP + 7.0
+			for px in [r.position.x + 4.0, r.end.x - 5.0]:
+				_painter.draw_rect(Rect2(px, y - 8, 2, 9), Color("#7a5532"))
+				_painter.draw_rect(Rect2(px, y - 8, 2, 1), Color("#a87a4a"))
+			for k in int(r.size.x - 9):
+				var sag := sin(float(k) / (r.size.x - 9) * PI) * 2.0
+				_painter.draw_rect(Rect2(r.position.x + 5 + k, roundf(y - 6 + sag), 1, 1), Color("#c9a66b"))
 		if _hover == site:
-			var label := str(Data.ponds["sites"][site]["name"]) if built else ("Cut a pond here" if Game.state["ponds"].size() < Ponds.allowed(Game.state) else "Not yet")
-			_tip(r.position + Vector2(r.size.x / 2.0, -6), label)
-			_painter.draw_rect(r.grow(4), UiTheme.GOLD, false, 1.0)
+			var label := str(Data.ponds["sites"][site]["name"]) if built else ("Dig a pond here" if Game.state["ponds"].size() < Ponds.allowed(Game.state) else "Not yet")
+			_tip(r.position + Vector2(r.size.x / 2.0, -14), label)
+			_painter.draw_rect(r.grow(5), UiTheme.GOLD, false, 1.0)
 	if _hover == -1:
 		_painter.draw_rect(GARUM, UiTheme.GOLD, false, 1.0)
 		_tip(GARUM.position + Vector2(GARUM.size.x / 2.0, 10), "The garum works")

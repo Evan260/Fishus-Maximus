@@ -1,6 +1,6 @@
 class_name PondView
 extends Node2D
-## One pond seen through the terrace wall as if cut away: its water, its sandy floor and features, and its fish
+## One pond seen in a cut through the ground: its water, its sandy floor and features, and its fish
 ## swimming. Ringing the bell brings the named fish to the front with their names over them.
 
 const SIZE := Vector2(64, 92)
