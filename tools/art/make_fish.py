@@ -11,8 +11,8 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "game" / "assets" / "art" / "fish"
 RAW = Path(__file__).with_name("fish_raw")
-REUSE = {"mullet": "mullet", "bream": "bream", "sardine": "sardine", "moray": "moray", "octopus": "octopus",
-         "grouper": "grouper", "tuna": "tuna"}
+REUSE = {"mullet": "mullet", "bream": "bream", "sardine": "sardine", "octopus": "octopus", "grouper": "grouper",
+         "tuna": "tuna"}
 SIDE = "seen exactly from the side facing right, realistic and natural, not cartoon"
 FLAT = "seen from above lying flat, head to the right, realistic and natural, not cartoon"
 STYLE = "cozy pixel art, soft daylight, gentle shading, no outlines"
@@ -20,6 +20,7 @@ STYLE_REF = "game/assets/art/fish/sea_bass.png"
 
 # id: (look, canvas, halve)
 LOOKS = {
+    "moray": ("a Mediterranean moray eel, long body in dark brown mottled with small pale yellow flecks, its mouth a little open", "64x32", False),
     "grey_mullet": ("a grey mullet fish, silver-grey body with faint dark stripes along its sides, blunt head", "48x32", False),
     "white_bream": ("a white sea bream fish, silver body with dark vertical bands and a black spot near the tail", "48x32", False),
     "salema": ("a salema fish, silver body with thin golden stripes along its length", "48x32", False),
