@@ -1,0 +1,62 @@
+class_name World
+## Time passing for everything at once: the pots fill, the hold's fish go off, and each new morning the market
+## recovers, the board fills, whatever is still in the live well dies into the hold, the ponds and tanks have their
+## day, and on the year's show day the ponds are judged.
+
+
+static func advance(state: Dictionary, minutes: float, rng: RandomNumberGenerator) -> void:
+	var left := maxf(0.0, minutes)
+	# A long stretch is lived a day at a time, so each morning comes on its own day and the pots fill between them.
+	while left > 0.0:
+		var t := float(state["time"])
+		var day := Clock.day_of(t)
+		var step := minf(left, (day + 1) * Clock.minutes_per_day() - t)
+		_pass(state, step, rng)
+		left -= step
+		if Clock.day_of(float(state["time"])) > day:
+			new_day(state, rng)
+
+
+static func _pass(state: Dictionary, minutes: float, rng: RandomNumberGenerator) -> void:
+	state["time"] = float(state["time"]) + minutes
+	var hours := minutes * 24.0 / Clock.minutes_per_day()
+	var hour := Clock.hour(float(state["time"]))
+	var season := Clock.season(Clock.day_of(float(state["time"])))
+	for t in state["traps"]:
+		Traps.fill(t, hours, rng)
+		_trap_legend(state, t, hours, hour, season, rng)
+	Hold.freshen(state, minutes)
+	if state.get("_ashore", false):
+		Helpers.fish(state, minutes, rng)
+
+
+static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
+	Market.new_day(state)
+	var died := 0
+	for f in state["live_well"]:
+		f["live"] = false
+		f["fresh"] = 0.7
+		if Hold.room(state) > 0:
+			state["hold"].append(f)
+		else:
+			died += 1
+	state["live_well"] = []
+	if died > 0:
+		state["_lost"] = died
+	Orders.new_day(state, rng)
+	Helpers.morning(state)
+	Ponds.day(state, rng)
+	Garum.day(state)
+	var day := Clock.day_of(float(state["time"]))
+	state["weather"] = Weather.for_day(int(state["seed"]), day)
+	if "pond_show" in Events.on(day) and not state["ponds"].is_empty():
+		state["_show"] = Ponds.show(state)
+
+
+## A legend that is caught in pots may wander into one baited with what it likes, while its hours last.
+static func _trap_legend(state: Dictionary, trap: Dictionary, hours: float, hour: float, season: String, rng: RandomNumberGenerator) -> void:
+	if trap["catch"].size() >= int(trap.get("size", 3)):
+		return
+	for id in Legends.here(str(trap["place"]), hour, season, str(state.get("weather", "clear")), state, "trap"):
+		if str(trap.get("bait", "")) in Data.fish[id]["baits"] and rng.randf() < 0.08 * hours 				and not trap["catch"].any(func(c): return c["fish"] == id):
+			trap["catch"].append(Pick.catch_of(id, rng, true))
