@@ -16,7 +16,7 @@ static func show_earned(id: String) -> void:
 	card.add_child(col)
 	Ui.label(col, "ACHIEVEMENT", "Heading")
 	Ui.label(col, a.get("name", id))
-	Audio.play("triumph", -4.0)
+	Audio.play("pond_bell", -6.0)
 	var tw := card.create_tween()
 	tw.tween_property(card, "position:y", bottom - 44.0, 0.3)
 	tw.tween_interval(3.0)

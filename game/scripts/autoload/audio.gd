@@ -18,6 +18,9 @@ var wanted := {}
 
 
 func _ready() -> void:
+	# Scripted runs for tests, screenshots and bots play nothing at all.
+	if Dev.has("run-tests") or Dev.has("shot") or Dev.has("burst") or Dev.has("flow") or Dev.has("pacing") or Dev.has("quit"):
+		AudioServer.set_bus_mute(0, true)
 	if AudioServer.get_bus_index("Ambience") == -1:
 		AudioServer.add_bus()
 		AudioServer.set_bus_name(AudioServer.bus_count - 1, "Ambience")

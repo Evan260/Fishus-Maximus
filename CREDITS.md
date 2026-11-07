@@ -14,7 +14,6 @@ These come from Farmus Maximus, which credits them the same way:
 - Wine cork pop by ahill86 (freesound.org), CC0, used for the float
 - Turning a book page by SpaceJoe (freesound.org), CC0
 - Small metal bell by steffcaffrey (freesound.org), CC0, for the pond bell
-- Trumpet fanfare by joepayne (freesound.org), CC0
 - Church bell strike by kgeshev (freesound.org), CC0, for a new chapter
 - Distant thunder by xUMR (freesound.org), CC0
 - Soft rain in the countryside by EduFigueres (freesound.org), CC0
