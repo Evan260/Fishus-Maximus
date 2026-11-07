@@ -16,12 +16,16 @@
 		"well": 2,
 		"speed": 50,
 		"dog": [
-			0.84,
+			0.86,
 			29
 		],
 		"price": 300,
 		"text": "Reaches the Lucrine Lake and the open bay, and keeps two fish alive.",
-		"oars": true
+		"oars": true,
+		"seat": [
+			0.5,
+			21
+		]
 	},
 	{
 		"id": "sailing_boat",
