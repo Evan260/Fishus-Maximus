@@ -326,3 +326,8 @@ time,kind,name,cost_usd,cost_generations,usd_left
 2026-11-07T01:15:24,character,game\assets\art\people\priest,0.0504,0,4.6826
 2026-11-07T01:17:59,character,game\assets\art\people\widow,0.0539,0,4.6287
 2026-11-07T01:19:50,pixen,tools\art\people_raw\portrait_priest.png,0.0081,0,4.6206
+2026-11-07T12:23:17,pixen,tools\art\props_raw\buoy.png,0.0071,0,4.6135
+2026-11-07T12:24:01,pixen,tools\art\props_raw\buoy.png,0.0071,0,4.6064
+2026-11-07T12:30:47,proflash,tools/art/title_parts/cloud_a.png,0.0281,0,4.5783
+2026-11-07T12:31:16,proflash,tools/art/title_parts/cloud_b.png,0.0242,0,4.5541
+2026-11-07T12:31:44,proflash,tools/art/title_parts/cloud_c.png,0.0282,0,4.5259

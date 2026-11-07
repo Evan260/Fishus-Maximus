@@ -14,7 +14,7 @@ STYLE = "cozy pixel art, soft daylight, gentle shading, no outlines, alone on an
 
 PROPS = {
     "trap": ("a round ancient wicker fishing pot trap with a funnel mouth, woven from brown willow, seen from the side", "32x32"),
-    "buoy": ("a small round cork float painted red and white with a short rope below it, seen from the side", "32x32"),
+    "buoy": ("an ancient fishing float: one solid rounded lump of natural pale brown cork, no hole, unpainted, with a twine loop on top and a short rope hanging straight down below it, seen from the side", "32x32"),
     "net": ("a round cast fishing net spread wide open in the air, fine brown mesh with small lead weights around its edge, seen from the side", "64x32"),
     "trident": ("a fishing trident spear with three bronze barbed prongs and a long wooden shaft, lying horizontal, point to the right", "64x32"),
     "dolphin": ("a common dolphin leaping in an arc, grey back and pale belly, seen exactly from the side facing right", "64x32"),
