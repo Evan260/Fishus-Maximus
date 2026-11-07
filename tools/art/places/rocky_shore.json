@@ -1,0 +1,289 @@
+{
+ "width": 1920,
+ "seabed": [
+  [
+   0,
+   56
+  ],
+  [
+   220,
+   92
+  ],
+  [
+   480,
+   150
+  ],
+  [
+   760,
+   220
+  ],
+  [
+   1040,
+   288
+  ],
+  [
+   1380,
+   350
+  ],
+  [
+   1640,
+   396
+  ],
+  [
+   1920,
+   416
+  ]
+ ],
+ "spots": {
+  "wreck": 1380
+ },
+ "floor": {
+  "strip": [
+   {
+    "prompt": "coarse golden sand and gravel on the sea floor with small pebbles and shell fragments, seamless flat even texture filling the whole picture, seen from the side",
+    "size": "512x64"
+   }
+  ],
+  "seam": "coarse golden sand and gravel on the sea floor with small pebbles and shell fragments, seamless texture",
+  "surface": 6
+ },
+ "layers": [
+  {
+   "file": "places/common/clouds.png",
+   "at": [
+    0,
+    6
+   ],
+   "factor": [
+    0.05,
+    0.05
+   ],
+   "z": -25,
+   "alpha": 0.9,
+   "fit": true,
+   "use": "places/common/clouds.png"
+  },
+  {
+   "band": "#8fa0a8",
+   "at": [
+    0,
+    106
+   ],
+   "factor": [
+    0.12,
+    0.12
+   ],
+   "z": -19
+  },
+  {
+   "band": "#6f93a0",
+   "at": [
+    0,
+    116
+   ],
+   "factor": [
+    0.3,
+    0.3
+   ],
+   "z": -17
+  },
+  {
+   "band": "#4f8494",
+   "at": [
+    0,
+    136
+   ],
+   "factor": [
+    0.55,
+    0.55
+   ],
+   "z": -15
+  },
+  {
+   "file": "far.png",
+   "prompt": "distant mountains across the bay of Naples, the green cone of Mount Vesuvius in the middle, low hills on both sides, faded by distance and haze, flat straight bottom edge, nothing below the mountains",
+   "size": "704x72",
+   "at": [
+    -20,
+    36
+   ],
+   "factor": [
+    0.12,
+    0.12
+   ],
+   "z": -18,
+   "land": true,
+   "haze": [
+    "#b4c4cc",
+    0.35
+   ]
+  },
+  {
+   "file": "mid.png",
+   "strip": [
+    {
+     "prompt": "a row of green coastal hills at a middle distance with umbrella pines, olive groves and a few small white Roman farmhouses, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "480x80"
+    },
+    {
+     "prompt": "a row of rocky wooded headlands at a middle distance with pines and scrub, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "480x80"
+    }
+   ],
+   "land": true,
+   "haze": [
+    "#a9bcc4",
+    0.18
+   ],
+   "at": [
+    -16,
+    38
+   ],
+   "factor": [
+    0.3,
+    0.3
+   ],
+   "z": -16
+  },
+  {
+   "file": "near.png",
+   "strip": [
+    {
+     "prompt": "tall golden limestone sea cliffs with dark cave mouths at the waterline, scrub and umbrella pines on top, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "448x112"
+    },
+    {
+     "prompt": "a rocky headland of grey and golden rock with a small ancient Roman stone watchtower and pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "448x112"
+    },
+    {
+     "prompt": "rugged sea cliffs with a deep cave at the waterline and wild fig trees, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "448x112"
+    }
+   ],
+   "land": true,
+   "at": [
+    -16,
+    26
+   ],
+   "factor": [
+    0.55,
+    0.55
+   ],
+   "z": -14
+  },
+  {
+   "file": "deep_far.png",
+   "from": "coast/deep_far.png",
+   "land": true,
+   "at": [
+    200,
+    470
+   ],
+   "factor": [
+    0.6,
+    0.8
+   ],
+   "z": -9,
+   "alpha": 0.6
+  },
+  {
+   "file": "rock.png",
+   "on_bed": 300,
+   "sink": 10,
+   "z": -9,
+   "prompt": "an underwater rock with ledges covered in green and brown seaweed, red sea fans and orange sponges, rounded on both sides, sitting on the sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "160x96"
+  },
+  {
+   "file": "rock.png",
+   "on_bed": 1100,
+   "sink": 10,
+   "z": -9,
+   "mirror": true,
+   "use": "places/rocky_shore/rock.png"
+  },
+  {
+   "file": "boulders.png",
+   "on_bed": 640,
+   "sink": 8,
+   "z": -9,
+   "prompt": "a pile of big rounded underwater boulders with sea urchins and anemones, sitting on the sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "128x80"
+  },
+  {
+   "file": "boulders.png",
+   "on_bed": 1620,
+   "sink": 8,
+   "z": -9,
+   "mirror": true,
+   "use": "places/rocky_shore/boulders.png"
+  },
+  {
+   "file": "kelp.png",
+   "on_bed": 480,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a clump of tall brown kelp and green seaweed growing from the sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "64x64"
+  },
+  {
+   "file": "kelp.png",
+   "on_bed": 900,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/rocky_shore/kelp.png"
+  },
+  {
+   "file": "kelp.png",
+   "on_bed": 1250,
+   "sink": 6,
+   "z": -9,
+   "use": "places/rocky_shore/kelp.png"
+  },
+  {
+   "file": "kelp.png",
+   "on_bed": 1800,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/rocky_shore/kelp.png"
+  },
+  {
+   "file": "fans.png",
+   "on_bed": 820,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a few red sea fans and orange sponges on a small rock, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "64x48"
+  },
+  {
+   "file": "fans.png",
+   "on_bed": 1480,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/rocky_shore/fans.png"
+  },
+  {
+   "file": "wreck.png",
+   "on_bed": 1270,
+   "sink": 12,
+   "z": -9,
+   "prompt": "the wreck of a small ancient Roman merchant ship lying on the sea floor, broken wooden hull ribs, clay amphorae spilling onto the sand, seaweed, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "256x112"
+  },
+  {
+   "file": "stack.png",
+   "prompt": "a tall rock stack rising out of the sea, seen from the side: its top part above the water is golden limestone with a small bush, its lower part under the water is covered in green weed and barnacles, the base widens onto the sea floor, the whole rock in the picture",
+   "size": "112x208",
+   "world": [
+    170,
+    -70
+   ],
+   "z": -7,
+   "through": true
+  }
+ ]
+}

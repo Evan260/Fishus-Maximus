@@ -1,0 +1,246 @@
+{
+ "width": 1920,
+ "seabed": [
+  [
+   0,
+   110
+  ],
+  [
+   300,
+   168
+  ],
+  [
+   640,
+   248
+  ],
+  [
+   1000,
+   330
+  ],
+  [
+   1300,
+   398
+  ],
+  [
+   1500,
+   446
+  ],
+  [
+   1720,
+   488
+  ],
+  [
+   1920,
+   516
+  ]
+ ],
+ "spots": {
+  "deep_cave": 1500
+ },
+ "floor": {
+  "strip": [
+   {
+    "prompt": "bright white sand and pale limestone pebbles on the sea floor, seamless flat even texture filling the whole picture, seen from the side",
+    "size": "512x64"
+   }
+  ],
+  "seam": "bright white sand and pale limestone pebbles on the sea floor, seamless texture",
+  "surface": 6
+ },
+ "layers": [
+  {
+   "file": "places/common/clouds.png",
+   "at": [
+    0,
+    6
+   ],
+   "factor": [
+    0.05,
+    0.05
+   ],
+   "z": -25,
+   "alpha": 0.9,
+   "fit": true,
+   "use": "places/common/clouds.png"
+  },
+  {
+   "band": "#90a8b4",
+   "at": [
+    0,
+    106
+   ],
+   "factor": [
+    0.12,
+    0.12
+   ],
+   "z": -19
+  },
+  {
+   "band": "#6a9cae",
+   "at": [
+    0,
+    116
+   ],
+   "factor": [
+    0.3,
+    0.3
+   ],
+   "z": -17
+  },
+  {
+   "band": "#3f8aa0",
+   "at": [
+    0,
+    136
+   ],
+   "factor": [
+    0.55,
+    0.55
+   ],
+   "z": -15
+  },
+  {
+   "file": "far.png",
+   "prompt": "the long green mountain ridge of the Sorrento peninsula, soft rounded green and grey-blue slopes, no snow, faded by distance and haze, flat straight bottom edge, nothing below the mountains",
+   "size": "704x72",
+   "at": [
+    -20,
+    36
+   ],
+   "factor": [
+    0.12,
+    0.12
+   ],
+   "z": -18,
+   "land": true,
+   "haze": [
+    "#b4c4cc",
+    0.35
+   ]
+  },
+  {
+   "file": "mid.png",
+   "strip": [
+    {
+     "prompt": "the steep green slopes of the island of Capri at a middle distance with white ancient Roman villas, terraces and pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "480x80"
+    },
+    {
+     "prompt": "the rocky upper cliffs of Capri with the ruins of an imperial Roman villa on the summit and pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "480x80"
+    }
+   ],
+   "land": true,
+   "haze": [
+    "#a9bcc4",
+    0.18
+   ],
+   "at": [
+    -16,
+    38
+   ],
+   "factor": [
+    0.3,
+    0.3
+   ],
+   "z": -16
+  },
+  {
+   "file": "near.png",
+   "strip": [
+    {
+     "prompt": "towering pale limestone sea cliffs with a dark cave mouth at the waterline and wild bushes, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "448x128"
+    },
+    {
+     "prompt": "three tall rock stacks rising from the sea in front of white limestone cliffs, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "448x128"
+    },
+    {
+     "prompt": "white limestone sea cliffs with a natural rock arch at the water and pines on top, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "448x128"
+    }
+   ],
+   "land": true,
+   "at": [
+    -16,
+    10
+   ],
+   "factor": [
+    0.55,
+    0.55
+   ],
+   "z": -14
+  },
+  {
+   "file": "deep_far.png",
+   "from": "coast/deep_far.png",
+   "land": true,
+   "at": [
+    200,
+    510
+   ],
+   "factor": [
+    0.6,
+    0.8
+   ],
+   "z": -9,
+   "alpha": 0.6
+  },
+  {
+   "file": "white_rock.png",
+   "on_bed": 300,
+   "sink": 10,
+   "z": -9,
+   "prompt": "a pale limestone underwater rock with red coral branches, purple sponges and sea fans, rounded on both sides, sitting on the sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "160x96"
+  },
+  {
+   "file": "white_rock.png",
+   "on_bed": 1050,
+   "sink": 10,
+   "z": -9,
+   "mirror": true,
+   "use": "places/capri/white_rock.png"
+  },
+  {
+   "file": "coral.png",
+   "on_bed": 620,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a cluster of bright red Mediterranean coral and white sea fans on a small rock, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "64x48"
+  },
+  {
+   "file": "coral.png",
+   "on_bed": 1720,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/capri/coral.png"
+  },
+  {
+   "file": "cave.png",
+   "on_bed": 1380,
+   "sink": 12,
+   "z": -9,
+   "prompt": "a huge rough jagged pale limestone sea rock with an irregular natural outline and a dark cave opening in its side, blue light deep inside the opening, sponges and red coral on the rock, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "224x160"
+  },
+  {
+   "file": "seagrass.png",
+   "on_bed": 150,
+   "sink": 6,
+   "z": -9,
+   "use": "places/harbour/seagrass.png"
+  },
+  {
+   "file": "seagrass.png",
+   "on_bed": 820,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/harbour/seagrass.png"
+  }
+ ]
+}

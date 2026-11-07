@@ -1,0 +1,318 @@
+{
+ "width": 1440,
+ "seabed": [
+  [
+   0,
+   60
+  ],
+  [
+   200,
+   68
+  ],
+  [
+   360,
+   96
+  ],
+  [
+   600,
+   128
+  ],
+  [
+   850,
+   168
+  ],
+  [
+   1050,
+   214
+  ],
+  [
+   1250,
+   262
+  ],
+  [
+   1440,
+   294
+  ]
+ ],
+ "floor": {
+  "strip": [
+   {
+    "prompt": "pale harbour sand on the sea floor with fine grains, small pebbles and broken shells, seamless flat even texture filling the whole picture, seen from the side",
+    "size": "512x64"
+   }
+  ],
+  "seam": "pale harbour sand on the sea floor with fine grains, small pebbles and broken shells, seamless texture",
+  "surface": 6
+ },
+ "layers": [
+  {
+   "file": "places/common/clouds.png",
+   "at": [
+    0,
+    6
+   ],
+   "factor": [
+    0.05,
+    0.05
+   ],
+   "z": -25,
+   "alpha": 0.9,
+   "fit": true,
+   "strip": [
+    {
+     "prompt": "a long row of soft white and pale cream summer clouds drifting in a line, thin wisps between them, nothing else",
+     "size": "384x64"
+    },
+    {
+     "prompt": "a long row of soft white fair-weather clouds with gentle grey undersides drifting in a line, thin wisps, nothing else",
+     "size": "384x64"
+    }
+   ],
+   "seam": "soft white clouds carry on seamlessly",
+   "wrap": true
+  },
+  {
+   "band": "#8fa0a8",
+   "at": [
+    0,
+    106
+   ],
+   "factor": [
+    0.12,
+    0.12
+   ],
+   "z": -19
+  },
+  {
+   "band": "#6f93a0",
+   "at": [
+    0,
+    116
+   ],
+   "factor": [
+    0.3,
+    0.3
+   ],
+   "z": -17
+  },
+  {
+   "band": "#4f8494",
+   "at": [
+    0,
+    136
+   ],
+   "factor": [
+    0.55,
+    0.55
+   ],
+   "z": -15
+  },
+  {
+   "file": "far.png",
+   "use": "coast/far.png",
+   "at": [
+    -40,
+    36
+   ],
+   "factor": [
+    0.12,
+    0.12
+   ],
+   "z": -18
+  },
+  {
+   "file": "mid.png",
+   "use": "coast/mid.png",
+   "at": [
+    0,
+    36
+   ],
+   "factor": [
+    0.3,
+    0.3
+   ],
+   "z": -16
+  },
+  {
+   "file": "town.png",
+   "from": "coast/town.png",
+   "land": true,
+   "at": [
+    -190,
+    26
+   ],
+   "factor": [
+    0.55,
+    0.55
+   ],
+   "z": -14
+  },
+  {
+   "file": "cape.png",
+   "from": "coast/cape.png",
+   "land": true,
+   "at": [
+    700,
+    24
+   ],
+   "factor": [
+    0.55,
+    0.55
+   ],
+   "z": -14
+  },
+  {
+   "file": "deep_far.png",
+   "from": "coast/deep_far.png",
+   "land": true,
+   "at": [
+    300,
+    420
+   ],
+   "factor": [
+    0.6,
+    0.8
+   ],
+   "z": -9,
+   "alpha": 0.6
+  },
+  {
+   "file": "seagrass.png",
+   "on_bed": 250,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a wide clump of tall green Posidonia seagrass ribbons growing up from the sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "96x48"
+  },
+  {
+   "file": "seagrass.png",
+   "on_bed": 560,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/harbour/seagrass.png"
+  },
+  {
+   "file": "seagrass.png",
+   "on_bed": 830,
+   "sink": 6,
+   "z": -9,
+   "use": "places/harbour/seagrass.png"
+  },
+  {
+   "file": "seagrass.png",
+   "on_bed": 1120,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/harbour/seagrass.png"
+  },
+  {
+   "file": "tuft.png",
+   "on_bed": 420,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a small tuft of short green seagrass with a few pale stones on the sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "64x40"
+  },
+  {
+   "file": "tuft.png",
+   "on_bed": 700,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/harbour/tuft.png"
+  },
+  {
+   "file": "tuft.png",
+   "on_bed": 980,
+   "sink": 6,
+   "z": -9,
+   "use": "places/harbour/tuft.png"
+  },
+  {
+   "file": "amphora.png",
+   "on_bed": 480,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a broken ancient clay amphora lying half buried on its side in the sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "48x32"
+  },
+  {
+   "file": "urchins.png",
+   "on_bed": 640,
+   "sink": 6,
+   "z": -9,
+   "prompt": "two spiny dark purple sea urchins resting on a small pale stone, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "48x32"
+  },
+  {
+   "file": "urchins.png",
+   "on_bed": 1200,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/harbour/urchins.png"
+  },
+  {
+   "file": "anchor.png",
+   "on_bed": 940,
+   "sink": 6,
+   "z": -9,
+   "prompt": "an old Roman anchor with a lead stock and a wooden shank lying on the sand, encrusted with weed, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "64x48"
+  },
+  {
+   "file": "reef.png",
+   "on_bed": 1150,
+   "sink": 10,
+   "z": -9,
+   "prompt": "a big natural rough rounded sea rock with an irregular lumpy outline, covered in red sea fans, orange sponges and green weed, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "160x112"
+  },
+  {
+   "file": "boulders.png",
+   "on_bed": 1320,
+   "sink": 8,
+   "z": -9,
+   "prompt": "a few big rounded boulders with brown seaweed in dim light, sitting on the sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "128x64"
+  },
+  {
+   "file": "boulders.png",
+   "on_bed": 60,
+   "sink": 8,
+   "z": -9,
+   "mirror": true,
+   "use": "places/harbour/boulders.png"
+  },
+  {
+   "file": "quay.png",
+   "use": "places/harbour/quay.png",
+   "world": [
+    0,
+    -36
+   ],
+   "z": -7,
+   "through": true
+  },
+  {
+   "file": "amphorae.png",
+   "use": "props/amphorae.png",
+   "world": [
+    18,
+    -62
+   ],
+   "z": -7
+  },
+  {
+   "file": "bollard.png",
+   "use": "props/bollard.png",
+   "world": [
+    100,
+    -60
+   ],
+   "z": -7
+  }
+ ]
+}

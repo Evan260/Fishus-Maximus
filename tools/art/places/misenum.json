@@ -1,0 +1,247 @@
+{
+ "width": 2400,
+ "seabed": [
+  [
+   0,
+   160
+  ],
+  [
+   400,
+   280
+  ],
+  [
+   800,
+   400
+  ],
+  [
+   1200,
+   520
+  ],
+  [
+   1600,
+   640
+  ],
+  [
+   2000,
+   740
+  ],
+  [
+   2400,
+   796
+  ]
+ ],
+ "floor": {
+  "strip": [
+   {
+    "prompt": "soft grey-brown silt and fine sand on a deep sea floor with a few pale shells and small stones, muted colours, seamless flat even texture filling the whole picture, seen from the side",
+    "size": "512x64"
+   }
+  ],
+  "seam": "soft grey-brown silt and fine sand on a deep sea floor with a few pale shells and small stones, muted colours, seamless texture",
+  "surface": 6
+ },
+ "layers": [
+  {
+   "file": "places/common/clouds.png",
+   "at": [
+    0,
+    6
+   ],
+   "factor": [
+    0.05,
+    0.05
+   ],
+   "z": -25,
+   "alpha": 0.9,
+   "fit": true,
+   "use": "places/common/clouds.png"
+  },
+  {
+   "band": "#8fa4ae",
+   "at": [
+    0,
+    106
+   ],
+   "factor": [
+    0.12,
+    0.12
+   ],
+   "z": -19
+  },
+  {
+   "band": "#6a94a6",
+   "at": [
+    0,
+    116
+   ],
+   "factor": [
+    0.3,
+    0.3
+   ],
+   "z": -17
+  },
+  {
+   "band": "#4a8296",
+   "at": [
+    0,
+    136
+   ],
+   "factor": [
+    0.55,
+    0.55
+   ],
+   "z": -15
+  },
+  {
+   "file": "far.png",
+   "prompt": "the distant islands of Procida and Ischia, the high green mountain of Ischia on the right, faded by distance and haze, flat straight bottom edge, nothing below the mountains",
+   "size": "768x72",
+   "at": [
+    -20,
+    36
+   ],
+   "factor": [
+    0.12,
+    0.12
+   ],
+   "z": -18,
+   "land": true,
+   "haze": [
+    "#b4c4cc",
+    0.35
+   ]
+  },
+  {
+   "file": "mid.png",
+   "strip": [
+    {
+     "prompt": "the long green headland of Cape Misenum at a middle distance with a white lighthouse tower and pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "544x80"
+    },
+    {
+     "prompt": "the low coast of the Phlegraean fields with villas and the town of Baiae, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "544x80"
+    }
+   ],
+   "land": true,
+   "haze": [
+    "#a9bcc4",
+    0.18
+   ],
+   "at": [
+    -16,
+    38
+   ],
+   "factor": [
+    0.3,
+    0.3
+   ],
+   "z": -16
+  },
+  {
+   "file": "near.png",
+   "strip": [
+    {
+     "prompt": "the ancient Roman naval harbour of Misenum: a long stone breakwater with arches, ancient Roman trireme war galleys with three banks of oars, a single furled square sail and a bronze ram, moored inside, warehouses with red tiled roofs, first century, no medieval ships, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "528x112"
+    },
+    {
+     "prompt": "the steep green slopes of Cape Misenum with a tall white Roman lighthouse, villas and pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "528x112"
+    },
+    {
+     "prompt": "a rocky shore below the cape with grey cliffs, sea caves and pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "528x112"
+    }
+   ],
+   "land": true,
+   "at": [
+    -16,
+    26
+   ],
+   "factor": [
+    0.55,
+    0.55
+   ],
+   "z": -14
+  },
+  {
+   "file": "deep_far.png",
+   "from": "coast/deep_far.png",
+   "land": true,
+   "at": [
+    0,
+    730
+   ],
+   "factor": [
+    0.6,
+    0.8
+   ],
+   "z": -9,
+   "alpha": 0.6,
+   "fit": true
+  },
+  {
+   "file": "column.png",
+   "on_bed": 900,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a toppled ancient white marble column broken in pieces lying on the sea floor, encrusted with weed, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "128x48"
+  },
+  {
+   "file": "dark_rock.png",
+   "on_bed": 400,
+   "sink": 10,
+   "z": -9,
+   "prompt": "a dark volcanic underwater rock with pale sea fans and sponges, rounded on both sides, sitting on the sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "160x96"
+  },
+  {
+   "file": "dark_rock.png",
+   "on_bed": 1500,
+   "sink": 10,
+   "z": -9,
+   "mirror": true,
+   "use": "places/misenum/dark_rock.png"
+  },
+  {
+   "file": "dark_rock.png",
+   "on_bed": 2100,
+   "sink": 10,
+   "z": -9,
+   "use": "places/misenum/dark_rock.png"
+  },
+  {
+   "file": "seapens.png",
+   "on_bed": 700,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a few tall pale sea pens and a sea star on dark sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "64x48"
+  },
+  {
+   "file": "seapens.png",
+   "on_bed": 1200,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/misenum/seapens.png"
+  },
+  {
+   "file": "seapens.png",
+   "on_bed": 1800,
+   "sink": 6,
+   "z": -9,
+   "use": "places/misenum/seapens.png"
+  },
+  {
+   "file": "amphorae.png",
+   "on_bed": 1650,
+   "sink": 8,
+   "z": -9,
+   "prompt": "a heap of ancient clay amphorae from a sunken cargo half buried in dark sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "96x48"
+  }
+ ]
+}

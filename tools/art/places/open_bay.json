@@ -1,0 +1,231 @@
+{
+ "width": 2400,
+ "seabed": [
+  [
+   0,
+   140
+  ],
+  [
+   400,
+   220
+  ],
+  [
+   800,
+   300
+  ],
+  [
+   1200,
+   378
+  ],
+  [
+   1600,
+   450
+  ],
+  [
+   2000,
+   520
+  ],
+  [
+   2400,
+   556
+  ]
+ ],
+ "floor": {
+  "strip": [
+   {
+    "prompt": "fine pale sand on a deep sea floor with scattered small shells and tiny pebbles, no ripples, no lines, seamless flat even texture filling the whole picture, seen from the side",
+    "size": "512x64"
+   }
+  ],
+  "seam": "fine pale sand on a deep sea floor with scattered small shells and tiny pebbles, no ripples, no lines, seamless texture",
+  "surface": 6
+ },
+ "layers": [
+  {
+   "file": "places/common/clouds.png",
+   "at": [
+    0,
+    6
+   ],
+   "factor": [
+    0.05,
+    0.05
+   ],
+   "z": -25,
+   "alpha": 0.9,
+   "fit": true,
+   "use": "places/common/clouds.png"
+  },
+  {
+   "band": "#8fa6b0",
+   "at": [
+    0,
+    106
+   ],
+   "factor": [
+    0.12,
+    0.12
+   ],
+   "z": -19
+  },
+  {
+   "band": "#6f98a8",
+   "at": [
+    0,
+    116
+   ],
+   "factor": [
+    0.3,
+    0.3
+   ],
+   "z": -17
+  },
+  {
+   "file": "far.png",
+   "prompt": "distant mountains seen from the open sea, the large green cone of Mount Vesuvius with a wisp of cloud, the long rocky Sorrento peninsula on the right, faded by distance and haze, flat straight bottom edge, nothing below the mountains",
+   "size": "768x72",
+   "at": [
+    -20,
+    36
+   ],
+   "factor": [
+    0.12,
+    0.12
+   ],
+   "z": -18,
+   "land": true,
+   "haze": [
+    "#b4c4cc",
+    0.35
+   ]
+  },
+  {
+   "file": "mid.png",
+   "strip": [
+    {
+     "prompt": "a distant low coastline seen from the open sea, green hills with small white towns and villas, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "544x80"
+    },
+    {
+     "prompt": "a distant low coastline seen from the open sea, wooded hills and a small harbour town, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "544x80"
+    }
+   ],
+   "land": true,
+   "haze": [
+    "#a9bcc4",
+    0.18
+   ],
+   "at": [
+    -16,
+    38
+   ],
+   "factor": [
+    0.3,
+    0.3
+   ],
+   "z": -16
+  },
+  {
+   "file": "deep_far.png",
+   "from": "coast/deep_far.png",
+   "land": true,
+   "at": [
+    -40,
+    540
+   ],
+   "factor": [
+    0.6,
+    0.8
+   ],
+   "z": -9,
+   "alpha": 0.6,
+   "fit": true
+  },
+  {
+   "file": "seagrass.png",
+   "on_bed": 200,
+   "sink": 6,
+   "z": -9,
+   "use": "places/harbour/seagrass.png"
+  },
+  {
+   "file": "seagrass.png",
+   "on_bed": 520,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/harbour/seagrass.png"
+  },
+  {
+   "file": "seagrass.png",
+   "on_bed": 900,
+   "sink": 6,
+   "z": -9,
+   "use": "places/harbour/seagrass.png"
+  },
+  {
+   "file": "seagrass.png",
+   "on_bed": 2250,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/harbour/seagrass.png"
+  },
+  {
+   "file": "fans.png",
+   "on_bed": 1300,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a few red and yellow sea fans on a small rock, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "64x48"
+  },
+  {
+   "file": "fans.png",
+   "on_bed": 1900,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/open_bay/fans.png"
+  },
+  {
+   "file": "pinnacle.png",
+   "on_bed": 1520,
+   "sink": 10,
+   "z": -9,
+   "prompt": "a tall underwater rock pinnacle rising from the sand, covered in sponges and sea fans, small dark holes, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "128x160"
+  },
+  {
+   "file": "boulders.png",
+   "on_bed": 2080,
+   "sink": 8,
+   "z": -9,
+   "use": "places/rocky_shore/boulders.png"
+  },
+  {
+   "file": "boulders.png",
+   "on_bed": 1100,
+   "sink": 8,
+   "z": -9,
+   "mirror": true,
+   "use": "places/rocky_shore/boulders.png"
+  },
+  {
+   "file": "starfish.png",
+   "on_bed": 700,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a single red starfish lying flat, seen from the side, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "48x32"
+  },
+  {
+   "file": "starfish.png",
+   "on_bed": 1720,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/open_bay/starfish.png"
+  }
+ ]
+}

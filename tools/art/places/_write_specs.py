@@ -1,0 +1,197 @@
+"""Writes the six place specs read by make_places.py. Kept as a script so the shared wording lives in one place."""
+import json
+from pathlib import Path
+
+D = Path(__file__).parent
+LAND = "seen from the sea, side view, flat straight bottom edge where it meets the sea, no water"
+LOW_ENDS = "low at the far left and far right ends"
+FAR = "faded by distance and haze, flat straight bottom edge, nothing below the mountains"
+WHOLE = "a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene"
+FLOOR = "seamless flat even texture filling the whole picture, seen from the side"
+
+
+def bands(far, mid, near=None):
+    out = [{"band": far, "at": [0, 106], "factor": [0.12, 0.12], "z": -19},
+           {"band": mid, "at": [0, 116], "factor": [0.3, 0.3], "z": -17}]
+    if near:
+        out.append({"band": near, "at": [0, 136], "factor": [0.55, 0.55], "z": -15})
+    return out
+
+
+def clouds(paint=False):
+    l = {"file": "places/common/clouds.png", "at": [0, 6], "factor": [0.05, 0.05], "z": -25, "alpha": 0.9, "fit": True}
+    if paint:
+        l["strip"] = [{"prompt": "a long row of soft white and pale cream summer clouds drifting in a line, thin wisps between them, nothing else", "size": "384x64"},
+                      {"prompt": "a long row of soft white fair-weather clouds with gentle grey undersides drifting in a line, thin wisps, nothing else", "size": "384x64"}]
+        l["seam"] = "soft white clouds carry on seamlessly"
+        l["wrap"] = True
+    else:
+        l["use"] = "places/common/clouds.png"
+    return l
+
+
+def far(prompt, w):
+    return {"file": "far.png", "prompt": prompt + ", " + FAR, "size": f"{w}x72", "at": [-20, 36], "factor": [0.12, 0.12], "z": -18,
+            "land": True, "haze": ["#b4c4cc", 0.35]}
+
+
+def mid(prompts, w):
+    return {"file": "mid.png", "strip": [{"prompt": f"{p}, {LOW_ENDS}, {LAND}", "size": f"{w}x80"} for p in prompts],
+            "land": True, "haze": ["#a9bcc4", 0.18], "at": [-16, 38], "factor": [0.3, 0.3], "z": -16}
+
+
+def near(prompts, w, h=112):
+    return {"file": "near.png", "strip": [{"prompt": f"{p}, {LOW_ENDS}, {LAND}", "size": f"{w}x{h}"} for p in prompts],
+            "land": True, "at": [-16, 136 - h + 2], "factor": [0.55, 0.55], "z": -14}
+
+
+def floor(prompt):
+    # One painted piece made to join onto itself, so the floor never changes its look along the coast.
+    return {"strip": [{"prompt": f"{prompt}, {FLOOR}", "size": "512x64"}],
+            "seam": prompt + ", seamless texture", "surface": 6}
+
+
+def bed(pid, file, prompt, size, xs, sink=6, use=None):
+    """One seabed piece set into the sand at each x, every other one mirrored; it is painted once and reused."""
+    out = []
+    for i, x in enumerate(xs):
+        l = {"file": file, "on_bed": x, "sink": sink, "z": -9}
+        if i % 2 == 1:
+            l["mirror"] = True
+        if i == 0 and not use:
+            l["prompt"] = f"{prompt}, {WHOLE}"
+            l["size"] = size
+        else:
+            l["use"] = use or f"places/{pid}/{file}"
+        out.append(l)
+    return out
+
+
+def deep(at, fit=False):
+    l = {"file": "deep_far.png", "from": "coast/deep_far.png", "land": True, "at": at, "factor": [0.6, 0.8], "z": -9, "alpha": 0.6}
+    if fit:
+        l["fit"] = True
+    return l
+
+
+specs = {}
+
+p = "harbour"
+specs[p] = {
+    "width": 1440, "seabed": [[0, 60], [200, 68], [360, 96], [600, 128], [850, 168], [1050, 214], [1250, 262], [1440, 294]],
+    "floor": floor("pale harbour sand on the sea floor with fine grains, small pebbles and broken shells"),
+    "layers": [clouds(True)] + bands("#8fa0a8", "#6f93a0", "#4f8494") + [
+        {"file": "far.png", "use": "coast/far.png", "at": [-40, 36], "factor": [0.12, 0.12], "z": -18},
+        {"file": "mid.png", "use": "coast/mid.png", "at": [0, 36], "factor": [0.3, 0.3], "z": -16},
+        {"file": "town.png", "from": "coast/town.png", "land": True, "at": [-190, 26], "factor": [0.55, 0.55], "z": -14},
+        {"file": "cape.png", "from": "coast/cape.png", "land": True, "at": [700, 24], "factor": [0.55, 0.55], "z": -14},
+        deep([300, 420]),
+    ] + bed(p, "seagrass.png", "a wide clump of tall green Posidonia seagrass ribbons growing up from the sand", "96x48", [250, 560, 830, 1120])
+      + bed(p, "tuft.png", "a small tuft of short green seagrass with a few pale stones on the sand", "64x40", [420, 700, 980])
+      + bed(p, "amphora.png", "a broken ancient clay amphora lying half buried on its side in the sand", "48x32", [480])
+      + bed(p, "urchins.png", "two spiny dark purple sea urchins resting on a small pale stone", "48x32", [640, 1200])
+      + bed(p, "anchor.png", "an old Roman anchor with a lead stock and a wooden shank lying on the sand, encrusted with weed", "64x48", [940])
+      + bed(p, "reef.png", "a big natural rough rounded sea rock with an irregular lumpy outline, covered in red sea fans, orange sponges and green weed", "160x112", [1150], sink=10)
+      + bed(p, "boulders.png", "a few big rounded boulders with brown seaweed in dim light, sitting on the sand", "128x64", [1320, 60], sink=8)
+      + [{"file": "quay.png", "use": "places/harbour/quay.png", "world": [0, -36], "z": -7, "through": True},
+         {"file": "amphorae.png", "use": "props/amphorae.png", "world": [18, -62], "z": -7},
+         {"file": "bollard.png", "use": "props/bollard.png", "world": [100, -60], "z": -7}],
+
+}
+
+p = "rocky_shore"
+specs[p] = {
+    "width": 1920, "seabed": [[0, 56], [220, 92], [480, 150], [760, 220], [1040, 288], [1380, 350], [1640, 396], [1920, 416]],
+    "spots": {"wreck": 1380},
+    "floor": floor("coarse golden sand and gravel on the sea floor with small pebbles and shell fragments"),
+    "layers": [clouds()] + bands("#8fa0a8", "#6f93a0", "#4f8494") + [
+        far("distant mountains across the bay of Naples, the green cone of Mount Vesuvius in the middle, low hills on both sides", 704),
+        mid(["a row of green coastal hills at a middle distance with umbrella pines, olive groves and a few small white Roman farmhouses",
+             "a row of rocky wooded headlands at a middle distance with pines and scrub"], 480),
+        near(["tall golden limestone sea cliffs with dark cave mouths at the waterline, scrub and umbrella pines on top",
+              "a rocky headland of grey and golden rock with a small ancient Roman stone watchtower and pines",
+              "rugged sea cliffs with a deep cave at the waterline and wild fig trees"], 448),
+        deep([200, 470]),
+    ] + bed(p, "rock.png", "an underwater rock with ledges covered in green and brown seaweed, red sea fans and orange sponges, rounded on both sides, sitting on the sand", "160x96", [300, 1100], sink=10)
+      + bed(p, "boulders.png", "a pile of big rounded underwater boulders with sea urchins and anemones, sitting on the sand", "128x80", [640, 1620], sink=8)
+      + bed(p, "kelp.png", "a clump of tall brown kelp and green seaweed growing from the sand", "64x64", [480, 900, 1250, 1800])
+      + bed(p, "fans.png", "a few red sea fans and orange sponges on a small rock", "64x48", [820, 1480])
+      + bed(p, "wreck.png", "the wreck of a small ancient Roman merchant ship lying on the sea floor, broken wooden hull ribs, clay amphorae spilling onto the sand, seaweed", "256x112", [1270], sink=12)
+      + [{"file": "stack.png", "prompt": "a tall rock stack rising out of the sea, seen from the side: its top part above the water is golden limestone with a small bush, its lower part under the water is covered in green weed and barnacles, the base widens onto the sea floor, the whole rock in the picture", "size": "112x208", "world": [170, -70], "z": -7, "through": True}],
+}
+
+p = "lucrine"
+specs[p] = {
+    "width": 1440, "seabed": [[0, 40], [260, 78], [520, 118], [700, 138], [900, 168], [1160, 212], [1440, 254]],
+    "spots": {"oyster_beds": 700},
+    "floor": floor("soft grey-brown lake mud on the lake floor with scattered pale oyster shells and small pebbles"),
+    "layers": [clouds()] + bands("#93a4a8", "#78a0a0", "#5a8f94") + [
+        far("distant low green volcanic hills seen across a lake", 640),
+        mid(["wooded green hills around a lake at a middle distance, chestnut and oak woods, the dark crater rim of Lake Avernus",
+             "green hills with vineyards and a few white ancient Roman villas with red tiled roofs"], 384),
+        near(["the lakeside at Baiae: grand ancient Roman bath houses with domes and white colonnades, villas with red tiled roofs and gardens, umbrella pines",
+              "the reedy shore of a lake with small ancient Roman fishermen's cottages of cream plastered stone with red tiled roofs, oyster sheds, nets drying on poles and umbrella pines"], 512),
+    ] + bed(p, "reeds.png", "a clump of green reeds and eelgrass growing up from the mud", "64x64", [110, 380, 1000, 1300])
+      + bed(p, "oysters.png", "a bed of rough grey oyster shells and blue mussels on the mud", "96x40", [520, 860])
+      + bed(p, "basket.png", "an old sunken wicker fish basket lying on the mud", "48x40", [1150])
+      + bed(p, "stones.png", "a few round mossy stones with green weed on the mud", "96x48", [250, 1220])
+      + [{"file": "oyster_frames.png", "prompt": "an ancient Roman oyster farm seen from the side: a row of wooden posts standing in a lake with ropes hung with clusters of oysters between them, the tops of the posts above the water, the lower parts under the water, the posts reaching down into the mud at the bottom", "size": "192x208", "world": [620, -48], "z": -7, "through": True}],
+}
+
+p = "open_bay"
+specs[p] = {
+    "width": 2400, "seabed": [[0, 140], [400, 220], [800, 300], [1200, 378], [1600, 450], [2000, 520], [2400, 556]],
+    "floor": floor("fine pale sand on a deep sea floor with scattered small shells and tiny pebbles, no ripples, no lines"),
+    "layers": [clouds()] + bands("#8fa6b0", "#6f98a8") + [
+        far("distant mountains seen from the open sea, the large green cone of Mount Vesuvius with a wisp of cloud, the long rocky Sorrento peninsula on the right", 768),
+        mid(["a distant low coastline seen from the open sea, green hills with small white towns and villas",
+             "a distant low coastline seen from the open sea, wooded hills and a small harbour town"], 544),
+        deep([-40, 540], fit=True),
+    ] + bed(p, "seagrass.png", "", "", [200, 520, 900, 2250], use="places/harbour/seagrass.png")
+      + bed(p, "fans.png", "a few red and yellow sea fans on a small rock", "64x48", [1300, 1900])
+      + bed(p, "pinnacle.png", "a tall underwater rock pinnacle rising from the sand, covered in sponges and sea fans, small dark holes", "128x160", [1520], sink=10)
+      + bed(p, "boulders.png", "", "", [2080, 1100], sink=8, use="places/rocky_shore/boulders.png")
+      + bed(p, "starfish.png", "a single red starfish lying flat, seen from the side", "48x32", [700, 1720]),
+}
+
+p = "capri"
+specs[p] = {
+    "width": 1920, "seabed": [[0, 110], [300, 168], [640, 248], [1000, 330], [1300, 398], [1500, 446], [1720, 488], [1920, 516]],
+    "spots": {"deep_cave": 1500},
+    "floor": floor("bright white sand and pale limestone pebbles on the sea floor"),
+    "layers": [clouds()] + bands("#90a8b4", "#6a9cae", "#3f8aa0") + [
+        far("the long green mountain ridge of the Sorrento peninsula, soft rounded green and grey-blue slopes, no snow", 704),
+        mid(["the steep green slopes of the island of Capri at a middle distance with white ancient Roman villas, terraces and pines",
+             "the rocky upper cliffs of Capri with the ruins of an imperial Roman villa on the summit and pines"], 480),
+        near(["towering pale limestone sea cliffs with a dark cave mouth at the waterline and wild bushes",
+              "three tall rock stacks rising from the sea in front of white limestone cliffs",
+              "white limestone sea cliffs with a natural rock arch at the water and pines on top"], 448, 128),
+        deep([200, 510]),
+    ] + bed(p, "white_rock.png", "a pale limestone underwater rock with red coral branches, purple sponges and sea fans, rounded on both sides, sitting on the sand", "160x96", [300, 1050], sink=10)
+      + bed(p, "coral.png", "a cluster of bright red Mediterranean coral and white sea fans on a small rock", "64x48", [620, 1720])
+      + bed(p, "cave.png", "a huge rough jagged pale limestone sea rock with an irregular natural outline and a dark cave opening in its side, blue light deep inside the opening, sponges and red coral on the rock", "224x160", [1380], sink=12)
+      + bed(p, "seagrass.png", "", "", [150, 820], use="places/harbour/seagrass.png")
+
+}
+
+p = "misenum"
+specs[p] = {
+    "width": 2400, "seabed": [[0, 160], [400, 280], [800, 400], [1200, 520], [1600, 640], [2000, 740], [2400, 796]],
+    "floor": floor("soft grey-brown silt and fine sand on a deep sea floor with a few pale shells and small stones, muted colours"),
+    "layers": [clouds()] + bands("#8fa4ae", "#6a94a6", "#4a8296") + [
+        far("the distant islands of Procida and Ischia, the high green mountain of Ischia on the right", 768),
+        mid(["the long green headland of Cape Misenum at a middle distance with a white lighthouse tower and pines",
+             "the low coast of the Phlegraean fields with villas and the town of Baiae"], 544),
+        near(["the ancient Roman naval harbour of Misenum: a long stone breakwater with arches, ancient Roman trireme war galleys with three banks of oars, a single furled square sail and a bronze ram, moored inside, warehouses with red tiled roofs, first century, no medieval ships",
+              "the steep green slopes of Cape Misenum with a tall white Roman lighthouse, villas and pines",
+              "a rocky shore below the cape with grey cliffs, sea caves and pines"], 528),
+        deep([0, 730], fit=True),
+    ] + bed(p, "column.png", "a toppled ancient white marble column broken in pieces lying on the sea floor, encrusted with weed", "128x48", [900])
+      + bed(p, "dark_rock.png", "a dark volcanic underwater rock with pale sea fans and sponges, rounded on both sides, sitting on the sand", "160x96", [400, 1500, 2100], sink=10)
+      + bed(p, "seapens.png", "a few tall pale sea pens and a sea star on dark sand", "64x48", [700, 1200, 1800])
+      + bed(p, "amphorae.png", "a heap of ancient clay amphorae from a sunken cargo half buried in dark sand", "96x48", [1650], sink=8),
+}
+
+for pid, spec in specs.items():
+    (D / f"{pid}.json").write_text(json.dumps(spec, indent=1), encoding="utf-8")
+print("wrote", list(specs))

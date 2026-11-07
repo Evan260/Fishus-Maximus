@@ -1,0 +1,250 @@
+{
+ "width": 1440,
+ "seabed": [
+  [
+   0,
+   40
+  ],
+  [
+   260,
+   78
+  ],
+  [
+   520,
+   118
+  ],
+  [
+   700,
+   138
+  ],
+  [
+   900,
+   168
+  ],
+  [
+   1160,
+   212
+  ],
+  [
+   1440,
+   254
+  ]
+ ],
+ "spots": {
+  "oyster_beds": 700
+ },
+ "floor": {
+  "strip": [
+   {
+    "prompt": "soft grey-brown lake mud on the lake floor with scattered pale oyster shells and small pebbles, seamless flat even texture filling the whole picture, seen from the side",
+    "size": "512x64"
+   }
+  ],
+  "seam": "soft grey-brown lake mud on the lake floor with scattered pale oyster shells and small pebbles, seamless texture",
+  "surface": 6
+ },
+ "layers": [
+  {
+   "file": "places/common/clouds.png",
+   "at": [
+    0,
+    6
+   ],
+   "factor": [
+    0.05,
+    0.05
+   ],
+   "z": -25,
+   "alpha": 0.9,
+   "fit": true,
+   "use": "places/common/clouds.png"
+  },
+  {
+   "band": "#93a4a8",
+   "at": [
+    0,
+    106
+   ],
+   "factor": [
+    0.12,
+    0.12
+   ],
+   "z": -19
+  },
+  {
+   "band": "#78a0a0",
+   "at": [
+    0,
+    116
+   ],
+   "factor": [
+    0.3,
+    0.3
+   ],
+   "z": -17
+  },
+  {
+   "band": "#5a8f94",
+   "at": [
+    0,
+    136
+   ],
+   "factor": [
+    0.55,
+    0.55
+   ],
+   "z": -15
+  },
+  {
+   "file": "far.png",
+   "prompt": "distant low green volcanic hills seen across a lake, faded by distance and haze, flat straight bottom edge, nothing below the mountains",
+   "size": "640x72",
+   "at": [
+    -20,
+    36
+   ],
+   "factor": [
+    0.12,
+    0.12
+   ],
+   "z": -18,
+   "land": true,
+   "haze": [
+    "#b4c4cc",
+    0.35
+   ]
+  },
+  {
+   "file": "mid.png",
+   "strip": [
+    {
+     "prompt": "wooded green hills around a lake at a middle distance, chestnut and oak woods, the dark crater rim of Lake Avernus, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "384x80"
+    },
+    {
+     "prompt": "green hills with vineyards and a few white ancient Roman villas with red tiled roofs, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "384x80"
+    }
+   ],
+   "land": true,
+   "haze": [
+    "#a9bcc4",
+    0.18
+   ],
+   "at": [
+    -16,
+    38
+   ],
+   "factor": [
+    0.3,
+    0.3
+   ],
+   "z": -16
+  },
+  {
+   "file": "near.png",
+   "strip": [
+    {
+     "prompt": "the lakeside at Baiae: grand ancient Roman bath houses with domes and white colonnades, villas with red tiled roofs and gardens, umbrella pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "512x112"
+    },
+    {
+     "prompt": "the reedy shore of a lake with small ancient Roman fishermen's cottages of cream plastered stone with red tiled roofs, oyster sheds, nets drying on poles and umbrella pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "512x112"
+    }
+   ],
+   "land": true,
+   "at": [
+    -16,
+    26
+   ],
+   "factor": [
+    0.55,
+    0.55
+   ],
+   "z": -14
+  },
+  {
+   "file": "reeds.png",
+   "on_bed": 110,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a clump of green reeds and eelgrass growing up from the mud, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "64x64"
+  },
+  {
+   "file": "reeds.png",
+   "on_bed": 380,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/lucrine/reeds.png"
+  },
+  {
+   "file": "reeds.png",
+   "on_bed": 1000,
+   "sink": 6,
+   "z": -9,
+   "use": "places/lucrine/reeds.png"
+  },
+  {
+   "file": "reeds.png",
+   "on_bed": 1300,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/lucrine/reeds.png"
+  },
+  {
+   "file": "oysters.png",
+   "on_bed": 520,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a bed of rough grey oyster shells and blue mussels on the mud, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "96x40"
+  },
+  {
+   "file": "oysters.png",
+   "on_bed": 860,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/lucrine/oysters.png"
+  },
+  {
+   "file": "basket.png",
+   "on_bed": 1150,
+   "sink": 6,
+   "z": -9,
+   "prompt": "an old sunken wicker fish basket lying on the mud, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "48x40"
+  },
+  {
+   "file": "stones.png",
+   "on_bed": 250,
+   "sink": 6,
+   "z": -9,
+   "prompt": "a few round mossy stones with green weed on the mud, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "96x48"
+  },
+  {
+   "file": "stones.png",
+   "on_bed": 1220,
+   "sink": 6,
+   "z": -9,
+   "mirror": true,
+   "use": "places/lucrine/stones.png"
+  },
+  {
+   "file": "oyster_frames.png",
+   "prompt": "an ancient Roman oyster farm seen from the side: a row of wooden posts standing in a lake with ropes hung with clusters of oysters between them, the tops of the posts above the water, the lower parts under the water, the posts reaching down into the mud at the bottom",
+   "size": "192x208",
+   "world": [
+    620,
+    -48
+   ],
+   "z": -7,
+   "through": true
+  }
+ ]
+}
