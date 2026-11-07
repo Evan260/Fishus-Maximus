@@ -132,5 +132,4 @@ static func wrapped(text: String, width: int) -> String:
 		else:
 			line = word if line == "" else line + " " + word
 	lines.append(line)
-	return "
-".join(lines)
+	return "\n".join(lines)

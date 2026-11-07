@@ -240,3 +240,25 @@ func test_hauling_a_pot_says_why() -> void:
 	s.methods._pull_traps_under_boat()
 	check(_said("rowed over"), "the message says the pot came up because the boat passed over it")
 	_done(s)
+
+
+func test_a_napping_dog_does_not_bark_at_his_own_catches() -> void:
+	var s := _coast()
+	s.methods.set_idle(true)
+	s.dog.bark()
+	check(s.dog._bark_left <= 0.0, "no bark or mark over a sleeping dog while the fisherman fishes on his own")
+	_done(s)
+
+
+func test_a_bite_waits_while_a_window_is_open() -> void:
+	var s := _coast()
+	s.cast(0.5)
+	s.flight = 0.0
+	s.biter = {"id": "mullet", "lb": 1.0, "state": "bit"}
+	s._state = "bite"
+	s.bite_left = 1.0
+	Ui.window("Tackle", 200, 100)
+	s._process(0.5)
+	check(s.line_state() == "bite" and s.bite_left >= 0.99, "picking bait does not cost the fish on the line")
+	Ui.close_window()
+	_done(s)

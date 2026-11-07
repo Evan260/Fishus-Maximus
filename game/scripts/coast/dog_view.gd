@@ -38,6 +38,8 @@ func cheer(seconds := 2.5) -> void:
 
 
 func bark() -> void:
+	if _asleep():
+		return
 	_bark_left = 0.8
 	cheer(1.5)
 	Audio.play("dog")

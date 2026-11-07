@@ -195,7 +195,7 @@ func _draw() -> void:
 		var bob := Vector2(at.x - 2, surface - 1 + sin(t * 1.9) + dip)
 		var fight: LineFight = screen.fight
 		if state == "fighting" or at.y <= bob.y:
-			var end := fish_at() - cam - Vector2(0, 2) if _leap >= 0.0 else at
+			var end := fish_at() - cam - Vector2(0, 2) if _leap >= 0.0 or _back != Vector2.ZERO else at
 			_curve(tip, end, (0.25 - fight.tension) * 40.0 if fight != null and fight.tension < 0.25 else 0.0)
 		else:
 			_curve(tip, bob, 5.0)

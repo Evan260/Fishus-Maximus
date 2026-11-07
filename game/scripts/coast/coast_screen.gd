@@ -533,7 +533,8 @@ func _process(delta: float) -> void:
 			if methods.idle:
 				_let_go()
 				_state = "waiting"
-			else:
+			# The fish waits while a window is open, since nothing can be struck through it.
+			elif not Ui.window_open():
 				bite_step(delta)
 		"fighting":
 			_fight_step(delta, _reeling_input())
