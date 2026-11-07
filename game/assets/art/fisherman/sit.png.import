@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://sk7e2xwray05"
-path="res://.godot/imported/fisherman.png-5610e4427fe2a8a02c4f8c00b4fa9ffc.ctex"
+uid="uid://db3xx3xwg60yk"
+path="res://.godot/imported/sit.png-1176e35fd5d0dfb92129a4881517a653.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/props/fisherman.png"
-dest_files=["res://.godot/imported/fisherman.png-5610e4427fe2a8a02c4f8c00b4fa9ffc.ctex"]
+source_file="res://assets/art/fisherman/sit.png"
+dest_files=["res://.godot/imported/sit.png-1176e35fd5d0dfb92129a4881517a653.ctex"]
 
 [params]
 

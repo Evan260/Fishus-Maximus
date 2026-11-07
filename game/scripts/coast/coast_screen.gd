@@ -265,6 +265,7 @@ func row(dir: float, seconds: float) -> void:
 	_let_go()
 	_state = "reeled"
 	_boat.facing = signf(dir)
+	_boat.rowing = 0.15
 	var speed := float(Data.boats.get(str(Game.state.get("boat", "skiff")), {}).get("speed", 40))
 	var was := boat_x
 	boat_x = clampf(boat_x + dir * speed * seconds, 0.0, _end())
@@ -282,7 +283,8 @@ func row(dir: float, seconds: float) -> void:
 
 ## Casts the line out in front of the boat: power 0 lands it close, power 1 as far as the rod throws.
 func cast(power: float) -> void:
-	var tip := _boat.rod_tip(boat_x)
+	var tip := _boat.rest_tip(boat_x)
+	_boat.throw()
 	hook = seabed.clamp_hook(Vector2(tip.x + _boat.facing * lerpf(CAST_NEAR, CAST_FAR, clampf(power, 0.0, 1.0)), 0.0))
 	_state = "sinking"
 	# Only a cast by the player's own hand counts as learning to cast.
@@ -397,6 +399,7 @@ func relayout() -> void:
 	_floor.place_at(camera.cam)
 	_water.cam = camera.cam
 	_water.time = _time
+	_boat.charge = charge if methods.method == "line" else -1.0
 	_boat.place(boat_x, camera.cam, _time)
 	_sky.hour = hour
 	_sky.horizon = 106.0 - (camera.cam.y - CoastCamera.HOME_Y) * 0.05
@@ -522,6 +525,8 @@ func _handle_input(delta: float) -> void:
 	if methods.idle:
 		return
 	var dir := Input.get_axis("row_left", "row_right")
+	if Dev.has("row") and _time < Dev.num("row-for", 6.0):
+		dir = Dev.num("row", 1.0)
 	if dir != 0.0:
 		_pinned = false
 		row(dir, delta)
