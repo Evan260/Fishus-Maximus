@@ -230,6 +230,7 @@
    "on_bed": 480,
    "sink": 6,
    "z": -9,
+   "sway": true,
    "prompt": "a clump of tall brown kelp and green seaweed growing from the sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
    "size": "64x64"
   },
@@ -239,6 +240,7 @@
    "sink": 6,
    "z": -9,
    "mirror": true,
+   "sway": true,
    "use": "places/rocky_shore/kelp.png"
   },
   {
@@ -246,6 +248,7 @@
    "on_bed": 1250,
    "sink": 6,
    "z": -9,
+   "sway": true,
    "use": "places/rocky_shore/kelp.png"
   },
   {
@@ -254,6 +257,7 @@
    "sink": 6,
    "z": -9,
    "mirror": true,
+   "sway": true,
    "use": "places/rocky_shore/kelp.png"
   },
   {
@@ -261,6 +265,7 @@
    "on_bed": 820,
    "sink": 6,
    "z": -9,
+   "sway": true,
    "prompt": "a few red sea fans and orange sponges on a small rock, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
    "size": "64x48"
   },
@@ -270,6 +275,7 @@
    "sink": 6,
    "z": -9,
    "mirror": true,
+   "sway": true,
    "use": "places/rocky_shore/fans.png"
   },
   {

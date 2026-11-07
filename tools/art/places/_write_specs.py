@@ -47,13 +47,16 @@ def floor(prompt):
             "seam": prompt + ", seamless texture", "surface": 6}
 
 
-def bed(pid, file, prompt, size, xs, sink=6, use=None):
-    """One seabed piece set into the sand at each x, every other one mirrored; it is painted once and reused."""
+def bed(pid, file, prompt, size, xs, sink=6, use=None, sway=False):
+    """One seabed piece set into the sand at each x, every other one mirrored; it is painted once and reused. A plant
+    sways in the water."""
     out = []
     for i, x in enumerate(xs):
         l = {"file": file, "on_bed": x, "sink": sink, "z": -9}
         if i % 2 == 1:
             l["mirror"] = True
+        if sway:
+            l["sway"] = True
         if i == 0 and not use:
             l["prompt"] = f"{prompt}, {WHOLE}"
             l["size"] = size
@@ -83,8 +86,8 @@ specs[p] = {
         {"file": "cape.png", "prompt": f"a green headland seen from the sea with pale golden limestone cliffs down to the water, grass and scrub on top, two umbrella pines and a small round ancient Roman stone watchtower, {LOW_ENDS}, {LAND}, {ROCK}",
          "size": "256x100", "style": LIKE_TOWN, "land": True, "at": [700, 38], "factor": [0.55, 0.55], "z": -14},
         deep([300, 420]),
-    ] + bed(p, "seagrass.png", "a wide clump of tall green Posidonia seagrass ribbons growing up from the sand", "96x48", [250, 560, 830, 1120])
-      + bed(p, "tuft.png", "a small tuft of short green seagrass with a few pale stones on the sand", "64x40", [420, 700, 980])
+    ] + bed(p, "seagrass.png", "a wide clump of tall green Posidonia seagrass ribbons growing up from the sand", "96x48", [250, 560, 830, 1120], sway=True)
+      + bed(p, "tuft.png", "a small tuft of short green seagrass with a few pale stones on the sand", "64x40", [420, 700, 980], sway=True)
       + bed(p, "amphora.png", "a broken ancient clay amphora lying half buried on its side in the sand", "48x32", [480])
       + bed(p, "urchins.png", "two spiny dark purple sea urchins resting on a small pale stone", "48x32", [640, 1200])
       + bed(p, "anchor.png", "an old Roman anchor with a lead stock and a wooden shank lying on the sand, encrusted with weed", "64x48", [940])
@@ -111,8 +114,8 @@ specs[p] = {
         deep([200, 470]),
     ] + bed(p, "rock.png", "an underwater rock with ledges covered in green and brown seaweed, red sea fans and orange sponges, rounded on both sides, sitting on the sand", "160x96", [300, 1100], sink=10)
       + bed(p, "boulders.png", "a pile of big rounded underwater boulders with sea urchins and anemones, sitting on the sand", "128x80", [640, 1620], sink=8)
-      + bed(p, "kelp.png", "a clump of tall brown kelp and green seaweed growing from the sand", "64x64", [480, 900, 1250, 1800])
-      + bed(p, "fans.png", "a few red sea fans and orange sponges on a small rock", "64x48", [820, 1480])
+      + bed(p, "kelp.png", "a clump of tall brown kelp and green seaweed growing from the sand", "64x64", [480, 900, 1250, 1800], sway=True)
+      + bed(p, "fans.png", "a few red sea fans and orange sponges on a small rock", "64x48", [820, 1480], sway=True)
       + bed(p, "wreck.png", "the wreck of a small ancient Roman merchant ship lying on the sea floor, broken wooden hull ribs, clay amphorae spilling onto the sand, seaweed", "256x112", [1270], sink=12)
       + [{"file": "stack.png", "prompt": "a tall rock stack rising out of the sea, seen from the side: its top part above the water is golden limestone with a small bush, its lower part under the water is covered in green weed and barnacles, the base widens onto the sea floor, the whole rock in the picture", "size": "112x208", "world": [170, -70], "z": -7, "through": True}],
 }
@@ -128,7 +131,7 @@ specs[p] = {
              "green hills with vineyards and a few white ancient Roman villas with red tiled roofs"], 384),
         near(["the lakeside at Baiae: grand ancient Roman bath houses with domes and white colonnades, villas with red tiled roofs and gardens, umbrella pines",
               "the reedy shore of a lake with small ancient Roman fishermen's cottages of cream plastered stone with red tiled roofs, oyster sheds, nets drying on poles and umbrella pines"], 512),
-    ] + bed(p, "reeds.png", "a clump of green reeds and eelgrass growing up from the mud", "64x64", [110, 380, 1000, 1300])
+    ] + bed(p, "reeds.png", "a clump of green reeds and eelgrass growing up from the mud", "64x64", [110, 380, 1000, 1300], sway=True)
       + bed(p, "oysters.png", "a bed of rough grey oyster shells and blue mussels on the mud", "96x40", [520, 860])
       + bed(p, "basket.png", "an old sunken wicker fish basket lying on the mud", "48x40", [1150])
       + bed(p, "stones.png", "a few round mossy stones with green weed on the mud", "96x48", [250, 1220])
@@ -144,8 +147,8 @@ specs[p] = {
         mid(["a distant low coastline seen from the open sea, green hills with small white towns and villas",
              "a distant low coastline seen from the open sea, wooded hills and a small harbour town"], 544),
         deep([-40, 540], fit=True),
-    ] + bed(p, "seagrass.png", "", "", [200, 520, 900, 2250], use="places/harbour/seagrass.png")
-      + bed(p, "fans.png", "a few red and yellow sea fans on a small rock", "64x48", [1300, 1900])
+    ] + bed(p, "seagrass.png", "", "", [200, 520, 900, 2250], use="places/harbour/seagrass.png", sway=True)
+      + bed(p, "fans.png", "a few red and yellow sea fans on a small rock", "64x48", [1300, 1900], sway=True)
       + bed(p, "pinnacle.png", "a tall underwater rock pinnacle rising from the sand, covered in sponges and sea fans, small dark holes", "128x160", [1520], sink=10)
       + bed(p, "boulders.png", "", "", [2080, 1100], sink=8, use="places/rocky_shore/boulders.png")
       + bed(p, "starfish.png", "a single red starfish lying flat, seen from the side", "48x32", [700, 1720]),
@@ -167,7 +170,7 @@ specs[p] = {
     ] + bed(p, "white_rock.png", "a pale limestone underwater rock with red coral branches, purple sponges and sea fans, rounded on both sides, sitting on the sand", "160x96", [300, 1050], sink=10)
       + bed(p, "coral.png", "a cluster of bright red Mediterranean coral and white sea fans on a small rock", "64x48", [620, 1720])
       + bed(p, "cave.png", "a huge rough jagged pale limestone sea rock with an irregular natural outline and a dark cave opening in its side, blue light deep inside the opening, sponges and red coral on the rock", "224x160", [1380], sink=12)
-      + bed(p, "seagrass.png", "", "", [150, 820], use="places/harbour/seagrass.png")
+      + bed(p, "seagrass.png", "", "", [150, 820], use="places/harbour/seagrass.png", sway=True)
 
 }
 
@@ -185,7 +188,7 @@ specs[p] = {
         deep([0, 730], fit=True),
     ] + bed(p, "column.png", "a toppled ancient white marble column broken in pieces lying on the sea floor, encrusted with weed", "128x48", [900])
       + bed(p, "dark_rock.png", "a dark volcanic underwater rock with pale sea fans and sponges, rounded on both sides, sitting on the sand", "160x96", [400, 1500, 2100], sink=10)
-      + bed(p, "seapens.png", "a few tall pale sea pens and a sea star on dark sand", "64x48", [700, 1200, 1800])
+      + bed(p, "seapens.png", "a few tall pale sea pens and a sea star on dark sand", "64x48", [700, 1200, 1800], sway=True)
       + bed(p, "amphorae.png", "a heap of ancient clay amphorae from a sunken cargo half buried in dark sand", "96x48", [1650], sink=8),
 }
 

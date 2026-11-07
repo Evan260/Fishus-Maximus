@@ -171,6 +171,7 @@
    "on_bed": 110,
    "sink": 6,
    "z": -9,
+   "sway": true,
    "prompt": "a clump of green reeds and eelgrass growing up from the mud, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
    "size": "64x64"
   },
@@ -180,6 +181,7 @@
    "sink": 6,
    "z": -9,
    "mirror": true,
+   "sway": true,
    "use": "places/lucrine/reeds.png"
   },
   {
@@ -187,6 +189,7 @@
    "on_bed": 1000,
    "sink": 6,
    "z": -9,
+   "sway": true,
    "use": "places/lucrine/reeds.png"
   },
   {
@@ -195,6 +198,7 @@
    "sink": 6,
    "z": -9,
    "mirror": true,
+   "sway": true,
    "use": "places/lucrine/reeds.png"
   },
   {

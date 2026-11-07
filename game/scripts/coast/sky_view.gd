@@ -152,6 +152,7 @@ func follow(cam: Vector2, at_hour: float, now: String) -> void:
 	if not _settled:
 		_settled = true
 		_settle()
+	_paint()
 
 
 ## The view's left and right edges in the sky's own pixels.
@@ -162,6 +163,22 @@ func view_span() -> Vector2:
 ## Each cloud: {"sprite", "speed", "alpha", "grey_only", ...}, for the tests.
 func clouds() -> Array:
 	return _clouds
+
+
+## What the sea mirrors: the hour's colours as `SkyPalette.at` gives them with the sky's own greyness, "sun" and
+## "moon" in the sky's pixels (NAN while down), "sun_colour", "glow_radius", "moon_light" from 0 to 1, and "grey" and
+## "dark".
+func look() -> Dictionary:
+	var out := SkyPalette.at(hour, _grey, _dark)
+	out["grey"] = _grey
+	out["dark"] = _dark
+	out["sun"] = _sun.position if _sun.visible else Vector2(NAN, NAN)
+	out["sun_colour"] = _sun.modulate
+	var radius = (_gradient.material as ShaderMaterial).get_shader_parameter("glow_radius")
+	out["glow_radius"] = float(radius) if radius != null else GLOW.y
+	out["moon"] = _moon.position if _moon.visible else Vector2(NAN, NAN)
+	out["moon_light"] = _night.modulate.a * _moon_glow.modulate.a * (1.0 - _dark) if _moon.visible else 0.0
+	return out
 
 
 func _solid(c: Color) -> ImageTexture:

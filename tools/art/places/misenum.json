@@ -217,6 +217,7 @@
    "on_bed": 700,
    "sink": 6,
    "z": -9,
+   "sway": true,
    "prompt": "a few tall pale sea pens and a sea star on dark sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
    "size": "64x48"
   },
@@ -226,6 +227,7 @@
    "sink": 6,
    "z": -9,
    "mirror": true,
+   "sway": true,
    "use": "places/misenum/seapens.png"
   },
   {
@@ -233,6 +235,7 @@
    "on_bed": 1800,
    "sink": 6,
    "z": -9,
+   "sway": true,
    "use": "places/misenum/seapens.png"
   },
   {

@@ -160,6 +160,7 @@ func _build() -> void:
 	_lit = Node2D.new()
 	add_child(_lit)
 	_layers = ParallaxLayers.new()
+	_layers.sky = _sky
 	_lit.add_child(_layers)
 	_layers.build(place.get("layers", []))
 	_floor = FloorView.new()
@@ -461,6 +462,7 @@ func _fight_step(delta: float, reeling: bool) -> void:
 
 ## Puts everything back in place for the camera, after a move or a change to the window.
 func relayout() -> void:
+	_sky.follow(camera.cam, hour, weather)
 	_layers.time = _time
 	_layers.place(camera.cam)
 	_floor.place_at(camera.cam)
@@ -470,7 +472,6 @@ func relayout() -> void:
 	_boat.strain = fight.tension if fight != null else 0.0
 	_boat.pull = hook
 	_boat.place(boat_x, camera.cam, _time)
-	_sky.follow(camera.cam, hour, weather)
 	var light := SkyView.light(hour)
 	if weather in ["rain", "storm"]:
 		light = light * RAIN_LIGHT

@@ -232,6 +232,7 @@
    "on_bed": 150,
    "sink": 6,
    "z": -9,
+   "sway": true,
    "use": "places/harbour/seagrass.png"
   },
   {
@@ -240,6 +241,7 @@
    "sink": 6,
    "z": -9,
    "mirror": true,
+   "sway": true,
    "use": "places/harbour/seagrass.png"
   }
  ]

@@ -33,4 +33,4 @@ func bake(place: Dictionary, bed: Seabed) -> void:
 
 
 func place_at(cam: Vector2) -> void:
-	position = (-cam).round()
+	position = -cam
