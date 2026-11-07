@@ -149,7 +149,7 @@ func _build() -> void:
 	_boat.set_boat(str(Game.state.get("boat", "skiff")))
 	_lit.add_child(_boat)
 	dog = DogView.new()
-	dog.z_index = -1
+	dog.z_index = -2
 	_lit.add_child(dog)
 	_line = LineView.new()
 	_line.screen = self

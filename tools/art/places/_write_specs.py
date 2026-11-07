@@ -93,9 +93,9 @@ specs[p] = {
       + bed(p, "anchor.png", "an old Roman anchor with a lead stock and a wooden shank lying on the sand, encrusted with weed", "64x48", [940])
       + bed(p, "reef.png", "a big natural rough rounded sea rock with an irregular lumpy outline, covered in red sea fans, orange sponges and green weed", "160x112", [1150], sink=10)
       + bed(p, "boulders.png", "a few big rounded boulders with brown seaweed in dim light, sitting on the sand", "128x64", [1320, 60], sink=8)
-      + [{"file": "quay.png", "use": "places/harbour/quay.png", "world": [0, -36], "z": -7, "through": True},
-         {"file": "amphorae.png", "use": "props/amphorae.png", "world": [18, -62], "z": -7},
-         {"file": "bollard.png", "use": "props/bollard.png", "world": [100, -60], "z": -7}],
+      + [{"file": "jetty.png", "use": "places/harbour/jetty.png", "world": [0, -58], "z": -7, "through": True},
+         {"file": "amphorae.png", "use": "props/amphorae.png", "world": [22, -44], "z": -7},
+         {"file": "bollard.png", "use": "props/bollard.png", "world": [64, -44], "z": -7}],
 
 }
 

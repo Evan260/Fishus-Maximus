@@ -287,11 +287,11 @@
    "use": "places/harbour/boulders.png"
   },
   {
-   "file": "quay.png",
-   "use": "places/harbour/quay.png",
+   "file": "jetty.png",
+   "use": "places/harbour/jetty.png",
    "world": [
     0,
-    -36
+    -58
    ],
    "z": -7,
    "through": true
@@ -300,8 +300,8 @@
    "file": "amphorae.png",
    "use": "props/amphorae.png",
    "world": [
-    18,
-    -62
+    22,
+    -44
    ],
    "z": -7
   },
@@ -309,8 +309,8 @@
    "file": "bollard.png",
    "use": "props/bollard.png",
    "world": [
-    100,
-    -60
+    64,
+    -44
    ],
    "z": -7
   }
