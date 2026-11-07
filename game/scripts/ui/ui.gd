@@ -34,8 +34,9 @@ static func hang(c: Control, where: String, at: Vector2, size := Vector2.ZERO) -
 	var right := where.ends_with("right")
 	var bottom := where.begins_with("bottom")
 	var across := where == "top" or where == "bottom"
-	var w := size.x if size.x > 0.0 else c.get_combined_minimum_size().x
-	var h := size.y if size.y > 0.0 else c.get_combined_minimum_size().y
+	# A control never shrinks below its own size, so one hung in too small a box would grow out of its corner.
+	var w := maxf(size.x, c.get_combined_minimum_size().x)
+	var h := maxf(size.y, c.get_combined_minimum_size().y)
 	c.anchor_left = 0.5 if across else (1.0 if right else 0.0)
 	c.anchor_right = c.anchor_left
 	c.anchor_top = 1.0 if bottom else 0.0
