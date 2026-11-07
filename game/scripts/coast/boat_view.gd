@@ -28,12 +28,13 @@ func set_boat(id: String) -> void:
 	_painted = ResourceLoader.exists(path)
 	var tex: Texture2D = load(path if _painted else FALLBACK)
 	if boat == null:
-		boat = Sprite2D.new()
-		boat.centered = false
-		add_child(boat)
+		# The fisherman sits behind the hull's side, which hides his legs as it would from the side.
 		person = Sprite2D.new()
 		person.centered = false
 		add_child(person)
+		boat = Sprite2D.new()
+		boat.centered = false
+		add_child(boat)
 		hull = Sprite2D.new()
 		hull.centered = false
 		hull.region_enabled = true
@@ -79,7 +80,7 @@ func _hands(x: float) -> Vector2:
 	if not person.visible:
 		return Vector2(x + (102.0 if facing > 0.0 else width() - 102.0), -ride + 4.0 + bob)
 	var size := person.texture.get_size()
-	return Vector2(x + _along(0.62) + size.x * 0.3 * facing, -ride + bob + deck - size.y * 0.45)
+	return Vector2(x + _along(0.62) + size.x * 0.3 * facing, -ride + bob + deck - size.y * 0.45 + 5.0)
 
 
 ## Where the rod's tip is in the world, for a boat whose left edge is at x.
@@ -106,7 +107,7 @@ func place(x: float, cam: Vector2, time: float) -> void:
 	if person.visible:
 		var size := person.texture.get_size()
 		person.flip_h = facing < 0.0
-		person.position = boat.position + Vector2(_along(0.62) - size.x / 2.0, deck - size.y + 4.0)
+		person.position = boat.position + Vector2(_along(0.62) - size.x / 2.0, deck - size.y + 9.0)
 	_cam = cam
 	_x = x
 	queue_redraw()
