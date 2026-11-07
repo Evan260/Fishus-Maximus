@@ -1,5 +1,5 @@
-"""Paints the six clients' portraits and the townsfolk walking the street, from game/data/clients.json and
-townsfolk.json, into game/assets/art/portraits/ and game/assets/art/folk/. Usage: python tools/art/make_portraits.py"""
+"""Paints the six clients' portraits for their visits, from game/data/clients.json, into game/assets/art/portraits/.
+The townsfolk and the clients standing in the street are painted by make_people.py. Usage: python tools/art/make_portraits.py"""
 import json
 import subprocess
 import sys
@@ -42,16 +42,6 @@ def main():
         if paint(raw, f"head and shoulders portrait of {c['look']}, facing slightly left, plain empty background", "64x64"):
             Image.open(raw).save(out)
             print("painted portrait", c["id"])
-    for f in json.loads((data / "townsfolk.json").read_text(encoding="utf-8")):
-        out = ROOT / "game" / "assets" / "art" / "folk" / f"{f['id']}.png"
-        if out.exists():
-            continue
-        out.parent.mkdir(parents=True, exist_ok=True)
-        raw = RAW / f"folk_{f['id']}.png"
-        if paint(raw, f"full body of {f['look']}, standing, seen from the side facing right, alone on an empty background", "32x48"):
-            im = Image.open(raw).convert("RGBA")
-            im.crop(im.getbbox()).save(out)
-            print("painted townsperson", f["id"])
 
 
 if __name__ == "__main__":

@@ -325,3 +325,4 @@ time,kind,name,cost_usd,cost_generations,usd_left
 2026-11-07T01:12:59,animate,game\assets\art\people\decimus\walk_east,0.0000,0,4.7528
 2026-11-07T01:15:24,character,game\assets\art\people\priest,0.0504,0,4.6826
 2026-11-07T01:17:59,character,game\assets\art\people\widow,0.0539,0,4.6287
+2026-11-07T01:19:50,pixen,tools\art\people_raw\portrait_priest.png,0.0081,0,4.6206
