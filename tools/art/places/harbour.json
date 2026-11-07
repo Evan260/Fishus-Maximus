@@ -46,32 +46,6 @@
  },
  "layers": [
   {
-   "file": "places/common/clouds.png",
-   "at": [
-    0,
-    6
-   ],
-   "factor": [
-    0.05,
-    0.05
-   ],
-   "z": -25,
-   "alpha": 0.9,
-   "fit": true,
-   "strip": [
-    {
-     "prompt": "a long row of soft white and pale cream summer clouds drifting in a line, thin wisps between them, nothing else",
-     "size": "384x64"
-    },
-    {
-     "prompt": "a long row of soft white fair-weather clouds with gentle grey undersides drifting in a line, thin wisps, nothing else",
-     "size": "384x64"
-    }
-   ],
-   "seam": "soft white clouds carry on seamlessly",
-   "wrap": true
-  },
-  {
    "band": "#8fa0a8",
    "at": [
     0,

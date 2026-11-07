@@ -18,18 +18,6 @@ def bands(far, mid, near=None):
     return out
 
 
-def clouds(paint=False):
-    l = {"file": "places/common/clouds.png", "at": [0, 6], "factor": [0.05, 0.05], "z": -25, "alpha": 0.9, "fit": True}
-    if paint:
-        l["strip"] = [{"prompt": "a long row of soft white and pale cream summer clouds drifting in a line, thin wisps between them, nothing else", "size": "384x64"},
-                      {"prompt": "a long row of soft white fair-weather clouds with gentle grey undersides drifting in a line, thin wisps, nothing else", "size": "384x64"}]
-        l["seam"] = "soft white clouds carry on seamlessly"
-        l["wrap"] = True
-    else:
-        l["use"] = "places/common/clouds.png"
-    return l
-
-
 def far(prompt, w):
     return {"file": "far.png", "prompt": prompt + ", " + FAR, "size": f"{w}x72", "at": [-20, 36], "factor": [0.12, 0.12], "z": -18,
             "land": True, "haze": ["#b4c4cc", 0.35]}
@@ -80,7 +68,7 @@ p = "harbour"
 specs[p] = {
     "width": 1440, "seabed": [[0, 60], [200, 68], [360, 96], [600, 128], [850, 168], [1050, 214], [1250, 262], [1440, 294]],
     "floor": floor("pale harbour sand on the sea floor with fine grains, small pebbles and broken shells"),
-    "layers": [clouds(True)] + bands("#8fa0a8", "#6f93a0", "#4f8494") + [
+    "layers": bands("#8fa0a8", "#6f93a0", "#4f8494") + [
         {"file": "far.png", "use": "coast/far.png", "at": [-40, 36], "factor": [0.12, 0.12], "z": -18},
         {"file": "mid.png", "use": "coast/mid.png", "at": [0, 36], "factor": [0.3, 0.3], "z": -16},
         {"file": "town.png", "from": "coast/town.png", "land": True, "at": [-190, 26], "factor": [0.55, 0.55], "z": -14},
@@ -104,7 +92,7 @@ specs[p] = {
     "width": 1920, "seabed": [[0, 56], [220, 92], [480, 150], [760, 220], [1040, 288], [1380, 350], [1640, 396], [1920, 416]],
     "spots": {"wreck": 1380},
     "floor": floor("coarse golden sand and gravel on the sea floor with small pebbles and shell fragments"),
-    "layers": [clouds()] + bands("#8fa0a8", "#6f93a0", "#4f8494") + [
+    "layers": bands("#8fa0a8", "#6f93a0", "#4f8494") + [
         far("distant mountains across the bay of Naples, the green cone of Mount Vesuvius in the middle, low hills on both sides", 704),
         mid(["a row of green coastal hills at a middle distance with umbrella pines, olive groves and a few small white Roman farmhouses",
              "a row of rocky wooded headlands at a middle distance with pines and scrub"], 480),
@@ -125,7 +113,7 @@ specs[p] = {
     "width": 1440, "seabed": [[0, 40], [260, 78], [520, 118], [700, 138], [900, 168], [1160, 212], [1440, 254]],
     "spots": {"oyster_beds": 700},
     "floor": floor("soft grey-brown lake mud on the lake floor with scattered pale oyster shells and small pebbles"),
-    "layers": [clouds()] + bands("#93a4a8", "#78a0a0", "#5a8f94") + [
+    "layers": bands("#93a4a8", "#78a0a0", "#5a8f94") + [
         far("distant low green volcanic hills seen across a lake", 640),
         mid(["wooded green hills around a lake at a middle distance, chestnut and oak woods, the dark crater rim of Lake Avernus",
              "green hills with vineyards and a few white ancient Roman villas with red tiled roofs"], 384),
@@ -142,7 +130,7 @@ p = "open_bay"
 specs[p] = {
     "width": 2400, "seabed": [[0, 140], [400, 220], [800, 300], [1200, 378], [1600, 450], [2000, 520], [2400, 556]],
     "floor": floor("fine pale sand on a deep sea floor with scattered small shells and tiny pebbles, no ripples, no lines"),
-    "layers": [clouds()] + bands("#8fa6b0", "#6f98a8") + [
+    "layers": bands("#8fa6b0", "#6f98a8") + [
         far("distant mountains seen from the open sea, the large green cone of Mount Vesuvius with a wisp of cloud, the long rocky Sorrento peninsula on the right", 768),
         mid(["a distant low coastline seen from the open sea, green hills with small white towns and villas",
              "a distant low coastline seen from the open sea, wooded hills and a small harbour town"], 544),
@@ -159,7 +147,7 @@ specs[p] = {
     "width": 1920, "seabed": [[0, 110], [300, 168], [640, 248], [1000, 330], [1300, 398], [1500, 446], [1720, 488], [1920, 516]],
     "spots": {"deep_cave": 1500},
     "floor": floor("bright white sand and pale limestone pebbles on the sea floor"),
-    "layers": [clouds()] + bands("#90a8b4", "#6a9cae", "#3f8aa0") + [
+    "layers": bands("#90a8b4", "#6a9cae", "#3f8aa0") + [
         far("the long green mountain ridge of the Sorrento peninsula, soft rounded green and grey-blue slopes, no snow", 704),
         mid(["the steep green slopes of the island of Capri at a middle distance with white ancient Roman villas, terraces and pines",
              "the rocky upper cliffs of Capri with the ruins of an imperial Roman villa on the summit and pines"], 480),
@@ -178,7 +166,7 @@ p = "misenum"
 specs[p] = {
     "width": 2400, "seabed": [[0, 160], [400, 280], [800, 400], [1200, 520], [1600, 640], [2000, 740], [2400, 796]],
     "floor": floor("soft grey-brown silt and fine sand on a deep sea floor with a few pale shells and small stones, muted colours"),
-    "layers": [clouds()] + bands("#8fa4ae", "#6a94a6", "#4a8296") + [
+    "layers": bands("#8fa4ae", "#6a94a6", "#4a8296") + [
         far("the distant islands of Procida and Ischia, the high green mountain of Ischia on the right", 768),
         mid(["the long green headland of Cape Misenum at a middle distance with a white lighthouse tower and pines",
              "the low coast of the Phlegraean fields with villas and the town of Baiae"], 544),

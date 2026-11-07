@@ -140,10 +140,14 @@ func prepare_to_leave() -> void:
 		Game.state.erase("idle")
 
 
+func _exit_tree() -> void:
+	if is_instance_valid(_sky):
+		_sky.queue_free()
+
+
 func _build() -> void:
 	_sky = SkyView.new()
-	_sky.z_index = -30
-	add_child(_sky)
+	Nav.sky.add_child(_sky)
 	_lit = Node2D.new()
 	add_child(_lit)
 	_layers = ParallaxLayers.new()
@@ -401,8 +405,7 @@ func relayout() -> void:
 	_water.time = _time
 	_boat.charge = charge if methods.method == "line" else -1.0
 	_boat.place(boat_x, camera.cam, _time)
-	_sky.hour = hour
-	_sky.horizon = 106.0 - (camera.cam.y - CoastCamera.HOME_Y) * 0.05
+	_sky.follow(camera.cam, hour, weather)
 	var light := SkyView.light(hour)
 	if weather in ["rain", "storm"]:
 		light = light * RAIN_LIGHT
@@ -412,7 +415,6 @@ func relayout() -> void:
 	_lit.modulate = Color(light, 1.0)
 	_ground.queue_redraw()
 	_line.queue_redraw()
-	_sky.queue_redraw()
 	_water.queue_redraw()
 
 

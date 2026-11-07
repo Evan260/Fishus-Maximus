@@ -1,6 +1,6 @@
 # Credits
 
-The fonts are Silkscreen by Jason Kottke and Fusion Pixel by TakWolf, both under the SIL Open Font Licence; their licences are in `game/assets/fonts/`. Art is painted with PixelLab, and what each picture cost is in `tools/art/ledger.csv`. The dogs come from Farmus Maximus.
+The fonts are Silkscreen by Jason Kottke and Fusion Pixel by TakWolf, both under the SIL Open Font Licence; their licences are in `game/assets/fonts/`. Art is painted with PixelLab, and what each picture cost is in `tools/art/ledger.csv`. The dogs and the coast's clouds come from Farmus Maximus.
 
 ## Music
 
