@@ -97,6 +97,8 @@ func enter(args: Dictionary) -> void:
 		hud.setup(self)
 	Windowing.view_changed.connect(_on_view_changed)
 	_on_view_changed()
+	if Nav.ui and not Dev.has("no-hud"):
+		GuideNote.add(self, "coast")
 	if args.get("first", false) and not Settings.guide:
 		Toast.say("Your uncle's skiff. Hold Space or the mouse to cast, A and D to row.")
 	elif float(args.get("away", 0.0)) >= 1.0:
@@ -111,8 +113,6 @@ func enter(args: Dictionary) -> void:
 	if place_id == "harbour" and Nav.ui and not Dev.has("no-hud"):
 		_ashore = Ui.button(Nav.ui, "Go ashore", go_ashore)
 		Ui.hang(_ashore, "bottom_right", Vector2(4, 4), Vector2(76, 18))
-	if Nav.ui and not Dev.has("no-hud"):
-		GuideNote.add(self, "coast")
 	relayout()
 
 

@@ -14,21 +14,8 @@ static func say(text: String) -> void:
 		# A window opened after a message is added after it too, so the messages are lifted above every window.
 		_box.z_index = 50
 		Nav.ui.add_child(_box)
-	# In the desktop strip the lines sit along the bottom, so they never cover the boat; while old Rufus is speaking
-	# they sit in a column under his note.
-	var low := Windowing.strip
-	var note := GuideNote.find()
-	var under := not low and note != null and note.visible
-	_box.anchor_left = 1.0 if under else 0.0
-	_box.anchor_right = 1.0
-	_box.anchor_top = 1.0 if low else 0.0
-	_box.anchor_bottom = 1.0 if low else 0.0
-	_box.offset_left = (note.offset_left if under else (80 if low else 16))
-	_box.offset_right = note.offset_right if under else -16
-	_box.offset_top = -4 if low else (note.offset_bottom + 3 if under else 30)
-	_box.offset_bottom = _box.offset_top
-	_box.grow_vertical = Control.GROW_DIRECTION_BEGIN if low else Control.GROW_DIRECTION_END
-	while _box.get_child_count() >= (2 if low else 4):
+	place()
+	while _box.get_child_count() >= (2 if Windowing.strip else 4):
 		_box.get_child(0).free()
 	var l := Label.new()
 	l.text = text
@@ -47,3 +34,23 @@ static func say(text: String) -> void:
 	tw.tween_interval(1.6 + text.length() / 40.0)
 	tw.tween_property(l, "modulate:a", 0.0, 0.6)
 	tw.tween_callback(l.queue_free)
+
+
+## Lays the messages out for where they belong now; old Rufus calls it as his note comes and goes.
+static func place() -> void:
+	if not is_instance_valid(_box):
+		return
+	# In the desktop strip the lines sit along the bottom, so they never cover the boat; while old Rufus is speaking
+	# they sit in a column under his note.
+	var low := Windowing.strip
+	var note := GuideNote.find()
+	var under := not low and note != null and note.visible
+	_box.anchor_left = 1.0 if under else 0.0
+	_box.anchor_right = 1.0
+	_box.anchor_top = 1.0 if low else 0.0
+	_box.anchor_bottom = 1.0 if low else 0.0
+	_box.offset_left = note.offset_left if under else (80 if low else 16)
+	_box.offset_right = note.offset_right if under else -16
+	_box.offset_top = -4 if low else (note.offset_bottom + 3 if under else 30)
+	_box.offset_bottom = _box.offset_top
+	_box.grow_vertical = Control.GROW_DIRECTION_BEGIN if low else Control.GROW_DIRECTION_END

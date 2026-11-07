@@ -184,3 +184,59 @@ func test_messages_sit_under_rufus_while_he_speaks() -> void:
 	check(box.offset_top >= note.offset_bottom, "the message starts below his note, not over it")
 	_clear_ui()
 	coast.free()
+
+
+func test_got_it_is_remembered_when_the_screen_opens_again() -> void:
+	_clear_ui()
+	Settings.guide = true
+	Game.new_game("Test", "mutt")
+	var coast: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(coast)
+	coast.enter({"place": "harbour"})
+	GuideNote.find().got_it()
+	_clear_ui()
+	coast.free()
+	coast = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(coast)
+	coast.enter({"place": "harbour"})
+	var note: GuideNote = GuideNote.find()
+	note.refresh()
+	check(not note.visible, "back on the boat he does not repeat the advice put away")
+	_clear_ui()
+	coast.free()
+
+
+func test_praise_waits_while_a_window_covers_him() -> void:
+	_clear_ui()
+	Settings.guide = true
+	Game.new_game("Test", "mutt")
+	_done_up_to("reel")
+	var coast: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(coast)
+	coast.enter({"place": "harbour"})
+	var note: GuideNote = GuideNote.find()
+	note.refresh()
+	Catches.record(Game.state, "mullet", 1.0)
+	note.refresh()
+	Ui.window("The netmaker", 200, 100)
+	note.refresh()
+	note._process(20.0)
+	Ui.close_window()
+	note.refresh()
+	check(note.visible and "first fish" in note.text(), "the praise is still there once the window closes")
+	_clear_ui()
+	coast.free()
+
+
+func test_a_message_from_before_rufus_moves_under_him() -> void:
+	_clear_ui()
+	Settings.guide = true
+	Game.new_game("Test", "mutt")
+	var coast: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(coast)
+	coast.enter({"place": "harbour", "away": Clock.minutes_per_day() * 3.0})
+	var note: GuideNote = GuideNote.find()
+	note.refresh()
+	check(Toast._box.offset_top >= note.offset_bottom, "the time-away message sits under his note")
+	_clear_ui()
+	coast.free()

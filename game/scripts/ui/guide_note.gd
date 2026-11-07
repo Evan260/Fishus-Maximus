@@ -16,7 +16,6 @@ var screen_name := ""
 var _text: Label
 var _arrow: Control
 var _shown := ""
-var _dismissed := ""
 var _last := ""
 var _praise := ""
 var _praise_left := 0.0
@@ -81,11 +80,13 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
-	_praise_left -= delta
-	if _farewell_left > 0.0:
-		_farewell_left -= delta
-		if _farewell_left <= 0.0:
-			_say_goodbye()
+	# Praise and the goodbye only run down while they can be read.
+	if visible:
+		_praise_left -= delta
+		if _farewell_left > 0.0:
+			_farewell_left -= delta
+			if _farewell_left <= 0.0:
+				_say_goodbye()
 	_wait -= delta
 	if _wait <= 0.0:
 		_wait = 0.25
@@ -120,12 +121,16 @@ func refresh() -> void:
 				_farewell_left = FAREWELL_SECONDS
 	var away := Windowing.strip or Ui.window_open() or CatchCard.is_open()
 	_shown = id
-	visible = say != "" and id != _dismissed and not away
+	var was := visible
+	# What he was told to put away is kept with the game, so it stays away on every screen until he has news.
+	visible = say != "" and id != str(Game.state.get("_guide_dismissed", "")) and not away
 	if _text.text != say:
 		_text.text = say
 		reset_size()
 	Ui.hang(self, "top_right", Vector2(4, 30))
 	_arrow.visible = visible and target_rect().has_area()
+	if visible != was:
+		Toast.place()
 
 
 ## The rect, in interface pixels, of what the lesson asks the player to click, or an empty one.
@@ -142,7 +147,7 @@ func text() -> String:
 
 ## Puts this piece of advice away until he has something new to say.
 func got_it() -> void:
-	_dismissed = _shown
+	Game.state["_guide_dismissed"] = _shown
 	if _shown == "farewell":
 		_say_goodbye()
 	refresh()
