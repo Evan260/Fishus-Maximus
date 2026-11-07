@@ -4,8 +4,12 @@ extends RefCounted
 ## clients' fish live, sells when the hold is full, fills orders, buys bait, gear and the next boat, builds ponds and
 ## hunts the legends whose time has come. It notes when each chapter, boat and legend arrives, in hours of play.
 
-## Catches a minute while fishing by hand.
-const RATE := 1.0
+## Seconds each cast by hand takes before a fish is on: the cast, the sink, the wait for a bite and its nibbles.
+const BITE_SECONDS := 34.0
+## How far out from the boat the hook lands, so a fight starts this far along and the hook's depth down.
+const CAST_OUT := 80.0
+## Each fight is played out as the demo plays it, reeling only while the fish rests, in steps of this many seconds.
+const FIGHT_STEP := 0.1
 ## The chance a minute that a legend whose time and place have come is landed.
 const LEGEND := 0.06
 
@@ -14,6 +18,8 @@ var rng: RandomNumberGenerator
 var log := {"chapters": {}, "boats": {}, "legends": {}, "denarii": 0}
 var _minutes := 0.0
 var _place := "harbour"
+## Seconds of fishing by hand carried from one minute into the next; below nought while a long fight runs on.
+var _line_seconds := 0.0
 
 
 func run(hours: float, seed: int) -> Dictionary:
@@ -98,17 +104,30 @@ func _fish_a_minute() -> void:
 			if rng.randf() < LEGEND and _method_open(method):
 				Catches.record(state, legend, Catalog.roll_pounds(legend, rng), Hold.well_room(state) > 0)
 				log["legends"][legend] = snappedf(_minutes / 60.0, 0.01)
+				_line_seconds = 0.0
 				return
-	var catches := RATE * (1.0 + 0.15 * float(Data.gear[state["gear"]["rod"]]["pull"]))
-	var n := int(catches) + (1 if rng.randf() < catches - floorf(catches) else 0)
 	var depth_limit := minf(float(Data.places[_place]["depth"]), float(Data.gear[state["gear"]["line"]]["length"]))
-	for i in n:
-		var kinds := Catalog.available(_place, rng.randf_range(10.0, depth_limit), hour, _season(), weather, "line")
+	var g: Dictionary = state["gear"]
+	var gear := {"pull": Data.gear[g["rod"]]["pull"], "strength": Data.gear[g["line"]]["strength"], "hold": Data.gear[g["hook"]]["hold"]}
+	_line_seconds += 60.0
+	while _line_seconds > 0.0:
+		_line_seconds -= BITE_SECONDS
+		var depth := rng.randf_range(10.0, depth_limit)
+		var kinds := Catalog.available(_place, depth, hour, _season(), weather, "line")
 		if kinds.is_empty():
 			continue
 		var fish := Pick.by_rarity(kinds, rng)
-		Catches.record(state, fish, Catalog.roll_pounds(fish, rng), Data.fish[fish].get("live", false))
+		var lb := Catalog.roll_pounds(fish, rng)
+		var fight := LineFight.new()
+		fight.setup(fish, lb, gear, false, rng)
+		fight.distance = Vector2(CAST_OUT, depth).length()
+		while fight.state == "fighting":
+			fight.step(fight.resting(), FIGHT_STEP)
+			_line_seconds -= FIGHT_STEP
+		if fight.state == "landed":
+			Catches.record(state, fish, lb, Data.fish[fish].get("live", false))
 		if Hold.room(state) <= 0:
+			_line_seconds = 0.0
 			return
 
 
