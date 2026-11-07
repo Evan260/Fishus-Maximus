@@ -63,3 +63,20 @@ func test_every_place_is_painted() -> void:
 		check(p.has("floor") and ResourceLoader.exists("res://assets/art/" + str(p["floor"].get("file", ""))), p["id"] + " has a painted sea floor")
 		check(p["seabed"].size() >= 6, p["id"] + " has a seabed with its rises and falls")
 		check(p["seabed"].all(func(pt): return pt[1] > 0 and pt[1] <= p["depth"]), p["id"] + "'s seabed stays within the place's depth")
+
+
+func test_a_fish_reaches_a_hook_lying_on_the_seabed() -> void:
+	var bed := Seabed.new(Data.places["harbour"]["seabed"])
+	var w := Swimmers.new()
+	w.setup("harbour", bed, Seeds.rng(1, "w"))
+	var hook := bed.clamp_hook(Vector2(600, 999))
+	var s := Sprite2D.new()
+	w.add_child(s)
+	var f := {"id": "mullet", "lb": 1.0, "sprite": s, "pos": hook + Vector2(-30, -20), "heading": 1.0, "phase": 0.0, "speed": 10.0,
+		"band": Data.fish["mullet"]["depth"], "goal_y": hook.y, "turn": 5.0, "look": 1.0, "state": "approach", "leader": {}, "group": 1}
+	var got := []
+	w.bit.connect(func(fish): got.append(fish))
+	for i in 150:
+		w._move(f, 1.0 / 30.0, hook)
+	check(got.size() == 1 and f["state"] == "bit", "a fish swimming in to a hook on the sand gets there and takes it")
+	w.free()

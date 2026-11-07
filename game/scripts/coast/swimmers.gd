@@ -165,6 +165,8 @@ func _move(f: Dictionary, delta: float, bait) -> void:
 			f["state"] = "swim"
 		else:
 			var to: Vector2 = bait + Vector2(-6.0 * f["heading"], 2)
+			# A hook lying on the seabed is lower than a fish may swim, so it noses in as close as it can.
+			to.y = _keep_y(f, to.x, to.y)
 			f["heading"] = signf(bait.x - f["pos"].x) if absf(bait.x - f["pos"].x) > 2.0 else f["heading"]
 			f["pos"] = f["pos"].move_toward(to, (f["speed"] + 10.0) * delta)
 			if f["pos"].distance_to(to) < 2.0:
@@ -200,14 +202,19 @@ func _move(f: Dictionary, delta: float, bait) -> void:
 			var near: Vector2 = bait + Vector2(-18.0 * signf(bait.x - f["pos"].x + 0.01), sin(t * 0.9 + f["phase"]) * 6.0)
 			f["heading"] = signf(bait.x - f["pos"].x) if absf(bait.x - f["pos"].x) > 4.0 else f["heading"]
 			f["pos"] = f["pos"].move_toward(near, f["speed"] * delta)
-	var lo := maxf(5.0, float(f["band"][0]) * 0.5)
-	var hi := seabed.depth_at(f["pos"].x) - 5.0
-	f["pos"].y = clampf(f["pos"].y, minf(lo, hi), hi)
+	f["pos"].y = _keep_y(f, f["pos"].x, f["pos"].y)
 	var s: Sprite2D = f["sprite"]
 	s.flip_h = f["heading"] < 0.0
 	s.position = (f["pos"] - cam).round()
 	var depth := clampf(f["pos"].y / maxf(200.0, float(place["depth"])), 0.0, 1.0)
 	s.modulate = Color(0.95, 1.0, 1.0).lerp(Color(0.55, 0.72, 0.8), depth)
+
+
+## The nearest depth to y that a fish keeps to at x: no higher than half its band's top, and clear of the seabed.
+func _keep_y(f: Dictionary, x: float, y: float) -> float:
+	var lo := maxf(5.0, float(f["band"][0]) * 0.5)
+	var hi := seabed.depth_at(x) - 5.0
+	return clampf(y, minf(lo, hi), hi)
 
 
 ## Takes a fish off the swimmers, when it is hooked or has given up on the bait.
