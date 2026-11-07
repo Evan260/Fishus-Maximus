@@ -1,0 +1,43 @@
+# Fishus Maximus: Claude Code Guide
+
+A cozy Roman fishing game in Godot 4.7 (GDScript, 2D, GL Compatibility), set on the Bay of Naples in AD 72. The design is in `Overview.md`, the detailed rules in `Mechanics.md`, and the build plan in `docs/superpowers/plans/2026-11-06-full-game.md`.
+
+## Where things are
+
+- `game/scripts/autoload/`: `Dev` (command-line options and screenshots), `Data` (everything in `game/data/*.json`), `Settings` (volumes, the window, gentle fishing, text size), `Game` (the game being played, one dictionary; keys starting with `_` and a fight in progress are never saved; `catch_up()` lets time away pass; `demo_state()` is a game some way in), `Saves` (three slots, each with a `.bak`, saved every minute and on every change of screen), `Nav` (screens and the world and interface layers), `Windowing` (the desktop strip, F10), `Audio` (effects by file name, ambience loops, music).
+- `game/scripts/rules/`: the rules as plain classes, tested headless. `World.advance` is the one clock: pots, freshness, helpers, and each new morning the market, orders, ponds, tanks, weather and the pond show. Also `Clock`, `Catalog`, `Bite`, `LineFight`, `Catches`, `Hold`, `Traps`, `Nets`, `Trident`, `Idle`, `Market`, `Orders`, `Story` (chapters and clients), `Shop`, `Ponds`, `Garum`, `Weather`, `Events`, `Legends`, `Achievements`, `Helpers`, `Gossip`, `Dogs`.
+- `game/scripts/coast/`: a fishing place seen side on. `coast_screen.gd` holds the line, the bite, the strike and the fight; `ParallaxLayers` slides each painted layer at its own speed, `FloorView` lays the painted sand strip along the seabed line, `WaterView` draws the water by depth, `BoatView` the hull, the seated fisherman and his rod, `DogView` the dog, `Swimmers` the fish, `LineView` the line and bars, `CoastMethods` pots, net, trident and fishing on his own, `CoastEvents` dolphins, the tuna haul and the Neptunalia, `SkyView` the sky by the hour, `CoastCamera` the camera.
+- A place in `game/data/places.json` lists its `seabed` line, its `floor` strip, `ground_below` (below the seabed plus this the ground is solid shadow), its `map` pin and its layers: `file` (under `assets/art`), `at` (on screen with the camera at home, the waterline 160 pixels down) or `world` (world pixels, the waterline at 0), `factor`, `z`, `mirror`, `alpha`, `repeat`, `through` (crosses the waterline, so its lower part is tinted), or `band` (the sea under a row of land). Pieces at z -9 stand behind the floor; the floor hides their bases.
+- `game/scripts/town/`, `shore/`, `map/`, `screens/`: the town street and its panels, the ponds and garum works, the bay map, and the title.
+- `game/scripts/ui/`: `UiTheme` (pixel fonts and the painted panels and buttons in `assets/art/ui/`), `Ui` (helpers; money is always `Ui.coins_text`; `Ui.window` for panels), `Hud`, `Toast`, `CatchCard`, `HoldChoice`, `LogbookPanel`, `SettingsPanel`, `AchievementCard`, `Controls` (keys and controller).
+- `game/tests/`: `run_tests.gd` runs every `test_*` method in every `test_*.gd`; a test that raises an engine error fails. `pacing_bot.gd` and `flow_bot.gd` are the bots.
+- `game/tools/style_tests/`: the two approved style tests, kept as references and never exported.
+- `tools/art/`: `pixellab.py` (the token is in `.env`, never in code; every picture's cost goes in `ledger.csv`), `make_places.py` with the specs written by `places/_write_specs.py`, `make_fish.py`, `make_props.py` (boats, the fisherman, pots, net, lamp, dolphin), `make_town.py` and `make_town_shapes.py`, `make_portraits.py`, `make_shore.py`, `check_edges.py` (fails any layer whose edge could show as a straight cut; `tiles.txt` lists the exceptions), and `places_json.py`.
+- `tools/audio/cut_sounds.py` cuts the sea sounds from the CC0 recordings in `tools/audio/recordings/`.
+
+## Fixed decisions
+
+- The game draws at 480 by 270, scaled by the largest whole number that fits the window (stretch mode `viewport`, scale `integer`). It opens windowed; F11 switches to full screen; F10 the desktop strip.
+- Every balance number lives in `game/data/*.json`, read with `Data.num("time.day_minutes")`. The chapters open at the names in `chapters.json`, tuned with the pacing bot.
+- Art is painted with PixelLab without outlines, and no picture's edge may ever show as a straight cut: land carries on below the water and rock runs to the bottom of the world.
+- A floor, wall or quay is one painted piece, joined onto itself when it repeats; pieces painted apart are never set side by side, and an old picture never gets new sides painted on. Check every scene by eye at game scale, since the edge script cannot see a change of texture.
+- A texture is loaded before drawing starts; one first loaded inside a draw call shows as a blank square.
+
+## Running and checking
+
+- Godot: `/c/Users/evand/AppData/Local/Microsoft/WinGet/Packages/GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe/Godot_v4.7.2-stable_win64_console.exe`
+- After adding a class or any picture or sound: `--headless --path game --import`.
+- Tests: `--headless --path game -- --run-tests` must print `ALL TESTS PASSED`; `--only=NAME` runs the test files whose names contain NAME.
+- Any screen alone: `--path game -- --screen=NAME --no-save --shot-at=2 --shot=OUT.png --quit`; `--demo-state` starts a game some way in; `--click=X,Y` clicks at game pixels at `--click-at` seconds.
+- A place: `--screen=coast --place=ID`, with `--hour=H`, `--weather=rain`, `--at=X` (the boat) or `--at=X,Y` (the boat, and the camera held at that depth), `--demo-cast` (casts, strikes and reels by itself) and `--strip`.
+- Every screen in one go: `--path game -- --flow=DIR --no-save` saves a screenshot of each.
+- Pacing: `--headless --path game -- --pacing --no-save` prints when each chapter, boat and legend arrives for three keen players over 40 hours. Targets: chapter 2 in 1 to 2 hours, 3 in 4 to 6, 4 in 9 to 13, 5 in 16 to 22, every legend within 40.
+- After painting a place: `python tools/art/check_edges.py` must print `no visible cut edges`.
+- Build: `--headless --path game --export-release "Windows" "../builds/windows/Fishus Maximus.exe"`, with the trimmed engine copied from Mosaicus Maximus (`tools/engine/`, git-ignored; no 3D, physics, navigation, regex or noise). Copy `CREDITS.md` beside it as `Credits and licences.txt`.
+
+## Conventions
+
+- Markdown docs: no em dashes, dollar signs written as `\$`, prices in CAD.
+- Comments only for a non-obvious reason, one line, present tense.
+- Clients are "he" or "she", following their portrait, never "they".
+- Commit only when Evan asks; he is the only author.
