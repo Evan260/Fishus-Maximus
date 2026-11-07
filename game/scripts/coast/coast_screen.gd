@@ -303,8 +303,9 @@ func cast(power: float) -> void:
 	_boat.throw()
 	hook = seabed.clamp_hook(Vector2(tip.x + _boat.facing * lerpf(CAST_NEAR, CAST_FAR, clampf(power, 0.0, 1.0)), 0.0))
 	_state = "sinking"
+	charge = -1.0
 	flight = FLIGHT_SECONDS
-	_flight_from = tip
+	_flight_from = _boat.rod_tip(boat_x)
 	# Only a cast by the player's own hand counts as learning to cast.
 	if not methods.idle and not _demo:
 		Game.state["stats"]["casts"] = int(Game.state["stats"].get("casts", 0)) + 1
@@ -314,6 +315,11 @@ func cast(power: float) -> void:
 func flying() -> Vector2:
 	var u := 1.0 - clampf(flight / FLIGHT_SECONDS, 0.0, 1.0)
 	return _flight_from.lerp(Vector2(hook.x, 0.0), u) + Vector2(0, -FLIGHT_ARC * 4.0 * u * (1.0 - u))
+
+
+## Whether a click at a point pets the dog: never while a fish is at the bait, when a click strikes.
+func _pets_dog(at: Vector2) -> bool:
+	return not _state in ["nibble", "bite"] and dog.rect().has_point(at)
 
 
 ## Whether he is rowing, with the rod laid down in the boat.
@@ -421,6 +427,7 @@ func _let_go() -> void:
 		swimmers.release(biter, false, true)
 	biter = {}
 	twitch = 0.0
+	flight = 0.0
 
 
 func _use_bait() -> void:
@@ -580,7 +587,7 @@ func _handle_input(delta: float) -> void:
 		charge = -1.0
 	if CatchCard.is_open() or Ui.window_open():
 		return
-	if _click and dog.rect().has_point(get_global_mouse_position()):
+	if _click and _pets_dog(get_global_mouse_position()):
 		dog.pet()
 		return
 	for m in CoastMethods.METHODS:

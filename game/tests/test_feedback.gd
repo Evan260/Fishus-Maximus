@@ -122,3 +122,54 @@ func test_no_line_hangs_from_the_rod_while_he_rows() -> void:
 	for c in Nav.ui.get_children():
 		c.free()
 	s.free()
+
+
+func _coast() -> Node:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "hound")
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": "harbour"})
+	return s
+
+
+func _done(s: Node) -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	s.free()
+
+
+func test_casting_ends_the_wind_up() -> void:
+	var s := _coast()
+	s.charge = 0.4
+	s.cast(0.6)
+	check(s.charge < 0.0, "no wind-up is left over to fire a second cast by itself")
+	_done(s)
+
+
+func test_the_float_sets_off_from_the_rod_tip() -> void:
+	var s := _coast()
+	s.cast(0.8)
+	check(s.flying().distance_to(s.rod_tip()) < 1.5, "the float leaves from the tip of the swinging rod, at %s, not %s" % [s.rod_tip(), s.flying()])
+	_done(s)
+
+
+func test_a_line_reeled_in_mid_flight_makes_no_splash() -> void:
+	var s := _coast()
+	s.cast(0.8)
+	s.reel_in()
+	check(s.flight <= 0.0, "the flight ends when the line is pulled back")
+	_done(s)
+
+
+func test_a_click_on_the_dog_strikes_a_bite() -> void:
+	var s := _coast()
+	s.relayout()
+	s.dog._process(0.0)
+	var on_dog: Vector2 = s.dog.rect().get_center()
+	s._state = "bite"
+	check(not s._pets_dog(on_dog), "while a fish has the bait a click there strikes rather than petting the dog")
+	s._state = "reeled"
+	check(s._pets_dog(on_dog), "with the line in, the click pets him")
+	_done(s)

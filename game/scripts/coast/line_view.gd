@@ -25,18 +25,19 @@ func _draw() -> void:
 	var at: Vector2 = (screen.hook - cam).round()
 	var surface := -cam.y
 	WaterView.draw_surface(self, cam, t)
+	# While he rows the rod lies in the boat with its line wound in, and while the float flies out no hook shows yet.
+	var hook_shown := true
 	if state == "reeled":
-		# While he rows the rod lies in the boat with its line wound in.
-		if screen.rowing():
-			return
+		hook_shown = not screen.rowing()
 		at = tip + Vector2(0, 10)
-		draw_line(tip, at, LINE, 1.0)
+		if hook_shown:
+			draw_line(tip, at, LINE, 1.0)
 	elif screen.flight > 0.0:
+		hook_shown = false
 		var float_at: Vector2 = (screen.flying() - cam).round()
 		draw_line(tip, float_at, LINE, 1.0)
 		draw_rect(Rect2(float_at + Vector2(-1, -1), Vector2(4, 3)), Color("#c98a4b"))
 		draw_rect(Rect2(float_at + Vector2(-1, -1), Vector2(4, 1)), Color("#e8c08a"))
-		return
 	else:
 		var twitch: float = screen.twitch
 		var dip := 0.0
@@ -66,8 +67,9 @@ func _draw() -> void:
 			draw_string(UiTheme.title_font(), Vector2(bob.x - 1, surface - 6), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
 	if state == "fighting" and screen.fight != null:
 		_hooked_fish(at, t)
-	draw_rect(Rect2(at, Vector2(1, 3)), Color("#b8c0c0"))
-	draw_rect(Rect2(at + Vector2(1, 1), Vector2(2, 1)), Color("#e07a8a"))
+	if hook_shown:
+		draw_rect(Rect2(at, Vector2(1, 3)), Color("#b8c0c0"))
+		draw_rect(Rect2(at + Vector2(1, 1), Vector2(2, 1)), Color("#e07a8a"))
 	if screen.charge >= 0.0:
 		_bar(tip + Vector2(-14, -14), 28, screen.charge, CALM)
 	for r in screen.rain():

@@ -1,5 +1,6 @@
 """Tones down over-bright sprites: each pixel's colour is drawn towards its own grey by a factor, keeping its
-lightness, so a garish fish turns into a natural one without losing its markings. Writes the pictures back in place.
+lightness, so a garish fish turns into a natural one without losing its markings. Writes the pictures back in place,
+so run it once on a picture: a second run mutes it again.
 Usage: python tools/art/mute_colours.py KEEP PATH [PATH...]   (KEEP is how much colour stays, such as 0.65)"""
 import sys
 from pathlib import Path
