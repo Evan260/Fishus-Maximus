@@ -1,8 +1,8 @@
 [
-	{"id": "cane_rod", "kind": "rod", "name": "Cane rod", "pull": 1, "price": 0},
-	{"id": "ash_rod", "kind": "rod", "name": "Ash rod", "pull": 2, "price": 60},
-	{"id": "yew_rod", "kind": "rod", "name": "Yew rod", "pull": 3, "price": 180},
-	{"id": "masters_rod", "kind": "rod", "name": "Master's rod", "pull": 4, "price": 450},
+	{"id": "cane_rod", "best": [0, 3], "kind": "rod", "name": "Cane rod", "pull": 1, "price": 0},
+	{"id": "ash_rod", "best": [0.5, 8], "kind": "rod", "name": "Ash rod", "pull": 2, "price": 60},
+	{"id": "yew_rod", "best": [3, 30], "kind": "rod", "name": "Yew rod", "pull": 3, "price": 180},
+	{"id": "masters_rod", "best": [10, 1000], "kind": "rod", "name": "Master's rod", "pull": 4, "price": 450},
 	{"id": "flax_line", "kind": "line", "name": "Flax line", "strength": 0.6, "length": 260, "price": 0},
 	{"id": "horsehair_line", "kind": "line", "name": "Horsehair line", "strength": 0.72, "length": 420, "price": 50},
 	{"id": "twisted_line", "kind": "line", "name": "Twisted flax line", "strength": 0.84, "length": 600, "price": 160},

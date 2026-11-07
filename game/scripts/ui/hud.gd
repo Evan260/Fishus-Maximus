@@ -40,6 +40,7 @@ func setup(s: Node) -> void:
 	var right := HBoxContainer.new()
 	right.add_theme_constant_override("separation", 2)
 	add_child(right)
+	Ui.button(right, "Tackle", func(): TacklePanel.open()).tooltip_text = "Choose the bait and the rod"
 	Ui.button(right, "Logbook", func(): LogbookPanel.open())
 	Ui.button(right, "Settings", func(): SettingsPanel.open())
 	Ui.button(right, "Menu", func():

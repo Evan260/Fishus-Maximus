@@ -34,7 +34,9 @@ static func owned(state: Dictionary, id: String) -> bool:
 			return false
 		_:
 			# Gear of a kind you already have something better of counts as owned, so it is never sold to you.
-			var have: Dictionary = Data.gear.get(str(state["gear"].get(g["kind"], "")), {})
+			var kind := str(g["kind"])
+			var held := str(state["gear"].get("rod_best", state["gear"].get(kind, ""))) if kind == "rod" else str(state["gear"].get(kind, ""))
+			var have: Dictionary = Data.gear.get(held, {})
 			return not have.is_empty() and int(have["price"]) >= int(g["price"])
 
 
@@ -58,6 +60,9 @@ static func buy(state: Dictionary, id: String) -> bool:
 				state["finery"] = state.get("finery", []) + [id]
 			_:
 				state["gear"][g["kind"]] = id
+				# The best rod bought is remembered apart from the one in his hands, which he can swap for a lighter one.
+				if g["kind"] == "rod":
+					state["gear"]["rod_best"] = id
 	return true
 
 
