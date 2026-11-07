@@ -10,6 +10,9 @@ const ROWED := 30.0
 const REEL_SPEED := 70.0
 const CAST_NEAR := 20.0
 const CAST_FAR := 140.0
+## How long the float takes to fly out to where it lands, and how high it arcs on the way.
+const FLIGHT_SECONDS := 0.45
+const FLIGHT_ARC := 28.0
 ## Seconds the float dips for at each nibble.
 const TWITCH := 0.25
 
@@ -30,6 +33,9 @@ var fight: LineFight
 var weather := "clear"
 var hour := 12.0
 var charge := -1.0
+## Seconds left of the float's flight out after a cast, and where it set off from.
+var flight := 0.0
+var _flight_from := Vector2.ZERO
 ## A click on the water this frame, and whether the mouse is still held down after one; clicks on buttons never get here.
 var _click := false
 var _mouse_held := false
@@ -297,10 +303,22 @@ func cast(power: float) -> void:
 	_boat.throw()
 	hook = seabed.clamp_hook(Vector2(tip.x + _boat.facing * lerpf(CAST_NEAR, CAST_FAR, clampf(power, 0.0, 1.0)), 0.0))
 	_state = "sinking"
+	flight = FLIGHT_SECONDS
+	_flight_from = tip
 	# Only a cast by the player's own hand counts as learning to cast.
 	if not methods.idle and not _demo:
 		Game.state["stats"]["casts"] = int(Game.state["stats"].get("casts", 0)) + 1
-	Audio.play("splash_small", -4.0)
+
+
+## Where the float is on its flight out, arcing from the rod's tip to where it lands.
+func flying() -> Vector2:
+	var u := 1.0 - clampf(flight / FLIGHT_SECONDS, 0.0, 1.0)
+	return _flight_from.lerp(Vector2(hook.x, 0.0), u) + Vector2(0, -FLIGHT_ARC * 4.0 * u * (1.0 - u))
+
+
+## Whether he is rowing, with the rod laid down in the boat.
+func rowing() -> bool:
+	return _boat.rowing > 0.0 and _boat.oars
 
 
 ## Lets the hook sink, until it rests on the seabed or the line runs out.
@@ -445,6 +463,8 @@ func relayout() -> void:
 	_water.cam = camera.cam
 	_water.time = _time
 	_boat.charge = charge if methods.method == "line" else -1.0
+	_boat.strain = fight.tension if fight != null else 0.0
+	_boat.pull = hook
 	_boat.place(boat_x, camera.cam, _time)
 	_sky.follow(camera.cam, hour, weather)
 	var light := SkyView.light(hour)
@@ -477,7 +497,12 @@ func _process(delta: float) -> void:
 		_demo_step()
 	else:
 		_handle_input(delta)
-	sink(delta)
+	if flight > 0.0:
+		flight -= delta
+		if flight <= 0.0:
+			Audio.play("splash_small", -4.0)
+	else:
+		sink(delta)
 	match _state:
 		"reeling":
 			var tip := _boat.rod_tip(boat_x)
@@ -521,7 +546,7 @@ func _process(delta: float) -> void:
 
 ## Whether a fish may take the hand line's bait: a line in the water with bait on it, while the player is at the rod.
 func hook_baited() -> bool:
-	return _state in ["waiting", "sinking"] and bait() != "" and methods.method == "line" and not methods.idle
+	return _state in ["waiting", "sinking"] and flight <= 0.0 and bait() != "" and methods.method == "line" and not methods.idle
 
 
 func _unhandled_input(e: InputEvent) -> void:

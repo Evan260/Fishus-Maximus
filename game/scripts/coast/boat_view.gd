@@ -48,6 +48,9 @@ var oars := false
 var rowing := 0.0
 ## How far the cast is wound up, from 0 to 1, or below zero when it is not being held.
 var charge := -1.0
+## How hard a hooked fish pulls, as the line's tension, and the point in the world it pulls towards.
+var strain := 0.0
+var pull := Vector2.ZERO
 var _throw := -1.0
 var _row_t := 0.0
 var _frames := {}
@@ -195,7 +198,13 @@ func rod_tip(x: float) -> Vector2:
 	if p[0] == "row":
 		return Vector2(x + _along(0.86), -ride + bob + deck - 7.0)
 	var angle := deg_to_rad(ROD_CAST[p[1]] if p[0] == "cast" else ROD_REST)
-	return _hands_at(x) + Vector2(cos(angle) * facing, sin(angle)) * ROD_LENGTH
+	var hands := _hands_at(x)
+	var straight := Vector2(cos(angle) * facing, sin(angle))
+	if strain <= 0.0 or p[0] != "sit":
+		return hands + straight * ROD_LENGTH
+	# A pulling fish bends the tip round towards the line, more the harder it pulls.
+	var bend := straight.slerp((pull - hands).normalized(), clampf(strain, 0.0, 1.0) * 0.55)
+	return hands + bend * ROD_LENGTH * (1.0 - 0.12 * clampf(strain, 0.0, 1.0))
 
 
 ## Where the rod's tip is while he sits fishing, which a cast is measured from wherever the rod is in the swing.
@@ -277,6 +286,14 @@ func _draw_in_hands() -> void:
 	_overlay.draw_colored_polygon(shape, OAR_COLOUR if blade.y < water else OAR_COLOUR.lerp(TINT, 0.55))
 
 
+## The rod from its butt to its tip, curved when a fish bends it: the butt stays pointing where he holds it.
 func _rod(on: CanvasItem, from: Vector2, to: Vector2) -> void:
-	on.draw_line(from, to, ROD_COLOUR, 1.0)
-	on.draw_line(from, from.lerp(to, 0.4), ROD_LIGHT, 1.0)
+	var angle := deg_to_rad(ROD_REST)
+	var held := from + Vector2(cos(angle) * facing, sin(angle)) * ROD_LENGTH * 0.5
+	var bent: bool = strain > 0.0 and pose()[0] == "sit"
+	var last := from
+	for k in range(1, 9):
+		var u := k / 8.0
+		var point := from.lerp(held, u).lerp(held.lerp(to, u), u) if bent else from.lerp(to, u)
+		on.draw_line(last.round(), point.round(), ROD_LIGHT if k <= 3 else ROD_COLOUR, 1.0)
+		last = point

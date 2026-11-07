@@ -26,8 +26,17 @@ func _draw() -> void:
 	var surface := -cam.y
 	WaterView.draw_surface(self, cam, t)
 	if state == "reeled":
+		# While he rows the rod lies in the boat with its line wound in.
+		if screen.rowing():
+			return
 		at = tip + Vector2(0, 10)
 		draw_line(tip, at, LINE, 1.0)
+	elif screen.flight > 0.0:
+		var float_at: Vector2 = (screen.flying() - cam).round()
+		draw_line(tip, float_at, LINE, 1.0)
+		draw_rect(Rect2(float_at + Vector2(-1, -1), Vector2(4, 3)), Color("#c98a4b"))
+		draw_rect(Rect2(float_at + Vector2(-1, -1), Vector2(4, 1)), Color("#e8c08a"))
+		return
 	else:
 		var twitch: float = screen.twitch
 		var dip := 0.0

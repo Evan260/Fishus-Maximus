@@ -62,7 +62,8 @@ func test_fishing_on_his_own_leaves_no_bait_for_the_swimmers() -> void:
 	Nav.port.add_child(s)
 	s.enter({"place": "harbour"})
 	s.cast(0.5)
-	check(s.hook_baited(), "a cast line is baited")
+	s.flight = 0.0
+	check(s.hook_baited(), "a cast line is baited once it lands")
 	s.methods.set_idle(true)
 	check(not s.hook_baited(), "fishing on his own, nothing bites the hand line")
 	for c in Nav.ui.get_children():

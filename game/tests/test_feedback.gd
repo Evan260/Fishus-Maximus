@@ -78,3 +78,47 @@ func test_the_dog_is_drawn_at_its_painted_size() -> void:
 	for c in Nav.ui.get_children():
 		c.free()
 	s.free()
+
+
+func test_a_cast_line_flies_out_before_it_lands() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "hound")
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": "harbour"})
+	s.cast(0.8)
+	check(s.flight > 0.0 and not s.hook_baited(), "the float is still in the air, so nothing can take it yet")
+	var mid: Vector2 = s.flying()
+	check(mid.y < 0.0, "and it arcs above the water on its way out")
+	s._process(1.0)
+	check(s.flight <= 0.0 and s.hook_baited(), "once it lands the bait is in the water")
+	for c in Nav.ui.get_children():
+		c.free()
+	s.free()
+
+
+func test_the_rod_bends_towards_a_pulling_fish() -> void:
+	var b := BoatView.new()
+	b.set_boat("skiff")
+	b.place(100.0, Vector2.ZERO, 0.0)
+	var straight: Vector2 = b.rod_tip(100.0)
+	b.strain = 1.0
+	b.pull = straight + Vector2(60, 120)
+	var bent: Vector2 = b.rod_tip(100.0)
+	check(bent.y > straight.y + 3.0, "under strain the tip is pulled down towards the fish")
+	b.free()
+
+
+func test_no_line_hangs_from_the_rod_while_he_rows() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "hound")
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": "harbour"})
+	s.row(1.0, 0.1)
+	check(s.rowing(), "the coast knows he is rowing, so the line view leaves the stowed rod bare")
+	for c in Nav.ui.get_children():
+		c.free()
+	s.free()
