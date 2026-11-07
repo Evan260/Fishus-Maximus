@@ -11,6 +11,8 @@ static func say(text: String) -> void:
 		_box = VBoxContainer.new()
 		_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_box.add_theme_constant_override("separation", 1)
+		# A window opened after a message is added after it too, so the messages are lifted above every window.
+		_box.z_index = 50
 		Nav.ui.add_child(_box)
 	# In the desktop strip the lines sit along the bottom, so they never cover the boat.
 	var low := Windowing.strip

@@ -89,6 +89,10 @@ static func take(state: Dictionary, tank: int) -> Dictionary:
 	var n := maxi(1, int(float(t["pounds"]) / float(Data.garum.get("pounds_per_amphora", 5))))
 	var had := int(state["garum"].get(g, 0))
 	var qualities: Dictionary = state["garum_quality"] if state.get("garum_quality") is Dictionary else {}
+	# A save from before each grade kept its own quality has one number, which every grade in store shares.
+	if not state.get("garum_quality") is Dictionary:
+		for grade_id in state["garum"]:
+			qualities[grade_id] = quality(state, grade_id)
 	qualities[g] = (quality(state, g) * had + float(t["quality"]) * n) / float(had + n)
 	state["garum_quality"] = qualities
 	state["garum"][g] = had + n

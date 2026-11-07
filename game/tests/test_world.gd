@@ -44,4 +44,4 @@ func test_sailing_takes_an_hour_and_needs_the_boat() -> void:
 	check(not BayMap.sail(Game.state, "lucrine"), "the skiff cannot reach the lake")
 	Game.state["chapter"] = 2
 	check(BayMap.sail(Game.state, "rocky_shore") and Game.state["place"] == "rocky_shore", "the rocky shore in the skiff")
-	check(is_equal_approx(float(Game.state["time"]) - t, Clock.minutes_per_day() / 24.0), "an hour of the day")
+	check(is_equal_approx(float(Game.state["time"]) - t, Clock.minutes_for_hours(t, 1.0)), "an hour of the day")

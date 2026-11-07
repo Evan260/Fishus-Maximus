@@ -23,7 +23,7 @@ var _painter: Node2D
 var _stage: Node2D
 
 
-func enter(_args: Dictionary) -> void:
+func enter(args: Dictionary) -> void:
 	Controls.ensure()
 	if Game.state.is_empty():
 		Game.new_game("Marcus", "")
@@ -57,6 +57,8 @@ func enter(_args: Dictionary) -> void:
 	_place_clients()
 	_build_ui()
 	Game.changed.connect(_refresh_ui)
+	if args.get("slept", false):
+		Toast.say("You sleep at the inn and wake at dawn.")
 
 
 func _build_ui() -> void:
@@ -77,9 +79,8 @@ func _build_ui() -> void:
 func _sleep_now() -> void:
 	World.sleep(Game.state, Seeds.rng(int(Game.state["seed"]), "sleep", Clock.day_of(float(Game.state["time"]))))
 	Audio.play("click", -6.0)
-	Toast.say("You sleep at the inn and wake at dawn.")
 	Game.changed.emit()
-	Nav.go("town")
+	Nav.go("town", {"slept": true})
 
 
 func _place() -> void:

@@ -22,7 +22,7 @@ static func sail(state: Dictionary, place: String) -> bool:
 		return false
 	if place != state["place"]:
 		var hours := travel_minutes(place, str(state["boat"])) / 60.0
-		World.advance(state, hours * Clock.minutes_per_day() / 24.0, Seeds.rng(int(state["seed"]), "sail", Clock.day_of(float(state["time"]))))
+		World.advance(state, Clock.minutes_for_hours(float(state["time"]), hours), Seeds.rng(int(state["seed"]), "sail", Clock.day_of(float(state["time"]))))
 	state["place"] = place
 	state["boat_x"] = 150.0
 	return true

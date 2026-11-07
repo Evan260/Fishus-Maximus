@@ -104,7 +104,7 @@ func enter(args: Dictionary) -> void:
 	if Nav.ui and not Dev.has("no-hud"):
 		var sail := Ui.button(Nav.ui, "Bay map", func():
 			if fight == null:
-				Game.state["boat_x"] = boat_x
+				prepare_to_leave()
 				Nav.go("map"))
 		Ui.hang(sail, "bottom_left", Vector2(4, 4), Vector2(60, 18))
 	if place_id == "harbour" and Nav.ui and not Dev.has("no-hud"):
@@ -115,8 +115,16 @@ func enter(args: Dictionary) -> void:
 
 func go_ashore() -> void:
 	if fight == null:
-		Game.state["boat_x"] = boat_x
+		prepare_to_leave()
 		Nav.go("town")
+
+
+## Remembers where the boat lies, and stops him fishing on his own, since he is going with you.
+func prepare_to_leave() -> void:
+	Game.state["boat_x"] = boat_x
+	if methods.idle:
+		methods.idle = false
+		Game.state.erase("idle")
 
 
 func _build() -> void:
