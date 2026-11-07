@@ -11,6 +11,10 @@ FLOOR = "seamless flat even texture filling the whole picture, seen from the sid
 # A piece of the harbour town, so land painted to match it shares the town's palette, light and soft natural rock.
 LIKE_TOWN = "tools/art/places/style_land.png"
 ROCK = "natural weathered rock with soft rounded shading and no outlines, empty transparent background"
+# Land with nothing painted above it, so the game's own drifting sky shows there.
+NO_SKY = "natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background"
+# A built-up hill painted to the picture's sides gets cut by the taper, so it is asked to stand clear of them.
+ALONE = "the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right"
 
 
 def bands(far, mid, near=None):
@@ -26,9 +30,14 @@ def far(prompt, w):
             "land": True, "haze": ["#b4c4cc", 0.35]}
 
 
-def mid(prompts, w):
-    return {"file": "mid.png", "strip": [{"prompt": f"{p}, {LOW_ENDS}, {LAND}", "size": f"{w}x80"} for p in prompts],
-            "land": True, "haze": ["#a9bcc4", 0.18], "at": [-16, 38], "factor": [0.3, 0.3], "z": -16}
+def mid(prompts, w, style=None, gap=0):
+    out = {"file": "mid.png", "strip": [{"prompt": f"{p}, {LOW_ENDS}, {LAND}", "size": f"{w}x80"} for p in prompts],
+           "land": True, "haze": ["#a9bcc4", 0.18], "at": [-16, 38], "factor": [0.3, 0.3], "z": -16}
+    if style:
+        out["style"] = style
+    if gap:
+        out["gap"] = gap
+    return out
 
 
 def near(prompts, w, h=112, style=None, gap=0):
@@ -180,11 +189,16 @@ specs[p] = {
     "floor": floor("soft grey-brown silt and fine sand on a deep sea floor with a few pale shells and small stones, muted colours"),
     "layers": bands("#8fa4ae", "#6a94a6", "#4a8296") + [
         far("the distant islands of Procida and Ischia, the high green mountain of Ischia on the right", 768),
-        mid(["the long green headland of Cape Misenum at a middle distance with a white lighthouse tower and pines",
-             "the low coast of the Phlegraean fields with villas and the town of Baiae"], 544),
-        near(["the ancient Roman naval harbour of Misenum: a long stone breakwater with arches, ancient Roman trireme war galleys with three banks of oars, a single furled square sail and a bronze ram, moored inside, warehouses with red tiled roofs, first century, no medieval ships",
-              "the steep green slopes of Cape Misenum with a tall white Roman lighthouse, villas and pines",
-              "a rocky shore below the cape with grey cliffs, sea caves and pines"], 528),
+        mid([f"the long green headland of Cape Misenum at a middle distance with a small white Roman lighthouse tower and pines, {NO_SKY}",
+             f"low green hills of the Phlegraean fields at a middle distance with a few white Roman villas and pines, {NO_SKY}",
+             f"a small green hill at a middle distance standing in the sea with the little Roman town of Baiae on its top, white villas with red roofs and a domed bath house among pines, {ALONE}, {NO_SKY}",
+             f"a low green wooded point at a middle distance with umbrella pines and a small white villa, {NO_SKY}"],
+            256, style=LIKE_TOWN, gap=48),
+        near([f"a small hill standing in the sea with the ancient Roman naval harbour town of Misenum on it: warehouses and houses with red tiled roofs climbing to the top, pines between them, a stone quay at its foot in the middle with one moored Roman war galley, first century, {ALONE}, {NO_SKY}",
+              f"the steep green slopes of Cape Misenum with a tall white Roman lighthouse on a rocky top, a villa and pines, {NO_SKY}",
+              f"a small green hill standing in the sea with white Roman villas among pines and cypresses on it, pale rocks down to the water, {ALONE}, {NO_SKY}",
+              f"a rocky shore below the cape with grey limestone cliffs, a sea cave at the waterline and pines on top, {NO_SKY}"],
+             256, style=LIKE_TOWN, gap=100),
         deep([0, 730], fit=True),
     ] + bed(p, "column.png", "a toppled ancient white marble column broken in pieces lying on the sea floor, encrusted with weed", "128x48", [900])
       + bed(p, "dark_rock.png", "a dark volcanic underwater rock with pale sea fans and sponges, rounded on both sides, sitting on the sand", "160x96", [400, 1500, 2100], sink=10)

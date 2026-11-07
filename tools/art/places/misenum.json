@@ -105,12 +105,20 @@
    "file": "mid.png",
    "strip": [
     {
-     "prompt": "the long green headland of Cape Misenum at a middle distance with a white lighthouse tower and pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "544x80"
+     "prompt": "the long green headland of Cape Misenum at a middle distance with a small white Roman lighthouse tower and pines, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
     },
     {
-     "prompt": "the low coast of the Phlegraean fields with villas and the town of Baiae, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "544x80"
+     "prompt": "low green hills of the Phlegraean fields at a middle distance with a few white Roman villas and pines, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
+    },
+    {
+     "prompt": "a small green hill at a middle distance standing in the sea with the little Roman town of Baiae on its top, white villas with red roofs and a domed bath house among pines, the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
+    },
+    {
+     "prompt": "a low green wooded point at a middle distance with umbrella pines and a small white villa, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
     }
    ],
    "land": true,
@@ -127,6 +135,8 @@
     0.3
    ],
    "z": -16,
+   "style": "tools/art/places/style_land.png",
+   "gap": 48,
    "shore": {
     "rocks": 2,
     "beach": 2,
@@ -138,16 +148,20 @@
    "file": "near.png",
    "strip": [
     {
-     "prompt": "the ancient Roman naval harbour of Misenum: a long stone breakwater with arches, ancient Roman trireme war galleys with three banks of oars, a single furled square sail and a bronze ram, moored inside, warehouses with red tiled roofs, first century, no medieval ships, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "528x112"
+     "prompt": "a small hill standing in the sea with the ancient Roman naval harbour town of Misenum on it: warehouses and houses with red tiled roofs climbing to the top, pines between them, a stone quay at its foot in the middle with one moored Roman war galley, first century, the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x112"
     },
     {
-     "prompt": "the steep green slopes of Cape Misenum with a tall white Roman lighthouse, villas and pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "528x112"
+     "prompt": "the steep green slopes of Cape Misenum with a tall white Roman lighthouse on a rocky top, a villa and pines, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x112"
     },
     {
-     "prompt": "a rocky shore below the cape with grey cliffs, sea caves and pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "528x112"
+     "prompt": "a small green hill standing in the sea with white Roman villas among pines and cypresses on it, pale rocks down to the water, the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x112"
+    },
+    {
+     "prompt": "a rocky shore below the cape with grey limestone cliffs, a sea cave at the waterline and pines on top, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x112"
     }
    ],
    "land": true,
@@ -160,6 +174,8 @@
     0.55
    ],
    "z": -14,
+   "style": "tools/art/places/style_land.png",
+   "gap": 100,
    "shore": {
     "rocks": 3,
     "plain": 2
