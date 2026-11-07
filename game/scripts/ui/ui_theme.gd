@@ -1,6 +1,6 @@
 class_name UiTheme
-## The interface's look: pixel fonts drawn without smoothing, and the painted panels and buttons from assets/art/ui
-## once they exist, with warm flat boxes until then.
+## The interface's look: pixel fonts drawn without smoothing, the painted panels and buttons from assets/art/ui (warm
+## flat boxes until they exist), and tick boxes, sliders and scroll bars drawn here in the same colours.
 
 const DIR := "res://assets/art/ui/"
 const INK := Color8(58, 38, 30)
@@ -41,8 +41,13 @@ static func build() -> Theme:
 	t.default_font_size = TEXT
 	t.set_color("font_color", "Label", INK)
 	t.set_constant("line_spacing", "Label", 0)
-	for state in [["normal", "button", WOOD], ["hover", "button_hover", WOOD.lightened(0.15)], ["pressed", "button_pressed", WOOD.darkened(0.2)], ["disabled", "button_disabled", WOOD.darkened(0.45)]]:
-		t.set_stylebox(state[0], "Button", _art_or_box(state[1], 5, 4, state[2], GOLD))
+	for state in [["normal", "button", WOOD], ["hover", "button_hover", WOOD.lightened(0.15)], ["pressed", "button_pressed", WOOD.darkened(0.2)],
+			["hover_pressed", "button_pressed", WOOD.darkened(0.2)], ["disabled", "button_disabled", WOOD.darkened(0.45)]]:
+		var box := _art_or_box(state[1], 5, 4, state[2], GOLD)
+		# The painted frame is four pixels thick, so the words need two more on each side to clear it.
+		box.content_margin_left = 6
+		box.content_margin_right = 6
+		t.set_stylebox(state[0], "Button", box)
 	t.set_stylebox("focus", "Button", StyleBoxEmpty.new())
 	# The painted buttons are pale wood, so their words are dark; the flat boxes used before the art are dark wood.
 	var word := INK if ResourceLoader.exists(DIR + "button.png") else CREAM
@@ -65,8 +70,107 @@ static func build() -> Theme:
 	t.set_color("caret_color", "LineEdit", INK)
 	t.set_stylebox("normal", "LineEdit", _box(CREAM, WOOD, 3))
 	t.set_stylebox("focus", "LineEdit", _box(CREAM, GOLD, 3))
+	_check_box(t)
+	_slider(t)
+	_scroll_bars(t)
 	_theme = t
 	return t
+
+
+## A tick box inked on the parchment beside its words, rather than a whole wooden button.
+static func _check_box(t: Theme) -> void:
+	var plain := StyleBoxEmpty.new()
+	plain.content_margin_left = 1
+	plain.content_margin_right = 2
+	for state in ["normal", "pressed", "hover", "hover_pressed", "disabled", "focus"]:
+		t.set_stylebox(state, "CheckBox", plain)
+	for c in ["font_color", "font_pressed_color", "font_focus_color"]:
+		t.set_color(c, "CheckBox", INK)
+	t.set_color("font_hover_color", "CheckBox", WOOD)
+	t.set_color("font_hover_pressed_color", "CheckBox", WOOD)
+	t.set_color("font_disabled_color", "CheckBox", MUTED)
+	t.set_constant("h_separation", "CheckBox", 5)
+	var box := ["ooooooooooo", "ossssssssso"]
+	for i in 8:
+		box.append("osffffffffo")
+	box.append("ooooooooooo")
+	var tick := box.duplicate()
+	tick[2] = "osfffffffko"
+	tick[3] = "osffffffkko"
+	tick[4] = "osfffffkkfo"
+	tick[5] = "oskfffkkffo"
+	tick[6] = "oskkfkkfffo"
+	tick[7] = "osfkkkffffo"
+	tick[8] = "osffkfffffo"
+	var ink := {"o": Color8(112, 74, 48), "s": Color8(222, 194, 150), "f": Color8(252, 243, 220), "k": SEA.darkened(0.25)}
+	var faded := {}
+	for k in ink:
+		faded[k] = ink[k].lerp(PARCHMENT, 0.55)
+	for kind in [["unchecked", box], ["checked", tick], ["radio_unchecked", box], ["radio_checked", tick]]:
+		t.set_icon(kind[0], "CheckBox", _pixels(kind[1], ink))
+		t.set_icon(kind[0] + "_disabled", "CheckBox", _pixels(kind[1], faded))
+
+
+## A volume slider: a groove cut into the parchment that fills with brass, and a small wooden knob like the buttons.
+static func _slider(t: Theme) -> void:
+	var groove := [".dddd.", "dmmmmd", "dmmmmd", "dmmmmd", ".llll."]
+	var paper := {"d": Color8(85, 53, 41), "l": Color8(252, 243, 220)}
+	t.set_stylebox("slider", "HSlider", _strip(groove, paper.merged({"m": Color8(150, 112, 78)})))
+	var brass := [".dddd.", "dbbbbd", "dBBBBd", "dBBBBd", ".llll."]
+	t.set_stylebox("grabber_area", "HSlider", _strip(brass, paper.merged({"b": Color8(226, 180, 98), "B": Color8(194, 139, 58)})))
+	t.set_stylebox("grabber_area_highlight", "HSlider", _strip(brass, paper.merged({"b": Color8(240, 204, 128), "B": Color8(214, 160, 74)})))
+	t.set_stylebox("focus", "HSlider", StyleBoxEmpty.new())
+	var knob := [".dddddd.", "dhhhhhhd", "dhffffsd", "dhffffsd", "dhfggfsd", "dhffffsd", "dhfggfsd", "dhffffsd", "dhffffsd", "dssssssd", ".dddddd."]
+	var wood := {"d": Color8(54, 26, 14), "h": Color8(249, 223, 182), "f": Color8(239, 204, 144), "s": Color8(207, 157, 100), "g": Color8(170, 118, 76)}
+	var lit := wood.duplicate()
+	lit["f"] = Color8(250, 222, 172)
+	lit["s"] = Color8(226, 180, 120)
+	t.set_icon("grabber", "HSlider", _pixels(knob, wood))
+	t.set_icon("grabber_highlight", "HSlider", _pixels(knob, lit))
+	var dull := {}
+	for k in wood:
+		dull[k] = wood[k].lerp(MUTED, 0.5)
+	t.set_icon("grabber_disabled", "HSlider", _pixels(knob, dull))
+	t.set_constant("center_grabber", "HSlider", 0)
+
+
+## Thin scroll bars in the wood of the frames, so a long list does not show the engine's grey ones.
+static func _scroll_bars(t: Theme) -> void:
+	for bar in [["VScrollBar", SIDE_LEFT, SIDE_RIGHT], ["HScrollBar", SIDE_TOP, SIDE_BOTTOM]]:
+		var track := StyleBoxFlat.new()
+		track.bg_color = Color(INK, 0.16)
+		track.set_content_margin(bar[1], 2)
+		track.set_content_margin(bar[2], 2)
+		t.set_stylebox("scroll", bar[0], track)
+		t.set_stylebox("scroll_focus", bar[0], track)
+		for state in [["grabber", WOOD], ["grabber_highlight", WOOD.lightened(0.18)], ["grabber_pressed", WOOD.darkened(0.2)]]:
+			var g := StyleBoxFlat.new()
+			g.bg_color = state[1]
+			t.set_stylebox(state[0], bar[0], g)
+
+
+## A small picture drawn from rows of letters, each letter standing for a colour and a dot for a clear pixel.
+static func _pixels(rows: Array, colours: Dictionary) -> ImageTexture:
+	var img := Image.create(String(rows[0]).length(), rows.size(), false, Image.FORMAT_RGBA8)
+	for y in rows.size():
+		for x in String(rows[y]).length():
+			var c := String(rows[y])[x]
+			if colours.has(c):
+				img.set_pixel(x, y, colours[c])
+	return ImageTexture.create_from_image(img)
+
+
+## A strip drawn from rows of letters that stretches along its middle, keeping its rounded ends.
+static func _strip(rows: Array, colours: Dictionary) -> StyleBoxTexture:
+	var s := StyleBoxTexture.new()
+	s.texture = _pixels(rows, colours)
+	s.texture_margin_left = 2
+	s.texture_margin_right = 2
+	s.texture_margin_top = 2
+	s.texture_margin_bottom = 2
+	s.content_margin_top = 2
+	s.content_margin_bottom = 3
+	return s
 
 
 ## A painted nine-slice from assets/art/ui when there is one, otherwise a flat box in the same colours.
