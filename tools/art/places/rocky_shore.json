@@ -113,12 +113,20 @@
    "file": "mid.png",
    "strip": [
     {
-     "prompt": "a row of green coastal hills at a middle distance with umbrella pines, olive groves and a few small white Roman farmhouses, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "480x80"
+     "prompt": "a row of low green coastal hills at a middle distance with umbrella pines, olive groves and a small white Roman farmhouse, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
     },
     {
-     "prompt": "a row of rocky wooded headlands at a middle distance with pines and scrub, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "480x80"
+     "prompt": "a wooded headland of pale grey limestone at a middle distance with pines and scrub and rocks down to the water, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
+    },
+    {
+     "prompt": "gentle green hills at a middle distance with vineyards, cypresses and a small white Roman villa, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
+    },
+    {
+     "prompt": "a low rocky point of pale limestone at a middle distance with umbrella pines, the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
     }
    ],
    "land": true,
@@ -135,6 +143,8 @@
     0.3
    ],
    "z": -16,
+   "style": "tools/art/places/style_land.png",
+   "gap": 48,
    "shore": {
     "beach": 1,
     "rocks": 3,
@@ -288,8 +298,9 @@
   },
   {
    "file": "stack.png",
-   "prompt": "a tall rock stack rising out of the sea, seen from the side: its top part above the water is golden limestone with a small bush, its lower part under the water is covered in green weed and barnacles, the base widens onto the sea floor, the whole rock in the picture",
+   "prompt": "a tall rock pillar seen from the side, the whole rock from its wide weedy foot to its top: pale weathered limestone with a small pine on top, the lower half covered in green weed and barnacles, no water and no sea drawn anywhere, empty transparent background, natural soft shading, no outlines",
    "size": "112x208",
+   "style": "tools/art/places/style_land.png",
    "world": [
     170,
     -70

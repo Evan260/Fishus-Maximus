@@ -113,8 +113,11 @@ specs[p] = {
     "floor": floor("coarse golden sand and gravel on the sea floor with small pebbles and shell fragments"),
     "layers": bands("#8fa0a8", "#6f93a0", "#4f8494") + [
         far("distant mountains across the bay of Naples, the green cone of Mount Vesuvius in the middle, low hills on both sides", 704),
-        mid(["a row of green coastal hills at a middle distance with umbrella pines, olive groves and a few small white Roman farmhouses",
-             "a row of rocky wooded headlands at a middle distance with pines and scrub"], 480),
+        mid([f"a row of low green coastal hills at a middle distance with umbrella pines, olive groves and a small white Roman farmhouse, {NO_SKY}",
+             f"a wooded headland of pale grey limestone at a middle distance with pines and scrub and rocks down to the water, {NO_SKY}",
+             f"gentle green hills at a middle distance with vineyards, cypresses and a small white Roman villa, {NO_SKY}",
+             f"a low rocky point of pale limestone at a middle distance with umbrella pines, {ALONE}, {NO_SKY}"],
+            256, style=LIKE_TOWN, gap=48),
         near([f"tall pale golden limestone sea cliffs with a dark cave mouth at the waterline, green scrub and umbrella pines on top, {ROCK}",
               f"a rocky headland of weathered pale golden and grey limestone with a small round ancient Roman stone watchtower and pines on top, {ROCK}",
               f"rugged pale limestone sea cliffs with a deep cave at the waterline and wild fig trees growing from the rock, {ROCK}",
@@ -126,7 +129,7 @@ specs[p] = {
       + bed(p, "kelp.png", "a clump of tall brown kelp and green seaweed growing from the sand", "64x64", [480, 900, 1250, 1800], sway=True)
       + bed(p, "fans.png", "a few red sea fans and orange sponges on a small rock", "64x48", [820, 1480], sway=True)
       + bed(p, "wreck.png", "the wreck of a small ancient Roman merchant ship lying on the sea floor, broken wooden hull ribs, clay amphorae spilling onto the sand, seaweed", "256x112", [1270], sink=12)
-      + [{"file": "stack.png", "prompt": "a tall rock stack rising out of the sea, seen from the side: its top part above the water is golden limestone with a small bush, its lower part under the water is covered in green weed and barnacles, the base widens onto the sea floor, the whole rock in the picture", "size": "112x208", "world": [170, -70], "z": -7, "through": True}],
+      + [{"file": "stack.png", "prompt": "a tall rock pillar seen from the side, the whole rock from its wide weedy foot to its top: pale weathered limestone with a small pine on top, the lower half covered in green weed and barnacles, no water and no sea drawn anywhere, empty transparent background, natural soft shading, no outlines", "size": "112x208", "style": LIKE_TOWN, "world": [170, -70], "z": -7, "through": True}],
 }
 
 p = "lucrine"
