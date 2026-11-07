@@ -24,7 +24,7 @@ func _ready() -> void:
 		for k in int(args.get("burst-count", "8")):
 			_shots.append([start + k * gap, "%s_%02d.png" % [args["burst"], k]])
 	_shots.sort_custom(func(a, b) -> bool: return a[0] < b[0])
-	# --click=X,Y (game pixels, at --click-at seconds) clicks for screenshots.
+	# --click=X,Y (window pixels, at --click-at seconds) clicks for screenshots.
 	if args.has("click"):
 		var xy: PackedStringArray = args["click"].split(",")
 		get_tree().create_timer(float(args.get("click-at", "1.5"))).timeout.connect(_click.bind(Vector2(float(xy[0]), float(xy[1]))))

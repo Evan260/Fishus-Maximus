@@ -16,7 +16,8 @@ var rays := 1.0
 func _draw() -> void:
 	var top := maxf(0.0, -cam.y)
 	var view := Nav.view()
-	for y in range(int(top), int(view.y), 2):
+	# The desktop strip shifts the canvas up to the waterline, so the water runs to the bottom of what is on screen.
+	for y in range(int(top), int(view.y - get_canvas_transform().origin.y), 2):
 		var d := (y + cam.y) / maxf(200.0, depth)
 		var c := SURFACE.lerp(MID_WATER, clampf(d * 2.2, 0.0, 1.0)).lerp(DEEP_WATER, clampf(d * 2.0 - 0.6, 0.0, 1.0))
 		draw_rect(Rect2(0, y, view.x, 2), c)
@@ -38,7 +39,7 @@ func _draw() -> void:
 static func draw_surface(node: CanvasItem, cam: Vector2, time: float) -> void:
 	var surface := -cam.y
 	var view := Nav.view()
-	if surface < 0.0 or surface >= view.y:
+	if surface < 0.0 or surface >= view.y - node.get_canvas_transform().origin.y:
 		return
 	for i in 40:
 		var x := fposmod(i * 37.0 - cam.x + time * (6.0 + i % 3 * 2.0), view.x)

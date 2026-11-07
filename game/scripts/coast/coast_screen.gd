@@ -227,6 +227,12 @@ func _on_view_changed() -> void:
 			cast(0.6)
 	if hud:
 		hud.visible = not Windowing.strip
+	# The see-through strip shows only the sea and what is on it, so the sky and the land behind the water are hidden.
+	var see_through := Windowing.strip and Windowing.transparent
+	_sky.visible = not see_through
+	for n in _layers.get_children():
+		n.visible = not see_through or n.z_index > _water.z_index
+	StripControls.sync()
 
 
 ## Rows the boat along the coast for some seconds; the line comes in first, and the boat stops at the place's ends.
@@ -530,12 +536,15 @@ func _rain_step(delta: float) -> void:
 		_rain.clear()
 		return
 	var want := 140 if weather == "storm" else 80
+	# The desktop strip shifts the canvas up to the waterline, so the rain falls over the rows that are on screen.
+	var top := -get_viewport().canvas_transform.origin.y
+	var bottom := top + Nav.view().y
 	while _rain.size() < want:
-		_rain.append(Vector2(randf_range(0, Nav.view().x + 40.0), randf_range(-20, Nav.view().y)))
+		_rain.append(Vector2(randf_range(0, Nav.view().x + 40.0), randf_range(top - 20.0, bottom)))
 	for i in _rain.size():
 		_rain[i] += Vector2(-30.0, 220.0) * delta
-		if _rain[i].y > Nav.view().y or _rain[i].x < -10.0:
-			_rain[i] = Vector2(randf_range(0, Nav.view().x + 60.0), -10.0)
+		if _rain[i].y > bottom or _rain[i].x < -10.0:
+			_rain[i] = Vector2(randf_range(0, Nav.view().x + 60.0), top - 10.0)
 
 
 func rain() -> Array:
