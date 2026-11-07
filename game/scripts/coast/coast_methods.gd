@@ -108,7 +108,7 @@ func _pull_traps_under_boat() -> void:
 		if absf(float(t["x"]) - mid) < PULL_REACH and not t["catch"].is_empty() and t.get("_told", 0.0) <= 0.0:
 			var got := Traps.empty_into(Game.state, t)
 			if not got.is_empty():
-				Toast.say("Pulled a pot: " + ", ".join(got.map(func(c): return Data.fish[c["fish"]]["name"].to_lower())))
+				Toast.say("You rowed over your pot and hauled it up: " + ", ".join(got.map(func(c): return Data.fish[c["fish"]]["name"].to_lower())) + ".")
 			if not t["catch"].is_empty():
 				Toast.say("The hold is full; the rest stay in the pot.")
 				t["_told"] = 1.0
@@ -146,7 +146,10 @@ func _set_or_lift_trap() -> void:
 	Game.state["traps"].append({"place": screen.place_id, "x": roundf(mid), "depth": screen.seabed.depth_at(mid),
 		"set_time": float(Game.state["time"]), "catch": [], "size": 3, "hours": 0.0, "bait": bait})
 	Game.state["stats"]["pots_set"] = int(Game.state["stats"].get("pots_set", 0)) + 1
-	Toast.say("Pot set on the seabed%s." % ((", baited with " + str(Data.bait[bait]["name"]).to_lower()) if bait != "" else ""))
+	if int(Game.state["stats"].get("pots_set", 0)) <= 1:
+		Toast.say("Your pot sinks to the seabed and fills with crabs, lobsters and octopus. Row over it later to haul it up.")
+	else:
+		Toast.say("Pot set on the seabed%s." % ((", baited with " + str(Data.bait[bait]["name"]).to_lower()) if bait != "" else ""))
 
 
 func _throw_net() -> void:

@@ -10,7 +10,7 @@ const MAN := "res://assets/art/fisherman/"
 const FALLBACK := "res://assets/art/style_test/boat.png"
 const TINT := Color(0.5, 0.78, 0.84, 0.85)
 ## How deep the hull sits in the water.
-const DRAFT := 10.0
+const DRAFT := 8.0
 const ROD_LENGTH := 26.0
 const ROD_COLOUR := Color("#6b4a2b")
 const ROD_LIGHT := Color("#9a7048")

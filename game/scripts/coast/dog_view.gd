@@ -1,7 +1,11 @@
 class_name DogView
 extends Node2D
 ## The dog in the boat: it sits, barks at a bite, wags when a shoal passes below or when petted, and naps while the
-## fisherman fishes on his own.
+## fisherman fishes on his own, sleeping on through passing fish and taking a stroke without waking. A heart floats up
+## from it whenever it is petted, as in Farmus Maximus.
+
+## Farmus's little heart, five pixels square.
+static var HEART: ImageTexture = _heart_texture()
 
 var screen: Node
 var mood := "sit"
@@ -9,6 +13,16 @@ var _frames := {}
 var _t := 0.0
 var _happy_left := 0.0
 var _bark_left := 0.0
+
+
+static func _heart_texture() -> ImageTexture:
+	var rows := [".X.X.", "XXXXX", "XXXXX", ".XXX.", "..X.."]
+	var img := Image.create(5, 5, false, Image.FORMAT_RGBA8)
+	for y in rows.size():
+		for x in 5:
+			if rows[y][x] == "X":
+				img.set_pixel(x, y, Color(0.93, 0.36, 0.45))
+	return ImageTexture.create_from_image(img)
 
 
 func setup(s: Node) -> void:
@@ -19,7 +33,8 @@ func setup(s: Node) -> void:
 
 
 func cheer(seconds := 2.5) -> void:
-	_happy_left = seconds
+	if not _asleep():
+		_happy_left = seconds
 
 
 func bark() -> void:
@@ -29,8 +44,33 @@ func bark() -> void:
 
 
 func pet() -> void:
+	_heart()
+	if _asleep():
+		Audio.play("dog", -14.0, 0.8)
+		return
 	cheer(3.0)
 	Audio.play("dog", -6.0, 1.2)
+
+
+## How many hearts are floating up from it now.
+func hearts() -> int:
+	return get_children().filter(func(c): return c.has_meta("heart") and not c.is_queued_for_deletion()).size()
+
+
+func _asleep() -> bool:
+	return screen != null and screen.methods.idle
+
+
+func _heart() -> void:
+	var heart := Sprite2D.new()
+	heart.texture = HEART
+	heart.set_meta("heart", true)
+	heart.position = Vector2(0, -42)
+	add_child(heart)
+	var t := heart.create_tween().set_parallel()
+	t.tween_property(heart, "position:y", heart.position.y - 12.0, 1.0)
+	t.tween_property(heart, "modulate:a", 0.0, 1.0).set_delay(0.4)
+	t.chain().tween_callback(heart.queue_free)
 
 
 ## Where the dog is on screen, for petting it with a click.
@@ -42,10 +82,11 @@ func _process(delta: float) -> void:
 	_t += delta
 	_happy_left = maxf(0.0, _happy_left - delta)
 	_bark_left = maxf(0.0, _bark_left - delta)
-	if _happy_left > 0.0:
-		mood = "happy_east"
-	elif screen.methods.idle:
+	if _asleep():
 		mood = "sleep_east"
+		_happy_left = 0.0
+	elif _happy_left > 0.0:
+		mood = "happy_east"
 	else:
 		mood = "sit_east"
 	var facing: float = screen.facing()

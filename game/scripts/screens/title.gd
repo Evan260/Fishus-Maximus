@@ -213,8 +213,8 @@ func _latest_slot() -> int:
 
 func _play(n: int) -> void:
 	if Saves.load_slot(n):
-		var away := Game.catch_up()
-		Nav.go("coast", {"place": str(Game.state.get("place", "harbour")), "away": away})
+		Game.catch_up()
+		Nav.go("coast", {"place": str(Game.state.get("place", "harbour"))})
 
 
 func _new_game() -> void:

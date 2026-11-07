@@ -15,8 +15,6 @@ static func show_catch(fish: String, pounds: float, is_new: bool) -> void:
 		_open.queue_free()
 	var col := Ui.panel(Nav.ui, "")
 	var card: Control = col.get_parent()
-	card.position.y = 40
-	card.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_open = card
 	var f: Dictionary = Data.fish[fish]
 	Ui.label(col, f["name"].to_upper(), "Heading").horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

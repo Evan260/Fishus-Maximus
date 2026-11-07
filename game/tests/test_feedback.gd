@@ -173,3 +173,70 @@ func test_a_click_on_the_dog_strikes_a_bite() -> void:
 	s._state = "reeled"
 	check(s._pets_dog(on_dog), "with the line in, the click pets him")
 	_done(s)
+
+
+func test_a_napping_dog_sleeps_on_while_fish_pass() -> void:
+	var s := _coast()
+	s.methods.set_idle(true)
+	s.dog.cheer()
+	s.dog._process(0.1)
+	check(s.dog.mood == "sleep_east", "a shoal going by does not get him up while the fisherman fishes on his own")
+	_done(s)
+
+
+func test_petting_the_dog_floats_up_a_heart() -> void:
+	var s := _coast()
+	s.dog.pet()
+	check(s.dog.hearts() == 1, "a heart rises over him, as in Farmus")
+	s.methods.set_idle(true)
+	s.dog.pet()
+	s.dog._process(0.1)
+	check(s.dog.hearts() == 2 and s.dog.mood == "sleep_east", "a sleeping dog takes a stroke without waking, and still shows a heart")
+	_done(s)
+
+
+func test_coming_back_says_nothing_about_time_gone_by() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "hound")
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": "harbour", "away": Clock.minutes_per_day() * 3.0})
+	var box: Control = Toast._box
+	check(not is_instance_valid(box) or not box.get_children().any(func(l): return "away" in l.text or "passed" in l.text), "no reminder of the time spent away")
+	_done(s)
+
+
+func test_the_boat_rides_two_pixels_higher() -> void:
+	check(BoatView.DRAFT == 8.0, "the hull sits 8 pixels deep, not 10")
+
+
+func test_the_catch_card_shows_in_the_middle() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	CatchCard.show_catch("mullet", 1.2, true)
+	var card: Control = CatchCard._open
+	check(card.anchor_top == 0.5 and card.anchor_left == 0.5, "the card is centred in the view, not hung from the top")
+	for c in Nav.ui.get_children():
+		c.free()
+
+
+func _said(text: String) -> bool:
+	var box: Control = Toast._box
+	return is_instance_valid(box) and box.get_children().any(func(l): return text in l.text)
+
+
+func test_the_first_pot_explains_itself() -> void:
+	var s := _coast()
+	s.methods.set_method("trap")
+	s.methods.use()
+	check(_said("Row over it later"), "the first pot says what it is for and how to haul it up")
+	_done(s)
+
+
+func test_hauling_a_pot_says_why() -> void:
+	var s := _coast()
+	Game.state["traps"] = [{"place": "harbour", "x": s.boat_x + 52.0, "depth": 60.0, "set_time": 0.0, "catch": [{"fish": "crab", "pounds": 0.5}], "size": 3, "hours": 2.0, "bait": ""}]
+	s.methods._pull_traps_under_boat()
+	check(_said("rowed over"), "the message says the pot came up because the boat passed over it")
+	_done(s)

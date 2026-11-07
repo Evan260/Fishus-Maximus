@@ -117,9 +117,6 @@ func enter(args: Dictionary) -> void:
 		GuideNote.add(self, "coast")
 	if args.get("first", false) and not Settings.guide:
 		Toast.say("Your uncle's skiff. Hold Space or the mouse to cast, A and D to row.")
-	elif float(args.get("away", 0.0)) >= 1.0:
-		var days := float(args["away"]) / Clock.minutes_per_day()
-		Toast.say(("While you were away, %d days went by." % int(days)) if days >= 2.0 else "Time has passed while you were away.")
 	if Nav.ui and not Dev.has("no-hud"):
 		_sail = Ui.button(Nav.ui, "Bay map", func():
 			if fight == null:
