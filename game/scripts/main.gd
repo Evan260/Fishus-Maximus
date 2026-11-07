@@ -9,7 +9,8 @@ func _ready() -> void:
 	if Dev.has("pacing"):
 		for seed in [7, 11, 23]:
 			var log: Dictionary = load("res://tests/pacing_bot.gd").new().run(Dev.num("hours", 40.0), seed)
-			print("PACING seed %d: chapters %s boats %s legends %d of 12, name %d" % [seed, log["chapters"], log["boats"], log["legends"].size(), log["reputation"]])
+			var missing := Data.fish.keys().filter(func(f): return Data.fish[f]["legend"] and not log["legends"].has(f))
+			print("PACING seed %d: chapters %s boats %s legends %d of 12 (missing %s), name %d" % [seed, log["chapters"], log["boats"], log["legends"].size(), missing, log["reputation"]])
 		get_tree().quit()
 		return
 	if Dev.has("flow"):

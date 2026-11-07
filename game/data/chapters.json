@@ -95,7 +95,7 @@
 	{
 		"chapter": 4,
 		"name": "Capri",
-		"reputation": 160,
+		"reputation": 180,
 		"places": [
 			"capri"
 		],
@@ -128,7 +128,7 @@
 	{
 		"chapter": 5,
 		"name": "The deep",
-		"reputation": 310,
+		"reputation": 380,
 		"places": [
 			"misenum"
 		],

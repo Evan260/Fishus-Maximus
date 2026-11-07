@@ -68,8 +68,7 @@ func _choose_place() -> void:
 		if s > score:
 			score = s
 			best = p
-	if best != _place:
-		BayMap.sail(state, best)
+	if best != _place and BayMap.sail(state, best):
 		_place = best
 		_minutes += 1.0
 
