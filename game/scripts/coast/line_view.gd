@@ -13,6 +13,8 @@ const DANGER := Color("#d65a44")
 const BREAKING := Color("#ff9a7a")
 const SPRAY := Color(0.9, 0.97, 1.0, 0.9)
 const HOOK := Color("#b8c0c0")
+## How far the float drifts to either side of where it landed.
+const DRIFT := 5.0
 ## Each bait as it hangs on the hook, a few pixels drawn row by row, with the colour of each letter.
 const BAITS := {
 	"worm": [".xo..", "x..x.", "o..xo", "....x"],
@@ -225,7 +227,7 @@ func _draw() -> void:
 			dip = minf(2.0, ceilf(twitch * 8.0))
 		elif under:
 			dip = 5.0
-		var bob := Vector2(at.x - 2, surface - 1 + sin(t * 1.9) + dip)
+		var bob := Vector2(at.x - 2 + float_drift(t), surface - 1 + sin(t * 1.9) + dip)
 		var fight: LineFight = screen.fight
 		if state == "fighting" or at.y <= bob.y:
 			var end := fish_at() - cam - Vector2(0, 2) if _leap >= 0.0 or _back != Vector2.ZERO else at
@@ -259,6 +261,14 @@ func _draw() -> void:
 	for r in screen.rain():
 		if r.y < surface:
 			Pixels.line(self, r, r + Vector2(-2, 7), Color(0.82, 0.87, 0.92, 0.6))
+
+
+## How far the float has drifted from where it landed: two slow swells to and fro, which now and then die away so it
+## lies still for a while, never more than `DRIFT` pixels either side.
+static func float_drift(t: float) -> float:
+	var wander := sin(t * 0.23) * 0.65 + sin(t * 0.097 + 1.3) * 0.35
+	var spells := clampf(sin(t * 0.045 + 0.6) * 1.6, 0.0, 1.0)
+	return DRIFT * wander * spells
 
 
 ## The pixels of a bait as it hangs on the hook: [x, y, colour] from its top left corner; none for a bare hook.

@@ -87,3 +87,18 @@ func test_the_oar_is_one_straight_pole_in_every_frame() -> void:
 		var off := absf((blade - hands).normalized().cross(through - hands))
 		check(off < 0.5, "frame %d: the handle and the blade lie on one straight line, %.2f off" % [b.pose()[1], off])
 	b.free()
+
+
+func test_the_float_drifts_a_little_and_comes_back() -> void:
+	var seen := []
+	for i in 2400:
+		seen.append(LineView.float_drift(i * 0.1))
+	var far: float = seen.map(func(d): return absf(d)).max()
+	check(far > 2.0, "the float drifts to and fro on the water, as much as %.1f pixels" % far)
+	check(far <= LineView.DRIFT + 0.01, "but never far from where it landed")
+	var still := seen.filter(func(d): return absf(d) < 0.4).size()
+	check(still > 100, "and some of the time it lies still")
+	var steps := []
+	for i in range(1, seen.size()):
+		steps.append(absf(seen[i] - seen[i - 1]))
+	check(steps.max() < 0.5, "and it moves slowly, never jumping")
