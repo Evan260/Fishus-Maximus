@@ -1,6 +1,8 @@
 """Takes painted clouds and sky out of a row of land, so the game's own drifting sky shows there instead. The land is
 what joins the picture's bottom once the pale colours of cloud are left out, and in each column everything above the
-land's top is cleared. Usage: python tools/art/clear_sky.py PATH [PATH...]   (writes each picture back in place)"""
+land's top is cleared. `clear_painted` does the same for a whole scene, such as the town street seen under its roof:
+the sky there is whatever is near one of the sky's own colours, lying together above the horizon.
+Usage: python tools/art/clear_sky.py PATH [PATH...]   (writes each picture back in place)"""
 import sys
 from pathlib import Path
 
@@ -10,6 +12,35 @@ from PIL import Image
 
 # Painted cloud is paler than any land in the far rows it is used on.
 PALE = 185
+# How near a colour must be to one of the sky's own, over red, green and blue together, and how many such pixels must
+# lie together to be sky rather than a pale patch of a building.
+NEAR_SKY = 30
+SKY_AREA = 4
+# Paint left in pieces this small, with the sky cleared from round them, was the sky's own edge.
+SPECK = 12
+
+
+def clear_painted(arr: np.ndarray, palette, below: int) -> np.ndarray:
+    """The scene with its painted sky taken out: the pixels above row `below` near one of the `palette` colours, in
+    patches of at least SKY_AREA, and the specks of paint left floating where they were."""
+    out = arr.copy()
+    rgb = arr[:, :, :3].astype(np.int32)
+    # Sky painted on past a scene's edges has blues of its own, so any light blue counts as well.
+    near = (rgb[:, :, 2] >= rgb[:, :, 0] + 18) & (rgb[:, :, 2] >= rgb[:, :, 1]) & (rgb @ np.array([30, 59, 11]) > 14000)
+    for c in palette:
+        near |= np.abs(rgb - np.array(c, dtype=np.int32)).sum(axis=2) <= NEAR_SKY
+    near &= arr[:, :, 3] > 16
+    near[below:] = False
+    n, labels, stats, _c = cv2.connectedComponentsWithStats(near.astype(np.uint8), connectivity=4)
+    sky = np.isin(labels, [i for i in range(1, n) if stats[i][cv2.CC_STAT_AREA] >= SKY_AREA])
+    out[sky, 3] = 0
+    solid = out[:, :, 3] > 16
+    n, labels, stats, _c = cv2.connectedComponentsWithStats(solid.astype(np.uint8), connectivity=8)
+    around = cv2.dilate(sky.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
+    for i in range(1, n):
+        if stats[i][cv2.CC_STAT_AREA] < SPECK and around[labels == i].all():
+            out[labels == i, 3] = 0
+    return out
 
 
 def clear(arr: np.ndarray) -> np.ndarray:
