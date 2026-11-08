@@ -1,177 +1,143 @@
 extends Node2D
-## The title: the harbour at sunset, alive, with Continue, New game, Load, Settings and Quit. A few clouds drift slowly
-## behind the land, the palms and the weed sway, the sun glitters on the sea, fish swim and bubbles rise.
+## The title: the harbour at sunset with Continue, New game, Load, Settings and Quit. It is built from the coast's own
+## pieces with the camera held still, so it always looks as the game does: the sky with its drifting clouds, the town,
+## the lighthouse and the headland, the land carried on down under the water, the sand, the murk and the fish. It runs
+## before any game is loaded, so it reads nothing from a game and changes nothing in one.
 
-const ART := "res://assets/art/title/"
-const SWAY := """
-shader_type canvas_item;
-uniform sampler2D sway : filter_nearest;
-void fragment() {
-	float w = texture(sway, UV).r;
-	float off = round(sin(TIME * 1.4 + UV.y * 38.0 + UV.x * 6.0) * 1.4 * w);
-	COLOR = texture(TEXTURE, UV - vec2(off * TEXTURE_PIXEL_SIZE.x, 0.0));
-}
-"""
-## Keeps each pixel of a cloud a crisp block while the cloud drifts by fractions of a game pixel, as in Farmus Maximus.
-const CRISP := """
-shader_type canvas_item;
-void fragment() {
-	vec2 size = vec2(textureSize(TEXTURE, 0));
-	vec2 texel = UV * size;
-	vec2 seam = floor(texel + 0.5);
-	vec2 width = max(fwidth(texel), vec2(0.0001));
-	texel = seam + clamp((texel - seam) / width, -0.5, 0.5);
-	COLOR = texture(TEXTURE, texel / size);
-}
-"""
-const FISH := ["mullet", "bream", "white_bream", "salema", "parrotfish", "wrasse", "golden_mullet", "red_porgy"]
+const PLACE := "harbour"
+const HOUR := 19.3
+const SEASON := "summer"
+## Where the camera rests in a 480 by 270 view; a view of another shape is centred on the same spot.
+const AT := Vector2(60, CoastCamera.HOME_Y)
 
-var _stage: Node2D
-## The sky and its clouds, drawn behind the game at the window's own resolution.
-var _sky_stage: Node2D
+var place := {}
+var seabed: Seabed
+var cam := AT
+var swimmers: Swimmers
+var _time := 0.0
+var _sky: SkyView
+var _lit: Node2D
+var _layers: ParallaxLayers
+var _floor: FloorView
+var _water: WaterView
+var _ground: Node2D
+var _surface: Node2D
+var _land: UnderLand
+var _murk: Murk
 var _menu: VBoxContainer
 var _heading: Label
 var _sub: Label
-var _info := {"waterline": 164, "pad": 40, "horizon": 126}
-var _clouds: Array = []
-var _fish: Array = []
-var _bubbles: Array = []
-var _time := 0.0
-var _painter: Node2D
 
 
 func enter(_args: Dictionary) -> void:
-	if FileAccess.file_exists(ART + "title.json"):
-		_info = JSON.parse_string(FileAccess.get_file_as_string(ART + "title.json"))
-	_stage = Node2D.new()
-	add_child(_stage)
-	var pad := float(_info["pad"])
-	_sky_stage = Node2D.new()
-	Nav.sky.add_child(_sky_stage)
-	var sky := Backdrop.new(load(ART + "sky.png"))
-	sky.position = Vector2(0, -pad)
-	_sky_stage.add_child(sky)
-	var crisp := ShaderMaterial.new()
-	crisp.shader = Shader.new()
-	crisp.shader.code = CRISP
-	var clouds: Array = _info.get("clouds", [])
-	for i in clouds.size():
-		var c := Sprite2D.new()
-		c.texture = load(ART + str(clouds[i]["file"]))
-		c.centered = false
-		c.material = crisp
-		c.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-		_sky_stage.add_child(c)
-		var y := float(clouds[i]["y"]) - pad
-		# Higher clouds are nearer and drift faster, and each rises and sinks a little over a minute or two.
-		_clouds.append({"node": c, "x": float(clouds[i]["x"]), "y": y, "speed": lerpf(1.3, 0.45, clampf(y / 60.0, 0.0, 1.0)),
-			"lift": 1.0 + i % 3 * 0.6, "period": 70.0 + i * 23.0, "phase": i * 1.9})
-	var around := Backdrop.new(load(ART + "land.png"), true)
-	around.position = Vector2(0, -pad)
-	_stage.add_child(around)
-	var land := Sprite2D.new()
-	land.texture = load(ART + "land.png")
-	land.centered = false
-	land.position = Vector2(0, -pad)
-	var mat := ShaderMaterial.new()
-	var shader := Shader.new()
-	shader.code = SWAY
-	mat.shader = shader
-	mat.set_shader_parameter("sway", load(ART + "sway.png"))
-	land.material = mat
-	_stage.add_child(land)
-	_painter = Node2D.new()
-	_painter.draw.connect(_draw_life)
-	_stage.add_child(_painter)
-	for i in 7:
-		_add_fish(randf_range(0.0, 480.0))
+	place = Data.places[PLACE]
+	seabed = Seabed.new(place["seabed"])
+	_build()
 	Windowing.view_changed.connect(_place)
 	_place()
-	Audio.set_ambience({"sea": 0.4, "gulls": 0.15})
+	swimmers.populate()
+	Audio.set_ambience({"sea": 0.4, "gulls": 0.15, "cicadas": 0.2})
 	_show_menu()
 
 
 func _exit_tree() -> void:
-	if is_instance_valid(_sky_stage):
-		_sky_stage.queue_free()
+	if is_instance_valid(_sky):
+		_sky.queue_free()
 
 
+## The coast's pieces in the coast's own order, so each is drawn over what it is drawn over in the game.
+func _build() -> void:
+	_sky = SkyView.new()
+	Nav.sky.add_child(_sky)
+	_lit = Node2D.new()
+	add_child(_lit)
+	_layers = ParallaxLayers.new()
+	_layers.sky = _sky
+	_lit.add_child(_layers)
+	_layers.build(place["layers"])
+	_floor = FloorView.new()
+	_floor.z_index = -8
+	_floor.bake(place, seabed)
+	_lit.add_child(_floor)
+	_water = WaterView.new()
+	_water.depth = float(place["depth"])
+	_water.z_index = -10
+	_lit.add_child(_water)
+	_ground = Node2D.new()
+	_ground.z_index = -6
+	_ground.draw.connect(_draw_ground)
+	_lit.add_child(_ground)
+	swimmers = Swimmers.new()
+	swimmers.z_index = -4
+	swimmers.with_legends = false
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	swimmers.setup(PLACE, seabed, rng)
+	swimmers.hour = HOUR
+	swimmers.season = SEASON
+	_lit.add_child(swimmers)
+	_surface = Node2D.new()
+	_surface.draw.connect(func(): WaterView.draw_surface(_surface, cam, _time))
+	_lit.add_child(_surface)
+	# These shade the lit picture under them, so inside the light they would tint it a second time.
+	_land = UnderLand.new(place)
+	_land.z_index = _water.z_index
+	add_child(_land)
+	_murk = Murk.new()
+	_murk.z_index = swimmers.z_index
+	_murk.set_depth(float(place["depth"]))
+	add_child(_murk)
+
+
+## Centres the camera's resting spot in the view, as far as the harbour reaches, and lays the menu over it.
 func _place() -> void:
-	if is_instance_valid(_stage):
-		_stage.position = Nav.offset()
-		_sky_stage.position = Nav.offset()
+	var view := Nav.view()
+	cam = Vector2(clampf(AT.x + (Nav.SIZE.x - view.x) / 2.0, 0.0, float(place["width"]) - view.x), AT.y - Nav.offset().y)
+	_relayout()
 	if is_instance_valid(_menu):
-		Ui.hang(_heading, "top", Vector2(0, 26 + Nav.offset().y), Vector2(480, 20))
-		Ui.hang(_sub, "top", Vector2(0, 46 + Nav.offset().y), Vector2(480, 14))
+		Ui.hang(_heading, "top", Vector2(0, 26 + Nav.offset().y), Vector2(0, 20))
+		Ui.hang(_sub, "top", Vector2(0, 46 + Nav.offset().y), Vector2(0, 14))
 		Ui.hang(_menu, "top", Vector2(0, 120 + Nav.offset().y), Vector2(100, 0))
-
-
-func _add_fish(x: float) -> void:
-	var id: String = FISH[randi() % FISH.size()]
-	var path := "res://assets/art/fish/%s.png" % id
-	if not ResourceLoader.exists(path):
-		return
-	var s := Swimmers.sprite_for(id, load(path))
-	var dir := 1.0 if randf() < 0.5 else -1.0
-	s.flip_h = dir < 0.0
-	var water := float(_info["waterline"]) - float(_info["pad"])
-	var y := randf_range(water + 22.0, water + 104.0)
-	s.modulate = Color(0.95, 1.0, 1.0).lerp(Color(0.55, 0.72, 0.8), (y - water) / 130.0)
-	s.scale = Vector2.ONE * randf_range(0.6, 0.85)
-	_stage.add_child(s)
-	_painter.move_to_front()
-	_fish.append({"node": s, "x": x, "y": y, "dir": dir, "speed": randf_range(6.0, 14.0), "phase": randf() * TAU, "swim": randf() * TAU})
 
 
 func _process(delta: float) -> void:
 	_time += delta
-	# A cloud goes round only once it is wholly out of view, so none is ever seen cut off at the edge.
-	var left := -_stage.position.x
-	var right := Nav.view().x - _stage.position.x
-	for c in _clouds:
-		var node: Sprite2D = c["node"]
-		var w := float(node.texture.get_width())
-		c["x"] += c["speed"] * delta
-		if c["x"] > right:
-			c["x"] = left - w - fmod(c["x"] - right, 40.0)
-		node.position = Vector2(c["x"], c["y"] + c["lift"] * sin(_time * TAU / c["period"] + c["phase"]))
-	for f in _fish:
-		f["x"] += f["dir"] * f["speed"] * delta
-		f["swim"] += delta * (3.0 + f["speed"] * 0.5)
-		var node: Sprite2D = f["node"]
-		node.position = Vector2(f["x"], f["y"] + sin(_time * 1.3 + f["phase"]) * 1.5)
-		Pixels.set_swim(node, f["swim"])
-		if f["x"] < -40.0 or f["x"] > 520.0:
-			f["dir"] = -f["dir"]
-			node.flip_h = f["dir"] < 0.0
-	var water := float(_info["waterline"]) - float(_info["pad"])
-	if randf() < delta * 2.2:
-		var sources := [26.0, 58.0, 118.0, 392.0, 436.0]
-		_bubbles.append({"pos": Vector2(sources[randi() % sources.size()] + randf_range(-4, 4), water + 110.0), "r": randf_range(0.6, 2.2)})
-	for b in _bubbles:
-		b["pos"] += Vector2(sin(_time * 3.0 + b["r"] * 5.0) * 4.0 * delta, -(14.0 + b["r"] * 5.0) * delta)
-	_bubbles = _bubbles.filter(func(b): return b["pos"].y > water + 2.0)
-	_painter.queue_redraw()
+	swimmers.step(delta, null, "")
+	_relayout()
 
 
-func _draw_life() -> void:
-	var water := float(_info["waterline"]) - float(_info["pad"])
-	var horizon := float(_info["horizon"]) - float(_info["pad"])
-	# The sun's glitter on the sea below it, and the light catching the waterline.
-	for i in 22:
-		if sin(_time * 2.4 + i * 1.7) > 0.25:
-			var y := horizon + 4.0 + (i * 5) % int(water - horizon - 6.0)
-			var spread := 8.0 + (y - horizon) * 0.7
-			_painter.draw_rect(Rect2(roundf(272.0 + sin(i * 2.3) * spread), roundf(y), 3, 1), Color(1.0, 0.92, 0.7, 0.85))
-	for i in 34:
-		var x := fposmod(i * 37.0 + _time * (5.0 + i % 3 * 2.0), 480.0)
-		_painter.draw_rect(Rect2(roundf(x), water + (i % 2), 3 + i % 3, 1), Color(1.0, 0.93, 0.85, 0.45))
-	for b in _bubbles:
-		var p: Vector2 = b["pos"]
-		if b["r"] < 1.2:
-			_painter.draw_rect(Rect2(p, Vector2.ONE), Color(0.9, 1.0, 1.0, 0.75))
-		else:
-			Pixels.ring(_painter, p, b["r"], Color(0.9, 1.0, 1.0, 0.7))
+func _relayout() -> void:
+	_sky.follow(cam, HOUR, "clear")
+	_layers.time = _time
+	_layers.place(cam)
+	_floor.place_at(cam)
+	_water.cam = cam
+	_water.time = _time
+	_lit.modulate = Color(SkyView.light(HOUR), 1.0)
+	_land.place_at(cam)
+	_murk.place_at(cam, _lit.modulate)
+	swimmers.cam = cam
+	_water.queue_redraw()
+	_ground.queue_redraw()
+	_surface.queue_redraw()
+
+
+## Solid shadow below the seabed, fading in over sixteen pixels, as the coast draws it.
+func _draw_ground() -> void:
+	var below := float(place.get("ground_below", 24))
+	var view := Nav.view()
+	var x0 := floorf(cam.x / 8.0) * 8.0 - 8.0
+	while x0 < cam.x + view.x:
+		var x1 := x0 + 8.0
+		var a := Vector2(x0, roundf(seabed.depth_at(x0) + below)) - cam
+		var b := Vector2(x1, roundf(seabed.depth_at(x1) + below)) - cam
+		var bottom := maxf(view.y + 10.0, maxf(a.y, b.y) + 1.0)
+		_ground.draw_colored_polygon(PackedVector2Array([a, b, Vector2(b.x, bottom), Vector2(a.x, bottom)]), FloorView.SHADOW)
+		for k in 8:
+			var up := Vector2(0, 16.0 - k * 2.0)
+			var down := Vector2(0, 14.0 - k * 2.0)
+			_ground.draw_colored_polygon(PackedVector2Array([a - up, b - up, b - down, a - down]), Color(FloorView.SHADOW, (k + 1) / 9.0))
+		x0 = x1
 
 
 func _show_menu() -> void:
