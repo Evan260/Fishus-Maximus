@@ -10,6 +10,9 @@ static func on_sale(state: Dictionary, id: String) -> bool:
 	if Data.boats.has(id):
 		return id in open["boats"]
 	if Data.gear.has(id):
+		# Pots come one more at a time, so each step of the ladder is paid for.
+		if Data.gear[id]["kind"] == "trap" and int(Data.gear[id]["count"]) > int(state["gear"].get("traps", 2)) + 1:
+			return false
 		return Data.gear[id]["kind"] == "finery" or id in open["gear"]
 	return false
 

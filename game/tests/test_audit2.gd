@@ -218,3 +218,9 @@ func test_a_pot_partly_emptied_does_not_fill_again_at_once() -> void:
 	Traps.fill(pot, 0.01, rng)
 	check(pot["catch"].size() == 2, "and the pot does not fill its empty basket the moment after, %d in it" % pot["catch"].size())
 
+
+func test_pots_are_bought_one_at_a_time() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["chapter"] = 4
+	check(Shop.on_sale(Game.state, "trap_3"), "with two pots the third is for sale")
+	check(not Shop.on_sale(Game.state, "trap_6"), "but not the sixth, which would skip the price of the ones between")
