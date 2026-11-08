@@ -582,6 +582,8 @@ func _update_swimmer_world() -> void:
 	swimmers.season = Clock.season(Clock.day_of(float(Game.state.get("time", 0.0))))
 	swimmers.weather = weather
 	swimmers.events = Events.on(Clock.day_of(float(Game.state.get("time", 0.0))))
+	if not place_id in CoastEvents.DOLPHIN_PLACES:
+		swimmers.events.erase("dolphins")
 
 
 func _process(delta: float) -> void:

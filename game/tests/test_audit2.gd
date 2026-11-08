@@ -444,3 +444,22 @@ func test_the_neptunalia_is_judged_wherever_you_are() -> void:
 	check(Game.state["contest"]["done"], "a contest won in the morning is judged though you spent the afternoon and night in town")
 	check(int(Game.state["denarii"]) > money and int(Game.state["stats"].get("neptunalia_won", 0)) == 1, "and its prize is paid")
 	check(Game.state.has("_contest"), "with word of it waiting to be told")
+
+
+func test_the_dolphins_help_only_where_they_come() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["chapter"] = 5
+	Game.state["boat"] = "big_boat"
+	var day := 0
+	while not "dolphins" in Events.on(day) and day < 400:
+		day += 1
+	check("dolphins" in Events.on(day), "there is a dolphin day")
+	Game.state["time"] = day * Clock.minutes_per_day() + 8.0
+	var s := _coast_at("harbour")
+	s._process(0.05)
+	check(not "dolphins" in s.swimmers.events, "in the harbour, where no dolphins come, the shoals and the net are as on any day")
+	_done(s)
+	s = _coast_at("open_bay")
+	s._process(0.05)
+	check("dolphins" in s.swimmers.events, "but in the open bay the dolphins drive the shoals up")
+	_done(s)

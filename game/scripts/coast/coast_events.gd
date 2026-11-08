@@ -4,6 +4,8 @@ extends Node2D
 ## bay during the tuna run, and the Neptunalia fishing contest in the harbour.
 
 const CONTEST_HOURS := [8.0, 12.0]
+## The places out in open water where the dolphins come on their days.
+const DOLPHIN_PLACES := ["open_bay", "capri", "misenum"]
 
 var screen: Node
 var _dolphins: Array = []
@@ -28,7 +30,7 @@ func refresh() -> void:
 	_announced = false
 	var day := Clock.day_of(float(Game.state["time"]))
 	var events := Events.on(day)
-	if "dolphins" in events and screen.place_id in ["open_bay", "capri", "misenum"] and _dolphin != null:
+	if "dolphins" in events and screen.place_id in DOLPHIN_PLACES and _dolphin != null:
 		for i in 4:
 			var s := Sprite2D.new()
 			s.texture = _dolphin
