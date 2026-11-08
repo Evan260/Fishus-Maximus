@@ -8,7 +8,7 @@ static func open() -> void:
 	var day := Clock.day_of(float(Game.state["time"]))
 	var export := Garum.export_day(day)
 	Ui.label(list, "Salt: %d measures. The export ship %s." % [int(Game.state.get("salt", 0)),
-		"is in the harbour today" if export else "comes in %d days" % (7 - day % 7)], "MutedLabel")
+		"is in the harbour today" if export else ship_text(day)], "MutedLabel")
 	var salt: Dictionary = Data.garum["salt"]
 	Ui.row(list, "Buy %d measures of salt: %s" % [int(salt["per"]), Ui.coins_text(int(salt["price"]))], "Buy", func():
 		if int(Game.state["denarii"]) >= int(salt["price"]):
@@ -53,14 +53,14 @@ static func open() -> void:
 			if g != "":
 				Ui.button(r, "Bottle", func():
 					var got := Garum.take(Game.state, ti)
-					Toast.say("%d amphorae of %s." % [int(got["amphorae"]), str(Garum.grade_info(got["grade"])["name"]).to_lower()])
+					Toast.say("%s of %s." % [amphorae(int(got["amphorae"])), str(Garum.grade_info(got["grade"])["name"]).to_lower()])
 					open())
 	for g in Data.garum["grades"]:
 		var id: String = g["id"]
 		var n := int(Game.state["garum"].get(id, 0))
 		if n > 0:
 			var p := Garum.price(id, Garum.quality(Game.state, id), export)
-			Ui.row(list, "%d amphorae of %s, %s each%s" % [n, str(g["name"]).to_lower(), Ui.coins_text(p), " to the ship" if export else ""], "Sell one", func():
+			Ui.row(list, "%s of %s, %s each%s" % [amphorae(n), str(g["name"]).to_lower(), Ui.coins_text(p), " to the ship" if export else ""], "Sell one", func():
 				Garum.sell(Game.state, id, export)
 				Game.changed.emit()
 				open())
@@ -70,3 +70,13 @@ static func open() -> void:
 static func _garum_fish() -> Array:
 	var stale: Array = Game.state["hold"].filter(func(f): return float(f.get("fresh", 1.0)) < 0.7 or f.get("salted", false))
 	return stale if not stale.is_empty() else Game.state["hold"].duplicate()
+
+
+static func amphorae(n: int) -> String:
+	return "%d amphora" % n if n == 1 else "%d amphorae" % n
+
+
+## When the export ship comes, on a day it is not in the harbour.
+static func ship_text(day: int) -> String:
+	var left := 7 - day % 7
+	return "comes in %d day%s" % [left, "" if left == 1 else "s"]
