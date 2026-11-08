@@ -9,7 +9,7 @@ from PIL import Image
 
 PROPS = Path(__file__).resolve().parents[2] / "game" / "assets" / "art" / "props"
 # How many rows the keel rises at the very ends, and how many rows above that the squeeze starts.
-RISE = {"skiff": 10, "fishing_boat": 10, "sailing_boat": 13, "big_boat": 15}
+RISE = {"sailing_boat": 13, "big_boat": 15}
 ABOVE = 4
 SHAPE = 2.0
 
