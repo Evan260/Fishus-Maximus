@@ -142,7 +142,7 @@ func guide_target(id: String) -> Rect2:
 	if not _masks.has(id):
 		return Rect2()
 	var r: Rect2 = _masks[id]["rect"]
-	return Rect2(_stage.transform * r.position, r.size * _stage.scale)
+	return Nav.rect_to_ui(Rect2(_stage.transform * r.position, r.size * _stage.scale))
 
 
 func _place() -> void:

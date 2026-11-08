@@ -7,6 +7,10 @@ extends Node
 signal screen_changed(screen: String)
 
 const SIZE := Vector2(480, 270)
+## The least room, in interface pixels, a larger interface needs for the boat's bars along the top and the bottom.
+const UI_LEAST := Vector2(360, 200)
+## The same in the desktop strip, where its controls widen the strip to fit them.
+const STRIP_UI_LEAST := Vector2(0, 60)
 const SCREENS := {
 	"title": "res://scripts/screens/title.gd",
 	"coast": "res://scripts/coast/coast_screen.gd",
@@ -24,6 +28,8 @@ var world: Node2D
 var ui_layer: CanvasLayer
 ## Window pixels per game pixel.
 var zoom := 1
+## Window pixels per interface pixel: the game's zoom, or a step either side of it as the settings choose.
+var ui_zoom := 1
 var _frame: SubViewportContainer
 var ui: Control
 var current: Node
@@ -59,7 +65,7 @@ func _ready() -> void:
 	port.add_child(ui_layer)
 	ui = Control.new()
 	ui.name = "UI"
-	ui.set_anchors_preset(Control.PRESET_FULL_RECT)
+	ui.size = SIZE
 	ui.theme = UiTheme.build()
 	ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui_layer.add_child(ui)
@@ -71,6 +77,33 @@ func _ready() -> void:
 	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	top.add_child(_fade)
+	get_tree().node_added.connect(_on_node_added)
+
+
+## Godot draws a tip at the game's zoom, so each one is drawn again at the interface's once it has been placed.
+func _on_node_added(n: Node) -> void:
+	if n is PopupPanel and n.theme_type_variation == "TooltipPanel":
+		fit_tip.call_deferred(n)
+
+
+## Draws a tip at `ui_zoom` window pixels per pixel, below and right of the pointer, or above or left where the window
+## ends.
+func fit_tip(shown) -> void:
+	if not is_instance_valid(shown) or not shown.visible:
+		return
+	var tip: PopupPanel = shown
+	tip.content_scale_factor = ui_zoom
+	var size := Vector2(tip.get_contents_minimum_size()).ceil()
+	var room := Vector2(get_window().size)
+	var mouse := get_viewport().get_mouse_position()
+	var gap := Vector2(ProjectSettings.get_setting("display/mouse_cursor/tooltip_position_offset", Vector2(10, 10)))
+	var at := mouse + gap
+	if at.x + size.x > room.x:
+		at.x = mouse.x - gap.x - size.x
+	if at.y + size.y > room.y:
+		at.y = mouse.y - gap.y - size.y
+	tip.size = Vector2i(size)
+	tip.position = Vector2i(at.clamp(Vector2.ZERO, (room - size).max(Vector2.ZERO)))
 
 
 ## The view's size in game pixels: at least 480 by 270 tall, and as wide or tall as the window's shape allows.
@@ -88,6 +121,51 @@ func fit(size: Vector2i, scale: int) -> void:
 	var room := Vector2(get_window().size) - Vector2(size * scale)
 	_frame.position = (room / 2.0).floor()
 	sky.transform = Transform2D(0.0, Vector2(scale, scale), 0.0, _frame.position)
+	_fit_ui()
+
+
+## Lays the interface over the part of the window the game covers, from the window's top left corner, each interface
+## pixel `ui_zoom` window pixels, so its fonts and painted frames stay crisp at any size the settings choose.
+func _fit_ui() -> void:
+	var start := (-_frame.position).max(Vector2.ZERO)
+	var shown := (Vector2(port.size) - start).min(Vector2(get_window().size))
+	# A window too small for the least view crops the game, and the interface then covers all of the game instead.
+	if start.x >= zoom or start.y >= zoom:
+		start = Vector2.ZERO
+		shown = Vector2(port.size)
+	ui_zoom = ui_zoom_for(shown, zoom)
+	ui_layer.transform = Transform2D(0.0, Vector2.ONE * ui_zoom / zoom, 0.0, start / zoom)
+	ui.size = (shown / ui_zoom).floor()
+
+
+## Window pixels per interface pixel for `shown` window pixels at `scale`: the settings' step from the game's zoom,
+## never under one, and a larger interface only while it keeps the room its bars need.
+func ui_zoom_for(shown: Vector2, scale: int) -> int:
+	var least := STRIP_UI_LEAST if Windowing.strip else UI_LEAST
+	var z := maxi(1, scale + Settings.interface_size)
+	while z > scale and (shown.x / z < least.x or shown.y / z < least.y):
+		z -= 1
+	return z
+
+
+## The interface's size in interface pixels.
+func ui_view() -> Vector2:
+	return ui.size if ui else SIZE
+
+
+## A point in view pixels, where the world is drawn on the screen, in interface pixels.
+func to_ui(p: Vector2) -> Vector2:
+	return ui_layer.transform.affine_inverse() * p
+
+
+## A rect in interface pixels in view pixels.
+func from_ui(r: Rect2) -> Rect2:
+	return Rect2(ui_layer.transform * r.position, r.size * ui_layer.transform.get_scale())
+
+
+## A rect in view pixels in interface pixels.
+func rect_to_ui(r: Rect2) -> Rect2:
+	return Rect2(to_ui(r.position), r.size / ui_layer.transform.get_scale())
 
 
 ## Where a screen laid out for 480 by 270 sits so that it is centred in the view.

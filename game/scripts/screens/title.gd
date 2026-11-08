@@ -95,9 +95,19 @@ func _place() -> void:
 	cam = Vector2(clampf(AT.x + (Nav.SIZE.x - view.x) / 2.0, 0.0, float(place["width"]) - view.x), AT.y - Nav.offset().y)
 	_relayout()
 	if is_instance_valid(_menu):
-		Ui.hang(_heading, "top", Vector2(0, 26 + Nav.offset().y), Vector2(0, 20))
-		Ui.hang(_sub, "top", Vector2(0, 46 + Nav.offset().y), Vector2(0, 14))
-		Ui.hang(_menu, "top", Vector2(0, 120 + Nav.offset().y), Vector2(100, 0))
+		# Each line keeps its place on the scene, but a larger interface pushes the next one down rather than overlap it.
+		var heading := roundf(_row(26))
+		var sub := maxf(roundf(_row(46)), heading + 20)
+		var menu := maxf(roundf(_row(120)), sub + 24)
+		menu = maxf(sub + 16, minf(menu, Nav.ui_view().y - _menu.get_combined_minimum_size().y - 6))
+		Ui.hang(_heading, "top", Vector2(0, heading), Vector2(0, 20))
+		Ui.hang(_sub, "top", Vector2(0, sub), Vector2(0, 14))
+		Ui.hang(_menu, "top", Vector2(0, menu), Vector2(100, 0))
+
+
+## A row of the 480 by 270 scene in interface pixels.
+func _row(y: float) -> float:
+	return Nav.to_ui(Vector2(0, y + Nav.offset().y)).y
 
 
 func _process(delta: float) -> void:

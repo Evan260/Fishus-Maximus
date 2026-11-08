@@ -16,8 +16,8 @@ static func show_earned(id: String) -> void:
 		return
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(180, 0)
-	var bottom := Nav.view().y
-	card.position = Vector2(roundf((Nav.view().x - 180.0) / 2.0), bottom)
+	var bottom := Nav.ui_view().y
+	card.position = Vector2(roundf((Nav.ui_view().x - 180.0) / 2.0), bottom)
 	Nav.ui.add_child(card)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 0)

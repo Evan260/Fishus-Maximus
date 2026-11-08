@@ -1,9 +1,10 @@
 class_name SettingsPanel
-## The settings: the volumes, full screen, gentle fishing, larger messages, old Rufus's guide and the desktop strip.
+## The settings: the volumes, the interface size, full screen, gentle fishing, larger messages, old Rufus's guide and the
+## desktop strip.
 
 
 static func open() -> void:
-	var list := Ui.window("Settings", 280, 205)
+	var list := Ui.window("Settings", 280, 230)
 	list.add_theme_constant_override("separation", 3)
 	for key in ["master", "music", "effects", "ambience"]:
 		var r := HBoxContainer.new()
@@ -26,6 +27,20 @@ static func open() -> void:
 		slider.value_changed.connect(func(v):
 			amount.text = _percent(v)
 			Settings.set_value(k, v))
+	var sizes := HBoxContainer.new()
+	sizes.add_theme_constant_override("separation", 3)
+	list.add_child(sizes)
+	Ui.label(sizes, "Interface").custom_minimum_size = Vector2(53, 0)
+	var group := ButtonGroup.new()
+	for choice in [[-1, "Smaller", "A step smaller, for more room on the screen."], [0, "Normal", "The game's own size."],
+			[1, "Larger", "A step larger, while the window has room for it."]]:
+		var step: int = choice[0]
+		var b := Ui.button(sizes, choice[1], func(): Settings.set_value("interface_size", step))
+		b.name = choice[1]
+		b.toggle_mode = true
+		b.button_group = group
+		b.tooltip_text = choice[2]
+		b.set_pressed_no_signal(Settings.interface_size == step)
 	var gap := Control.new()
 	gap.custom_minimum_size = Vector2(0, 3)
 	list.add_child(gap)

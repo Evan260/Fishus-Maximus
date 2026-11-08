@@ -28,6 +28,10 @@ func _ready() -> void:
 	if args.has("click"):
 		var xy: PackedStringArray = args["click"].split(",")
 		get_tree().create_timer(float(args.get("click-at", "1.5"))).timeout.connect(_click.bind(Vector2(float(xy[0]), float(xy[1]))))
+	# --point=X,Y (window pixels, at --point-at seconds) rests the pointer there, as for showing a tip.
+	if args.has("point"):
+		var xy: PackedStringArray = args["point"].split(",")
+		get_tree().create_timer(float(args.get("point-at", "1.5"))).timeout.connect(_point.bind(Vector2(float(xy[0]), float(xy[1]))))
 	if args.has("quit") and _shots.is_empty():
 		get_tree().create_timer(float(args.get("quit-at", "3.0"))).timeout.connect(get_tree().quit)
 
@@ -56,6 +60,15 @@ func _take_shot(path: String, last: bool) -> void:
 	print("saved ", path)
 	if last and args.has("quit"):
 		get_tree().quit()
+
+
+func _point(at: Vector2) -> void:
+	for k in 2:
+		var m := InputEventMouseMotion.new()
+		m.position = at + Vector2(k, 0)
+		m.global_position = m.position
+		m.relative = Vector2(1, 0)
+		get_viewport().push_input(m)
 
 
 func _click(at: Vector2) -> void:

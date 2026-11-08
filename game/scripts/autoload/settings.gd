@@ -1,6 +1,6 @@
 extends Node
-## The player's settings, kept apart from the save slots so they apply to every game: the volumes, the window, gentle
-## fishing, the text size and old Rufus's guide.
+## The player's settings, kept apart from the save slots so they apply to every game: the volumes, the window, the
+## interface size, gentle fishing, the text size and old Rufus's guide.
 
 signal changed
 
@@ -16,6 +16,8 @@ var maximized := false
 ## Gentle fishing never snaps a line or lets a hook slip.
 var gentle := false
 var large_text := false
+## How large the interface is drawn: -1 a step smaller than the game, 0 the game's own size, 1 a step larger.
+var interface_size := 0
 ## Old Rufus's lessons for a new player.
 var guide := true
 var _before := DisplayServer.WINDOW_MODE_WINDOWED
@@ -30,9 +32,13 @@ func _ready() -> void:
 		ambience = cfg.get_value("sound", "ambience", ambience)
 		fullscreen = cfg.get_value("display", "fullscreen", fullscreen)
 		maximized = cfg.get_value("display", "maximized", maximized)
+		interface_size = clampi(int(cfg.get_value("display", "interface_size", interface_size)), -1, 1)
 		gentle = cfg.get_value("play", "gentle", gentle)
 		large_text = cfg.get_value("play", "large_text", large_text)
 		guide = cfg.get_value("play", "guide", guide)
+	# --ui-size=-1, 0 or 1 tries an interface size without saving it, for screenshots.
+	if Dev.has("ui-size"):
+		interface_size = clampi(int(Dev.num("ui-size", 0)), -1, 1)
 	apply()
 	_restore_window.call_deferred()
 
@@ -78,6 +84,7 @@ func save() -> void:
 	cfg.set_value("sound", "ambience", ambience)
 	cfg.set_value("display", "fullscreen", fullscreen)
 	cfg.set_value("display", "maximized", maximized)
+	cfg.set_value("display", "interface_size", interface_size)
 	cfg.set_value("play", "gentle", gentle)
 	cfg.set_value("play", "large_text", large_text)
 	cfg.set_value("play", "guide", guide)

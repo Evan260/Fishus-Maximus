@@ -107,7 +107,7 @@ func _refresh() -> void:
 	_bar.reset_size()
 	_info.position = Vector2(4, 4)
 	_bar.position = Vector2(roundf(size.x - _bar.size.x - 4.0), 4.0)
-	Windowing.strip_min_width = int(ceilf(_info.size.x + _bar.size.x + 16.0))
+	Windowing.strip_min_width = int(ceilf(Nav.from_ui(Rect2(Vector2.ZERO, Vector2(_info.size.x + _bar.size.x + 16.0, 0))).size.x))
 
 
 ## The bars' area while they show, which must stay clickable when the rest of the sky lets clicks through.

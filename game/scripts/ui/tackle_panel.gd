@@ -43,7 +43,7 @@ static func _hang_above(window: Control, under: Control) -> void:
 	window.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	window.grow_horizontal = Control.GROW_DIRECTION_END
 	window.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	var x := clampf(at.position.x, 4.0, Nav.view().x - size.x - 4.0)
+	var x := clampf(at.position.x, 4.0, Nav.ui_view().x - size.x - 4.0)
 	var y := maxf(4.0, at.position.y - size.y - 2.0)
 	window.offset_left = x
 	window.offset_top = y

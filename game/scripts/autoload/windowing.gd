@@ -46,8 +46,9 @@ var _slide_start := 0
 var _click_wait := 0.0
 ## Set when a run started with --strip asks for it before its first screen has opened.
 var _strip_on_arrival := false
-## The window size the view was last fitted to.
+## The window size and interface size the view was last fitted to.
 var _fitted := Vector2i.ZERO
+var _fitted_ui := 0
 
 
 func _ready() -> void:
@@ -59,6 +60,7 @@ func _ready() -> void:
 	get_window().size_changed.connect(_fit)
 	get_viewport().transparent_bg = false
 	Settings.changed.connect(_apply_volume)
+	Settings.changed.connect(func(): if Settings.interface_size != _fitted_ui: _fit())
 	Nav.screen_changed.connect(_on_screen_changed)
 	_fit.call_deferred()
 	for key in [["toggle_strip", KEY_F10], ["reset_strip", KEY_F9]]:
@@ -126,6 +128,7 @@ func _process(delta: float) -> void:
 ## of any shape is filled to its edges with no bars. The strip's view is its own width by its few rows.
 func _fit() -> void:
 	_fitted = get_window().size
+	_fitted_ui = Settings.interface_size
 	if strip:
 		Nav.fit(Vector2i(strip_view(), STRIP.y), scale)
 		view_changed.emit()
@@ -366,7 +369,7 @@ func _set_click_area() -> void:
 		var used := img.get_region(Rect2i(x, 0, mini(step, w - x), h)).get_used_rect()
 		tops.append(used.position.y if used.has_area() else h)
 	for node in get_tree().get_nodes_in_group("strip_area"):
-		var area: Rect2 = node.area()
+		var area := Nav.from_ui(node.area())
 		if not area.has_area():
 			continue
 		var r := Rect2(area.position * scale, area.size * scale)

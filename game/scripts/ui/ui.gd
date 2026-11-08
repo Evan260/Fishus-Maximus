@@ -125,7 +125,24 @@ static func frame(title: String, width := 300.0, height := 200.0) -> VBoxContain
 	var head := label(top, title.to_upper(), "Heading")
 	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button(top, "x", close_window)
+	var fit := func(): fit_window(p)
+	p.resized.connect(fit)
+	Nav.ui.resized.connect(fit)
+	p.tree_exiting.connect(func(): Nav.ui.resized.disconnect(fit))
 	return col
+
+
+## Draws a window too big for the interface at the most window pixels per pixel that fit it, about its middle, so a
+## larger interface never pushes a window past the screen's edges.
+static func fit_window(w: Control) -> void:
+	if not is_instance_valid(w):
+		return
+	var room := Nav.ui_view() - Vector2(4, 4)
+	var px := Nav.ui_zoom
+	while px > 1 and (w.size.x * px / Nav.ui_zoom > room.x or w.size.y * px / Nav.ui_zoom > room.y):
+		px -= 1
+	w.pivot_offset = (w.size / 2.0).round()
+	w.scale = Vector2.ONE * px / Nav.ui_zoom
 
 
 static func close_window() -> void:
@@ -241,7 +258,8 @@ static func wrapped(text: String, width: int) -> String:
 
 
 ## A speech bubble over someone's head, as in Farmus Maximus: a small parchment note with a tail pointing down at them
-## that fades after a few seconds; a new one replaces any still showing. `follow` keeps it over a speaker who moves.
+## that fades after a few seconds; a new one replaces any still showing. `at`, and `follow` that keeps it over a
+## speaker who moves, are in view pixels, where the world is drawn on the screen.
 static func speech(at: Vector2, text: String, follow := Callable()) -> PanelContainer:
 	for old in Nav.ui.get_children():
 		if old.has_meta("speech"):
@@ -271,9 +289,9 @@ static func speech(at: Vector2, text: String, follow := Callable()) -> PanelCont
 	var place := func(_t := 0.0) -> void:
 		if not is_instance_valid(bubble):
 			return
-		var spot: Vector2 = follow.call() if follow.is_valid() else at
+		var spot := Nav.to_ui(follow.call() if follow.is_valid() else at)
 		bubble.reset_size()
-		var room := Nav.view()
+		var room := Nav.ui_view()
 		var pos := (spot - Vector2(bubble.size.x / 2.0, bubble.size.y + 4.0)).round()
 		bubble.position = pos.clamp(Vector2(2, 2), room - bubble.size - Vector2(2, 2))
 		tail.position = Vector2(roundf(spot.x - bubble.position.x), bubble.size.y - 1.0)

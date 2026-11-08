@@ -534,7 +534,7 @@ func _kept_clear() -> Array:
 	var out: Array = [Rect2(boat_x - cam.x, 0.0, _boat.width(), Nav.view().y), Rect2((flying() if flight > 0.0 else hook) - cam, Vector2.ZERO)]
 	if Nav.ui:
 		for b in Nav.ui.find_children("*", "Button", true, false):
-			var r: Rect2 = b.get_global_rect()
+			var r := Nav.from_ui(b.get_global_rect())
 			if b.is_visible_in_tree() and r.end.y > Nav.view().y - 40.0:
 				out.append(r)
 	return out
