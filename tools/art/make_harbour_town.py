@@ -1,7 +1,8 @@
 """Builds the harbour's row of town from coast/town.png with its lighthouse whole. The lighthouse stands near the row's
 end, where land must slope down to the sea no more steeply than a hillside, so its shaft is shortened by rows from the
-middle rather than having its side cut away; then the row's ends are tapered and its shore painted on as
-make_places.py does. Writes game/assets/art/places/harbour/town.png. Usage: python tools/art/make_harbour_town.py"""
+middle rather than having its side cut away; then the row's ends are tapered, its shore painted on as make_places.py
+does, and the near-black lines round its houses softened into darker shades of their own colours. Writes
+game/assets/art/places/harbour/town.png. Usage: python tools/art/make_harbour_town.py"""
 import json
 from pathlib import Path
 
@@ -9,6 +10,7 @@ import numpy as np
 from PIL import Image
 
 import make_places
+import soften_outlines
 
 ROOT = Path(__file__).resolve().parents[2]
 ART = ROOT / "game" / "assets" / "art"
@@ -39,6 +41,8 @@ def main():
     spec = json.loads((Path(__file__).with_name("places") / "harbour.json").read_text(encoding="utf-8"))
     layer = next(l for l in spec["layers"] if l.get("file") == "town.png")
     make_places.shore_land("harbour", layer, OUT)
+    soften_outlines.soften(OUT)
+    Image.fromarray(soften_outlines.soften_lines(np.array(Image.open(OUT).convert("RGBA")))[0]).save(OUT)
     print("harbour town built", arr.shape[1], arr.shape[0])
 
 
