@@ -51,7 +51,9 @@ func test_the_helpers_work_while_you_are_away() -> void:
 	Garum.fill(Game.state, 0, [{"fish": "sardine", "pounds": 6.0}], 2)
 	World.advance(Game.state, Clock.minutes_per_day() * 1.0, Seeds.rng(1, "h"))
 	check(not Game.state["hold"].is_empty() and Game.state["traps"][0]["catch"].size() < 3, "he pulls the pots into the hold")
-	check(float(Game.state["tanks"][0]["quality"]) > 0.5, "and stirs the tanks")
+	check(Game.state["tanks"][0]["stirred"], "and stirs the tanks")
+	World.advance(Game.state, Clock.minutes_per_day() * 1.0, Seeds.rng(3, "h"))
+	check(float(Game.state["tanks"][0]["quality"]) > 0.5, "which raises their quality by the next morning")
 	Game.state["chapter"] = 4
 	Game.state["hold"] = []
 	check(Helpers.hire(Game.state, "fisherman"), "the second fisherman")
