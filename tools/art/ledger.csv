@@ -496,3 +496,5 @@ time,kind,name,cost_usd,cost_generations,usd_left
 2026-11-08T12:55:38,proflash,tools/art/banner_raw/wreath.png,0.0234,0,0.7105
 2026-11-08T13:06:47,inpaint,tools\art\banner_raw\frame.png,0.0324,0,0.6781
 2026-11-08T13:50:17,proflash,tools/art/town_parts/board_front_raw.png,0.0239,0,0.6543
+2026-11-08T16:14:58,inpaint,game\assets\art\places\capri\mid.png,0.0865,0,0.5678
+2026-11-08T16:18:01,inpaint,game\assets\art\places\capri\mid.png,0.0869,0,0.4484

@@ -111,7 +111,7 @@
 			{"band": "#6a9cae", "at": [0, 116], "factor": [0.3, 0.3], "z": -17},
 			{"band": "#3f8aa0", "at": [0, 136], "factor": [0.55, 0.55], "z": -15},
 			{"file": "places/capri/far.png", "at": [-20, 36], "factor": [0.12, 0.12], "z": -18},
-			{"file": "places/capri/mid.png", "at": [-16, 38], "factor": [0.3, 0.3], "z": -16},
+			{"file": "places/capri/mid.png", "at": [-16, 6], "factor": [0.3, 0.3], "z": -16},
 			{"file": "places/capri/near.png", "at": [-16, 10], "factor": [0.55, 0.55], "z": -14},
 			{"file": "places/capri/white_rock.png", "z": -9, "world": [300, 120]},
 			{"file": "places/capri/white_rock.png", "z": -9, "mirror": true, "world": [1050, 292]},

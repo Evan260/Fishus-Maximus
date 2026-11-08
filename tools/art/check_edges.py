@@ -1,7 +1,8 @@
 """Finds pictures that would show a straight cut on screen. For each place it checks every layer as it is placed: an
 edge whose opaque pixels run for more than 6 pixels fails if the camera can ever bring that edge into view and no
 later layer of the same depth covers it. Seabed pieces count as covered below the ground shadow, above-water land
-counts as covered along its bottom by its sea band, a repeated layer is checked as one long picture, and
+counts as covered along its bottom by its sea band, a row of land whose top fades into the sky fails too, a
+repeated layer is checked as one long picture, and
 tools/art/tiles.txt lists edges that join seamlessly onto a neighbour. Usage: python tools/art/check_edges.py [PLACE...]; exits 1 when anything fails."""
 import sys
 from pathlib import Path
@@ -37,6 +38,14 @@ def longest_run(mask):
         run = run + 1 if v else 0
         best = max(best, run)
     return best
+
+
+def soft_tops(alpha):
+    """The most columns side by side whose topmost pixel is see-through, as along land faded out where it was cut."""
+    seen = alpha > 2
+    top = np.argmax(seen, axis=0)
+    first = alpha[top, np.arange(alpha.shape[1])]
+    return longest_run(seen.any(axis=0) & (first < 250))
 
 
 def steep_ends(pid, file, a, visible):
@@ -94,7 +103,12 @@ def check_place(place, tiles):
             im = im.transpose(Image.FLIP_LEFT_RIGHT)
         f = l.get("factor", [1, 1])
         at = [l["world"][0], l["world"][1] - HOME_Y] if "world" in l else l["at"]
-        alpha = np.array(im)[:, :, 3] > 16
+        raw = np.array(im)[:, :, 3]
+        if l.get("factor", [1, 1])[0] < 1 and -20 <= l.get("z", 0) <= -10:
+            soft = soft_tops(raw)
+            if soft > RUN:
+                failures.append(f"{place['id']}: {l['file']} top fades into the sky for {soft} pixels, as if cut and blurred")
+        alpha = raw > 16
         if int(l.get("repeat", 1)) > 1:
             alpha = np.tile(alpha, (1, int(l["repeat"])))
         # Checked against its painted pixels, so a scene painted inside a clear margin still shows its straight sides.

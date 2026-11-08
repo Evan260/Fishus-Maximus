@@ -101,13 +101,15 @@ def paint(out: Path, prompt: str, size: str, clear: bool, alone: bool = False, s
     return ok
 
 
-def inpaint(path: Path, mask: Image.Image, prompt: str, clear: bool):
+def inpaint(path: Path, mask: Image.Image, prompt: str, clear: bool, tile: str = None):
     mask_path = PARTS / "_mask.png"
     mask.save(mask_path)
     args = ["inpaint", str(path.relative_to(ROOT)), str(mask_path.relative_to(ROOT)), f"{prompt}, {STYLE}",
             "--out", str(path.relative_to(ROOT))]
     if clear:
         args.append("--transparent")
+    if tile:
+        args += ["--tile", tile]
     return run(args)
 
 
@@ -173,13 +175,47 @@ def taper_ends(arr):
     return a
 
 
-def fade_top(arr, n=14):
-    """Land that runs up to the picture's top edge fades into the sky over its last rows instead of ending on a line."""
-    a = arr.astype(np.float32)
-    touching = a[0, :, 3] > 0
-    for k in range(n):
-        a[k, touching, 3] *= k / n
-    return a.astype(np.uint8)
+HEADROOM = 32
+SUMMIT = ("the upper slopes and rounded summit of {}, carrying on up from the land below with every building, tree and rock "
+          "whole, empty transparent sky above, no sea, no water, nothing floating")
+
+
+def piece_prompt(layer, x):
+    """The prompt of the strip piece painted at column x of the joined picture, or the picture's own prompt."""
+    if "strip" not in layer:
+        return layer["prompt"]
+    gap = int(layer.get("gap", 0))
+    left = 0
+    for piece in layer["strip"]:
+        left += int(piece["size"].split("x")[0]) + gap
+        if x < left:
+            return piece["prompt"]
+    return layer["strip"][-1]["prompt"]
+
+
+def raise_top(pid, layer, path: Path) -> bool:
+    """Land that runs off the picture's top edge gets sky added above it and its top painted on, so it ends on its own
+    skyline. The picture is placed that much higher, through its pads file, so its foot stays on the sea."""
+    arr = np.array(Image.open(path).convert("RGBA"))
+    cols = np.where(arr[0, :, 3] > 0)[0]
+    if not cols.size:
+        return True
+    h, w = arr.shape[:2]
+    big = np.zeros((h + HEADROOM, w, 4), np.uint8)
+    big[HEADROOM:] = arr
+    Image.fromarray(big).save(path)
+    mask = Image.new("L", (w, h + HEADROOM), 0)
+    mask.paste(255, (max(0, cols[0] - 8), 0, min(w, cols[-1] + 9), HEADROOM + 4))
+    subject = piece_prompt(layer, (cols[0] + cols[-1]) // 2).split(", ")[0]
+    # Each tile sent is the picture's full height, so it is painted seeing the land it carries on from.
+    if not inpaint(path, mask, SUMMIT.format(subject), True, tile=f"256x{(h + HEADROOM) // 4 * 4}"):
+        Image.fromarray(arr).save(path)
+        return False
+    pads = PARTS / pid / f"{path.stem}.pads.json"
+    pad = json.loads(pads.read_text()) if pads.exists() else {"left": 0, "top": 0}
+    pad["top"] += HEADROOM
+    pads.write_text(json.dumps(pad))
+    return True
 
 
 def haze(path: Path, colour: str, amount: float):
@@ -190,7 +226,7 @@ def haze(path: Path, colour: str, amount: float):
 
 
 def finish_land(pid, layer, path: Path):
-    """Once per picture: tapers a land row's ends and hazes it by its distance."""
+    """Once per picture: tapers a land row's ends, paints on any top it was cut off at, and hazes it by its distance."""
     mark = PARTS / pid / f"{path.stem}.finished"
     if mark.exists() or not path.exists():
         return
@@ -198,7 +234,9 @@ def finish_land(pid, layer, path: Path):
     # A strip of land set apart by sea is tapered piece by piece, since its ends would be cut back to the first gap.
     if not layer.get("gap"):
         arr = taper_ends(arr)
-    Image.fromarray(fade_top(arr)).save(path)
+    Image.fromarray(arr).save(path)
+    if not raise_top(pid, layer, path):
+        return
     if "haze" in layer:
         haze(path, layer["haze"][0], float(layer["haze"][1]))
     mark.parent.mkdir(parents=True, exist_ok=True)

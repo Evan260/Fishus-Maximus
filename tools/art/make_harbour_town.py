@@ -34,7 +34,7 @@ def shorten(arr: np.ndarray) -> np.ndarray:
 
 def main():
     arr = shorten(np.array(Image.open(SRC).convert("RGBA")))
-    arr = make_places.fade_top(make_places.taper_ends(arr))
+    arr = make_places.taper_ends(arr)
     Image.fromarray(arr).save(OUT)
     for done in ("town.shore", "town_inland.png"):
         (PARTS / done).unlink(missing_ok=True)

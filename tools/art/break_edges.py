@@ -1,8 +1,10 @@
 """Breaks up a long straight slope along the top of a picture of land into an uneven outline of rounded bulges and
 dips, a few pixels high and a dozen or so across, like outcrops of rock and clumps of scrub. Each column's top band is
 stretched up into a bulge or squeezed down into a dip, so its rock or scrub carries on unbroken and the edge keeps its
-shading. Changes the picture again when run again, so run it once on a span.
-Usage: python tools/art/break_edges.py PICTURE FIRST_COLUMN LAST_COLUMN [SEED]   (PICTURE under game/assets/art)"""
+shading. With --rise=N the span is never dipped but lifted into a rounded rise N pixels high with the bulges on it,
+stretching only the top few rows, for a top left flat by painting with buildings just under it. Changes the picture
+again when run again, so run it once on a span.
+Usage: python tools/art/break_edges.py PICTURE FIRST_COLUMN LAST_COLUMN [SEED] [--rise=N]   (PICTURE under game/assets/art)"""
 import math
 import random
 import sys
@@ -17,36 +19,41 @@ ART = Path(__file__).resolve().parents[2] / "game" / "assets" / "art"
 AMPLITUDE = 4.0
 WAVE = (10.0, 22.0)
 BAND = 10
+RISE_BAND = 2
 
 
 def tops(solid: np.ndarray) -> list:
     return [int(np.argmax(solid[:, x])) if solid[:, x].any() else -1 for x in range(solid.shape[1])]
 
 
-def wobble(first: int, last: int, rng: random.Random) -> dict:
+def wobble(first: int, last: int, rng: random.Random, rise: float = 0.0) -> dict:
     """How far up (positive) or down each column's top moves: two waves of different lengths added together, fading to
-    nothing at both ends of the span so it joins the outline beside it."""
+    nothing at both ends of the span so it joins the outline beside it, on a rise that never lets the top dip."""
     waves = [(rng.uniform(*WAVE), rng.uniform(0, math.tau), rng.uniform(0.5, 1.0)) for _ in range(2)]
     out = {}
     for x in range(first, last + 1):
         u = (x - first) / max(1, last - first)
         fade = math.sin(math.pi * u)
         v = sum(a * math.sin(math.tau * x / wl + ph) for wl, ph, a in waves) / 1.5
-        out[x] = int(round(AMPLITUDE * v * fade))
+        if rise:
+            out[x] = max(1 if 0 < u < 1 else 0, int(round((rise + AMPLITUDE * v / 2) * fade)))
+        else:
+            out[x] = int(round(AMPLITUDE * v * fade))
     return out
 
 
-def break_span(path: Path, first: int, last: int, seed: int) -> None:
+def break_span(path: Path, first: int, last: int, seed: int, rise: float = 0.0) -> None:
     im = np.array(Image.open(path).convert("RGBA"))
     solid = im[:, :, 3] > 127
     old = tops(solid)
     h = im.shape[0]
     out = im.copy()
-    for x, up in wobble(first, last, random.Random(seed)).items():
+    band = RISE_BAND if rise else BAND
+    for x, up in wobble(first, last, random.Random(seed), rise).items():
         o = old[x]
         if o < 0 or up == 0:
             continue
-        bottom = min(h, o + BAND)
+        bottom = min(h, o + band)
         top = max(0, o - up)
         out[min(o, top):bottom, x] = 0
         for y in range(top, bottom):
@@ -56,5 +63,6 @@ def break_span(path: Path, first: int, last: int, seed: int) -> None:
 
 
 if __name__ == "__main__":
-    a = sys.argv[1:]
-    break_span(ART / a[0], int(a[1]), int(a[2]), int(a[3]) if len(a) > 3 else 1)
+    a = [v for v in sys.argv[1:] if not v.startswith("--rise=")]
+    rise = next((float(v.split("=")[1]) for v in sys.argv[1:] if v.startswith("--rise=")), 0.0)
+    break_span(ART / a[0], int(a[1]), int(a[2]), int(a[3]) if len(a) > 3 else 1, rise)
