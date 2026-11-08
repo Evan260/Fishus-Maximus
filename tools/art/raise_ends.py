@@ -1,7 +1,11 @@
 """Raises a rowing boat's stern and bow post a few pixels, the most at the very end and none where the gunwale runs
-level, by stretching each end column's top down to its near rail, so the shading and the rail's highlight stay whole.
-The picture gains rows at the top for a post that rises past it. Run it once on a boat: a second run raises it again.
-Usage: python tools/art/raise_ends.py"""
+level, by stretching each end column's top down to its near rail, so the shading and the rail's highlight stay whole;
+and makes a hull's sides deeper by repeating a plain row of planks. The picture gains rows at the top for a post that
+rises past it. Each pass changes the picture again when run again, so run each once.
+Usage: python tools/art/raise_ends.py                 (the first pass, on both rowing boats)
+       python tools/art/raise_ends.py BOAT [--stern COLUMN ROWS] [--bow COLUMN ROWS] [--rail ROW] [--deepen ROW ROWS]"""
+import argparse
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -43,10 +47,32 @@ def raise_ends(path: Path, stern, bow, rail: int) -> None:
     print("raised", path.name, "by", pad, "rows at the top")
 
 
-def main():
-    for name, (stern, bow, rail) in RAISE.items():
-        raise_ends(PROPS / f"{name}.png", stern, bow, rail)
+def deepen(path: Path, at: int, rows: int) -> None:
+    """Repeats the row of planks just above `at` so the hull's sides stand `rows` rows taller above its keel."""
+    im = np.array(Image.open(path).convert("RGBA"))
+    out = np.concatenate([im[:at], np.repeat(im[at - 1:at], rows, axis=0), im[at:]])
+    Image.fromarray(out).save(path)
+    print("deepened", path.name, "by", rows, "rows")
+
+
+def main(args):
+    if not args:
+        for name, (stern, bow, rail) in RAISE.items():
+            raise_ends(PROPS / f"{name}.png", stern, bow, rail)
+        return
+    p = argparse.ArgumentParser()
+    p.add_argument("boat")
+    p.add_argument("--stern", nargs=2, type=int)
+    p.add_argument("--bow", nargs=2, type=int)
+    p.add_argument("--rail", type=int, default=0)
+    p.add_argument("--deepen", nargs=2, type=int)
+    a = p.parse_args(args)
+    path = PROPS / f"{a.boat}.png"
+    if a.stern or a.bow:
+        raise_ends(path, tuple(a.stern) if a.stern else None, tuple(a.bow) if a.bow else None, a.rail)
+    if a.deepen:
+        deepen(path, a.deepen[0], a.deepen[1])
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
