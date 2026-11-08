@@ -81,11 +81,10 @@ func refresh() -> void:
 	var s: Dictionary = Game.state
 	var t := float(s["time"])
 	var day := Clock.day_of(t)
-	var h := Clock.hour(t)
 	var boat: Dictionary = Data.boats[s["boat"]]
 	var well := ("  Well %d/%d" % [s["live_well"].size(), int(boat["well"])]) if int(boat["well"]) > 0 else ""
-	_info.text = "%s   Day %d, %s   %02d:%02d, %s" % [Ui.coins_text(int(s["denarii"])), day + 1, Clock.season(day),
-		int(h), int(fmod(h, 1.0) * 60.0), s.get("weather", "clear")]
+	# No clock ticks by here: the sky tells the hour, and a player should never feel he is watching time pass.
+	_info.text = "%s   Day %d, %s, %s" % [Ui.coins_text(int(s["denarii"])), day + 1, Clock.season(day), s.get("weather", "clear")]
 	var bait: String = screen.bait()
 	var method: String = screen.methods.method
 	_method.text = "Hold %d/%d%s   %s%s" % [s["hold"].size(), int(boat["hold"]), well, {"line": "Line", "trap": "Pots", "net": "Cast net", "trident": "Trident"}[method],

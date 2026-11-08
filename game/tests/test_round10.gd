@@ -51,3 +51,20 @@ func test_nobody_is_helped_who_can_still_get_by() -> void:
 	Game.state["hold"].append({"fish": "mullet", "pounds": 1.0, "fresh": 1.0})
 	World.advance(Game.state, 1.0, Seeds.rng(1, "rescue"))
 	check(int(Game.state["bait"]["worm"]) == 0, "nor one with fish in the hold to sell")
+
+
+func test_the_panel_shows_no_ticking_clock() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "hound")
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": "harbour"})
+	s.hud.refresh()
+	var text: String = s.hud._info.text
+	check(not ":" in text, "the panel has no hour and minute ticking by: %s" % text)
+	check("Day 1" in text and "spring" in text, "but still the day and the season")
+	for c in Nav.ui.get_children():
+		c.free()
+	s.free()
+
