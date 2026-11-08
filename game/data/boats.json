@@ -7,7 +7,11 @@
 		"speed": 40,
 		"price": 0,
 		"text": "Your uncle's rowing skiff.",
-		"oars": true
+		"oars": true,
+		"dog": [
+			0.3,
+			36
+		]
 	},
 	{
 		"id": "fishing_boat",
@@ -16,8 +20,8 @@
 		"well": 2,
 		"speed": 50,
 		"dog": [
-			0.86,
-			29
+			0.72,
+			35
 		],
 		"price": 300,
 		"text": "Reaches the Lucrine Lake and the open bay, and keeps two fish alive.",
@@ -37,6 +41,10 @@
 			0.74,
 			71
 		],
+		"dog": [
+			0.45,
+			84
+		],
 		"price": 900,
 		"text": "A sail to reach Capri."
 	},
@@ -52,8 +60,8 @@
 			64
 		],
 		"dog": [
-			0.24,
-			61
+			0.76,
+			77
 		],
 		"price": 2200,
 		"text": "Strong enough for the deep water off Cape Misenum, with a post for the lamp."

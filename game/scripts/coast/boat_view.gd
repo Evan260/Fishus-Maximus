@@ -103,6 +103,9 @@ func set_boat(id: String) -> void:
 		_overlay = Node2D.new()
 		_overlay.draw.connect(_draw_in_hands)
 		add_child(_overlay)
+		# The dog is drawn between the boat and its near side, so it sits down inside the hull.
+		for near in [front, hull, _overlay]:
+			near.z_index = 1
 	boat.texture = tex
 	front.texture = tex
 	hull.texture = tex

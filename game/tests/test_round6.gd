@@ -184,3 +184,21 @@ func test_the_dog_sits_down_once_and_stays_sitting() -> void:
 	check(settled[0] == s.dog.frames_of("sit_east").size() - 1, "and it rests on the last frame of sitting down")
 	_done(s)
 
+
+func test_the_dog_sits_down_inside_each_boat() -> void:
+	for id in BOATS:
+		var b := BoatView.new()
+		b.set_boat(id)
+		var seat := b.dog_seat()
+		check(seat.y - b.seat.y >= 12.0, "%s: the dog sits down in the hull, whose near side hides its legs (%d rows)" % [id, seat.y - b.seat.y])
+		var w := b.width()
+		check(seat.x > w * 0.2 and seat.x < w * 0.8, "%s: and away from the raised bow and stern" % id)
+		b.free()
+
+
+func test_the_dog_is_drawn_inside_the_boat_not_behind_it() -> void:
+	var s := _coast()
+	var boat: Node = s._boat
+	check(s.dog.z_index == boat.z_index and s.dog.get_index() > boat.get_index(), "the dog is drawn over the boat behind it")
+	check(boat.front.z_index > 0 and boat.front.z_as_relative, "and under the hull's near side, which is drawn over it")
+	_done(s)
