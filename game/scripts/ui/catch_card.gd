@@ -127,7 +127,7 @@ static func _line_height(l: Label) -> int:
 	return int(l.get_theme_font("font").get_height(l.get_theme_font_size("font_size")))
 
 
-## The rows of each line a gilt letter shades down, drawn in white for the shader to gild.
+## Gilds a label's letters: the shader colours letters drawn in white, row by row down each line's capitals.
 static func _gild(l: Label, caps: Vector2, step: float) -> void:
 	l.add_theme_color_override("font_color", Color.WHITE)
 	var m := ShaderMaterial.new()
