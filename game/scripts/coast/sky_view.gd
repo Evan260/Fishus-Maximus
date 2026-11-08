@@ -65,6 +65,7 @@ void fragment() {
 }
 """
 const CLOUDS := "res://assets/art/sky/"
+const AURORA := preload("res://scripts/coast/aurora.gdshader")
 ## The row where the sky meets the far sea, with the camera at home.
 const HORIZON := 106.0
 ## The sky reaches this far above the view and below the horizon, past the waterline, so its ends never show.
@@ -111,6 +112,13 @@ var _grey := 0.0
 var _dark := 0.0
 var _settled := false
 var _t := 0.0
+var _aurora: Sprite2D
+## How bright the northern lights are, easing in after dusk and out before dawn, and how far they have rippled.
+var _aurora_amount := 0.0
+var _aurora_clock := 0.0
+## Shows the lights tonight whatever the night, for --aurora; `aurora_shape` "rising" or "across" picks their shape.
+var force_aurora := false
+var aurora_shape := ""
 
 
 func _ready() -> void:
@@ -123,6 +131,17 @@ func _ready() -> void:
 	paint.set_shader_parameter("horizon", HORIZON)
 	_gradient.material = paint
 	add_child(_gradient)
+	_aurora = Sprite2D.new()
+	_aurora.texture = _gradient.texture
+	_aurora.centered = false
+	_aurora.material = ShaderMaterial.new()
+	_aurora.material.shader = AURORA
+	_aurora.material.set_shader_parameter("horizon", HORIZON)
+	_aurora.visible = false
+	add_child(_aurora)
+	if Dev.has("aurora"):
+		force_aurora = true
+		aurora_shape = Dev.get_arg("aurora")
 	_sun = Sprite2D.new()
 	_sun.texture = _disc(SUN_R)
 	add_child(_sun)
@@ -302,6 +321,10 @@ func _lay_out() -> void:
 	var paint := _gradient.material as ShaderMaterial
 	paint.set_shader_parameter("area", _gradient.scale)
 	paint.set_shader_parameter("origin", _gradient.position)
+	_aurora.position = _gradient.position
+	_aurora.scale = _gradient.scale
+	_aurora.material.set_shader_parameter("area", _gradient.scale)
+	_aurora.material.set_shader_parameter("origin", _gradient.position)
 	_place_clouds()
 
 
@@ -348,6 +371,7 @@ func _process(delta: float) -> void:
 		s.modulate.a = move_toward(s.modulate.a, _shown(c), delta * 0.2)
 	_place_clouds()
 	_paint()
+	_show_aurora(delta)
 
 
 func _paint() -> void:
@@ -388,6 +412,40 @@ func _place_moon(span: Vector2) -> void:
 		_moon_phase = phase
 		_moon.texture = _moon_phases[phase]
 		_moon_glow.modulate.a = 0.2 + 0.8 * (1.0 - cos(TAU * phase / MOON_CYCLE)) / 2.0
+
+
+## Whether a night has the northern lights, rare this far south: about one in fourteen, and every night once a month has
+## gone by without the player seeing them, so nobody misses them by bad luck. `evening` is the day the night began on.
+static func aurora_night(seed: int, evening: int, seen: bool) -> bool:
+	if evening >= int(Data.num("sky.aurora_sure_after_days", 30)) and not seen:
+		return true
+	return Seeds.rng(seed, "aurora", evening).randf() < Data.num("sky.aurora_chance", 0.07)
+
+
+func aurora_amount() -> float:
+	return _aurora_amount
+
+
+## The lights ease in through the darkest hours of a clear night chosen for them, curtains or streamers by the night.
+func _show_aurora(delta: float) -> void:
+	var state: Dictionary = Game.state
+	var evening := Clock.day_of(float(state.get("time", 0.0)))
+	var seed := int(state.get("seed", 1))
+	var seen := int(state.get("stats", {}).get("auroras", 0)) > 0
+	var tonight := force_aurora or aurora_night(seed, evening, seen)
+	var target := smoothstep(0.75, 1.0, SkyPalette.night_amount(hour)) if tonight and weather == "clear" else 0.0
+	_aurora_clock += delta
+	_aurora_amount = target if force_aurora else move_toward(_aurora_amount, target, delta / 20.0)
+	_aurora.visible = _aurora_amount > 0.01
+	if not _aurora.visible:
+		return
+	var rising := Seeds.rng(seed, "aurora shape", evening).randf() < 0.5 if aurora_shape == "" else aurora_shape == "rising"
+	_aurora.material.set_shader_parameter("amount", _aurora_amount)
+	_aurora.material.set_shader_parameter("clock", _aurora_clock)
+	_aurora.material.set_shader_parameter("rising", 1.0 if rising else 0.0)
+	if _aurora_amount > 0.5 and not state.is_empty() and int(state.get("aurora_seen_on", -1)) != evening:
+		state["aurora_seen_on"] = evening
+		state["stats"]["auroras"] = int(state["stats"].get("auroras", 0)) + 1
 
 
 ## The light the hour casts on the land and the sea.

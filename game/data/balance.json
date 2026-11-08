@@ -17,6 +17,10 @@
 		"floor": 0.4,
 		"recover": 0.3
 	},
+	"sky": {
+		"aurora_chance": 0.07,
+		"aurora_sure_after_days": 30
+	},
 	"fishing": {
 		"strike_window": 1.0,
 		"bite_reach": 40,

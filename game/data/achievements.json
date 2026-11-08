@@ -209,6 +209,13 @@
 		"at_least": 50
 	},
 	{
+		"id": "northern_lights",
+		"name": "Lights in the north",
+		"text": "See the northern lights over the bay on a clear night.",
+		"stat": "auroras",
+		"at_least": 1
+	},
+	{
 		"id": "rich",
 		"name": "A purse of silver",
 		"text": "Have a thousand denarii at once.",
