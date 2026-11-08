@@ -35,7 +35,7 @@ func test_the_town_and_ponds_cover_the_window() -> void:
 		var s: Node = load(Nav.SCREENS[screen]).new()
 		Nav.world.add_child(s)
 		s.enter({})
-		check(s._stage.transform == Nav.cover(), "%s: its picture covers the window rather than leaving room for mirrored copies" % screen)
+		check(s._stage.transform == Nav.cover(s.margin), "%s: its picture covers the window rather than leaving room for mirrored copies" % screen)
 		s.free()
 	for c in Nav.ui.get_children():
 		c.free()

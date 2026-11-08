@@ -20,6 +20,17 @@ static func hour(t: float) -> float:
 	return fposmod(dusk + (m - day) / Data.num("time.night_minutes", 5) * (24.0 - dusk + dawn), 24.0)
 
 
+## The time on t's day when the clock shows hour h; the hours after midnight belong to the night that ends the day.
+static func at_hour(t: float, h: float) -> float:
+	var day := Data.num("time.day_minutes", 20)
+	var dawn := Data.num("time.dawn_hour", 5)
+	var dusk := Data.num("time.dusk_hour", 20)
+	var start := day_of(t) * minutes_per_day()
+	if h >= dawn and h < dusk:
+		return start + (h - dawn) / (dusk - dawn) * day
+	return start + day + fposmod(h - dusk, 24.0) / (24.0 - dusk + dawn) * Data.num("time.night_minutes", 5)
+
+
 ## How many minutes of game time move the clock on by so many hours from t, since a daylight hour lasts longer than a night one.
 static func minutes_for_hours(t: float, hours: float) -> float:
 	var day := Data.num("time.day_minutes", 20)

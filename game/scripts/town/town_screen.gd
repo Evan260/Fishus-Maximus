@@ -5,6 +5,8 @@ extends Node2D
 const ART := "res://assets/art/town/"
 const BUILDINGS := {"market": "The fish market", "netmaker": "The netmaker", "boatwright": "The boatwright",
 	"board": "The harbour board", "goldsmith": "The goldsmith"}
+## The row behind the wall where the live sky meets the sea.
+const HORIZON := 104.0
 ## Where people's feet are on the paving, and where waiting clients stand.
 const STREET_Y := 250.0
 const CLIENT_SPOTS := [146.0, 318.0]
@@ -21,19 +23,37 @@ var _top: Label
 var _sleep: Button
 var _painter: Node2D
 var _stage: Node2D
+## The street, the buildings and the people, lit by the hour; the gold outline and the names over them stay bright.
+var _lit: Node2D
+var _street: Sprite2D
+var _sky: AshoreSky
+## How far the street picture is painted past the 480 by 270 scene on each side.
+var margin := Vector2.ZERO
 
 
 func enter(args: Dictionary) -> void:
 	Controls.ensure()
 	if Game.state.is_empty():
 		Game.new_game("Marcus", "")
+	if Dev.has("hour"):
+		Game.state["time"] = Clock.at_hour(float(Game.state["time"]), Dev.num("hour", 12.0))
 	_rng = Seeds.rng(int(Game.state["seed"]), "town", Clock.day_of(float(Game.state["time"])))
+	_sky = AshoreSky.new(HORIZON)
+	add_child(_sky)
 	_stage = Node2D.new()
 	add_child(_stage)
+	_lit = Node2D.new()
+	_stage.add_child(_lit)
 	if ResourceLoader.exists(ART + "street.png"):
-		_stage.add_child(Backdrop.new(load(ART + "street.png")))
+		_street = Sprite2D.new()
+		_street.texture = load(ART + "street.png")
+		_street.centered = false
+		margin = ((_street.texture.get_size() - Nav.SIZE) / 2.0).floor()
+		_street.position = -margin
+		_lit.add_child(_street)
 	Windowing.view_changed.connect(_place)
 	_place()
+	_relight()
 	var spots := {}
 	if FileAccess.file_exists(ART + "town.json"):
 		spots = JSON.parse_string(FileAccess.get_file_as_string(ART + "town.json"))
@@ -45,7 +65,7 @@ func enter(args: Dictionary) -> void:
 		b.texture = load(path)
 		b.centered = false
 		b.position = Vector2(spots[id][0], spots[id][1])
-		_stage.add_child(b)
+		_lit.add_child(b)
 		var img: Image = b.texture.get_image()
 		var used := img.get_used_rect()
 		_masks[id] = {"image": img, "at": b.position, "rect": Rect2(b.position + Vector2(used.position), used.size)}
@@ -107,7 +127,12 @@ func guide_target(id: String) -> Rect2:
 
 func _place() -> void:
 	if is_instance_valid(_stage):
-		_stage.transform = Nav.cover()
+		_stage.transform = Nav.cover(margin)
+
+
+## Lays the live sky behind the street and lights the street for the hour and the weather.
+func _relight() -> void:
+	_lit.modulate = _sky.follow(_stage.transform)
 
 
 func _refresh_ui() -> void:
@@ -153,7 +178,7 @@ func _spawn_folk() -> void:
 		s.texture = walk[0]
 		s.centered = false
 		s.z_index = 1
-		_stage.add_child(s)
+		_lit.add_child(s)
 		_folk.append({"id": ids[i], "sprite": s, "walk": walk, "stand": load(PEOPLE + ids[i] + "/east.png"),
 			"x": _rng.randf_range(20, 420), "dir": -1.0 if _rng.randf() < 0.5 else 1.0, "speed": _rng.randf_range(12, 18),
 			"pause": 0.0, "phase": _rng.randf() * 8.0})
@@ -171,15 +196,14 @@ func _place_clients() -> void:
 		pic.centered = false
 		pic.position = Vector2(CLIENT_SPOTS[i] - 24.0, STREET_Y - 46.0)
 		pic.z_index = 2
-		_stage.add_child(pic)
+		_lit.add_child(pic)
 		_clients.append({"id": waiting[i], "x": CLIENT_SPOTS[i], "sprite": pic})
 
 
 func _process(delta: float) -> void:
 	World.advance(Game.state, delta / 60.0, _rng)
 	Audio.set_ambience({"market": 0.5, "gulls": 0.2})
-	var light := Color.WHITE.lerp(SkyView.light(Clock.hour(float(Game.state["time"]))), 0.5)
-	modulate = light
+	_relight()
 	for f in _folk:
 		var s: Sprite2D = f["sprite"]
 		if f["pause"] > 0.0:
