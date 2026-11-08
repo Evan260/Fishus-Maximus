@@ -127,3 +127,12 @@ func test_the_oar_splashes_where_it_dips_into_the_water() -> void:
 		b.place(100.0, Vector2(0, -160), 3.0 + i / 30.0)
 	check(b.splashes().is_empty(), "and they settle once he stops rowing")
 	b.free()
+
+
+func test_the_dog_sits_towards_the_end_away_from_him() -> void:
+	for id in ["skiff", "fishing_boat", "sailing_boat", "big_boat"]:
+		var b := BoatView.new()
+		b.set_boat(id)
+		var apart := absf(b.dog_spot.x - b.seat.x)
+		check(apart >= 0.3, "%s: the dog sits well away from the fisherman, %.2f of the boat apart" % [id, apart])
+		b.free()
