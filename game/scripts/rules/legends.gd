@@ -5,7 +5,7 @@ class_name Legends
 
 static func can_appear(legend: String, place: String, hour: float, season: String, weather: String, state: Dictionary) -> bool:
 	var f: Dictionary = Data.fish.get(legend, {})
-	if f.is_empty() or not f["legend"] or state["legends"].has(legend) or not place in f["places"]:
+	if f.is_empty() or not f["legend"] or (state["legends"].has(legend) and not still_wanted(state, legend)) or not place in f["places"]:
 		return false
 	if not Catalog.in_hours(hour, f["hours"]):
 		return false
@@ -28,6 +28,20 @@ static func clue(legend: String) -> String:
 	return str(Data.fish.get(legend, {}).get("clue", ""))
 
 
+## Whether a client's story still has to have a legend caught before, while none is kept in the hold, the well or a pond.
+static func still_wanted(state: Dictionary, legend: String) -> bool:
+	var wanted := Data.clients.keys().any(func(c):
+		var steps: Array = Data.clients[c]["steps"]
+		return steps.slice(int(state["clients"].get(c, 0))).any(func(s): return s["fish"] == legend))
+	if not wanted:
+		return false
+	var kept: Array = state["hold"] + state["live_well"]
+	for pond in state["ponds"]:
+		kept += pond["fish"]
+	return not kept.any(func(f): return f["fish"] == legend)
+
+
 static func catch(state: Dictionary, legend: String) -> void:
+	if not state["legends"].has(legend):
+		Story.add_reputation(state, 20)
 	state["legends"][legend] = true
-	Story.add_reputation(state, 20)

@@ -319,3 +319,21 @@ func test_a_pot_legend_keeps_to_its_own_depth() -> void:
 			deep += 1
 	check(shallow == 0, "Neptune's lobster never comes to a shallow pot, %d did" % shallow)
 	check(deep > 0, "only to one down in the deepest water, %d did" % deep)
+
+
+func test_a_legend_a_client_still_wants_can_be_found_again() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["chapter"] = 4
+	Game.state["legends"]["sleeping_sunfish"] = true
+	Game.state["clients"]["priest"] = 3
+	check(Legends.can_appear("sleeping_sunfish", "open_bay", 14.0, "summer", "clear", Game.state),
+		"the sunfish sold before the priest asked for it comes again, so his story can still end")
+	Game.state["hold"].append({"fish": "sleeping_sunfish", "pounds": 300.0, "fresh": 1.0})
+	check(not Legends.can_appear("sleeping_sunfish", "open_bay", 14.0, "summer", "clear", Game.state), "but not while one is kept for him")
+	Game.state["hold"].clear()
+	Game.state["clients"]["priest"] = 4
+	check(not Legends.can_appear("sleeping_sunfish", "open_bay", 14.0, "summer", "clear", Game.state), "nor once nobody wants it")
+	var rep := int(Game.state["reputation"])
+	Game.state["clients"]["priest"] = 3
+	Catches.record(Game.state, "sleeping_sunfish", 300.0, false)
+	check(int(Game.state["reputation"]) == rep, "and catching it again does not raise your name again")
