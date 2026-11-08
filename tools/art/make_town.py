@@ -48,15 +48,17 @@ BUILDINGS = {
     "goldsmith": ([("rect", (410, 116, 474, PAVING)), ("poly", [(406, 118), (478, 118), (442, 98)])],
                   f"a narrow Roman goldsmith's shop {FRONT} with a red awning over a small counter of gold earrings and rings, a tiled gable roof"),
 }
+# The harbour board, painted facing us, and its top left corner, which centres it in front of the hall's left post.
+BOARD_RAW = "board_front_raw.png"
+BOARD = "board_front.png"
+BOARD_AT = (33, 183)
 # Each building as the street shows it, traced in the scene's pixels: the mouse finds it there and its outline hugs it.
 SILHOUETTES = {
     "market": [("poly", [(64, 124), (73, 121), (162, 121), (171, 124), (171, 210), (64, 210)])],
     "netmaker": [("poly", [(173, 150), (213, 127), (218, 127), (257, 150), (254, 158), (254, 212), (175, 212),
                            (175, 158)])],
     "boatwright": [("poly", [(266, 172), (312, 140), (358, 171), (356, 177), (356, 210), (269, 210), (269, 178)])],
-    "board": [("poly", [(15, 182), (19, 182), (55, 191), (61, 197), (61, 199), (56, 200), (56, 234), (50, 234),
-                        (50, 228), (27, 228), (23, 229), (22, 237), (24, 238), (22, 239), (17, 239), (14, 238),
-                        (16, 237), (16, 228), (15, 227), (15, 198), (13, 194), (10, 193), (9, 191), (14, 184)])],
+    "board": [("picture", (BOARD, BOARD_AT))],
     "goldsmith": [("poly", [(413, 132), (415, 132), (442, 151), (442, 153), (437, 153), (437, 214), (426, 214),
                             (426, 215), (403, 215), (403, 214), (385, 214), (384, 161), (379, 157), (379, 155)])],
 }
@@ -143,9 +145,7 @@ LANTERN = [(156, 416, 417), (157, 416, 417), (158, 416, 417), (159, 416, 417), (
 # Its top left corner on the hall's left post, and the iron arm it hangs from, (row, first column, last column).
 LANTERN_AT = (37, 150)
 LANTERN_ARM = (149, 40, 44)
-# The board's top left corner, its shadow as (row from the line between its feet, how dark), and how far that runs past.
-BOARD = "board_turned.png"
-BOARD_AT = (6, 178)
+# The board's shadow as (row from the line between its feet, how dark), and how far that runs past its feet.
 BOARD_SHADOW = [(-1, 0.75), (0, 0.6), (1, 0.7), (2, 0.85)]
 SHADOW_PAST = (3, 5)
 
@@ -172,7 +172,10 @@ def shape_mask(size, shapes, at=(0, 0)) -> Image.Image:
     mask = Image.new("L", size, 0)
     d = ImageDraw.Draw(mask)
     for kind, geo in shapes:
-        if kind == "poly":
+        if kind == "picture":
+            pic = Image.open(WORK / geo[0]).convert("RGBA").split()[3].point(lambda a: 255 if a > 127 else 0)
+            mask.paste(255, (geo[1][0] + at[0], geo[1][1] + at[1]), pic)
+        elif kind == "poly":
             d.polygon([(x + at[0], y + at[1]) for x, y in geo], fill=255)
         else:
             box = (geo[0] + at[0], geo[1] + at[1], geo[2] + at[0], geo[3] + at[1])
@@ -293,6 +296,29 @@ def board_feet(solid: np.ndarray) -> list:
         row = int(np.where(part.any(axis=1))[0].max())
         feet.append((int(np.where(part[row])[0].mean()), row))
     return feet
+
+
+def trim_board(raw: Image.Image) -> Image.Image:
+    """The painted board cropped, its roof's one pixel notches filled, the lone pixel at each tip of its eaves taken off
+    and its legs carried straight down to plain feet, leaving out the curls PixelLab drew round them."""
+    b = np.array(raw.crop(raw.getbbox()))
+    solid = b[:, :, 3] > 127
+    for y, x in zip(*np.where(~solid[:1, 1:-1] & solid[:1, :-2] & solid[:1, 2:])):
+        b[y, x + 1] = b[y + 1, x + 1]
+    edge = np.zeros_like(solid[:1])
+    lone = solid & ~np.vstack([edge, solid[:-1]]) & ~np.vstack([solid[1:], edge])
+    b[lone] = 0
+    solid &= ~lone
+    widths = solid.sum(axis=1)
+    legs = int(np.argmax(widths < widths.max() // 2))
+    columns = solid[legs]
+    clean = len(b) - 5
+    b = b[:-1]
+    for y in range(clean + 1, len(b)):
+        b[y] = 0
+        b[y, columns] = b[clean, columns]
+    b[-1, columns, :3] = (b[-1, columns, :3] * 0.75).astype(np.uint8)
+    return Image.fromarray(b)
 
 
 def stand_board(arr: np.ndarray) -> np.ndarray:
@@ -437,11 +463,16 @@ def main():
         outline = np.array(shape_mask(final.shape[1::-1], outline_of(bid), MARGIN)) > 0
         back = outline & ~settle(painted, empty, outline) & ~restreeted
         final[back] = empty[back]
+    trim_board(Image.open(WORK / BOARD_RAW).convert("RGBA")).save(WORK / BOARD)
     final = stand_board(hang_lantern(finish_column(final)))
     final = clear_sky.clear_painted(final, SKY, HORIZON + my)
     spots = {}
+    board = np.array(shape_mask(final.shape[1::-1], SILHOUETTES["board"], MARGIN)) > 0
     for bid in built:
         shape = np.array(shape_mask(final.shape[1::-1], SILHOUETTES[bid], MARGIN)) > 0
+        # The board stands in front of the fish market's column, so the market's outline goes round it.
+        if bid != "board":
+            shape &= ~board
         if (shape & (final[:, :, 3] == 0)).any():
             print("sky shows inside", bid)
         im = final.copy()

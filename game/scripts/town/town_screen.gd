@@ -14,7 +14,7 @@ const PEOPLE := "res://assets/art/people/"
 const AROUND := [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
 	Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]
 ## Where the townsfolk turn back: past the harbour board at the left, so they never stand in front of it.
-const WALK := Vector2(56.0, 440.0)
+const WALK := Vector2(92.0, 440.0)
 ## The flames of the town's lamps, in the scene's pixels: the lantern in the goldsmith's stall, the hall's lantern on
 ## its left post, and the oil lamp hanging under the fish market's awning.
 const LAMPS := [Vector2(394.5, 175.5), Vector2(40.5, 159.5), Vector2(103.5, 153.5)]

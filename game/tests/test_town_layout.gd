@@ -1,10 +1,11 @@
 extends "res://tests/test_case.gd"
 ## Where things stand in the town street: no post on the right of the hall, the goldsmith a stall along the wall like
-## the netmaker and the boatwright with the stone pillar whole beside it, and the harbour board at the far left, turned
-## to face the street in front of the hall's left post, with the townsfolk turning back before it.
+## the netmaker and the boatwright with the stone pillar whole beside it, and the harbour board standing square to us in
+## front of the hall's left post, with the townsfolk turning back before it.
 
 ## The hall's left post, its first column and the row its foot stands on, and the stone pillar's lit left side.
 const LEFT_POST := Vector2i(46, 217)
+const POST_WIDTH := 18
 const PILLAR_X := 447
 
 
@@ -122,22 +123,25 @@ func test_the_goldsmith_stands_on_the_streets_own_paving() -> void:
 	_close(s)
 
 
-func test_the_board_stands_at_the_far_left_in_front_of_the_left_post() -> void:
+func test_the_board_stands_in_front_of_the_left_post_facing_us() -> void:
 	var s := _open()
 	var board: Rect2 = s._masks["board"]["rect"]
-	var market: Rect2 = s._masks["market"]["rect"]
-	check(board.position.x < LEFT_POST.x and board.end.x <= market.position.x,
-		"the board stands at the far left, from %.0f to %.0f, short of the fish market at %.0f" % [board.position.x, board.end.x, market.position.x])
+	var middle := board.get_center().x
+	check(absf(middle - (LEFT_POST.x + POST_WIDTH / 2.0)) <= 5.0, "the board stands centred in front of the hall's left post, its middle at %.0f" % middle)
 	check(board.end.y > LEFT_POST.y + 4, "on the paving in front of the post, its foot at %.0f and the post's at %d" % [board.end.y, LEFT_POST.y])
 	var covered := 0
 	for y in range(200, LEFT_POST.y):
-		for x in range(LEFT_POST.x, LEFT_POST.x + 14):
+		for x in range(LEFT_POST.x, LEFT_POST.x + POST_WIDTH):
 			if _on(s, "board", Vector2i(x, y)):
 				covered += 1
-	check(covered * 2 > 14 * (LEFT_POST.y - 200), "and in front of the post's foot, hiding %d of its %d pixels" % [covered, 14 * (LEFT_POST.y - 200)])
+	check(covered * 3 > 2 * POST_WIDTH * (LEFT_POST.y - 200), "hiding the post's foot behind it, %d of its %d pixels" % [covered, POST_WIDTH * (LEFT_POST.y - 200)])
 	var feet := _feet(s)
-	check(feet[0].y > feet[1].y + 2, "turned to face the street, its near leg standing lower than its far one, %s against %s" % feet)
+	check(absf(feet[0].y - feet[1].y) <= 1.0, "square to us like the stalls, both feet on one row, %s and %s" % feet)
 	check(not _on(s, "board", Vector2i(s.LAMPS[1])), "and the lantern on the left post shows above it")
+	var market: Rect2 = s._masks["market"]["rect"]
+	check(board.end.x - market.position.x <= 16.0, "leaving the fish market in view but for the foot of its column")
+	var front := Vector2(market.position.x + 2.0, board.position.y + 20.0)
+	check(s._building_at(front) == "board", "and pointing where the board stands before the market picks the board")
 	_close(s)
 
 
@@ -164,7 +168,8 @@ func test_the_board_casts_a_shadow_on_the_paving() -> void:
 	for x in range(int(feet[0].x) + 5, int(feet[1].x) - 3):
 		var ground := roundi(lerpf(feet[0].y, feet[1].y, (x - feet[0].x) / (feet[1].x - feet[0].x)))
 		shade += _pixel(s, street, x, ground).get_luminance()
-		paving += _pixel(s, street, x, ground + 8).get_luminance()
+		for dy in range(3, 13):
+			paving += _pixel(s, street, x, ground + dy).get_luminance() / 10.0
 	check(shade < 0.85 * paving, "the paving along the line between its feet lies in its shadow, %.1f against %.1f" % [shade, paving])
 	_close(s)
 
