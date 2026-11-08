@@ -222,6 +222,11 @@ func _spawn_folk() -> void:
 
 
 ## Clients with something to ask stand in the street; at most two come to town on any one day.
+## The clients in the street who still have something to ask, whom the gold mark bobs over.
+func marked_clients() -> Array:
+	return _clients.map(func(c): return c["id"]).filter(func(id): return not Story.client_step(Game.state, id).is_empty())
+
+
 func _place_clients() -> void:
 	var waiting := Story.visiting(Game.state, Clock.day_of(float(Game.state["time"])))
 	for i in waiting.size():
@@ -301,7 +306,7 @@ func _draw_over() -> void:
 		_painter.draw_rect(Rect2(at + Vector2(-3, -8), Vector2(w + 6, 11)), Color(UiTheme.INK, 0.85))
 		_painter.draw_string(font, at, name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.CREAM)
 	# A gold mark bobs over each client who has something to ask.
-	for c in _clients:
+	for c in _clients.filter(func(c): return c["id"] in marked_clients()):
 		var bob := roundf(sin(Time.get_ticks_msec() / 300.0) * 1.5)
 		var at := Vector2(c["x"] - 2.0, STREET_Y - 46.0 + bob)
 		_painter.draw_rect(Rect2(at + Vector2(-3, -9), Vector2(10, 11)), Color(UiTheme.INK, 0.8))

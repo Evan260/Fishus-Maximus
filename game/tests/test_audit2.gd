@@ -360,3 +360,16 @@ func test_the_town_keeps_up_with_the_hour() -> void:
 		s._process(0.5)
 	check(s._sleep.visible, "but staying on in town past four, the bed is offered without leaving and coming back")
 	_done(s)
+
+
+func test_a_client_with_nothing_left_to_ask_has_no_mark() -> void:
+	var s := _town_at(10.0)
+	Game.state["chapter"] = 5
+	s._clients.clear()
+	s._place_clients()
+	check(not s._clients.is_empty(), "clients are in town")
+	var id: String = s._clients[0]["id"]
+	check(id in s.marked_clients(), "a client with a request has the gold mark over them")
+	Game.state["clients"][id] = Data.clients[id]["steps"].size()
+	check(not id in s.marked_clients(), "and once their story is done the mark goes")
+	_done(s)
