@@ -8,7 +8,8 @@
 		"away_cap_hours": 8
 	},
 	"start": {
-		"denarii": 20
+		"denarii": 20,
+		"rescue_worms": 15
 	},
 	"market": {
 		"prize_bonus": 3.0,

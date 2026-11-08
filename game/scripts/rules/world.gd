@@ -28,6 +28,7 @@ static func _pass(state: Dictionary, minutes: float, rng: RandomNumberGenerator)
 	Hold.freshen(state, minutes)
 	if state.get("_ashore", false):
 		Helpers.fish(state, minutes, rng)
+	Rescue.check(state)
 
 
 static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:

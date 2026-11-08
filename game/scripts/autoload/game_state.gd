@@ -109,6 +109,10 @@ func _process(delta: float) -> void:
 		Toast.say("Chapter %d: %s. %s" % [int(c["chapter"]), c["name"], c["text"]])
 		Audio.play("market_bell")
 	state["_chapter_seen"] = int(state["chapter"])
+	if state.has("_rescued"):
+		Toast.say("Old Rufus: \"Out of bait and coin? Here are %d worms from my garden. And your pots need no bait at all.\"" % int(state["_rescued"]))
+		Audio.play("coins")
+		state.erase("_rescued")
 	if state.has("_lost"):
 		Toast.say("%d fish in the live well died overnight; the hold had no room for them." % int(state["_lost"]))
 		state.erase("_lost")

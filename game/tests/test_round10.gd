@@ -25,3 +25,29 @@ func test_the_oar_comes_out_of_the_water_between_strokes() -> void:
 		check((blade - b._oar()[2]).length() <= BoatView.OAR_OUT + 0.5, "the oar never grows longer as it swings")
 	check(above >= 20 and below >= 30, "the blade pulls through the water and lifts clear of it to swing back: %d up, %d down" % [above, below])
 	b.free()
+
+
+func _broke() -> void:
+	Game.new_game("Test", "hound")
+	Game.state["denarii"] = 0
+	Game.state["bait"] = {"worm": 0}
+	Game.state["hold"] = []
+	Game.state["live_well"] = []
+
+
+func test_a_player_left_with_nothing_is_helped_back_to_fishing() -> void:
+	_broke()
+	World.advance(Game.state, 1.0, Seeds.rng(1, "rescue"))
+	check(int(Game.state["bait"]["worm"]) > 0 and Game.state["current_bait"] == "worm", "old Rufus brings worms when there is no bait, no money for any and nothing to sell")
+	check(Game.state.has("_rescued"), "and says so")
+
+
+func test_nobody_is_helped_who_can_still_get_by() -> void:
+	_broke()
+	Game.state["denarii"] = 5
+	World.advance(Game.state, 1.0, Seeds.rng(1, "rescue"))
+	check(int(Game.state["bait"]["worm"]) == 0, "a player who can buy bait buys his own")
+	_broke()
+	Game.state["hold"].append({"fish": "mullet", "pounds": 1.0, "fresh": 1.0})
+	World.advance(Game.state, 1.0, Seeds.rng(1, "rescue"))
+	check(int(Game.state["bait"]["worm"]) == 0, "nor one with fish in the hold to sell")
