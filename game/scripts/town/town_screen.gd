@@ -11,6 +11,8 @@ const HORIZON := 104.0
 const STREET_Y := 250.0
 const CLIENT_SPOTS := [146.0, 318.0]
 const PEOPLE := "res://assets/art/people/"
+const AROUND := [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
+	Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]
 
 var hovered := ""
 var _masks := {}
@@ -146,21 +148,24 @@ func _refresh_ui() -> void:
 		int(Data.boats[Game.state["boat"]]["hold"])]
 
 
-## The pixels just outside a building's edge, drawn in gold when the mouse is over it.
+## The pixels touching a building on a side or a corner, past its picture's edges too, drawn in gold round it on hover.
 func _outline(img: Image, at: Vector2) -> PackedVector2Array:
 	var out := PackedVector2Array()
-	var w := img.get_width()
-	var h := img.get_height()
-	for y in h:
-		for x in w:
-			if img.get_pixel(x, y).a > 0.5:
+	for y in range(-1, img.get_height() + 1):
+		for x in range(-1, img.get_width() + 1):
+			var p := Vector2i(x, y)
+			if _solid(img, p):
 				continue
-			for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
-				var q: Vector2i = Vector2i(x, y) + d
-				if q.x >= 0 and q.y >= 0 and q.x < w and q.y < h and img.get_pixelv(q).a > 0.5:
-					out.append(at + Vector2(x, y))
+			for d in AROUND:
+				if _solid(img, p + d):
+					out.append(at + Vector2(p))
 					break
 	return out
+
+
+## Whether a pixel of a building's picture is the building, which the mouse and the outline both go by.
+static func _solid(img: Image, p: Vector2i) -> bool:
+	return p.x >= 0 and p.y >= 0 and p.x < img.get_width() and p.y < img.get_height() and img.get_pixelv(p).a > 0.5
 
 
 ## The townsfolk who walk the street, each with their walk and a standing pose for when they stop to talk.
@@ -226,18 +231,23 @@ func _process(delta: float) -> void:
 		# The standing picture is smaller than the walking ones, so it is set down on the same feet.
 		var shift := Vector2.ZERO if walking else _foot(f["walk"][0], s.flip_h) - _foot(s.texture, s.flip_h)
 		s.position = Vector2(roundf(f["x"]), STREET_Y - 46.0) + shift
-	var mouse := _stage.get_local_mouse_position()
-	hovered = "" if Ui.window_open() else _building_at(mouse)
+	hovered = "" if Ui.window_open() else _building_at(_pointer())
 	_painter.queue_redraw()
+
+
+## Where the mouse is on the street; --hover=ID holds it over that building, and --hover=none off them all, for screenshots.
+func _pointer() -> Vector2:
+	if Dev.has("hover"):
+		var id := Dev.get_arg("hover")
+		return _masks[id]["rect"].get_center() if _masks.has(id) else Vector2(-100, -100)
+	return _stage.get_local_mouse_position()
 
 
 func _building_at(at: Vector2) -> String:
 	var ids := _masks.keys()
 	ids.reverse()
 	for id in ids:
-		var img: Image = _masks[id]["image"]
-		var p := Vector2i(at - _masks[id]["at"])
-		if p.x >= 0 and p.y >= 0 and p.x < img.get_width() and p.y < img.get_height() and img.get_pixelv(p).a > 0.5:
+		if _solid(_masks[id]["image"], Vector2i((at - _masks[id]["at"]).floor())):
 			return id
 	return ""
 
@@ -249,7 +259,7 @@ func _draw_over() -> void:
 		var name: String = BUILDINGS[hovered]
 		var font := UiTheme.title_font()
 		var w := font.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
-		var at := _stage.get_local_mouse_position() + Vector2(-w / 2.0, -10)
+		var at := _pointer() + Vector2(-w / 2.0, -10)
 		_painter.draw_rect(Rect2(at + Vector2(-3, -8), Vector2(w + 6, 11)), Color(UiTheme.INK, 0.85))
 		_painter.draw_string(font, at, name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.CREAM)
 	# A gold mark bobs over each client who has something to ask.
