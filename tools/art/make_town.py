@@ -3,11 +3,12 @@ buildings painted straight into it inside a building-shaped outline, so every on
 style. The street is then painted on past each edge of its 480 by 270 scene (widen.py), so a window of another shape
 shows more street, and any part of a building that came out wrong is painted again on the wide picture. Wall and
 paving painted inside an outline are given back to the street, so each building ends at its own edges, the fish
-market's right column is finished, the paving round the goldsmith is laid again from the street's own slabs, the
-painted sky is cleared so the game's own sky shows above the wall, and each building is cut out along the outline
-traced round it, to be clicked and outlined in gold when the mouse is over it. Writes game/assets/art/town/street.png
-(the scene with MARGIN more on every side), <id>.png for each building, and town.json with where each stands in the
-scene.
+market's right column is finished, the paving round the goldsmith is laid again from the street's own slabs, the hall's
+post by the goldsmith is moved in front of it and down to the paving, so the goldsmith stands inside the hall, its
+lantern hangs beside the post, the painted sky is cleared so the game's own sky shows above the wall, and each building
+is cut out along the outline traced round it, to be clicked and outlined in gold when the mouse is over it. Writes
+game/assets/art/town/street.png (the scene with MARGIN more on every side), <id>.png for each building, and town.json
+with where each stands in the scene.
 Usage: python tools/art/make_town.py [--no-paint]   (--no-paint only cuts out what is already painted)"""
 import json
 import shutil
@@ -54,8 +55,8 @@ SILHOUETTES = {
     "boatwright": [("poly", [(266, 172), (312, 140), (358, 171), (356, 177), (356, 210), (269, 210), (269, 178)])],
     "board": [("poly", [(367, 166), (402, 166), (402, 181), (400, 182), (400, 209), (367, 209), (367, 182),
                         (364, 181), (364, 172), (367, 171)])],
-    "goldsmith": [("poly", [(410, 222), (410, 126), (403, 124), (446, 100), (479, 124), (474, 126), (474, 227),
-                            (470, 227), (470, 222)])],
+    "goldsmith": [("poly", [(422, 222), (422, 113), (446, 100), (479, 124), (474, 126), (474, 227), (470, 227),
+                            (470, 222)])],
 }
 SCENE = (480, 270)
 # How far the street is painted past the scene on each side, so a window of another shape still shows the whole scene;
@@ -120,6 +121,22 @@ EVEN = [(-16, 199, 4, 267)]
 COLUMN_EDGE = (64, 3)
 COLUMN_RIGHT = 171
 COLUMN_ROWS = (121, 210)
+# The hall's post by the goldsmith in the empty street, moved in front of the stall so the stall stands in the hall.
+POST = (416, 434)
+POST_ROWS = (45, 217)
+POST_SHIFT = -12
+POST_FOOT = 228
+# The shadow under its foot, row by row: how dark, and how far past its right side.
+POST_SHADOW = [(0.6, 4), (0.8, 2)]
+# Where the post stood, the house's roof comes from its right, its wall repeats, and the coping comes from the left.
+COPING = (75, 99)
+# The goldsmith's lantern as painted, (row, first column, last column), which the post now covers.
+LANTERN = [(156, 416, 417), (157, 416, 417), (158, 416, 417), (159, 416, 417), (160, 414, 418)] + \
+          [(y, 413, 418) for y in range(161, 170)]
+# Where it hangs instead, (columns, rows) from there: beside the post from the stall's awning.
+LANTERN_SHIFTS = [(10, 0)]
+# The iron it hangs from, (first row, last row, first column, last column): a chain up to the awning.
+LANTERN_IRON = [(151, 155, 426, 426)]
 
 
 def run(args):
@@ -206,6 +223,54 @@ def finish_column(arr: np.ndarray) -> np.ndarray:
     rows = slice(COLUMN_ROWS[0] + my, COLUMN_ROWS[1] + my)
     for dx in range(COLUMN_EDGE[1]):
         out[rows, COLUMN_RIGHT - dx + mx] = arr[rows, COLUMN_EDGE[0] + dx + mx]
+    return out
+
+
+def hang_lanterns(arr: np.ndarray) -> np.ndarray:
+    """The picture with the goldsmith's lantern hung again where LANTERN_SHIFTS puts it, each from its own iron."""
+    mx, my = MARGIN
+    out = arr.copy()
+    iron = arr[LANTERN[0][0] + my, LANTERN[0][1] + mx]
+    for (dx, dy), (y0, y1, x0, x1) in zip(LANTERN_SHIFTS, LANTERN_IRON):
+        for y, a, b in LANTERN:
+            out[y + dy + my, a + dx + mx:b + dx + 1 + mx] = arr[y + my, a + mx:b + 1 + mx]
+        out[y0 + my:y1 + 1 + my, x0 + mx:x1 + 1 + mx] = iron
+    return out
+
+
+def set_post(arr: np.ndarray, bare: np.ndarray, empty: np.ndarray, stall: np.ndarray) -> np.ndarray:
+    """The picture with the hall's post moved in front of the goldsmith's side wall and down to the paving in front of
+    it, and the house behind carried over where it stood. `stall` is the goldsmith's silhouette."""
+    mx, my = MARGIN
+    out = arr.copy()
+    width = POST[1] - POST[0]
+    left, right = POST[0] + POST_SHIFT, POST[1] + POST_SHIFT
+    lum = arr[:, :, :3].astype(np.float32) @ np.array([0.3, 0.59, 0.11], dtype=np.float32) / 255
+    for x in range(right, POST[1] + 1):
+        wx = x + mx
+        # The stall's roof starts at the first light pixel under the coping, as the post and its shadow are dark.
+        roof = next(y for y in range(COPING[1] + 1, POST_FOOT) if lum[y + my, wx] > 0.3 and stall[y + my, wx])
+        for y in range(POST_ROWS[0] if x < POST[1] else COPING[1], roof):
+            wy = y + my
+            if y < COPING[0]:
+                out[wy, wx] = arr[wy, wx + POST[1] - right]
+            elif y < COPING[1]:
+                out[wy, wx] = arr[wy, POST[1] + mx]
+            else:
+                out[wy, wx] = arr[wy, wx - width if x < POST[1] else wx + 1]
+    # Anything of the stall left of the post is the street behind it.
+    old = np.zeros(arr.shape[:2], bool)
+    old[:, :left + mx] = True
+    old &= np.array(shape_mask(arr.shape[1::-1], outline_of("goldsmith"), MARGIN)) > 0
+    out[old] = empty[old]
+    post = bare[POST_ROWS[0]:POST_ROWS[1] - 1, POST[0]:POST[1]]
+    extra = POST_FOOT - 1 - (POST_ROWS[1] - 1)
+    foot = (post[-1:].astype(np.float32) * [0.7, 0.7, 0.7, 1.0]).astype(np.uint8)
+    post = np.concatenate([post, post[-extra:], foot])
+    out[POST_ROWS[0] + my:POST_FOOT + my, left + mx:right + mx] = post
+    for dy, (shade, past) in enumerate(POST_SHADOW):
+        row = out[POST_FOOT + my + dy, left + mx:right + past + mx]
+        row[:, :3] = (row[:, :3].astype(np.float32) * shade).astype(np.uint8)
     return out
 
 
@@ -320,7 +385,8 @@ def main():
         outline = np.array(shape_mask(final.shape[1::-1], outline_of(bid), MARGIN)) > 0
         back = outline & ~settle(painted, empty, outline) & ~restreeted
         final[back] = empty[back]
-    final = carry_paving(finish_column(final))
+    stall = np.array(shape_mask(final.shape[1::-1], SILHOUETTES["goldsmith"], MARGIN)) > 0
+    final = set_post(hang_lanterns(carry_paving(finish_column(final))), bare, empty, stall)
     final = clear_sky.clear_painted(final, SKY, HORIZON + my)
     spots = {}
     for bid in built:

@@ -143,10 +143,11 @@ func test_the_goldsmith_stands_on_the_streets_own_paving() -> void:
 	var s := _open()
 	var street: Image = s._street.texture.get_image()
 	var band := _colour(street, s.margin, Rect2i(340, 211, 30, 12)).get_luminance()
-	var by_it := _colour(street, s.margin, Rect2i(394, 211, 16, 12)).get_luminance()
-	check(absf(by_it - band) < 0.15, "the sunlit paving along the wall runs up to the goldsmith, %.2f against %.2f" % [by_it, band])
-	var front := _colour(street, s.margin, Rect2i(410, 223, 60, 6))
-	var below := _colour(street, s.margin, Rect2i(410, 232, 60, 10))
+	var by_it := _colour(street, s.margin, Rect2i(388, 211, 16, 12)).get_luminance()
+	check(absf(by_it - band) < 0.15,
+		"the sunlit paving along the wall runs up to the hall's post, %.2f against %.2f" % [by_it, band])
+	var front := _colour(street, s.margin, Rect2i(426, 223, 44, 6))
+	var below := _colour(street, s.margin, Rect2i(426, 232, 44, 10))
 	check(maxf(maxf(absf(front.r - below.r), absf(front.g - below.g)), absf(front.b - below.b)) < 0.04,
 		"and the paving in front of it has the colour of the paving round it, %s against %s" % [front, below])
 	var sky := 0
@@ -155,6 +156,21 @@ func test_the_goldsmith_stands_on_the_streets_own_paving() -> void:
 			if street.get_pixel(x + int(s.margin.x), y + int(s.margin.y)).a < 0.5:
 				sky += 1
 	check(sky == 0, "its roof is whole, with no sky showing beside its peak, %d pixels open" % sky)
+	_close(s)
+
+
+func test_the_halls_post_stands_in_front_of_the_goldsmith() -> void:
+	var s := _open()
+	var street: Image = s._street.texture.get_image()
+	var gold: Rect2 = s._masks["goldsmith"]["rect"]
+	var post := 0
+	for y in range(50, 227):
+		var c := street.get_pixel(412 + int(s.margin.x), y + int(s.margin.y))
+		if c.a > 0.5 and c.get_luminance() < 0.3:
+			post += 1
+	check(post == 177, "the post comes down from the ceiling beam to the paving, dark wood on %d of 177 rows" % post)
+	check(gold.position.x >= 422.0, "and hides the goldsmith's side wall, the stall showing from %.0f" % gold.position.x)
+	check(gold.end.y <= 228.0, "and stands as far forward as the stall, whose foot is at %.0f" % gold.end.y)
 	_close(s)
 
 
