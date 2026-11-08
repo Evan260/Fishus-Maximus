@@ -612,7 +612,9 @@ func _process(delta: float) -> void:
 			elif not Ui.window_open():
 				bite_step(delta)
 		"fighting":
-			_fight_step(delta, _reeling_input())
+			# The fish waits while a window is open, as a bite does, since nobody can reel through it.
+			if not Ui.window_open():
+				_fight_step(delta, _reeling_input())
 		"taken":
 			_taken_left -= delta
 			if _taken_left <= 0.0:

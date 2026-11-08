@@ -41,6 +41,9 @@ func setup(s: Node, rng: RandomNumberGenerator) -> void:
 func set_method(m: String) -> void:
 	if m == method or not m in METHODS:
 		return
+	if screen.fight != null:
+		Toast.say("Land the fish first.")
+		return
 	if m == "net" and _net() == "":
 		Toast.say("You have no cast net yet.")
 		return
