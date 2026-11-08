@@ -7,7 +7,10 @@ extends Node2D
 ## mirroring the sky from its top edge down, so land never floats over the sky however far the camera dips. A
 ## "through" layer crosses the waterline, so a tinted copy of its lower part is laid over it to look seen through the
 ## water. Land that slides with a band, at the band's speed, stands in it: below each column's waterline, over any sea
-## painted in the picture, the sea mirrors the sky and the land.
+## painted in the picture, the sea mirrors the sky and the land. A "front" layer is a dark plant right in front of the
+## view, standing up from its "bottom" edge or hanging from its "top": "x" is the place along the coast it stands in
+## front of, "factor" above 1 slides it faster than the boat, and it breaks away in pixel blocks while the boat, the
+## float, a fish fight or a button along the bottom of the screen is behind it.
 
 const HOME := Vector2(0, CoastCamera.HOME_Y)
 const ART := "res://assets/art/"
@@ -15,6 +18,14 @@ const THROUGH := Color(0.45, 0.72, 0.78, 0.8)
 const SEA := preload("res://scripts/coast/sea.gdshader")
 const REFLECTION := preload("res://scripts/coast/reflection.gdshader")
 const SWAY := preload("res://scripts/coast/sway.gdshader")
+const FRONT := preload("res://scripts/coast/front.gdshader")
+## Seconds a plant in front takes to break away or come back, and the size of its blocks in game pixels.
+const FRONT_SECONDS := 0.6
+const FRONT_CELL := 2.0
+## How near the boat or the float may come to a plant in front before it breaks away.
+const FRONT_ROOM := 24.0
+## How far the view may dip into the water before the plants standing at the bottom break away.
+const FRONT_DIP := 24.0
 ## How far up from a picture's bottom a column's waterline may lie; land ending higher hangs over the water.
 const SHORE_SCAN := 28
 const MAX_REACH := 40.0
@@ -42,6 +53,12 @@ var _waters: Array = []
 var _bands: Array = []
 var _reflections: Array = []
 var _swaying: Array = []
+## The plants in front: {"node", "x", "factor", "edge", "used", "progress"}.
+var _fronts: Array = []
+## What the plants in front must not hide this frame, in view pixels, and whether a fish is being fought.
+var _clear: Array = []
+var _fight := false
+var _front_time := 0.0
 var time := 0.0
 ## The sky the sea mirrors; without one the sea shows a clear noon.
 var sky: SkyView
@@ -63,12 +80,16 @@ func build(layers: Array) -> void:
 	_bands.clear()
 	_reflections.clear()
 	_swaying.clear()
+	_fronts.clear()
 	var tops: Array = []
 	for l in layers:
 		if l.has("band"):
 			tops.append(float(l["at"][1]))
 	var seas := {}
 	for l in layers:
+		if l.has("front"):
+			_front(l)
+			continue
 		var factor := Vector2(l["factor"][0], l["factor"][1]) if l.has("factor") else Vector2.ONE
 		var at := Vector2(l["world"][0], l["world"][1]) - HOME if l.has("world") else Vector2(l["at"][0], l["at"][1])
 		if l.has("band"):
@@ -300,6 +321,65 @@ func _sway(s: Sprite2D, x: float) -> void:
 	_swaying.append(s)
 
 
+func _front(l: Dictionary) -> void:
+	var path := ART + str(l["file"])
+	if not ResourceLoader.exists(path):
+		push_warning("missing layer " + path)
+		return
+	var s := Sprite2D.new()
+	s.texture = load(path)
+	s.centered = false
+	s.flip_h = bool(l.get("mirror", false))
+	s.z_index = int(l.get("z", 5))
+	var m := ShaderMaterial.new()
+	m.shader = FRONT
+	m.set_shader_parameter("cell", FRONT_CELL)
+	m.set_shader_parameter("progress", 0.0)
+	s.material = m
+	add_child(s)
+	var used := s.texture.get_image().get_used_rect()
+	if s.flip_h:
+		used.position.x = s.texture.get_width() - used.end.x
+	_fronts.append({"node": s, "x": float(l["x"]), "factor": Vector2(l["factor"][0], l["factor"][1]),
+		"edge": str(l["front"]), "used": used, "progress": 0.0})
+
+
+## What the plants in front must keep clear of this frame, as rectangles in view pixels, and whether a fish is on.
+func keep_clear(rects: Array, fight: bool) -> void:
+	_clear = rects
+	_fight = fight
+
+
+func fronts() -> Array:
+	return _fronts.map(func(f): return f["node"])
+
+
+## Slides each plant in front across the view faster than the boat, around the place it stands in front of, and lets
+## it break away while anything that must stay seen is behind it. A branch rises out past the top as the view dips
+## into the water, and a plant at the bottom breaks away then; otherwise each keeps to its edge, which never shows.
+func _place_fronts(cam: Vector2) -> void:
+	var dt := clampf(time - _front_time, 0.0, 0.25)
+	_front_time = time
+	var view := Nav.view()
+	var lift := HOME.y - cam.y
+	for f in _fronts:
+		var s: Sprite2D = f["node"]
+		var size := s.texture.get_size()
+		var factor: Vector2 = f["factor"]
+		var used: Rect2i = f["used"]
+		var x: float = view.x / 2.0 + (f["x"] - cam.x - view.x / 2.0) * factor.x - size.x / 2.0
+		var bottom: bool = f["edge"] == "bottom"
+		var y: float = -used.position.y + minf(0.0, lift) * factor.y
+		if bottom:
+			y = view.y - used.end.y
+		s.position = Vector2(x, y)
+		s.visible = not Windowing.strip
+		var area := Rect2(s.position + Vector2(used.position), Vector2(used.size)).grow(FRONT_ROOM)
+		var away := _fight or (bottom and lift < -FRONT_DIP) or _clear.any(func(r: Rect2): return area.intersects(r, true))
+		f["progress"] = move_toward(f["progress"], 1.0 if away else 0.0, dt / FRONT_SECONDS)
+		s.material.set_shader_parameter("progress", f["progress"])
+
+
 func reflections() -> Array:
 	return _reflections
 
@@ -320,6 +400,7 @@ func place(cam: Vector2) -> void:
 		b.queue_redraw()
 	for s in _swaying:
 		s.material.set_shader_parameter("time", time)
+	_place_fronts(cam)
 	_mirror()
 
 

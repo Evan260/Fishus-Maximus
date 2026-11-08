@@ -483,6 +483,7 @@ func _fight_step(delta: float, reeling: bool) -> void:
 func relayout() -> void:
 	_sky.follow(camera.cam, hour, weather)
 	_layers.time = _time
+	_layers.keep_clear(_kept_clear(), fight != null)
 	_layers.place(camera.cam)
 	_floor.place_at(camera.cam)
 	_water.cam = camera.cam
@@ -502,6 +503,19 @@ func relayout() -> void:
 	_ground.queue_redraw()
 	_line.queue_redraw()
 	_water.queue_redraw()
+
+
+## What the plants in front of the view must not hide, in view pixels: the boat, the float or the hook, and the buttons
+## along the bottom of the screen.
+func _kept_clear() -> Array:
+	var cam := camera.cam
+	var out: Array = [Rect2(boat_x - cam.x, 0.0, _boat.width(), Nav.view().y), Rect2((flying() if flight > 0.0 else hook) - cam, Vector2.ZERO)]
+	if Nav.ui:
+		for b in Nav.ui.find_children("*", "Button", true, false):
+			var r: Rect2 = b.get_global_rect()
+			if b.is_visible_in_tree() and r.end.y > Nav.view().y - 40.0:
+				out.append(r)
+	return out
 
 
 func _update_swimmer_world() -> void:

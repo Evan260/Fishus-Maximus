@@ -344,6 +344,51 @@
    ],
    "z": -9,
    "through": true
+  },
+  {
+   "file": "pine_branch.png",
+   "use": "front/pine_branch.png",
+   "front": "top",
+   "x": 430,
+   "factor": [
+    1.6,
+    1.3
+   ],
+   "z": 5
+  },
+  {
+   "file": "oleander.png",
+   "use": "front/oleander.png",
+   "front": "bottom",
+   "x": 760,
+   "factor": [
+    1.7,
+    1.3
+   ],
+   "z": 5
+  },
+  {
+   "file": "olive_branch.png",
+   "use": "front/olive_branch.png",
+   "front": "top",
+   "x": 1060,
+   "factor": [
+    1.5,
+    1.3
+   ],
+   "z": 5,
+   "mirror": true
+  },
+  {
+   "file": "palm.png",
+   "use": "front/palm.png",
+   "front": "bottom",
+   "x": 1330,
+   "factor": [
+    1.6,
+    1.3
+   ],
+   "z": 5
   }
  ]
 }

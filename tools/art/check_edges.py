@@ -64,12 +64,26 @@ def depth_at(points, x):
     return points[-1][1]
 
 
+def check_front(pid, l):
+    """A plant in front of the view slides right across it and is set past the view's top or bottom edge, so only the
+    edge it stands on may touch its picture's edge."""
+    if not (ART / l["file"]).exists():
+        return [f"{pid}: {l['file']} is missing"]
+    a = np.array(Image.open(ART / l["file"]).convert("RGBA"))[:, :, 3] > 16
+    edges = {"left": a[:, 0], "right": a[:, -1], "top": a[0, :], "bottom": a[-1, :]}
+    return [f"{pid}: {l['file']} {edge} edge shows a cut in front of the view" for edge, mask in edges.items()
+            if edge != l["front"] and mask.any()]
+
+
 def check_place(place, tiles):
     failures = []
     width, depth = float(place["width"]), float(place["depth"]) + 40
     cam_x_max = max(0.0, width - VIEW[0])
     cam_y_max = max(HOME_Y, depth - VIEW[1])
-    layers = [l for l in place.get("layers", []) if "file" in l]
+    layers = [l for l in place.get("layers", []) if "file" in l and "front" not in l]
+    for l in place.get("layers", []):
+        if "front" in l:
+            failures += check_front(place["id"], l)
     pictures = []
     for l in layers:
         if not (ART / l["file"]).exists():

@@ -271,6 +271,52 @@
    "z": -9,
    "prompt": "a heap of ancient clay amphorae from a sunken cargo half buried in dark sand, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
    "size": "96x48"
+  },
+  {
+   "file": "pine_branch.png",
+   "use": "front/pine_branch.png",
+   "front": "top",
+   "x": 480,
+   "factor": [
+    1.6,
+    1.3
+   ],
+   "z": 5
+  },
+  {
+   "file": "oleander.png",
+   "use": "front/oleander.png",
+   "front": "bottom",
+   "x": 980,
+   "factor": [
+    1.6,
+    1.3
+   ],
+   "z": 5,
+   "mirror": true
+  },
+  {
+   "file": "pine.png",
+   "use": "front/pine.png",
+   "front": "bottom",
+   "x": 1560,
+   "factor": [
+    1.7,
+    1.3
+   ],
+   "z": 5
+  },
+  {
+   "file": "olive_branch.png",
+   "use": "front/olive_branch.png",
+   "front": "top",
+   "x": 2080,
+   "factor": [
+    1.5,
+    1.3
+   ],
+   "z": 5,
+   "mirror": true
   }
  ]
 }

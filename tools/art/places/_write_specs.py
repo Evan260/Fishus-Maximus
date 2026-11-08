@@ -81,6 +81,15 @@ def bed(pid, file, prompt, size, xs, sink=6, use=None, sway=False):
     return out
 
 
+def front(name, edge, x, factor=1.6, mirror=False):
+    """A dark plant right in front of the view (make_front.py), hanging from its top edge or standing on its bottom one,
+    in front of the place x along the coast and sliding faster than the boat."""
+    l = {"file": f"{name}.png", "use": f"front/{name}.png", "front": edge, "x": x, "factor": [factor, 1.3], "z": 5}
+    if mirror:
+        l["mirror"] = True
+    return l
+
+
 def deep(at, fit=False):
     l = {"file": "deep_far.png", "from": "coast/deep_far.png", "land": True, "at": at, "factor": [0.6, 0.8], "z": -9, "alpha": 0.6}
     if fit:
@@ -252,6 +261,24 @@ SHORES = {
                 "mid.png": {"rocks": 2, "beach": 2, "bushes": 1, "plain": 1},
                 "near.png": {"rocks": 3, "plain": 2}},
 }
+# The plants in front of each place's view, spread along it so the view is seldom without one and the boat passes each.
+FRONTS = {
+    "harbour": [front("pine_branch", "top", 430), front("oleander", "bottom", 760, 1.7),
+                front("olive_branch", "top", 1060, 1.5, True), front("palm", "bottom", 1330)],
+    "rocky_shore": [front("pine", "bottom", 520), front("fig_leaves", "top", 880, 1.5),
+                    front("palm", "bottom", 1300, 1.7, True), front("pine_branch", "top", 1680, 1.6, True)],
+    "lucrine": [front("rushes", "bottom", 360), front("olive_branch", "top", 700, 1.5),
+                front("rushes", "bottom", 1020, 1.7, True), front("fig_leaves", "top", 1300, 1.6, True)],
+    "open_bay": [front("pine_branch", "top", 520), front("olive_branch", "top", 1280, 1.5, True),
+                 front("pine_branch", "top", 2050, 1.7, True)],
+    "capri": [front("fig_leaves", "top", 430), front("palm", "bottom", 860),
+              front("pine", "bottom", 1320, 1.7, True), front("olive_branch", "top", 1700, 1.5)],
+    "misenum": [front("pine_branch", "top", 480), front("oleander", "bottom", 980, 1.6, True),
+                front("pine", "bottom", 1560, 1.7), front("olive_branch", "top", 2080, 1.5, True)],
+}
+for pid, plants in FRONTS.items():
+    specs[pid]["layers"] += plants
+
 for pid, files in SHORES.items():
     for layer in specs[pid]["layers"]:
         if layer.get("file") in files and "at" in layer:

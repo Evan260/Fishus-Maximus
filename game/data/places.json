@@ -24,7 +24,11 @@
 			{"file": "places/harbour/reef.png", "z": -9, "world": [1150, 177]},
 			{"file": "places/harbour/boulders.png", "z": -9, "world": [1320, 245]},
 			{"file": "places/harbour/boulders.png", "z": -9, "mirror": true, "world": [60, 18]},
-			{"file": "places/harbour/jetty.png", "world": [0, -22], "z": -9, "through": true}
+			{"file": "places/harbour/jetty.png", "world": [0, -22], "z": -9, "through": true},
+			{"file": "front/pine_branch.png", "front": "top", "x": 430, "factor": [1.6, 1.3], "z": 5},
+			{"file": "front/oleander.png", "front": "bottom", "x": 760, "factor": [1.7, 1.3], "z": 5},
+			{"file": "front/olive_branch.png", "front": "top", "x": 1060, "factor": [1.5, 1.3], "z": 5, "mirror": true},
+			{"file": "front/palm.png", "front": "bottom", "x": 1330, "factor": [1.6, 1.3], "z": 5}
 		]
 	},
 	{"id": "rocky_shore", "name": "The rocky shore", "boat": "skiff", "width": 1920, "depth": 420, "travel_minutes": 60, "order": 2, "text": "Cliffs and reefs north of the town, full of caves.", "spots": {"wreck": 1380}, "floor": {"file": "places/rocky_shore/floor.png", "surface": 6}, "ground_below": 40, "map": [282, 192],
@@ -48,7 +52,11 @@
 			{"file": "places/rocky_shore/fans.png", "z": -9, "sway": true, "world": [820, 213]},
 			{"file": "places/rocky_shore/fans.png", "z": -9, "mirror": true, "sway": true, "world": [1480, 342]},
 			{"file": "places/rocky_shore/wreck.png", "z": -9, "world": [1270, 287]},
-			{"file": "places/rocky_shore/stack.png", "world": [170, -70], "z": -7, "through": true}
+			{"file": "places/rocky_shore/stack.png", "world": [170, -70], "z": -7, "through": true},
+			{"file": "front/pine.png", "front": "bottom", "x": 520, "factor": [1.6, 1.3], "z": 5},
+			{"file": "front/fig_leaves.png", "front": "top", "x": 880, "factor": [1.5, 1.3], "z": 5},
+			{"file": "front/palm.png", "front": "bottom", "x": 1300, "factor": [1.7, 1.3], "z": 5, "mirror": true},
+			{"file": "front/pine_branch.png", "front": "top", "x": 1680, "factor": [1.6, 1.3], "z": 5, "mirror": true}
 		]
 	},
 	{"id": "lucrine", "name": "The Lucrine Lake", "boat": "fishing_boat", "width": 1440, "depth": 260, "travel_minutes": 60, "order": 3, "text": "The brackish lake by Baiae where Sergius Orata laid the first oyster beds.", "spots": {"oyster_beds": 700}, "floor": {"file": "places/lucrine/floor.png", "surface": 6}, "ground_below": 40, "map": [196, 100],
@@ -69,7 +77,11 @@
 			{"file": "places/lucrine/basket.png", "z": -9, "world": [1150, 186]},
 			{"file": "places/lucrine/stones.png", "z": -9, "world": [250, 59]},
 			{"file": "places/lucrine/stones.png", "z": -9, "mirror": true, "world": [1220, 203]},
-			{"file": "places/lucrine/oyster_frames.png", "world": [620, -48], "z": -7, "through": true}
+			{"file": "places/lucrine/oyster_frames.png", "world": [620, -48], "z": -7, "through": true},
+			{"file": "front/rushes.png", "front": "bottom", "x": 360, "factor": [1.6, 1.3], "z": 5},
+			{"file": "front/olive_branch.png", "front": "top", "x": 700, "factor": [1.5, 1.3], "z": 5},
+			{"file": "front/rushes.png", "front": "bottom", "x": 1020, "factor": [1.7, 1.3], "z": 5, "mirror": true},
+			{"file": "front/fig_leaves.png", "front": "top", "x": 1300, "factor": [1.6, 1.3], "z": 5, "mirror": true}
 		]
 	},
 	{"id": "open_bay", "name": "The open bay", "boat": "fishing_boat", "width": 2400, "depth": 560, "travel_minutes": 60, "order": 4, "text": "Open water, the tuna run in spring, and the dolphins.", "spots": {}, "floor": {"file": "places/open_bay/floor.png", "surface": 6}, "ground_below": 40, "map": [344, 168],
@@ -90,7 +102,10 @@
 			{"file": "places/rocky_shore/boulders.png", "z": -9, "world": [2080, 474]},
 			{"file": "places/rocky_shore/boulders.png", "z": -9, "mirror": true, "world": [1100, 318]},
 			{"file": "places/open_bay/starfish.png", "z": -9, "world": [700, 265]},
-			{"file": "places/open_bay/starfish.png", "z": -9, "mirror": true, "world": [1720, 455]}
+			{"file": "places/open_bay/starfish.png", "z": -9, "mirror": true, "world": [1720, 455]},
+			{"file": "front/pine_branch.png", "front": "top", "x": 520, "factor": [1.6, 1.3], "z": 5},
+			{"file": "front/olive_branch.png", "front": "top", "x": 1280, "factor": [1.5, 1.3], "z": 5, "mirror": true},
+			{"file": "front/pine_branch.png", "front": "top", "x": 2050, "factor": [1.7, 1.3], "z": 5, "mirror": true}
 		]
 	},
 	{"id": "capri", "name": "The sea caves of Capri", "boat": "sailing_boat", "width": 1920, "depth": 520, "travel_minutes": 60, "order": 5, "text": "Blue caves under the island's cliffs.", "spots": {"deep_cave": 1500}, "floor": {"file": "places/capri/floor.png", "surface": 6}, "ground_below": 40, "map": [150, 236],
@@ -109,7 +124,11 @@
 			{"file": "places/capri/coral.png", "z": -9, "mirror": true, "world": [1720, 459]},
 			{"file": "places/capri/cave.png", "z": -9, "world": [1380, 333]},
 			{"file": "places/harbour/seagrass.png", "z": -9, "sway": true, "world": [150, 115]},
-			{"file": "places/harbour/seagrass.png", "z": -9, "mirror": true, "sway": true, "world": [820, 268]}
+			{"file": "places/harbour/seagrass.png", "z": -9, "mirror": true, "sway": true, "world": [820, 268]},
+			{"file": "front/fig_leaves.png", "front": "top", "x": 430, "factor": [1.6, 1.3], "z": 5},
+			{"file": "front/palm.png", "front": "bottom", "x": 860, "factor": [1.6, 1.3], "z": 5},
+			{"file": "front/pine.png", "front": "bottom", "x": 1320, "factor": [1.7, 1.3], "z": 5, "mirror": true},
+			{"file": "front/olive_branch.png", "front": "top", "x": 1700, "factor": [1.5, 1.3], "z": 5}
 		]
 	},
 	{"id": "misenum", "name": "Off Cape Misenum", "boat": "big_boat", "width": 2400, "depth": 800, "travel_minutes": 60, "order": 6, "text": "Deep water off the fleet's headland, where the legends live.", "spots": {}, "floor": {"file": "places/misenum/floor.png", "surface": 6}, "ground_below": 40, "map": [34, 142],
@@ -129,7 +148,11 @@
 			{"file": "places/misenum/seapens.png", "z": -9, "sway": true, "world": [700, 347]},
 			{"file": "places/misenum/seapens.png", "z": -9, "mirror": true, "sway": true, "world": [1200, 497]},
 			{"file": "places/misenum/seapens.png", "z": -9, "sway": true, "world": [1800, 664]},
-			{"file": "places/misenum/amphorae.png", "z": -9, "world": [1650, 638]}
+			{"file": "places/misenum/amphorae.png", "z": -9, "world": [1650, 638]},
+			{"file": "front/pine_branch.png", "front": "top", "x": 480, "factor": [1.6, 1.3], "z": 5},
+			{"file": "front/oleander.png", "front": "bottom", "x": 980, "factor": [1.6, 1.3], "z": 5, "mirror": true},
+			{"file": "front/pine.png", "front": "bottom", "x": 1560, "factor": [1.7, 1.3], "z": 5},
+			{"file": "front/olive_branch.png", "front": "top", "x": 2080, "factor": [1.5, 1.3], "z": 5, "mirror": true}
 		]
 	}
 ]
