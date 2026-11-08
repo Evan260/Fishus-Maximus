@@ -1,6 +1,6 @@
 class_name Bite
 ## Whether a fish takes a bait: only a bait it likes, and the closer the bait the likelier; a fish much smaller than
-## the rod is built for is shy of it.
+## the rod is built for is shy of it, and a fish of a shoal seldom takes it, since a whole shoal comes to look.
 
 
 ## The chance a fish takes the bait when it next looks at it; its first-liked bait is the surest, and rain makes fish
@@ -13,7 +13,12 @@ static func chance(fish: String, bait: String, distance: float, weather := "clea
 		return 0.0
 	var liking := 0.6 if baits.find(bait) == 0 else 0.45
 	var boldness := 1.3 if weather in ["rain", "storm"] else 1.0
-	return minf(0.95, liking * (1.0 - maxf(0.0, distance) / reach) * boldness * rod_fit(fish, rod))
+	return minf(0.95, liking * (1.0 - maxf(0.0, distance) / reach) * boldness * rod_fit(fish, rod) * shoal_share(fish))
+
+
+## How much less often one fish of a shoal takes a bait than a fish swimming alone.
+static func shoal_share(fish: String) -> float:
+	return Data.num("fishing.shoal_bite", 0.02) if Data.fish.get(fish, {}).get("shoal", false) else 1.0
 
 
 ## How much a rod puts a fish off: not at all when the fish is the size it is built for or bigger, and by the share in

@@ -116,7 +116,7 @@ func _fish_a_minute() -> void:
 		var kinds := Catalog.available(_place, depth, hour, _season(), weather, "line")
 		if kinds.is_empty():
 			continue
-		var fish := Pick.by_rarity(kinds, rng)
+		var fish := Pick.by_bite(kinds, rng)
 		var lb := Catalog.roll_pounds(fish, rng)
 		var fight := LineFight.new()
 		fight.setup(fish, lb, gear, false, rng)

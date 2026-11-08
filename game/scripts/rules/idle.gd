@@ -15,5 +15,5 @@ static func catches(minutes: float, place: String, depth: float, bait: String, h
 	if pool.is_empty():
 		return out
 	for i in count:
-		out.append(Pick.catch_of(Pick.by_rarity(pool, rng), rng, false))
+		out.append(Pick.catch_of(Pick.by_bite(pool, rng), rng, false))
 	return out
