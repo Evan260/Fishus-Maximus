@@ -12,6 +12,30 @@ const CALM := Color("#ecc460")
 const DANGER := Color("#d65a44")
 const BREAKING := Color("#ff9a7a")
 const SPRAY := Color(0.9, 0.97, 1.0, 0.9)
+const HOOK := Color("#b8c0c0")
+## Each bait as it hangs on the hook, a few pixels drawn row by row, with the colour of each letter.
+const BAITS := {
+	"worm": [".xo..", "x..x.", "o..xo", "....x"],
+	"shrimp": [".hxx.", "x..ox", "x...o", ".xo.."],
+	"bread": [".hhx.", "hxxxo", "xxxoo", ".ooo."],
+	"squid": [".xx.", "xxxx", "xoox", "x.x.", "x.x."],
+	"sardine_strip": ["hxxxo", "rrrro"],
+	"live_sardine": [".hxxo.", "xxxxxo", ".xxxo."],
+	"salted_fish": [".xhxo.", "xxhxxo", ".xxo.."],
+	"oyster": [".ooo.", "ohhxo", ".ooo."],
+	"seaweed": [".x.x.", "xo.ox", ".xox.", "..o.."],
+}
+const BAIT_COLOURS := {
+	"worm": {"x": Color("#c0606a"), "o": Color("#8a3f4a")},
+	"shrimp": {"x": Color("#f08a7a"), "o": Color("#c0584f"), "h": Color("#ffd0c0")},
+	"bread": {"x": Color("#e2c08a"), "o": Color("#b0844a"), "h": Color("#f8e8c0")},
+	"squid": {"x": Color("#eadce2"), "o": Color("#c49aaa")},
+	"sardine_strip": {"x": Color("#c8d2dc"), "o": Color("#7f92a2"), "h": Color("#eef4f8"), "r": Color("#c87272")},
+	"live_sardine": {"x": Color("#c4d0dc"), "o": Color("#6f86a0"), "h": Color("#eef4f8")},
+	"salted_fish": {"x": Color("#d8c8a6"), "o": Color("#a89068"), "h": Color("#ffffff")},
+	"oyster": {"o": Color("#8f877a"), "x": Color("#c8bca8"), "h": Color("#ece0cc")},
+	"seaweed": {"x": Color("#6aa060"), "o": Color("#3f7040")},
+}
 ## The share of the bar past which the line is in danger, tinted on the empty bar.
 const DANGER_FROM := 0.7
 ## How deep a running fish may be and still leap, the chance each second that one at the surface does (less the deeper
@@ -224,13 +248,29 @@ func _draw() -> void:
 			if state == "bite":
 				draw_string(UiTheme.title_font(), Vector2(bob.x - 1, surface - 6), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
 	if hook_shown:
-		draw_rect(Rect2(at, Vector2(1, 3)), Color("#b8c0c0"))
-		draw_rect(Rect2(at + Vector2(1, 1), Vector2(2, 1)), Color("#e07a8a"))
+		draw_rect(Rect2(at, Vector2(1, 3)), HOOK)
+		var bait: String = screen.bait()
+		var rows: Array = BAITS.get(bait, [])
+		var corner := at + Vector2(-floorf(str(rows[0]).length() / 2.0) if not rows.is_empty() else 0.0, 3)
+		for p in bait_pixels(bait):
+			draw_rect(Rect2(corner + Vector2(p[0], p[1]), Vector2.ONE), p[2])
 	if screen.charge >= 0.0:
 		_bar(tip + Vector2(-14, -14), 28, screen.charge, CALM)
 	for r in screen.rain():
 		if r.y < surface:
 			Pixels.line(self, r, r + Vector2(-2, 7), Color(0.82, 0.87, 0.92, 0.6))
+
+
+## The pixels of a bait as it hangs on the hook: [x, y, colour] from its top left corner; none for a bare hook.
+static func bait_pixels(bait: String) -> Array:
+	var out := []
+	var rows: Array = BAITS.get(bait, [])
+	for y in rows.size():
+		var row: String = rows[y]
+		for x in row.length():
+			if row[x] != ".":
+				out.append([x, y, BAIT_COLOURS[bait][row[x]]])
+	return out
 
 
 ## The line from a to b, sagging by some pixels in the middle, its pixels all on the grid of a.
