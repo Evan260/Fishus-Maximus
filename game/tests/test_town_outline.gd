@@ -156,3 +156,16 @@ func test_the_goldsmith_stands_on_the_streets_own_paving() -> void:
 				sky += 1
 	check(sky == 0, "its roof is whole, with no sky showing beside its peak, %d pixels open" % sky)
 	_close(s)
+
+
+func test_the_fish_markets_right_column_is_whole() -> void:
+	var s := _open()
+	var street: Image = s._street.texture.get_image()
+	var edge := _colour(street, s.margin, Rect2i(169, 135, 2, 60)).get_luminance()
+	var shaft := _colour(street, s.margin, Rect2i(162, 135, 5, 60)).get_luminance()
+	var wall := _colour(street, s.margin, Rect2i(173, 135, 4, 60)).get_luminance()
+	check(edge < shaft - 0.1 and edge < wall - 0.1,
+		"its outer side is shaded like the left column's, %.2f against %.2f and the wall's %.2f" % [edge, shaft, wall])
+	var market: Rect2 = s._masks["market"]["rect"]
+	check(market.end.x >= 172.0, "and the market reaches past it, to %.0f" % market.end.x)
+	_close(s)

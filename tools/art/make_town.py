@@ -2,11 +2,12 @@
 buildings painted straight into it inside a building-shaped outline, so every one shares the street's angle, light and
 style. The street is then painted on past each edge of its 480 by 270 scene (widen.py), so a window of another shape
 shows more street, and any part of a building that came out wrong is painted again on the wide picture. Wall and
-paving painted inside an outline are given back to the street, so each building ends at its own edges, the paving round
-the goldsmith is laid again from the street's own slabs, the painted sky is cleared so the game's own sky shows above
-the wall, and each building is cut out along the outline traced round it, to be clicked and outlined in gold when the
-mouse is over it. Writes game/assets/art/town/street.png (the scene with MARGIN more on every side), <id>.png for each
-building, and town.json with where each stands in the scene.
+paving painted inside an outline are given back to the street, so each building ends at its own edges, the fish
+market's right column is finished, the paving round the goldsmith is laid again from the street's own slabs, the
+painted sky is cleared so the game's own sky shows above the wall, and each building is cut out along the outline
+traced round it, to be clicked and outlined in gold when the mouse is over it. Writes game/assets/art/town/street.png
+(the scene with MARGIN more on every side), <id>.png for each building, and town.json with where each stands in the
+scene.
 Usage: python tools/art/make_town.py [--no-paint]   (--no-paint only cuts out what is already painted)"""
 import json
 import shutil
@@ -47,7 +48,7 @@ BUILDINGS = {
 }
 # Each building as the street shows it, traced in the scene's pixels: the mouse finds it there and its outline hugs it.
 SILHOUETTES = {
-    "market": [("poly", [(64, 124), (73, 121), (159, 121), (168, 124), (168, 210), (64, 210)])],
+    "market": [("poly", [(64, 124), (73, 121), (162, 121), (171, 124), (171, 210), (64, 210)])],
     "netmaker": [("poly", [(173, 150), (213, 127), (218, 127), (257, 150), (254, 158), (254, 212), (175, 212),
                            (175, 158)])],
     "boatwright": [("poly", [(266, 172), (312, 140), (358, 171), (356, 177), (356, 210), (269, 210), (269, 178)])],
@@ -115,6 +116,10 @@ HORIZON = 110
 # Parts painted past the scene a shade lighter than the scene beside them, in the scene's own pixels, each evened out
 # row by row with the eight columns to its right.
 EVEN = [(-16, 199, 4, 267)]
+# The market's right column ends at the box it was painted in, so it takes its left column's outer edge, turned round.
+COLUMN_EDGE = (64, 3)
+COLUMN_RIGHT = 171
+COLUMN_ROWS = (121, 210)
 
 
 def run(args):
@@ -191,6 +196,16 @@ def carry_paving(arr: np.ndarray) -> np.ndarray:
     out = arr.copy()
     toned = laid[:, :, :3].astype(np.float32) * gain[None, :, None]
     out[area, :3] = np.clip(toned[area], 0, 255).astype(np.uint8)
+    return out
+
+
+def finish_column(arr: np.ndarray) -> np.ndarray:
+    """The picture with the fish market's right column given the outer edge of its left column, turned round."""
+    mx, my = MARGIN
+    out = arr.copy()
+    rows = slice(COLUMN_ROWS[0] + my, COLUMN_ROWS[1] + my)
+    for dx in range(COLUMN_EDGE[1]):
+        out[rows, COLUMN_RIGHT - dx + mx] = arr[rows, COLUMN_EDGE[0] + dx + mx]
     return out
 
 
@@ -305,7 +320,8 @@ def main():
         outline = np.array(shape_mask(final.shape[1::-1], outline_of(bid), MARGIN)) > 0
         back = outline & ~settle(painted, empty, outline) & ~restreeted
         final[back] = empty[back]
-    final = clear_sky.clear_painted(carry_paving(final), SKY, HORIZON + my)
+    final = carry_paving(finish_column(final))
+    final = clear_sky.clear_painted(final, SKY, HORIZON + my)
     spots = {}
     for bid in built:
         shape = np.array(shape_mask(final.shape[1::-1], SILHOUETTES[bid], MARGIN)) > 0
