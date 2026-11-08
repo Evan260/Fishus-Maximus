@@ -400,3 +400,20 @@ func test_the_title_menu_forgets_a_deleted_save() -> void:
 func test_sailing_on_the_bay_map_is_not_being_ashore() -> void:
 	check(Nav.ashore_on("town") and Nav.ashore_on("shore"), "in town and at the ponds you are ashore, while the second fisherman fills the hold")
 	check(not Nav.ashore_on("coast") and not Nav.ashore_on("map"), "but not at sea, nor sailing across the bay on the map")
+
+
+func test_the_ponds_on_the_shore_show_a_new_day() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "mutt")
+	Game.state["ponds"] = [{"site": 0, "size": "large", "water": "sea", "features": ["rocks"], "fish": [
+		{"fish": "bream", "pounds": 2.0, "name": "", "finery": "", "age_days": 9, "fed": true}]}]
+	Game.state["time"] = Clock.minutes_per_day() * 2.0 - 0.2
+	var s: Node = load("res://scripts/shore/shore_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({})
+	Game.state["ponds"][0]["fish"].append({"fish": "bream", "pounds": 0.3, "name": "", "finery": "", "age_days": 0, "fed": false})
+	for i in 60:
+		s._process(0.5)
+	check(s.views[0]._fish.size() == 2, "the young born overnight swim in the pond's picture without leaving and coming back, %d shown" % s.views[0]._fish.size())
+	_done(s)

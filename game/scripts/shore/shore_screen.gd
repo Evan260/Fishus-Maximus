@@ -96,7 +96,13 @@ func _refresh() -> void:
 
 
 func _process(delta: float) -> void:
+	var day := Clock.day_of(float(Game.state["time"]))
 	World.advance(Game.state, delta / 60.0, _rng)
+	# Each morning the ponds breed and grow, so their pictures are matched to them again.
+	if Clock.day_of(float(Game.state["time"])) != day:
+		for v in views:
+			v.sync()
+		_refresh()
 	Audio.set_ambience({"gulls": 0.3})
 	_relight()
 	_hover = -2 if Ui.window_open() else _thing_at(_stage.get_local_mouse_position())
