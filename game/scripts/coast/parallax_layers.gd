@@ -8,9 +8,10 @@ extends Node2D
 ## "through" layer crosses the waterline, so a tinted copy of its lower part is laid over it to look seen through the
 ## water. Land that slides with a band, at the band's speed, stands in it: below each column's waterline, over any sea
 ## painted in the picture, the sea mirrors the sky and the land. A "front" layer is a dark plant right in front of the
-## view, standing up from its "bottom" edge or hanging from its "top": "x" is the place along the coast it stands in
-## front of, "factor" above 1 slides it faster than the boat, and it breaks away in pixel blocks while the boat, the
-## float, a fish fight or a button along the bottom of the screen is behind it.
+## view, standing up from its "bottom" edge on its own bank, whose waterline lies on the sea's, or hanging from its "top":
+## "x" is the place along the coast it stands in front of, "factor" above 1 slides it faster than the boat, and it
+## breaks away in pixel blocks while the boat, the float, a fish fight or a button along the bottom of the screen is
+## behind it.
 
 const HOME := Vector2(0, CoastCamera.HOME_Y)
 const ART := "res://assets/art/"
@@ -26,6 +27,8 @@ const FRONT_CELL := 2.0
 const FRONT_ROOM := 24.0
 ## How far the view may dip into the water before the plants standing at the bottom break away.
 const FRONT_DIP := 24.0
+## Rows of the bank under a plant standing at the bottom that lie below its waterline, as make_front.py paints them.
+const FRONT_DEPTH := 140
 const BED := preload("res://scripts/coast/bed.gdshader")
 ## How far up from a picture's bottom a column's waterline may lie; land ending higher hangs over the water.
 const SHORE_SCAN := 28
@@ -378,7 +381,8 @@ func _place_fronts(cam: Vector2) -> void:
 		var bottom: bool = f["edge"] == "bottom"
 		var y: float = -used.position.y + minf(0.0, lift) * factor.y
 		if bottom:
-			y = view.y - used.end.y
+			# The bank's waterline sits on the sea's, but never so high that the bank's foot comes into the view.
+			y = maxf(-cam.y - (size.y - FRONT_DEPTH), view.y - used.end.y)
 		s.position = Vector2(x, y)
 		s.visible = not Windowing.strip
 		var area := Rect2(s.position + Vector2(used.position), Vector2(used.size)).grow(FRONT_ROOM)

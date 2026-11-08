@@ -1,7 +1,7 @@
 extends "res://tests/test_case.gd"
 ## The dark plants standing in front of the view, which break away in pixel blocks as the boat comes near.
 
-const PIECE := {"file": "places/harbour/tuft.png", "front": "bottom", "x": 900, "factor": [1.6, 1.3], "z": 5}
+const PIECE := {"file": "front/palm.png", "front": "bottom", "x": 900, "factor": [1.6, 1.3], "z": 5}
 
 
 func _built(layers: Array) -> ParallaxLayers:
@@ -126,6 +126,59 @@ func test_every_place_has_a_few_dark_plants_in_front() -> void:
 			var clear := range(h).all(func(y): return img.get_pixel(0, y).a == 0.0 and img.get_pixel(w - 1, y).a == 0.0) \
 				and range(w).all(func(x): return img.get_pixel(x, far_row).a == 0.0)
 			check(clear, "%s: %s ends inside its picture on every side but the one it stands on" % [p["id"], f["file"]])
+
+
+## Each opaque run of a row of a picture, as [first, last] columns.
+func _runs(img: Image, y: int) -> Array:
+	var out: Array = []
+	var start := -1
+	for x in img.get_width() + 1:
+		var solid := x < img.get_width() and img.get_pixel(x, y).a > 0.5
+		if solid and start < 0:
+			start = x
+		elif not solid and start >= 0:
+			out.append([start, x - 1])
+			start = -1
+	return out
+
+
+func test_every_plant_standing_up_from_below_grows_out_of_land_rising_past_the_waterline() -> void:
+	for p in Data.places.values():
+		for f in p["layers"].filter(func(l): return l.get("front", "") == "bottom"):
+			var img: Image = (load("res://assets/art/" + str(f["file"])) as Texture2D).get_image()
+			img.decompress()
+			var waterline := img.get_height() - ParallaxLayers.FRONT_DEPTH
+			var name := "%s: %s" % [p["id"], f["file"]]
+			check(waterline > 0, name + " has its waterline inside its picture")
+			if waterline <= 0:
+				continue
+			var solid := true
+			for y in range(waterline, img.get_height()):
+				var runs := _runs(img, y)
+				if runs.size() != 1 or runs[0][1] - runs[0][0] < 24:
+					solid = false
+			check(solid, name + " is one bank of land from its bottom up to its waterline, with nothing loose in the water beside it")
+			var above: Array = _runs(img, waterline - 2).map(func(r): return r[1] - r[0])
+			check(not above.is_empty() and above.max() >= 24, name + " has its land rising on above the water")
+			var stands := false
+			for y in range(0, waterline - 2):
+				var runs := _runs(img, y)
+				if not runs.is_empty() and (runs.size() > 1 or runs[0][1] - runs[0][0] < img.get_width() - 4):
+					stands = true
+			check(stands, name + " has its plant growing up above the land")
+
+
+func test_a_plant_standing_up_from_below_keeps_its_land_on_the_waterline() -> void:
+	var l := _built([PIECE])
+	var s: Sprite2D = l.fronts()[0]
+	var waterline := s.texture.get_height() - ParallaxLayers.FRONT_DEPTH
+	for cam_y in [CoastCamera.HOME_Y, CoastCamera.ROW_SEA - Nav.view().y, CoastCamera.HOME_Y - 40.0]:
+		_run(l, 600.0, 0.1, false, cam_y)
+		check(absf(s.position.y + waterline + cam_y) < 0.01, "the bank's waterline lies on the sea's with the camera at %d" % cam_y)
+		check(s.position.y + s.texture.get_height() >= Nav.view().y, "and the bank runs on below the view with the camera at %d" % cam_y)
+	_run(l, 600.0, 0.1, false, CoastCamera.HOME_Y + 20.0)
+	check(s.position.y + s.texture.get_height() >= Nav.view().y, "the bank still runs below the view as the view starts to dip")
+	l.free()
 
 
 func _coast(place: String) -> Node:
