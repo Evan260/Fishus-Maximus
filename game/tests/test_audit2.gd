@@ -130,3 +130,13 @@ func test_he_will_not_fish_on_his_own_without_bait() -> void:
 	check(not s.methods.idle and not Game.state.has("idle"), "with no bait he stays at the rod")
 	_done(s)
 
+
+func test_the_save_knows_how_deep_his_bait_hangs() -> void:
+	Game.new_game("Test", "mutt")
+	var s := _coast_at("harbour")
+	s.methods.set_idle(true)
+	s.cast(0.6)
+	for i in 800:
+		s._process(0.05)
+	check(float(Game.state["idle"]["depth"]) > 15.0, "once it has sunk, the depth kept for fishing while away is where it hangs, %.0f" % float(Game.state["idle"]["depth"]))
+	_done(s)

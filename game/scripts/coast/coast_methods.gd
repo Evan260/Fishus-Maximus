@@ -134,6 +134,10 @@ func _idle_step(minutes: float) -> void:
 		Toast.say("Out of bait.")
 		return
 	var depth: float = maxf(10.0, screen.hook.y)
+	# The save keeps where the bait hangs now, which is where he fishes while the game is closed.
+	if Game.state.has("idle"):
+		Game.state["idle"]["depth"] = depth
+		Game.state["idle"]["water"] = screen.seabed.depth_at(screen.hook.x)
 	var day := Clock.day_of(float(Game.state["time"]))
 	var got := Idle.catches(minutes, screen.place_id, depth, bait, Hold.room(Game.state), _rng, screen.hour,
 		Clock.season(day), screen.weather, screen.seabed.depth_at(screen.hook.x))
