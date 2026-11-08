@@ -38,13 +38,7 @@
   "wreck": 1380
  },
  "floor": {
-  "strip": [
-   {
-    "prompt": "coarse golden sand and gravel on the sea floor with small pebbles and shell fragments, seamless flat even texture filling the whole picture, seen from the side",
-    "size": "512x64"
-   }
-  ],
-  "seam": "coarse golden sand and gravel on the sea floor with small pebbles and shell fragments, seamless texture",
+  "sand": "#64605a",
   "surface": 6
  },
  "layers": [

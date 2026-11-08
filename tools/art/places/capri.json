@@ -38,13 +38,7 @@
   "deep_cave": 1500
  },
  "floor": {
-  "strip": [
-   {
-    "prompt": "bright white sand and pale limestone pebbles on the sea floor, seamless flat even texture filling the whole picture, seen from the side",
-    "size": "512x64"
-   }
-  ],
-  "seam": "bright white sand and pale limestone pebbles on the sea floor, seamless texture",
+  "sand": "#7e7b74",
   "surface": 6
  },
  "layers": [

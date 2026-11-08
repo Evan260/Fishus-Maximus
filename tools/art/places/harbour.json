@@ -35,13 +35,7 @@
   ]
  ],
  "floor": {
-  "strip": [
-   {
-    "prompt": "pale harbour sand on the sea floor with fine grains, small pebbles and broken shells, seamless flat even texture filling the whole picture, seen from the side",
-    "size": "512x64"
-   }
-  ],
-  "seam": "pale harbour sand on the sea floor with fine grains, small pebbles and broken shells, seamless texture",
+  "sand": "#706a60",
   "surface": 6
  },
  "layers": [

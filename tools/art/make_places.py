@@ -28,6 +28,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+import make_seabed
 import places_json
 import shore
 import tone_land
@@ -37,7 +38,6 @@ SPECS = Path(__file__).with_name("places")
 PARTS = SPECS / "parts"
 ART = ROOT / "game" / "assets" / "art"
 STYLE = "cozy pixel art, soft warm golden afternoon light, gentle shading, no outlines"
-SHADOW = np.array([0x14, 0x22, 0x2A], dtype=np.float32)
 HOME_Y = -160
 VIEW_W = 480
 
@@ -331,22 +331,6 @@ def fade_edge(path: Path, side: str, n: int = 12):
     Image.fromarray(im).save(path)
 
 
-def shape_floor(path: Path, surface: int):
-    """Clears the water above a gently wavy sand line and darkens the strip into the shadow below it."""
-    im = np.array(Image.open(path).convert("RGBA")).astype(np.float32)
-    h, w = im.shape[:2]
-    xs = np.arange(w)
-    wave = surface + np.round(1.5 * np.sin(xs * 2 * math.pi / w * 7) + np.sin(xs * 2 * math.pi / w * 19))
-    for x in xs:
-        top = int(wave[x])
-        im[:top, x, 3] = 0
-        im[top:, x, 3] = 255
-    for y in range(h):
-        k = np.clip((y - surface - 10) / max(1, h - surface - 14), 0, 1) ** 1.3
-        im[y, :, :3] = im[y, :, :3] * (1 - k) + SHADOW * k
-    Image.fromarray(im.astype(np.uint8)).save(path)
-
-
 def depth_at(points, x):
     if x <= points[0][0]:
         return points[0][1]
@@ -418,16 +402,7 @@ def build(pid, place_only=False):
     floor = dict(spec["floor"])
     floor_rel = f"places/{pid}/floor.png"
     if not place_only and not (ART / floor_rel).exists():
-        part = PARTS / pid / "floor_0.png"
-        if paint(part, floor["strip"][0]["prompt"], floor["strip"][0]["size"], False):
-            # The piece is followed by its own mirror image, so the strip joins onto itself with no seam to repaint.
-            piece = Image.open(part).convert("RGBA")
-            strip = Image.new("RGBA", (piece.width * 2, piece.height))
-            strip.paste(piece, (0, 0))
-            strip.paste(piece.transpose(Image.FLIP_LEFT_RIGHT), (piece.width, 0))
-            (ART / floor_rel).parent.mkdir(parents=True, exist_ok=True)
-            strip.save(ART / floor_rel)
-            shape_floor(ART / floor_rel, int(floor.get("surface", 6)))
+        make_seabed.make(pid)
     places = places_json.load()
     place = next(p for p in places if p["id"] == pid)
     place["layers"] = out_layers

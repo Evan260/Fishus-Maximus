@@ -31,13 +31,7 @@
   ]
  ],
  "floor": {
-  "strip": [
-   {
-    "prompt": "soft grey-brown silt and fine sand on a deep sea floor with a few pale shells and small stones, muted colours, seamless flat even texture filling the whole picture, seen from the side",
-    "size": "512x64"
-   }
-  ],
-  "seam": "soft grey-brown silt and fine sand on a deep sea floor with a few pale shells and small stones, muted colours, seamless texture",
+  "sand": "#5a5651",
   "surface": 6
  },
  "layers": [

@@ -34,13 +34,7 @@
   "oyster_beds": 700
  },
  "floor": {
-  "strip": [
-   {
-    "prompt": "soft grey-brown lake mud on the lake floor with scattered pale oyster shells and small pebbles, seamless flat even texture filling the whole picture, seen from the side",
-    "size": "512x64"
-   }
-  ],
-  "seam": "soft grey-brown lake mud on the lake floor with scattered pale oyster shells and small pebbles, seamless texture",
+  "sand": "#5c564e",
   "surface": 6
  },
  "layers": [

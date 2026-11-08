@@ -31,13 +31,7 @@
   ]
  ],
  "floor": {
-  "strip": [
-   {
-    "prompt": "fine pale sand on a deep sea floor with scattered small shells and tiny pebbles, no ripples, no lines, seamless flat even texture filling the whole picture, seen from the side",
-    "size": "512x64"
-   }
-  ],
-  "seam": "fine pale sand on a deep sea floor with scattered small shells and tiny pebbles, no ripples, no lines, seamless texture",
+  "sand": "#736d64",
   "surface": 6
  },
  "layers": [
