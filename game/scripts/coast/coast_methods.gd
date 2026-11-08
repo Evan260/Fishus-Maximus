@@ -33,6 +33,9 @@ func setup(s: Node, rng: RandomNumberGenerator) -> void:
 	# --idle starts him fishing on his own, and --idle-speed=N runs his fishing N times faster, for checks.
 	if Dev.has("idle"):
 		set_idle.call_deferred(true)
+	# --pot drops a pot from the boat at the start, and --pot=haul hauls up a full one from under it, for checks.
+	if Dev.has("pot"):
+		_dev_pot.call_deferred(Dev.get_arg("pot"))
 
 
 func set_method(m: String) -> void:
@@ -65,6 +68,8 @@ func set_idle(on: bool) -> void:
 ## Stops him fishing on his own as the boat leaves, with word of any fish still coming in on the line.
 func leave() -> void:
 	_announce()
+	if traps_view:
+		traps_view.tell_now()
 	idle = false
 	Game.state.erase("idle")
 
@@ -99,13 +104,13 @@ func tick(delta: float) -> void:
 		method = "line"
 	for t in Game.state["traps"]:
 		t["_told"] = maxf(0.0, float(t.get("_told", 0.0)) - delta / 20.0)
+	traps_view.step(delta)
 	_pull_traps_under_boat()
 	var mouse: Vector2 = screen.get_global_mouse_position() + screen.camera.cam
 	net_view.aim = mouse
 	trident_view.aim = mouse
 	net_view.thrown_left = maxf(0.0, net_view.thrown_left - delta)
 	trident_view.thrown_left = maxf(0.0, trident_view.thrown_left - delta)
-	traps_view.queue_redraw()
 	net_view.queue_redraw()
 	trident_view.queue_redraw()
 
@@ -145,13 +150,29 @@ func _announce() -> void:
 func _pull_traps_under_boat() -> void:
 	var mid: float = screen.boat_x + 52.0
 	for t in traps_here():
-		if absf(float(t["x"]) - mid) < PULL_REACH and not t["catch"].is_empty() and t.get("_told", 0.0) <= 0.0:
+		if absf(float(t["x"]) - mid) < PULL_REACH and not t["catch"].is_empty() and t.get("_told", 0.0) <= 0.0 \
+				and not traps_view.moving(t):
 			var got := Traps.empty_into(Game.state, t)
+			var say := []
 			if not got.is_empty():
-				Toast.say("You rowed over your pot and hauled it up: " + ", ".join(got.map(func(c): return Data.fish[c["fish"]]["name"].to_lower())) + ".")
+				say.append("You rowed over your pot and hauled it up: " + _names(got) + ".")
 			if not t["catch"].is_empty():
-				Toast.say("The hold is full; the rest stay in the pot.")
+				say.append("The hold is full; the rest stay in the pot.")
 				t["_told"] = 1.0
+			_haul(t, got, say, true)
+
+
+func _names(got: Array) -> String:
+	return ", ".join(got.map(func(c): return Data.fish[c["fish"]]["name"].to_lower()))
+
+
+## Hauls a pot up to tell what came out of it once it is in the boat; a pot nothing came out of stays down.
+func _haul(t: Dictionary, got: Array, say: Array, keep: bool) -> void:
+	if traps_view and (not got.is_empty() or not keep):
+		traps_view.haul(t, say, keep)
+	else:
+		for line in say:
+			Toast.say(line)
 
 
 ## Space or a click with a method other than the line: set or lift a pot, throw the net, or throw the trident.
@@ -169,12 +190,14 @@ func _set_or_lift_trap() -> void:
 	var mid: float = screen.boat_x + 52.0
 	for t in traps_here():
 		if absf(float(t["x"]) - mid) < PULL_REACH:
-			Traps.empty_into(Game.state, t)
+			var got := Traps.empty_into(Game.state, t)
+			var said := ": " + _names(got) + "." if not got.is_empty() else "."
 			if not t["catch"].is_empty():
-				Toast.say("Make room in the hold before lifting this pot.")
+				var say := ["Hauled the pot up" + said] if not got.is_empty() else []
+				_haul(t, got, say + ["Make room in the hold before lifting this pot."], true)
 				return
 			Game.state["traps"].erase(t)
-			Toast.say("Lifted the pot.")
+			_haul(t, got, ["Lifted the pot" + said], false)
 			return
 	var allowed := int(Game.state["gear"].get("traps", 2))
 	if Game.state["traps"].size() >= allowed:
@@ -183,13 +206,27 @@ func _set_or_lift_trap() -> void:
 	var bait: String = screen.bait()
 	if bait != "":
 		Game.state["bait"][bait] = int(Game.state["bait"][bait]) - 1
-	Game.state["traps"].append({"place": screen.place_id, "x": roundf(mid), "depth": screen.seabed.depth_at(mid),
-		"set_time": float(Game.state["time"]), "catch": [], "size": 3, "hours": 0.0, "bait": bait})
+	var trap := {"place": screen.place_id, "x": roundf(mid), "depth": screen.seabed.depth_at(mid),
+		"set_time": float(Game.state["time"]), "catch": [], "size": 3, "hours": 0.0, "bait": bait}
+	Game.state["traps"].append(trap)
+	if traps_view:
+		traps_view.drop(trap)
 	Game.state["stats"]["pots_set"] = int(Game.state["stats"].get("pots_set", 0)) + 1
 	if int(Game.state["stats"].get("pots_set", 0)) <= 1:
 		Toast.say("Your pot sinks to the seabed and fills with crabs, lobsters and octopus. Row over it later to haul it up.")
 	else:
 		Toast.say("Pot set on the seabed%s." % ((", baited with " + str(Data.bait[bait]["name"]).to_lower()) if bait != "" else ""))
+
+
+func _dev_pot(how: String) -> void:
+	method = "trap"
+	var mid: float = screen.boat_x + 52.0
+	if how == "haul":
+		var kinds := Traps.kinds(screen.place_id, screen.seabed.depth_at(mid))
+		Game.state["traps"].append({"place": screen.place_id, "x": roundf(mid), "depth": screen.seabed.depth_at(mid),
+			"set_time": float(Game.state["time"]), "catch": [Pick.catch_of(kinds[0] if not kinds.is_empty() else "crab", _rng, true)],
+			"size": 3, "hours": 2.0, "bait": ""})
+	_set_or_lift_trap()
 
 
 func _throw_net() -> void:

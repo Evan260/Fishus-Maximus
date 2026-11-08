@@ -238,6 +238,8 @@ func test_hauling_a_pot_says_why() -> void:
 	var s := _coast()
 	Game.state["traps"] = [{"place": "harbour", "x": s.boat_x + 52.0, "depth": 60.0, "set_time": 0.0, "catch": [{"fish": "crab", "pounds": 0.5}], "size": 3, "hours": 2.0, "bait": ""}]
 	s.methods._pull_traps_under_boat()
+	for i in 300:
+		s.methods.traps_view.step(1.0 / 30.0)
 	check(_said("rowed over"), "the message says the pot came up because the boat passed over it")
 	_done(s)
 

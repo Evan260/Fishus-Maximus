@@ -80,6 +80,8 @@ var _cut := NAN
 var _blade_at := Vector2.ZERO
 var _swept := 0.0
 var _sweep := 0.0
+## For each column of the boat's picture, the top of its hull: the first solid row from the deck down.
+var _rails := PackedFloat32Array()
 
 
 func _init() -> void:
@@ -131,6 +133,7 @@ func set_boat(id: String) -> void:
 	var h := float(tex.get_height())
 	ride = h - DRAFT if _painted else 44.0
 	deck = _deck_row(tex.get_image()) if _painted else 30.0
+	_rails = _rail_rows(tex.get_image())
 	var spec: Dictionary = Data.boats.get(id, {})
 	# A boat with a tall sail or high sides names its seat in boats.json, since the outline alone cannot find it.
 	var at: Array = spec.get("seat", [])
@@ -156,6 +159,26 @@ func _deck_row(img: Image) -> float:
 		if widths[y] < widest * 0.5:
 			return float(y + 1)
 	return 0.0
+
+
+func _rail_rows(img: Image) -> PackedFloat32Array:
+	var rows := PackedFloat32Array()
+	for x in img.get_width():
+		var top := deck
+		for y in range(int(deck), img.get_height()):
+			if img.get_pixel(x, y).a > 0.5:
+				top = float(y)
+				break
+		rows.append(top)
+	return rows
+
+
+## The top of the hull in the world at a point along the boat at `boat_x`, below any mast, sail or cabin over it.
+func rail_at(x: float, boat_x: float) -> float:
+	var col := clampi(int(floorf(x - boat_x)), 0, _rails.size() - 1)
+	if facing < 0.0:
+		col = _rails.size() - 1 - col
+	return -ride + bob + (_rails[col] if not _rails.is_empty() else deck)
 
 
 func width() -> float:

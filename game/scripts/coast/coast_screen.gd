@@ -255,6 +255,11 @@ func rod_tip() -> Vector2:
 	return _boat.rod_tip(boat_x)
 
 
+## The top of the boat's side in the world at a point along it, where pots go over it.
+func gunwale(x: float) -> float:
+	return _boat.rail_at(x, boat_x)
+
+
 func time() -> float:
 	return _time
 
@@ -611,7 +616,13 @@ func _process(delta: float) -> void:
 	camera.view = Nav.view()
 	if not _pinned:
 		var watched := Vector2(hook.x, flying().y) if flight > 0.0 else hook
-		camera.follow(boat_x, watched, _state != "reeled" and not Windowing.strip, delta, rowing() and not Windowing.strip)
+		var hooked := _state != "reeled" and not Windowing.strip
+		# With the line in, the view goes down with a pot to the seabed and back, unless he is rowing on.
+		var pot: Vector2 = methods.traps_view.watched()
+		if not hooked and pot.is_finite() and _boat.rowing <= 0.0 and not Windowing.strip:
+			watched = pot
+			hooked = true
+		camera.follow(boat_x, watched, hooked, delta, rowing() and not Windowing.strip)
 	methods.tick(delta)
 	_update_swimmer_world()
 	swimmers.light = methods.trident_view.light_at() if methods.trident_view.lit else null
