@@ -63,7 +63,7 @@ static func window(site: int) -> Rect2:
 
 func _place() -> void:
 	if is_instance_valid(_stage):
-		_stage.position = Nav.offset()
+		_stage.transform = Nav.cover()
 
 
 func _refresh() -> void:

@@ -102,12 +102,12 @@ func guide_target(id: String) -> Rect2:
 	if not _masks.has(id):
 		return Rect2()
 	var r: Rect2 = _masks[id]["rect"]
-	return Rect2(r.position + _stage.position, r.size)
+	return Rect2(_stage.transform * r.position, r.size * _stage.scale)
 
 
 func _place() -> void:
 	if is_instance_valid(_stage):
-		_stage.position = Nav.offset()
+		_stage.transform = Nav.cover()
 
 
 func _refresh_ui() -> void:

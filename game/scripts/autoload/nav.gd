@@ -95,6 +95,19 @@ func offset() -> Vector2:
 	return ((view() - SIZE) / 2.0).round()
 
 
+## How a screen's picture is laid over the whole view, its 480 by 270 scene centred: each of its pixels is a whole number
+## of window pixels, the most that keep the scene in view when the picture is painted `margin` pixels past the scene on
+## every side and still reaches the view's edges, or else the fewest that cover the view, cropping the scene evenly.
+func cover(margin := Vector2.ZERO) -> Transform2D:
+	var shown := view() * zoom
+	var px := maxf(1.0, floorf(minf(shown.x / SIZE.x, shown.y / SIZE.y)))
+	var painted := SIZE + margin * 2.0
+	if painted.x * px < shown.x or painted.y * px < shown.y:
+		px = ceilf(maxf(shown.x / painted.x, shown.y / painted.y))
+	var at := ((shown - SIZE * px) / 2.0).round() / zoom
+	return Transform2D(0.0, Vector2(px, px) / zoom, 0.0, at)
+
+
 func go(screen: String, args: Dictionary = {}) -> void:
 	if _busy or not SCREENS.has(screen):
 		return
