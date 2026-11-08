@@ -393,6 +393,18 @@ func _paint() -> void:
 		_sun.modulate = Color(1.0, 0.72, 0.45).lerp(Color(1.0, 0.98, 0.9), height) * Color(1, 1, 1, lerpf(1.0, 0.4, _grey) * (1.0 - 0.75 * _dark))
 		sky.set_shader_parameter("sun", pos)
 		sky.set_shader_parameter("glow_radius", lerpf(GLOW.x, GLOW.y, height))
+	else:
+		# Just below the horizon the sky still glows where the sun went down or is about to come up.
+		var near := hour
+		var toward := 1.0 if fposmod(hour, 24.0) < 12.0 else -1.0
+		for i in 160:
+			near += toward * 0.05
+			if not is_nan(SkyPalette.sun_position(near, span.x, span.y - span.x, HORIZON, RISE).x):
+				break
+		var edge := SkyPalette.sun_position(near, span.x, span.y - span.x, HORIZON, RISE)
+		if not is_nan(edge.x):
+			sky.set_shader_parameter("sun", Vector2(edge.x, HORIZON + 12.0))
+			sky.set_shader_parameter("glow_radius", GLOW.x)
 	var night := SkyPalette.night_amount(hour)
 	sky.set_shader_parameter("stars", night * lerpf(1.0, 0.3, _grey) * (1.0 - _dark))
 	sky.set_shader_parameter("time", _t)

@@ -518,3 +518,22 @@ func _sea(seed_name: String) -> Swimmers:
 	sw.cam = Vector2(200, -160)
 	sw.hour = 9.0
 	return sw
+
+
+func test_the_glow_stays_on_the_horizon_after_sunset() -> void:
+	for hour in [5.55, 20.7]:
+		Game.new_game("Test", "mutt")
+		var s := _coast_at("harbour")
+		s.hour = hour
+		s.relayout()
+		var sky: SkyView = null
+		for n in Nav.sky.get_children():
+			if n is SkyView and not n.is_queued_for_deletion():
+				sky = n
+		sky._paint()
+		var glow: Color = SkyPalette.at(hour, 0.0, 0.0)["glow"]
+		var set_to = (sky._gradient.material as ShaderMaterial).get_shader_parameter("sun")
+		var centre: Vector2 = set_to if set_to != null else Vector2(240, 40)
+		check(glow.a > 0.0, "at %.2f the sky still glows with the sun just below the horizon" % hour)
+		check(centre.y >= SkyView.HORIZON - 4.0, "at %.2f the glow sits low on the horizon where the sun is, not at %s high in the sky" % [hour, centre])
+		_done(s)
