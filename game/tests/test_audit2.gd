@@ -155,3 +155,27 @@ func test_back_at_the_rod_with_pots_picked_brings_the_line_in() -> void:
 		s._process(0.05)
 	check(s.line_state() == "reeled", "the float he cast comes back in, so the pots work again, not left in the water: %s" % s.line_state())
 	_done(s)
+
+
+## Whether a node or anything it sits in is on its way out of the tree.
+func _going(n: Node) -> bool:
+	while n != null:
+		if n.is_queued_for_deletion():
+			return true
+		n = n.get_parent()
+	return false
+
+
+func test_the_full_hold_choice_is_a_window_of_its_own() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "mutt")
+	for i in 10:
+		Game.state["hold"].append({"fish": "mullet", "pounds": 1.0, "fresh": 1.0})
+	HoldChoice.ask({"fish": "bream", "pounds": 2.0})
+	check(Ui.window_open(), "it holds play while it is open, as every window does")
+	HoldChoice.ask({"fish": "bream", "pounds": 3.0})
+	var shown := Nav.ui.find_children("*", "Label", true, false).filter(func(l): return l.text.to_upper() == "THE HOLD IS FULL" and not _going(l))
+	check(shown.size() == 1, "and a second full-hold catch replaces it rather than stacking a copy, %d shown" % shown.size())
+	for c in Nav.ui.get_children():
+		c.free()
