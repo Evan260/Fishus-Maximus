@@ -5,14 +5,14 @@ const GRADES := [[0.25, "small"], [0.6, "good"], [0.9, "fine"], [1.01, "prize"]]
 
 
 ## Every ordinary fish (no legends) that lives at this place and depth, at this hour, season and weather, and can be
-## taken this way.
-static func available(place: String, depth: float, hour: float, season: String, weather: String, method: String) -> Array[String]:
+## taken this way, over water `water` pixels deep down to the seabed.
+static func available(place: String, depth: float, hour: float, season: String, weather: String, method: String, water := INF) -> Array[String]:
 	var out: Array[String] = []
 	for id in Data.fish:
 		var f: Dictionary = Data.fish[id]
 		if f["legend"] or not place in f["places"] or not method in f["methods"]:
 			continue
-		if depth < float(f["depth"][0]) or depth > float(f["depth"][1]):
+		if depth < float(f["depth"][0]) or depth > float(f["depth"][1]) or water_needed(id) > water:
 			continue
 		if not in_hours(hour, f["hours"]):
 			continue
@@ -22,6 +22,13 @@ static func available(place: String, depth: float, hour: float, season: String, 
 			continue
 		out.append(id)
 	return out
+
+
+## How deep the water must be, down to the seabed, for a fish to swim there: the bigger the fish, the deeper.
+static func water_needed(id: String) -> float:
+	var r: Array = Data.fish[id]["pounds"]
+	var rule: Array = Data.value("fishing.deep_water", [40, 30])
+	return maxf(0.0, float(rule[0]) + float(rule[1]) * log((float(r[0]) + float(r[1])) / 2.0) / log(2.0))
 
 
 ## True when the hour falls in [from, to), wrapping past midnight when from is later than to.

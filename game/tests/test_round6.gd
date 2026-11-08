@@ -113,6 +113,57 @@ func test_the_view_follows_the_float_up_and_out() -> void:
 	_done(s)
 
 
+func test_big_fish_need_deep_water() -> void:
+	check(Catalog.water_needed("tuna") > Catalog.water_needed("sea_bass"), "a tuna needs deeper water than a sea bass")
+	check(Catalog.water_needed("sea_bass") > Catalog.water_needed("mullet"), "and a sea bass deeper than a mullet")
+	var shallow := Catalog.available("harbour", 30.0, 6.0, "spring", "clear", "line", 64.0)
+	var deep := Catalog.available("harbour", 30.0, 6.0, "spring", "clear", "line", 200.0)
+	check("mullet" in shallow and not "sea_bass" in shallow, "near the shore a mullet swims, but no sea bass")
+	check("sea_bass" in deep, "out over deeper water the sea bass is found")
+
+
+func test_every_fish_has_water_deep_enough_at_each_of_its_places() -> void:
+	for id in Data.fish:
+		for p in Data.fish[id]["places"]:
+			var deepest := 0.0
+			for point in Data.places[p]["seabed"]:
+				deepest = maxf(deepest, float(point[1]))
+			check(Catalog.water_needed(id) <= deepest - 20.0, "%s finds water deep enough in %s" % [id, p])
+
+
+func test_a_big_fish_turns_back_from_the_shallows() -> void:
+	var bed := Seabed.new(Data.places["harbour"]["seabed"])
+	var sw := Swimmers.new()
+	sw.setup("harbour", bed, Seeds.rng(1, "shallows"))
+	Nav.port.add_child(sw)
+	var s := Swimmers.sprite_for("sea_bass", sw.texture_for("sea_bass"))
+	sw.add_child(s)
+	var f := {"id": "sea_bass", "lb": 8.0, "sprite": s, "pos": Vector2(760, 100), "heading": -1.0, "phase": 0.0, "speed": 12.0,
+		"band": Data.fish["sea_bass"]["depth"], "goal_y": 100.0, "turn": 1000.0, "look": 1.0, "state": "swim", "leader": {},
+		"group": 1, "offset": Vector2.ZERO}
+	sw.fish = [f]
+	var shallowest := INF
+	for i in 1800:
+		sw._move(f, 1.0 / 30.0, null)
+		shallowest = minf(shallowest, bed.depth_at(f["pos"].x))
+	check(shallowest >= Catalog.water_needed("sea_bass") - 6.0, "a sea bass keeps to water at least %d deep, and went to %d" % [Catalog.water_needed("sea_bass"), shallowest])
+	sw.free()
+
+
+func test_a_big_fish_ignores_a_bait_in_the_shallows() -> void:
+	var bed := Seabed.new(Data.places["harbour"]["seabed"])
+	var sw := Swimmers.new()
+	sw.setup("harbour", bed, Seeds.rng(1, "bait"))
+	check(not sw.deep_enough("sea_bass", 60.0), "a bait by the shore is too shallow for a sea bass to come to")
+	check(sw.deep_enough("mullet", 60.0), "but not for a mullet")
+	sw.free()
+
+
+func test_fishing_on_his_own_by_the_shore_brings_no_big_fish() -> void:
+	var got := Idle.catches(6000.0, "harbour", 30.0, "worm", 1000, Seeds.rng(1, "shore"), 6.0, "spring", "clear", 64.0)
+	check(not got.is_empty() and got.all(func(c): return Catalog.water_needed(c["fish"]) <= 64.0), "only fish of the shallows take his bait by the shore")
+
+
 func test_the_sky_reaches_the_top_of_a_raised_view() -> void:
 	var sky := SkyView.new()
 	Nav.sky.add_child(sky)

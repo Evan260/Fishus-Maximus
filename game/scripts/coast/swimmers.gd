@@ -1,9 +1,9 @@
 class_name Swimmers
 extends Node2D
 ## The fish in the water near the camera, chosen from what lives at this place, depth, hour, season and weather.
-## Each wanders inside its own depth band and never through the seabed, rising and dipping, speeding up, slowing and
-## now and then stopping, and easing round to turn; its tail beats faster the faster it swims. Shoals keep together,
-## and a fish that comes within reach of a bait it likes may turn to it and bite.
+## Each wanders inside its own depth band and never through the seabed, a big fish only over deep water, rising and
+## dipping, speeding up, slowing and now and then stopping, and easing round to turn; its tail beats faster the faster
+## it swims. Shoals keep together, and a fish that comes within reach of a bait it likes may turn to it and bite.
 
 signal bit(fish: Dictionary)
 
@@ -25,6 +25,8 @@ const FLEE_ACCEL := 4.0
 const PAUSE_CHANCE := 0.15
 ## How narrow a fish looks halfway round a turn, as a share of its width.
 const TURN_NARROW := 0.3
+## How far ahead a fish feels for water too shallow for it, and turns back towards the deep.
+const SHALLOWS_AHEAD := 30.0
 ## What a fish is given to swim with when it was made without it.
 const AT_REST := {"vel": Vector2.ZERO, "width": 1.0, "swim": 0.0, "pace": 1.0, "pace_left": 2.0, "drift": 0.3, "flee": 0.0, "age": 0.0}
 
@@ -84,11 +86,11 @@ func populate() -> void:
 			_spawn()
 
 
-## Every fish of a kind that can be on the line or in a net here and now, at this depth.
-func kinds_at(depth: float) -> Array:
+## Every fish of a kind that can be on the line or in a net here and now, at this depth, over water this deep.
+func kinds_at(depth: float, water := INF) -> Array:
 	var out := []
 	for method in ["line", "net", "trident"]:
-		for id in Catalog.available(place_id, depth, hour, season, weather, method):
+		for id in Catalog.available(place_id, depth, hour, season, weather, method, water):
 			if not id in out and Data.fish[id].get("swims", true):
 				out.append(id)
 	return out
@@ -100,7 +102,7 @@ func _spawn() -> void:
 	if floor_y < 12.0:
 		return
 	var y := _rng.randf_range(6.0, floor_y)
-	var kinds := kinds_at(y)
+	var kinds := kinds_at(y, seabed.depth_at(x))
 	if kinds.is_empty():
 		return
 	var total := 0.0
@@ -114,7 +116,7 @@ func _spawn() -> void:
 			id = k
 			break
 	var legends := Legends.here(place_id, hour, season, weather, Game.state, "line") + Legends.here(place_id, hour, season, weather, Game.state, "net")
-	legends = legends.filter(func(l): return not Data.fish[l].has("spot") or Data.fish[l]["spot"] == null 		or absf(float(place["spots"].get(Data.fish[l]["spot"], 0)) - x) < 300.0)
+	legends = legends.filter(func(l): return deep_enough(l, x) and (not Data.fish[l].has("spot") or Data.fish[l]["spot"] == null 		or absf(float(place["spots"].get(Data.fish[l]["spot"], 0)) - x) < 300.0))
 	if not legends.is_empty() and _rng.randf() < LEGEND_CHANCE and not fish.any(func(f): return Data.fish[f["id"]]["legend"]):
 		id = legends[_rng.randi() % legends.size()]
 		if Data.fish[id]["methods"] == ["net"]:
@@ -175,7 +177,7 @@ func step(delta: float, bait, bait_id: String) -> void:
 				f["look"] = LOOK_EVERY
 				var likes: bool = "line" in Data.fish[f["id"]]["methods"] and Bite.chance(f["id"], bait_id, 0.0) > 0.0
 				var away: float = f["pos"].distance_to(bait)
-				if f["state"] == "swim" and likes and away < NOTICE and _rng.randf() < 0.35:
+				if f["state"] == "swim" and likes and away < NOTICE and deep_enough(f["id"], bait.x) and _rng.randf() < 0.35:
 					f["state"] = "curious"
 					f["curious"] = CURIOUS_FOR
 				elif f["state"] == "curious" and _rng.randf() < Bite.chance(f["id"], bait_id, away, weather):
@@ -256,6 +258,10 @@ func _wander(f: Dictionary, delta: float, t: float) -> void:
 	if f["pos"].x < 10.0 or f["pos"].x > float(place["width"]) - 10.0:
 		f["heading"] = signf(float(place["width"]) / 2.0 - f["pos"].x)
 		f["pace"] = maxf(f["pace"], 0.6)
+	elif not deep_enough(f["id"], f["pos"].x + f["heading"] * SHALLOWS_AHEAD):
+		var deeper := signf(seabed.depth_at(f["pos"].x + 20.0) - seabed.depth_at(f["pos"].x - 20.0))
+		f["heading"] = deeper if deeper != 0.0 else -f["heading"]
+		f["pace"] = maxf(f["pace"], 0.6)
 	if "dolphins" in events and Data.fish[f["id"]].get("shoal", false):
 		f["goal_y"] = minf(f["goal_y"], 30.0)
 	var speed: float = f["speed"]
@@ -298,6 +304,11 @@ func _keep_y(f: Dictionary, x: float, y: float) -> float:
 	var lo := maxf(5.0, float(f["band"][0]) * 0.5)
 	var hi := seabed.depth_at(x) - 5.0
 	return clampf(y, minf(lo, hi), hi)
+
+
+## Whether the water at x is deep enough for a kind of fish to swim in.
+func deep_enough(id: String, x: float) -> bool:
+	return seabed.depth_at(x) >= Catalog.water_needed(id)
 
 
 ## Takes a fish off the swimmers, when it is hooked or has given up on the bait; a scared fish darts away.

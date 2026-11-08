@@ -90,7 +90,7 @@ func catch_up() -> float:
 			var idle: Dictionary = state["idle"]
 			var t := float(state["time"])
 			for c in Idle.catches(minutes, str(idle["place"]), float(idle["depth"]), str(idle["bait"]), Hold.room(state), rng,
-					Clock.hour(t), Clock.season(Clock.day_of(t)), str(state.get("weather", "clear"))):
+					Clock.hour(t), Clock.season(Clock.day_of(t)), str(state.get("weather", "clear")), float(idle.get("water", INF))):
 				Catches.record(state, c["fish"], float(c["pounds"]), false)
 	return minutes
 

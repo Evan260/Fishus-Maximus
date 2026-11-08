@@ -53,7 +53,8 @@ func set_idle(on: bool) -> void:
 	idle = on
 	_idle_minutes = 0.0
 	if on:
-		Game.state["idle"] = {"place": screen.place_id, "bait": screen.bait(), "depth": maxf(10.0, screen.hook.y)}
+		Game.state["idle"] = {"place": screen.place_id, "bait": screen.bait(), "depth": maxf(10.0, screen.hook.y),
+			"water": screen.seabed.depth_at(screen.hook.x)}
 	else:
 		Game.state.erase("idle")
 		if screen.line_state() in ["taken", "landing"]:
@@ -118,7 +119,7 @@ func _idle_step(minutes: float) -> void:
 	var depth: float = maxf(10.0, screen.hook.y)
 	var day := Clock.day_of(float(Game.state["time"]))
 	var got := Idle.catches(minutes, screen.place_id, depth, bait, Hold.room(Game.state), _rng, screen.hour,
-		Clock.season(day), screen.weather)
+		Clock.season(day), screen.weather, screen.seabed.depth_at(screen.hook.x))
 	for c in got:
 		Game.state["bait"][bait] = maxi(0, int(Game.state["bait"].get(bait, 0)) - 1)
 		Catches.record(Game.state, c["fish"], float(c["pounds"]), false)
