@@ -253,5 +253,8 @@ func _load() -> void:
 				Saves.delete(slot)
 				if Saves.slot == slot:
 					Saves.slot = 0
-				_load())
+				# The menu is laid out again, so Continue goes to a save that is still there, or goes with the last.
+				_show_menu()
+				if _latest_slot() > 0:
+					_load())
 		r.add_child(confirm)

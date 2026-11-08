@@ -373,3 +373,25 @@ func test_a_client_with_nothing_left_to_ask_has_no_mark() -> void:
 	Game.state["clients"][id] = Data.clients[id]["steps"].size()
 	check(not id in s.marked_clients(), "and once their story is done the mark goes")
 	_done(s)
+
+
+func test_the_title_menu_forgets_a_deleted_save() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	for n in range(1, Saves.SLOTS + 1):
+		Saves.delete(n)
+	Game.new_game("Test", "mutt")
+	Saves.save(1)
+	var t: Node = load("res://scripts/screens/title.gd").new()
+	Nav.port.add_child(t)
+	t.enter({})
+	var words := func(): return t._menu.get_children().filter(func(b): return b is Button and not _going(b)).map(func(b): return b.text)
+	check("Continue" in words.call(), "with a save the title offers to continue it")
+	t._load()
+	var confirm: LineEdit = Nav.ui.find_children("*", "LineEdit", true, false).filter(func(l): return not _going(l))[0]
+	confirm.text = "delete"
+	confirm.text_changed.emit("delete")
+	check(not "Continue" in words.call() and not "Load" in words.call(), "once the only save is deleted, Continue and Load go: %s" % [words.call()])
+	t.free()
+	for c in Nav.ui.get_children():
+		c.free()
