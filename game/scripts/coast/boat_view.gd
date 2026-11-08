@@ -196,7 +196,7 @@ func rod_tip(x: float) -> Vector2:
 		return _hands_at(x)
 	var p: Array = pose()
 	if p[0] == "row":
-		return Vector2(x + _along(0.86), -ride + bob + deck - 7.0)
+		return Vector2(x + _along(0.86), -ride + bob + deck + 3.0)
 	var angle := deg_to_rad(ROD_CAST[p[1]] if p[0] == "cast" else ROD_REST)
 	var hands := _hands_at(x)
 	var straight := Vector2(cos(angle) * facing, sin(angle))
@@ -254,16 +254,8 @@ func place(x: float, cam: Vector2, time: float) -> void:
 		front.position = boat.position + Vector2(0, seat.y)
 	_cam = cam
 	_x = x
-	queue_redraw()
 	if _overlay:
 		_overlay.queue_redraw()
-
-
-## The rod lying in the boat while he rows, behind the hull's side.
-func _draw() -> void:
-	if person.visible and pose()[0] == "row":
-		var butt := Vector2(_x + _along(0.34), -ride + bob + deck - 1.0)
-		_rod(self, butt - _cam, rod_tip(_x) - _cam)
 
 
 ## The near oar while he rows and the rod while he holds it, over the hull, since both cross its near side.
