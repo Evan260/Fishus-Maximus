@@ -163,7 +163,9 @@ specs[p] = {
       + bed(p, "oysters.png", "a bed of rough grey oyster shells and blue mussels on the mud", "96x40", [520, 860])
       + bed(p, "basket.png", "an old sunken wicker fish basket lying on the mud", "48x40", [1150])
       + bed(p, "stones.png", "a few round mossy stones with green weed on the mud", "96x48", [250, 1220])
-      + [{"file": "oyster_frames.png", "prompt": "an ancient Roman oyster farm seen from the side: a row of wooden posts standing in a lake with ropes hung with clusters of oysters between them, the tops of the posts above the water, the lower parts under the water, the posts reaching down into the mud at the bottom", "size": "192x208", "world": [620, -48], "z": -7, "through": True}],
+      # The oyster farm's posts stand out in the near water, smaller and hazier, so the boat passes in front of them.
+      + [{"file": "oyster_far.png", "set_back": {"from": "places/lucrine/oyster_frames.png", "waterline": 49, "scale": 0.55, "haze": 0.18},
+          "at": [450, 123], "factor": [0.55, 0.55], "z": -13}],
 }
 
 p = "open_bay"

@@ -74,7 +74,7 @@
 			{"file": "places/lucrine/basket.png", "z": -9, "world": [1150, 186]},
 			{"file": "places/lucrine/stones.png", "z": -9, "world": [250, 59]},
 			{"file": "places/lucrine/stones.png", "z": -9, "mirror": true, "world": [1220, 203]},
-			{"file": "places/lucrine/oyster_frames.png", "world": [620, -48], "z": -7, "through": true},
+			{"file": "places/lucrine/oyster_far.png", "at": [450, 123], "factor": [0.55, 0.55], "z": -13},
 			{"file": "front/rushes.png", "front": "bottom", "x": 360, "factor": [1.6, 1.3], "z": 5},
 			{"file": "front/olive_branch.png", "front": "top", "x": 700, "factor": [1.5, 1.3], "z": 5},
 			{"file": "front/rushes.png", "front": "bottom", "x": 1020, "factor": [1.7, 1.3], "z": 5, "mirror": true},

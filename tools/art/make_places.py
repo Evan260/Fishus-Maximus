@@ -30,6 +30,7 @@ from PIL import Image
 
 import make_seabed
 import places_json
+import set_back
 import shore
 import tone_land
 
@@ -356,7 +357,11 @@ def build(pid, place_only=False):
             rel = f"places/{pid}/{layer['file']}" if "/" not in layer["file"] else layer["file"]
             path = ART / rel
             if not place_only:
-                if "from" in layer and not path.exists():
+                if "set_back" in layer and not path.exists():
+                    sb = layer["set_back"]
+                    band = next(b["band"] for b in spec["layers"] if "band" in b and b.get("factor") == layer["factor"])
+                    set_back.set_back(ART / sb["from"], int(sb["waterline"]), float(sb["scale"]), band, float(sb["haze"]), path)
+                elif "from" in layer and not path.exists():
                     work = PARTS / pid / f"{path.stem}_extended.png"
                     work.parent.mkdir(parents=True, exist_ok=True)
                     Image.open(ART / layer["from"]).save(work)
@@ -373,7 +378,7 @@ def build(pid, place_only=False):
             shore_land(pid, layer, ART / rel)
         if "tone" in layer and not place_only:
             tone(pid, layer, ART / rel)
-        for k in ("prompt", "size", "strip", "seam", "wrap", "from", "extend", "land", "haze", "shore", "style", "gap", "tone"):
+        for k in ("prompt", "size", "strip", "seam", "wrap", "from", "extend", "land", "haze", "shore", "style", "gap", "tone", "set_back"):
             layer.pop(k, None)
         layer["file"] = rel
         pads = PARTS / pid / (Path(rel).stem + ".pads.json")

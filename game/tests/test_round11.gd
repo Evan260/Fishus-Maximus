@@ -230,3 +230,12 @@ func test_the_big_boats_lantern_flickers_and_glows_at_night() -> void:
 	skiff.set_boat("skiff")
 	check(skiff.lantern.x < 0.0, "a boat without a lantern has none")
 	skiff.free()
+
+
+func test_the_oyster_posts_stand_back_in_the_far_water() -> void:
+	var layers: Array = Data.places["lucrine"]["layers"]
+	var posts := layers.filter(func(l): return "oyster" in str(l.get("file", "")) and "frames" in str(l.get("file", "")) or "oyster_far" in str(l.get("file", "")))
+	check(not posts.is_empty(), "the oyster farm's posts are at the lake")
+	for l in posts:
+		check(not l.has("world") and float(l["factor"][1]) < 1.0, "they stand back in the far water, not where the boat rows, so it passes in front of them")
+		check(int(l["z"]) < -1, "and are drawn behind the boat")
