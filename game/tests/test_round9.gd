@@ -89,3 +89,20 @@ func test_fishing_on_his_own_he_hangs_the_bait_in_mid_water() -> void:
 	for c in Nav.ui.get_children():
 		c.free()
 	s.free()
+
+
+func test_birds_cross_the_sky_by_day() -> void:
+	var sky := SkyView.new()
+	Nav.sky.add_child(sky)
+	sky.follow(Vector2(300, CoastCamera.HOME_Y), 10.0, "clear")
+	var seen := 0
+	for i in 1200:
+		sky._process(0.1)
+		seen = maxi(seen, sky.birds().size())
+	check(seen >= 3, "a flock of birds crosses the sky by day")
+	check(sky.birds().all(func(b): return b["pos"].y < SkyView.HORIZON - 20.0), "high over the land, never down in the sea")
+	sky.follow(Vector2(300, CoastCamera.HOME_Y), 1.0, "clear")
+	for i in 1200:
+		sky._process(0.1)
+	check(sky.birds().is_empty(), "and none fly at night")
+	sky.free()

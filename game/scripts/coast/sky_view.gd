@@ -116,6 +116,10 @@ var _aurora: Sprite2D
 ## How bright the northern lights are, easing in after dusk and out before dawn, and how far they have rippled.
 var _aurora_amount := 0.0
 var _aurora_clock := 0.0
+## The birds crossing the sky: {"pos", "vel", "phase", "swallow"}, in sky pixels; and seconds until the next flock.
+var _birds: Array = []
+var _bird_wait := 5.0
+var _flock: Node2D
 ## Shows the lights tonight whatever the night, for --aurora; `aurora_shape` "rising" or "across" picks their shape.
 var force_aurora := false
 var aurora_shape := ""
@@ -372,6 +376,7 @@ func _process(delta: float) -> void:
 	_place_clouds()
 	_paint()
 	_show_aurora(delta)
+	_fly_birds(delta)
 
 
 func _paint() -> void:
@@ -420,6 +425,54 @@ static func aurora_night(seed: int, evening: int, seen: bool) -> bool:
 	if evening >= int(Data.num("sky.aurora_sure_after_days", 30)) and not seen:
 		return true
 	return Seeds.rng(seed, "aurora", evening).randf() < Data.num("sky.aurora_chance", 0.07)
+
+
+func birds() -> Array:
+	return _birds
+
+
+## As in Farmus Maximus, a flock crosses the sky every half minute or so by day: gulls high up, or swallows swooping
+## lower at dusk. None fly at night or in a storm.
+func _fly_birds(delta: float) -> void:
+	if _flock == null:
+		_flock = Node2D.new()
+		_flock.draw.connect(_draw_birds)
+		add_child(_flock)
+	_bird_wait -= delta
+	if _bird_wait <= 0.0:
+		_bird_wait = randf_range(25.0, 60.0)
+		if SkyPalette.night_amount(hour) < 0.5 and weather != "storm":
+			_spawn_flock(hour >= 17.0 and hour < 20.0)
+	for b in _birds:
+		b["phase"] += delta
+		b["pos"] += b["vel"] * delta
+		if b["swallow"]:
+			b["pos"].y += cos(b["phase"] * 3.0) * 22.0 * delta
+	var span := view_span()
+	_birds = _birds.filter(func(b): return b["pos"].x > span.x - 80.0 and b["pos"].x < span.y + 80.0)
+	_flock.queue_redraw()
+
+
+func _spawn_flock(swallows: bool) -> void:
+	var span := view_span()
+	var left := randf() < 0.5
+	var y := randf_range(40.0, 75.0) if swallows else randf_range(12.0, 60.0)
+	var speed := (randf_range(60.0, 90.0) if swallows else randf_range(26.0, 40.0)) * (1.0 if left else -1.0)
+	for i in randi_range(3, 6):
+		var x := span.x - 10.0 - i * 9.0 if left else span.y + 10.0 + i * 9.0
+		_birds.append({"pos": Vector2(x, y + randf_range(-6.0, 6.0)), "vel": Vector2(speed, randf_range(-1.5, 1.5)), "phase": randf() * 5.0, "swallow": swallows})
+
+
+func _draw_birds() -> void:
+	var lit := light(hour)
+	for b in _birds:
+		var p: Vector2 = b["pos"].round()
+		var up := fmod(b["phase"] * (4.0 if b["swallow"] else 2.5), 1.0) < 0.5
+		var c := Color(0.2, 0.17, 0.24) if b["swallow"] else Color(0.95, 0.95, 0.92) * lit
+		# A gull's wingtips are dark, which shows it against a pale sky.
+		var tip := c if b["swallow"] else Color(0.4, 0.4, 0.46) * lit
+		for d in ([Vector2(-2, -1), Vector2(-1, 0), Vector2(0, 0), Vector2(1, 0), Vector2(2, -1)] if up else [Vector2(-2, 1), Vector2(-1, 0), Vector2(0, 0), Vector2(1, 0), Vector2(2, 1)]):
+			_flock.draw_rect(Rect2(p + d, Vector2.ONE), tip if absf(d.x) == 2.0 else c)
 
 
 func aurora_amount() -> float:
