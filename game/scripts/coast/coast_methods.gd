@@ -30,6 +30,12 @@ func setup(s: Node, rng: RandomNumberGenerator) -> void:
 	method = str(Game.state.get("method", "line"))
 	if not method in METHODS:
 		method = "line"
+	# A game saved while he fished on his own here carries on so; one saved elsewhere ended when the boat left.
+	if Game.state.has("idle"):
+		if str(Game.state["idle"].get("place", "")) == screen.place_id:
+			idle = true
+		else:
+			Game.state.erase("idle")
 	# --idle starts him fishing on his own, and --idle-speed=N runs his fishing N times faster, for checks.
 	if Dev.has("idle"):
 		set_idle.call_deferred(true)

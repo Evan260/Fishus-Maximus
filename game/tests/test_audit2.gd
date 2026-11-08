@@ -78,3 +78,26 @@ func test_a_nibbling_fish_keeps_its_mouth_on_the_drifting_bait() -> void:
 		s._process(0.05)
 	check(Swimmers.mouth_at(f).distance_to(s.hook + Swimmers.BAIT_MIDDLE) <= 2.0, "and its mouth stays on the bait as the hook drifts, %s against %s" % [Swimmers.mouth_at(f), s.hook + Swimmers.BAIT_MIDDLE])
 	_done(s)
+
+
+func _coast_at(place: String) -> Node:
+	for c in Nav.ui.get_children():
+		c.free()
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": place})
+	return s
+
+
+func test_a_game_saved_while_he_fished_on_his_own_carries_on_so() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["idle"] = {"place": "harbour", "bait": "worm", "depth": 30.0, "water": 60.0}
+	var s := _coast_at("harbour")
+	s._process(0.05)
+	check(s.methods.idle, "back at the same place, he is still fishing on his own")
+	_done(s)
+	Game.state["idle"] = {"place": "rocky_shore", "bait": "worm", "depth": 30.0, "water": 60.0}
+	s = _coast_at("harbour")
+	s._process(0.05)
+	check(not s.methods.idle and not Game.state.has("idle"), "and elsewhere it is over, not left set in the save")
+	_done(s)
