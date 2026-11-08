@@ -101,3 +101,21 @@ func test_a_game_saved_while_he_fished_on_his_own_carries_on_so() -> void:
 	s._process(0.05)
 	check(not s.methods.idle and not Game.state.has("idle"), "and elsewhere it is over, not left set in the save")
 	_done(s)
+
+
+func test_fishing_on_his_own_while_away_uses_bait() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["bait"] = {"worm": 3}
+	Game.state["idle"] = {"place": "harbour", "bait": "worm", "depth": 30.0, "water": 60.0}
+	Game.state["last_real_time"] = Time.get_unix_time_from_system() - 8 * 3600
+	var before: int = Game.state["hold"].size() + Game.state["live_well"].size()
+	Game.catch_up()
+	var caught: int = Game.state["hold"].size() + Game.state["live_well"].size() - before
+	check(caught > 0 and caught <= 3, "with three worms he catches at most three fish while you are away, %d" % caught)
+	check(int(Game.state["bait"]["worm"]) == 3 - caught, "using a worm for each")
+	Game.new_game("Test", "mutt")
+	Game.state["bait"] = {}
+	Game.state["idle"] = {"place": "harbour", "bait": "", "depth": 30.0, "water": 60.0}
+	Game.state["last_real_time"] = Time.get_unix_time_from_system() - 8 * 3600
+	Game.catch_up()
+	check(Game.state["hold"].is_empty(), "and with no bait he catches nothing")
