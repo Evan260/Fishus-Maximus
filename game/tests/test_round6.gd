@@ -170,3 +170,17 @@ func test_the_sky_reaches_the_top_of_a_raised_view() -> void:
 	sky.follow(Vector2(300, CoastCamera.HOME_Y - 110.0), 12.0, "clear")
 	check(sky.position.y + sky._gradient.position.y <= Nav.port.canvas_transform.origin.y + 0.5, "no black band shows above the sky while the view is up")
 	sky.free()
+
+
+func test_the_dog_sits_down_once_and_stays_sitting() -> void:
+	var s := _coast()
+	s.dog._process(0.1)
+	var settled := []
+	for i in 40:
+		s.dog._process(0.1)
+		if i >= 20:
+			settled.append(s.dog.frame())
+	check(settled.all(func(f): return f == settled[0]), "once it has sat down it stays sitting, not standing up again: %s" % [settled])
+	check(settled[0] == s.dog.frames_of("sit_east").size() - 1, "and it rests on the last frame of sitting down")
+	_done(s)
+

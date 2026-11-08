@@ -7,10 +7,15 @@ extends Node2D
 ## Farmus's little heart, five pixels square.
 static var HEART: ImageTexture = _heart_texture()
 
+## Sitting down and lying down are painted from standing, so they play once and then hold their last frame.
+const SETTLES := ["sit_east", "sleep_east"]
+const FPS := 8.0
+
 var screen: Node
-var mood := "sit"
+var mood := "sit_east"
 var _frames := {}
-var _t := 0.0
+## Seconds since the dog changed what it is doing.
+var _since := 0.0
 var _happy_left := 0.0
 var _bark_left := 0.0
 
@@ -75,15 +80,29 @@ func _heart() -> void:
 	t.chain().tween_callback(heart.queue_free)
 
 
+func frames_of(move: String) -> Array:
+	return _frames.get(move, [])
+
+
+## The frame it shows now: wagging goes round and round, while sitting or lying down stops once it is done.
+func frame() -> int:
+	var count := frames_of(mood).size()
+	if count == 0:
+		return 0
+	var i := int(_since * FPS)
+	return mini(i, count - 1) if mood in SETTLES else i % count
+
+
 ## Where the dog is on screen, for petting it with a click.
 func rect() -> Rect2:
 	return Rect2(position + Vector2(-18, -40), Vector2(36, 42))
 
 
 func _process(delta: float) -> void:
-	_t += delta
+	_since += delta
 	_happy_left = maxf(0.0, _happy_left - delta)
 	_bark_left = maxf(0.0, _bark_left - delta)
+	var was := mood
 	if _asleep():
 		mood = "sleep_east"
 		_happy_left = 0.0
@@ -91,6 +110,8 @@ func _process(delta: float) -> void:
 		mood = "happy_east"
 	else:
 		mood = "sit_east"
+	if mood != was:
+		_since = 0.0
 	var facing: float = screen.facing()
 	position = screen.boat_screen_position() + screen.dog_seat().round()
 	scale = Vector2(1.0 if facing > 0.0 else -1.0, 1.0)
@@ -98,10 +119,10 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	var frames: Array = _frames.get(mood, [])
+	var frames: Array = frames_of(mood)
 	if frames.is_empty():
 		return
-	var tex: Texture2D = frames[int(_t * 8.0) % frames.size()]
+	var tex: Texture2D = frames[frame()]
 	draw_texture(tex, -Vector2(tex.get_width() / 2.0, tex.get_height() - 8.0))
 	if _bark_left > 0.0:
 		draw_string(UiTheme.title_font(), Vector2(-2, -44), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
