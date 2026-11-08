@@ -224,3 +224,28 @@ func test_pots_are_bought_one_at_a_time() -> void:
 	Game.state["chapter"] = 4
 	check(Shop.on_sale(Game.state, "trap_3"), "with two pots the third is for sale")
 	check(not Shop.on_sale(Game.state, "trap_6"), "but not the sixth, which would skip the price of the ones between")
+
+
+## The orders the board posts over many mornings, from a game at this chapter.
+func _orders(chapter: int, mornings := 150, setup := Callable()) -> Array:
+	Game.new_game("Test", "mutt")
+	Game.state["chapter"] = chapter
+	if setup.is_valid():
+		setup.call()
+	var out := []
+	var rng := Seeds.rng(5, "board")
+	for i in mornings:
+		Game.state["orders"] = []
+		Game.state["time"] = float(i) * 1440.0
+		Orders.new_day(Game.state, rng)
+		out.append_array(Game.state["orders"])
+	return out
+
+
+func test_the_board_never_asks_for_a_legend_already_caught() -> void:
+	var asked := _orders(5, 150, func():
+		for id in Data.fish:
+			if Data.fish[id]["legend"]:
+				Game.state["legends"][id] = true)
+	var legends := asked.filter(func(o): return Data.fish[o["fish"]]["legend"])
+	check(legends.is_empty(), "with every legend caught, none is ordered, %d were" % legends.size())

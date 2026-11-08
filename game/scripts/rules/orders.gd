@@ -16,7 +16,7 @@ static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
 	expire(state)
 	var places := Story.reachable(state)
 	var legends_open := int(state["chapter"]) >= 5
-	var kinds := Data.fish.keys().filter(func(id): return (legends_open or not Data.fish[id]["legend"]) \
+	var kinds := Data.fish.keys().filter(func(id): return (not Data.fish[id]["legend"] or (legends_open and not state["legends"].has(id))) \
 		and Data.fish[id]["places"].any(func(p): return p in places))
 	if kinds.is_empty():
 		return
