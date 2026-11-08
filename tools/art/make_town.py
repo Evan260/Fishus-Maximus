@@ -5,10 +5,10 @@ shows more street, and any part of a building that came out wrong is painted aga
 paving painted inside an outline are given back to the street, so each building ends at its own edges, the fish
 market's right column is finished, the paving round the goldsmith is laid again from the street's own slabs, the hall's
 post by the goldsmith is moved in front of it and down to the paving, so the goldsmith stands inside the hall, its
-lantern hangs beside the post, the painted sky is cleared so the game's own sky shows above the wall, and each building
-is cut out along the outline traced round it, to be clicked and outlined in gold when the mouse is over it. Writes
-game/assets/art/town/street.png (the scene with MARGIN more on every side), <id>.png for each building, and town.json
-with where each stands in the scene.
+lantern hangs beside the post and again on the hall's left post, the painted sky is cleared so the game's own sky shows
+above the wall, and each building is cut out along the outline traced round it, to be clicked and outlined in gold
+when the mouse is over it. Writes game/assets/art/town/street.png (the scene with MARGIN more on every side), <id>.png
+for each building, and town.json with where each stands in the scene.
 Usage: python tools/art/make_town.py [--no-paint]   (--no-paint only cuts out what is already painted)"""
 import json
 import shutil
@@ -133,10 +133,10 @@ COPING = (75, 99)
 # The goldsmith's lantern as painted, (row, first column, last column), which the post now covers.
 LANTERN = [(156, 416, 417), (157, 416, 417), (158, 416, 417), (159, 416, 417), (160, 414, 418)] + \
           [(y, 413, 418) for y in range(161, 170)]
-# Where it hangs instead, (columns, rows) from there: beside the post from the stall's awning.
-LANTERN_SHIFTS = [(10, 0)]
-# The iron it hangs from, (first row, last row, first column, last column): a chain up to the awning.
-LANTERN_IRON = [(151, 155, 426, 426)]
+# Where it hangs instead, (columns, rows) from there: beside the post from the stall's awning, and on the left post.
+LANTERN_SHIFTS = [(10, 0), (-376, -6)]
+# The iron each hangs from, (first row, last row, first column, last column): a chain, and an arm from the left post.
+LANTERN_IRON = [(151, 155, 426, 426), (149, 149, 40, 44)]
 
 
 def run(args):

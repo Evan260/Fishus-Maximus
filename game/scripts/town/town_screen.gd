@@ -13,6 +13,11 @@ const CLIENT_SPOTS := [146.0, 318.0]
 const PEOPLE := "res://assets/art/people/"
 const AROUND := [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
 	Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]
+## The flames of the town's lamps, in the scene's pixels: the goldsmith's lantern beside the hall's post, the hall's
+## lantern on its left post, and the oil lamp hanging under the fish market's awning.
+const LAMPS := [Vector2(426.5, 165.5), Vector2(40.5, 159.5), Vector2(103.5, 153.5)]
+## The green of the light at night, when the lamps burn their brightest.
+const NIGHT_GREEN := 0.5
 
 var hovered := ""
 var _masks := {}
@@ -29,6 +34,9 @@ var _stage: Node2D
 var _lit: Node2D
 var _street: Sprite2D
 var _sky: AshoreSky
+var lamps: Array[Lamp] = []
+## Seconds since the street opened, which the lamps' flames waver by.
+var _clock := 0.0
 ## How far the street picture is painted past the 480 by 270 scene on each side.
 var margin := Vector2.ZERO
 
@@ -53,6 +61,15 @@ func enter(args: Dictionary) -> void:
 		margin = ((_street.texture.get_size() - Nav.SIZE) / 2.0).floor()
 		_street.position = -margin
 		_lit.add_child(_street)
+	for at in LAMPS:
+		var lamp := Lamp.new()
+		lamp.position = at
+		lamp.radius = 50.0
+		# Lamplight adds to the street's own colour, which the night has already dimmed, so it burns strong.
+		lamp.power = 2.2
+		lamp.halo_size = 12.0
+		_stage.add_child(lamp)
+		lamps.append(lamp)
 	Windowing.view_changed.connect(_place)
 	_place()
 	_relight()
@@ -75,6 +92,7 @@ func enter(args: Dictionary) -> void:
 	_painter = Node2D.new()
 	_painter.draw.connect(_draw_over)
 	_painter.z_index = 2
+	_painter.light_mask = 0
 	_stage.add_child(_painter)
 	_spawn_folk()
 	_place_clients()
@@ -132,9 +150,15 @@ func _place() -> void:
 		_stage.transform = Nav.cover(margin)
 
 
-## Lays the live sky behind the street and lights the street for the hour and the weather.
+## Lays the live sky behind the street and lights the street for the hour and the weather, and the lamps the more the
+## darker it is, each flame wavering on its own.
 func _relight() -> void:
-	_lit.modulate = _sky.follow(_stage.transform)
+	var light := _sky.follow(_stage.transform)
+	_lit.modulate = light
+	var dark := clampf((1.0 - light.g) / (1.0 - NIGHT_GREEN), 0.0, 1.0)
+	for i in lamps.size():
+		var t := _clock + i * 2.3
+		lamps[i].shine((0.2 + 0.8 * dark) * (0.85 + 0.1 * sin(t * 9.0) + 0.05 * sin(t * 23.0)))
 
 
 func _refresh_ui() -> void:
@@ -213,6 +237,7 @@ func _process(delta: float) -> void:
 		_folk[0]["x"] = 200.0
 		_gossip(_folk[0])
 	Audio.set_ambience({"market": 0.5, "gulls": 0.2})
+	_clock += delta
 	_relight()
 	for f in _folk:
 		var s: Sprite2D = f["sprite"]
