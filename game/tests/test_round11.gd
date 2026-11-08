@@ -160,3 +160,14 @@ func test_a_leap_throws_up_a_splash_that_shows() -> void:
 	check(highest >= big, "flung well clear of the water, %.0f pixels up" % highest)
 	check(LineView.splash_drops(big, 1.0, LineView.SPLASH_SECONDS).all(func(d): return d.y >= 0.0), "and all of them fallen back in by its end")
 	check(LineView.SPLASH_SECONDS >= 0.9, "lasting long enough to see")
+
+
+func test_messages_start_below_the_info_panel() -> void:
+	var s := _coast()
+	Toast.say("Your pot sinks to the seabed.")
+	var panel: Control = Nav.ui.find_child("InfoPanel", true, false)
+	check(panel != null, "the coast has its info panel at the top left")
+	if panel:
+		var bottom := panel.position.y + panel.get_combined_minimum_size().y
+		check(Toast._box.offset_top >= bottom, "the message starts at %.0f, below the panel's bottom at %.0f, so it is never written over it" % [Toast._box.offset_top, bottom])
+	_done(s)

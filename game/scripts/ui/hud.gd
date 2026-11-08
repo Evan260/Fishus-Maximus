@@ -28,6 +28,7 @@ func setup(s: Node) -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var top := PanelContainer.new()
+	top.name = "InfoPanel"
 	top.position = Vector2(4, 4)
 	add_child(top)
 	var col := VBoxContainer.new()

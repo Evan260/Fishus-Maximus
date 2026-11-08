@@ -51,6 +51,8 @@ static func place() -> void:
 	_box.anchor_bottom = 1.0 if low else 0.0
 	_box.offset_left = note.offset_left if under else (80 if low else 16)
 	_box.offset_right = note.offset_right if under else -16
-	_box.offset_top = -4 if low else (note.offset_bottom + 3 if under else 30)
+	var panel: Control = Nav.ui.find_child("InfoPanel", true, false)
+	var below := maxf(30.0, panel.position.y + panel.get_combined_minimum_size().y + 3.0) if panel and panel.is_visible_in_tree() else 30.0
+	_box.offset_top = -4 if low else (note.offset_bottom + 3 if under else below)
 	_box.offset_bottom = _box.offset_top
 	_box.grow_vertical = Control.GROW_DIRECTION_BEGIN if low else Control.GROW_DIRECTION_END
