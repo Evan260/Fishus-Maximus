@@ -259,3 +259,14 @@ func test_the_board_asks_only_for_fish_you_can_catch_now() -> void:
 		var seasons: Array = Data.fish[o["fish"]]["seasons"]
 		return not seasons.is_empty() and not Clock.season(int(o["due"])) in seasons and not Clock.season(int(o["due"]) - 2) in seasons)
 	check(unseasonal.is_empty(), "nor a fish out of its season, %d were" % unseasonal.size())
+
+
+func test_orders_for_the_smallest_fish_ask_a_fair_weight() -> void:
+	var asked := _orders(3, 300)
+	var small := asked.filter(func(o): return float(Data.fish[o["fish"]]["pounds"][1]) < 1.0)
+	check(not small.is_empty(), "the board orders small fish too")
+	for o in small:
+		var r: Array = Data.fish[o["fish"]]["pounds"]
+		var lb := float(o["min_pounds"])
+		check(lb > float(r[0]) * 0.99 and lb < float(r[1]), "%s: asks %.3f lb, inside its %.2f to %.2f lb, not nothing and not its very biggest" % [o["fish"], lb, r[0], r[1]])
+		check(Units.need(lb) != "0 kg" and Units.need(lb) != "0 lb", "%s: and the board shows a weight, not %s" % [o["fish"], Units.need(lb)])

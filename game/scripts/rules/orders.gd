@@ -35,7 +35,8 @@ static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
 		var f: Dictionary = Data.fish[fish]
 		var lo := float(f["pounds"][0])
 		var hi := float(f["pounds"][1])
-		var min_lb := snappedf(lo + (hi - lo) * rng.randf_range(0.05, 0.4), 0.1)
+		# A small fish's weight is asked to the hundredth, or it would round to nothing or to its very biggest.
+		var min_lb := snappedf(lo + (hi - lo) * rng.randf_range(0.05, 0.4), 0.01 if hi < 1.0 else 0.1)
 		var catchable_alive: bool = f.get("live", false) and f["methods"].any(func(m): return m in ["line", "trap"])
 		var alive: bool = catchable_alive and Hold.well_room(state) + state["live_well"].size() > 0 and rng.randf() < 0.3
 		var worth := Catalog.value(fish, min_lb, 1.0)

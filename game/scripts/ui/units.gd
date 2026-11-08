@@ -14,9 +14,12 @@ static func weight(lb: float) -> String:
 	return (("%.2f" % v) if v < 1.0 else ("%.1f" % v)) + _unit()
 
 
-## A weight asked for or suited, rounded so it reads as a person would say it: one decimal under ten, whole above.
+## A weight asked for or suited, rounded so it reads as a person would say it: two decimals under a tenth, one under
+## ten, whole above.
 static func need(lb: float) -> String:
 	var v := _amount(lb)
+	if v < 0.1:
+		return ("%.2f" % snappedf(v, 0.01)).trim_suffix("0") + _unit()
 	v = snappedf(v, 0.1) if v < 10.0 else roundf(v)
 	var text := "%.1f" % v
 	return (text.trim_suffix(".0")) + _unit()
