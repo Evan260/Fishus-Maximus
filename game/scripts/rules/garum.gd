@@ -22,6 +22,11 @@ static func restore(state: Dictionary, tank: int) -> bool:
 	return true
 
 
+## How much fish makes an amphora, which is also the least a tank is filled with.
+static func per_amphora() -> float:
+	return float(Data.garum.get("pounds_per_amphora", 5))
+
+
 static func salt_needed(pounds: float) -> int:
 	return int(ceilf(pounds * float(Data.garum.get("salt_per_pound", 0.25))))
 
@@ -32,7 +37,7 @@ static func fill(state: Dictionary, tank: int, fish: Array, salt: int) -> bool:
 	var pounds := 0.0
 	for f in fish:
 		pounds += float(f["pounds"])
-	if not t["restored"] or float(t["pounds"]) > 0.0 or pounds <= 0.0 or salt < salt_needed(pounds) or int(state.get("salt", 0)) < salt:
+	if not t["restored"] or float(t["pounds"]) > 0.0 or pounds < per_amphora() or salt < salt_needed(pounds) or int(state.get("salt", 0)) < salt:
 		return false
 	state["salt"] = int(state.get("salt", 0)) - salt
 	var kinds := {}
@@ -86,7 +91,7 @@ static func take(state: Dictionary, tank: int) -> Dictionary:
 	var g := grade(t)
 	if g == "":
 		return {}
-	var n := maxi(1, int(float(t["pounds"]) / float(Data.garum.get("pounds_per_amphora", 5))))
+	var n := maxi(1, int(float(t["pounds"]) / per_amphora()))
 	var had := int(state["garum"].get(g, 0))
 	var qualities: Dictionary = state["garum_quality"] if state.get("garum_quality") is Dictionary else {}
 	# A save from before each grade kept its own quality has one number, which every grade in store shares.

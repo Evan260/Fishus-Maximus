@@ -193,3 +193,13 @@ func test_the_dog_still_shows_when_it_naps() -> void:
 			check(s.dog.mood == "sleep_east", "%s, %s: the dog naps while he fishes on his own" % [id, breed])
 			check(s.dog.shown_rows() >= 8, "%s, %s: and enough of it shows over the gunwale to see it lying there, %d rows" % [id, breed, s.dog.shown_rows()])
 			_done(s)
+
+
+func test_a_tank_needs_an_amphoras_worth_of_fish() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["salt"] = 20
+	var each := float(Data.garum["pounds_per_amphora"])
+	check(not Garum.fill(Game.state, 0, [{"fish": "mackerel", "pounds": 0.3}], 1), "one little mackerel is not enough to fill a tank")
+	check(Garum.fill(Game.state, 0, [{"fish": "mackerel", "pounds": each * 2.4}], Garum.salt_needed(each * 2.4)), "a tank's worth of fish fills it")
+	Game.state["tanks"][0]["days"] = 30
+	check(int(Garum.take(Game.state, 0)["amphorae"]) == 2, "and gives an amphora for each %.0f lb of fish" % each)

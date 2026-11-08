@@ -146,7 +146,7 @@ The heart of the game: a living collection you build, breed and show off.
 ## The garum works
 
 - **The tanks.** One of the eight stone tanks works at the start. The rest are restored with denarii and stone.
-- **Filling a tank.** A tank takes fish by weight and salt by measure, then ferments for days. Stirring it each day raises the quality; a hired helper can do it.
+- **Filling a tank.** A tank takes fish by weight and salt by measure, at least an amphora's worth of fish (5 lb), then ferments for days. Stirring it each day raises the quality; a hired helper can do it.
 - **The grades,** by the fish used and the days left:
   - **Allec,** the paste left at the bottom, after 3 days.
   - **Muria,** the brine, after 5.

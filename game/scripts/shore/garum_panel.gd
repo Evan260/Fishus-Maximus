@@ -38,9 +38,11 @@ static func open() -> void:
 					for f in fish:
 						Game.state["hold"].erase(f)
 					Game.changed.emit()
+				elif pounds < Garum.per_amphora():
+					Toast.say("A tank needs at least %s of fish." % Units.weight(Garum.per_amphora()))
 				else:
 					Toast.say("Not enough salt.")
-				open(), pounds > 0.0 and int(Game.state.get("salt", 0)) >= need)
+				open(), pounds >= Garum.per_amphora() and int(Game.state.get("salt", 0)) >= need)
 		else:
 			var g := Garum.grade(t)
 			var name: String = Garum.grade_info(g).get("name", "not ready")
