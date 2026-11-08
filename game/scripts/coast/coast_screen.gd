@@ -270,6 +270,11 @@ func dog_seat() -> Vector2:
 	return _boat.dog_seat()
 
 
+## The row of the boat's picture below which the hull's near side hides the dog, so it is drawn down to there only.
+func dog_cut() -> float:
+	return _boat.seat.y + 3.0
+
+
 ## In the desktop strip the fisherman fishes on his own and the panels make way for the view.
 func _on_view_changed() -> void:
 	charge = -1.0

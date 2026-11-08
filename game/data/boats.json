@@ -8,9 +8,13 @@
 		"price": 0,
 		"text": "Your uncle's rowing skiff.",
 		"oars": true,
+		"seat": [
+			0.62,
+			27
+		],
 		"dog": [
-			0.3,
-			36
+			0.34,
+			39
 		]
 	},
 	{
@@ -21,14 +25,14 @@
 		"speed": 50,
 		"dog": [
 			0.72,
-			35
+			38
 		],
 		"price": 300,
 		"text": "Reaches the Lucrine Lake and the open bay, and keeps two fish alive.",
 		"oars": true,
 		"seat": [
 			0.5,
-			21
+			26
 		]
 	},
 	{

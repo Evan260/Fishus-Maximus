@@ -16,6 +16,8 @@ var mood := "sit_east"
 var _frames := {}
 ## Seconds since the dog changed what it is doing.
 var _since := 0.0
+## How far below its seat the dog is drawn; the hull's near side hides the rest, and the keel curves up above its feet.
+var cut := INF
 var _happy_left := 0.0
 var _bark_left := 0.0
 
@@ -114,6 +116,7 @@ func _process(delta: float) -> void:
 		_since = 0.0
 	var facing: float = screen.facing()
 	position = screen.boat_screen_position() + screen.dog_seat().round()
+	cut = screen.dog_cut() - roundf(screen.dog_seat().y)
 	scale = Vector2(1.0 if facing > 0.0 else -1.0, 1.0)
 	queue_redraw()
 
@@ -123,6 +126,8 @@ func _draw() -> void:
 	if frames.is_empty():
 		return
 	var tex: Texture2D = frames[frame()]
-	draw_texture(tex, -Vector2(tex.get_width() / 2.0, tex.get_height() - 8.0))
+	var top := -Vector2(tex.get_width() / 2.0, tex.get_height() - 8.0)
+	var rows := clampf(cut - top.y, 0.0, tex.get_height())
+	draw_texture_rect_region(tex, Rect2(top, Vector2(tex.get_width(), rows)), Rect2(0, 0, tex.get_width(), rows))
 	if _bark_left > 0.0:
 		draw_string(UiTheme.title_font(), Vector2(-2, -44), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)

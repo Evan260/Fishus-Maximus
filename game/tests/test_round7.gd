@@ -55,3 +55,45 @@ func test_a_picture_painted_past_its_edges_keeps_the_whole_scene_in_view() -> vo
 		var cut := scene.size.x - view.intersection(scene).size.x
 		check(cut <= 0.01 or size == Vector2i(1918, 1007), "%s: and the whole width of the scene stays on screen" % size)
 	_resize(before)
+
+
+func test_the_dog_sits_in_front_of_the_far_rail() -> void:
+	for id in ["skiff", "fishing_boat"]:
+		var b := BoatView.new()
+		b.set_boat(id)
+		var img: Image = b.boat.texture.get_image()
+		var x := int(b.dog_seat().x)
+		var behind := 0
+		for y in int(b.seat.y):
+			if img.get_pixel(x, y).a > 0.5:
+				behind += 1
+		check(behind >= 2, "%s: the far rail above the near side is drawn behind the dog, %d rows of it" % [id, behind])
+		check(b.dog_seat().y - b.seat.y >= 12.0, "%s: and the near side still hides the dog's legs" % id)
+		b.free()
+
+
+func test_the_dog_never_shows_below_the_hull() -> void:
+	for id in ["skiff", "fishing_boat", "sailing_boat", "big_boat"]:
+		for c in Nav.ui.get_children():
+			c.free()
+		Game.new_game("Test", "hound")
+		Game.state["boat"] = id
+		var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+		Nav.port.add_child(s)
+		s.enter({"place": "harbour", "boat_x": 400.0})
+		s.dog._process(0.1)
+		var img: Image = s._boat.boat.texture.get_image()
+		var seat: Vector2 = s.dog_seat()
+		var lowest := 1000
+		for x in range(int(seat.x) - 16, int(seat.x) + 17):
+			var b := -1
+			for y in img.get_height():
+				if img.get_pixel(clampi(x, 0, img.get_width() - 1), y).a > 0.5:
+					b = y
+			lowest = mini(lowest, b)
+		var deepest: float = seat.y + s.dog.cut
+		check(deepest <= lowest, "%s: the dog is drawn no lower than row %d, inside the hull's bottom at %d" % [id, deepest, lowest])
+		check(deepest >= s._boat.seat.y, "%s: and down to the near rail, which then hides the rest of it" % id)
+		s.free()
+	for c in Nav.ui.get_children():
+		c.free()
