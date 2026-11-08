@@ -97,3 +97,12 @@ func test_the_dog_never_shows_below_the_hull() -> void:
 		s.free()
 	for c in Nav.ui.get_children():
 		c.free()
+
+
+func test_the_jetty_runs_on_to_the_shore_past_the_view() -> void:
+	var layers: Array = Data.places["harbour"]["layers"]
+	var jetty: Dictionary = layers.filter(func(l): return str(l.get("file", "")).ends_with("jetty.png"))[0]
+	check(float(jetty["world"][0]) <= -30.0, "the jetty's shore end lies past the harbour's end, where the view never goes")
+	var width := float(load("res://assets/art/" + str(jetty["file"])).get_width())
+	var under := layers.filter(func(l): return str(l.get("file", "")).ends_with("boulders.png") and float(l["world"][0]) < float(jetty["world"][0]) + width)
+	check(under.is_empty(), "and no round boulder sits under it")

@@ -113,8 +113,8 @@ specs[p] = {
       + bed(p, "urchins.png", "two spiny dark purple sea urchins resting on a small pale stone", "48x32", [640, 1200])
       + bed(p, "anchor.png", "an old Roman anchor with a lead stock and a wooden shank lying on the sand, encrusted with weed", "64x48", [940])
       + bed(p, "reef.png", "a big natural rough rounded sea rock with an irregular lumpy outline, covered in red sea fans, orange sponges and green weed", "160x112", [1150], sink=10)
-      + bed(p, "boulders.png", "a few big rounded boulders with brown seaweed in dim light, sitting on the sand", "128x64", [1320, 60], sink=8)
-      + [{"file": "jetty.png", "use": "places/harbour/jetty.png", "world": [0, -22], "z": -9, "through": True}],
+      + bed(p, "boulders.png", "a few big rounded boulders with brown seaweed in dim light, sitting on the sand", "128x64", [1320], sink=8)
+      + [{"file": "jetty.png", "use": "places/harbour/jetty.png", "world": [-40, -22], "z": -9, "through": True}],
 
 }
 

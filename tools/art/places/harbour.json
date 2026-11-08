@@ -307,18 +307,10 @@
    "size": "128x64"
   },
   {
-   "file": "boulders.png",
-   "on_bed": 60,
-   "sink": 8,
-   "z": -9,
-   "mirror": true,
-   "use": "places/harbour/boulders.png"
-  },
-  {
    "file": "jetty.png",
    "use": "places/harbour/jetty.png",
    "world": [
-    0,
+    -40,
     -22
    ],
    "z": -9,
