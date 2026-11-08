@@ -202,6 +202,11 @@ func _place_clients() -> void:
 
 func _process(delta: float) -> void:
 	World.advance(Game.state, delta / 60.0, _rng)
+	# --talk has the first townsperson stop in the middle of the street and speak, for screenshots.
+	if Dev.has("talk") and not _folk.is_empty() and not has_meta("talked") and Time.get_ticks_msec() > 1500:
+		set_meta("talked", true)
+		_folk[0]["x"] = 200.0
+		_gossip(_folk[0])
 	Audio.set_ambience({"market": 0.5, "gulls": 0.2})
 	_relight()
 	for f in _folk:
@@ -218,7 +223,9 @@ func _process(delta: float) -> void:
 		f["phase"] += delta * 9.0 if walking else 0.0
 		s.texture = f["walk"][int(f["phase"]) % f["walk"].size()] if walking else f["stand"]
 		s.flip_h = f["dir"] < 0.0
-		s.position = Vector2(roundf(f["x"]), STREET_Y - 46.0)
+		# The standing picture is smaller than the walking ones, so it is set down on the same feet.
+		var shift := Vector2.ZERO if walking else _foot(f["walk"][0], s.flip_h) - _foot(s.texture, s.flip_h)
+		s.position = Vector2(roundf(f["x"]), STREET_Y - 46.0) + shift
 	var mouse := _stage.get_local_mouse_position()
 	hovered = "" if Ui.window_open() else _building_at(mouse)
 	_painter.queue_redraw()
@@ -263,7 +270,8 @@ func _unhandled_input(e: InputEvent) -> void:
 			return
 	for f in _folk:
 		var s: Sprite2D = f["sprite"]
-		if Rect2(s.position + Vector2(12, 8), Vector2(24, 40)).has_point(at):
+		var foot := s.position + _foot(s.texture, s.flip_h)
+		if Rect2(foot + Vector2(-12, -44), Vector2(24, 44)).has_point(at):
 			_gossip(f)
 			return
 	match _building_at(at):
@@ -280,14 +288,33 @@ func _unhandled_input(e: InputEvent) -> void:
 
 
 ## A line from a townsperson: something of their own, a hint about a fish, or a legend's clue.
+## Where a picture of a person stands: the middle of its widest columns and the row under its feet.
+static var _feet := {}
+
+
+static func _foot(tex: Texture2D, flipped: bool) -> Vector2:
+	if not _feet.has(tex):
+		var used := tex.get_image().get_used_rect()
+		_feet[tex] = [used.position.x + (used.size.x - 1) / 2.0, float(used.end.y), float(used.position.y), float(tex.get_width())]
+	var f: Array = _feet[tex]
+	return Vector2(f[3] - 1.0 - f[0] if flipped else f[0], f[1])
+
+
+## The top of a townsperson's head on the screen, for the bubble they speak in.
+func head_on_screen(f: Dictionary) -> Vector2:
+	var s: Sprite2D = f["sprite"]
+	var top := Vector2(_foot(s.texture, s.flip_h).x, _feet[s.texture][2])
+	return s.get_global_transform_with_canvas() * top
+
+
 func _gossip(f: Dictionary) -> void:
-	f["pause"] = 3.0
+	f["pause"] = 4.0
 	var person: Dictionary = Data.townsfolk[f["id"]]
 	var line: String = person["lines"][_rng.randi() % person["lines"].size()]
 	var roll := _rng.randf()
 	var legends := Data.fish.values().filter(func(x): return x["legend"] and not Game.state["legends"].has(x["id"]))
 	if roll < 0.3 and not legends.is_empty():
-		line = "They say %s" % str(legends[_rng.randi() % legends.size()]["clue"]).to_lower()
+		line = str(legends[_rng.randi() % legends.size()]["clue"])
 	elif roll < 0.6:
 		line = Gossip.habit(Game.state, _rng)
-	Toast.say("%s the %s: \"%s\"" % [person["name"], person["trade"], line])
+	Ui.speech(head_on_screen(f), line, func(): return head_on_screen(f))

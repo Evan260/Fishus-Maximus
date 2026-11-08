@@ -240,6 +240,52 @@ static func wrapped(text: String, width: int) -> String:
 	return "\n".join(lines)
 
 
+## A speech bubble over someone's head, as in Farmus Maximus: a small parchment note with a tail pointing down at them
+## that fades after a few seconds; a new one replaces any still showing. `follow` keeps it over a speaker who moves.
+static func speech(at: Vector2, text: String, follow := Callable()) -> PanelContainer:
+	for old in Nav.ui.get_children():
+		if old.has_meta("speech"):
+			old.free()
+	var paper := Color(0.99, 0.95, 0.86)
+	var bubble := PanelContainer.new()
+	bubble.set_meta("speech", true)
+	bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var box := StyleBoxFlat.new()
+	box.bg_color = paper
+	box.border_color = UiTheme.INK
+	box.set_border_width_all(1)
+	box.set_content_margin_all(4)
+	bubble.add_theme_stylebox_override("panel", box)
+	Nav.ui.add_child(bubble)
+	var words := label(bubble, text)
+	words.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	words.custom_minimum_size.x = 140
+	var tail := Control.new()
+	tail.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tail.draw.connect(func():
+		for k in 4:
+			tail.draw_rect(Rect2(-3 + k, k, 7 - k * 2, 1), UiTheme.INK if k == 3 else paper)
+			tail.draw_rect(Rect2(-4 + k, k, 1, 1), UiTheme.INK)
+			tail.draw_rect(Rect2(3 - k, k, 1, 1), UiTheme.INK))
+	bubble.add_child(tail)
+	var place := func(_t := 0.0) -> void:
+		if not is_instance_valid(bubble):
+			return
+		var spot: Vector2 = follow.call() if follow.is_valid() else at
+		bubble.reset_size()
+		var room := Nav.view()
+		var pos := (spot - Vector2(bubble.size.x / 2.0, bubble.size.y + 4.0)).round()
+		bubble.position = pos.clamp(Vector2(2, 2), room - bubble.size - Vector2(2, 2))
+		tail.position = Vector2(roundf(spot.x - bubble.position.x), bubble.size.y - 1.0)
+	place.call()
+	var tween := bubble.create_tween()
+	tween.tween_property(bubble, "modulate:a", 1.0, 0.15).from(0.0)
+	tween.parallel().tween_method(place, 0.0, 1.0, 4.0)
+	tween.tween_property(bubble, "modulate:a", 0.0, 0.5)
+	tween.tween_callback(bubble.queue_free)
+	return bubble
+
+
 static func fish_text(f: Dictionary) -> String:
 	var t := "%s, %s lb" % [Data.fish[f["fish"]]["name"], CatchCard.pounds_text(float(f["pounds"]))]
 	if f.get("salted", false):

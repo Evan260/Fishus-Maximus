@@ -101,3 +101,52 @@ func test_the_town_opens_with_every_building_clickable() -> void:
 	for c in Nav.ui.get_children():
 		c.free()
 	s.free()
+
+
+func _street() -> Node:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "hound")
+	var s: Node = load("res://scripts/town/town_screen.gd").new()
+	Nav.world.add_child(s)
+	s.enter({})
+	return s
+
+
+func _feet(s: Sprite2D) -> Vector2:
+	var img := s.texture.get_image()
+	var used := img.get_used_rect()
+	var mid := used.position.x + (used.size.x - 1) / 2.0
+	return s.position + Vector2(img.get_width() - 1 - mid if s.flip_h else mid, used.end.y)
+
+
+func test_a_person_who_stops_stays_where_they_were() -> void:
+	var s := _street()
+	for f in s._folk:
+		f["pause"] = 0.0
+		s._process(0.0)
+		var walking := _feet(f["sprite"])
+		f["pause"] = 2.0
+		s._process(0.0)
+		var standing := _feet(f["sprite"])
+		check(absf(walking.y - standing.y) <= 1.0 and absf(walking.x - standing.x) <= 1.5, "%s stops on the paving where they walked, not %s from it" % [f["id"], standing - walking])
+	for c in Nav.ui.get_children():
+		c.free()
+	s.free()
+
+
+func test_a_person_speaks_in_a_bubble_over_their_head() -> void:
+	var s := _street()
+	var f: Dictionary = s._folk[0]
+	f["x"] = 200.0
+	s._process(0.0)
+	s._gossip(f)
+	var bubbles := Nav.ui.get_children().filter(func(c): return c.has_meta("speech"))
+	check(bubbles.size() == 1, "what they say shows in a bubble")
+	var head: Vector2 = s.head_on_screen(f)
+	var b: Control = bubbles[0]
+	check(b.position.y + b.size.y <= head.y + 1.0 and b.position.x <= head.x and b.position.x + b.size.x >= head.x, "just over their head, at %s over %s" % [Rect2(b.position, b.size), head])
+	check(Nav.ui.get_children().filter(func(c): return c is VBoxContainer and c.z_index == 50 and c.get_child_count() > 0).is_empty(), "not in a line of text at the top of the screen")
+	for c in Nav.ui.get_children():
+		c.free()
+	s.free()
