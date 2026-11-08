@@ -288,14 +288,17 @@ func _unhandled_input(e: InputEvent) -> void:
 
 
 ## A line from a townsperson: something of their own, a hint about a fish, or a legend's clue.
-## Where a picture of a person stands: the middle of its widest columns and the row under its feet.
+## Where a picture of a person stands: the middle of their head and body, which a stride does not move, and the row
+## under their feet.
 static var _feet := {}
 
 
 static func _foot(tex: Texture2D, flipped: bool) -> Vector2:
 	if not _feet.has(tex):
-		var used := tex.get_image().get_used_rect()
-		_feet[tex] = [used.position.x + (used.size.x - 1) / 2.0, float(used.end.y), float(used.position.y), float(tex.get_width())]
+		var img := tex.get_image()
+		var used := img.get_used_rect()
+		var upper := img.get_region(Rect2i(used.position, Vector2i(used.size.x, used.size.y / 2))).get_used_rect()
+		_feet[tex] = [used.position.x + upper.position.x + (upper.size.x - 1) / 2.0, float(used.end.y), float(used.position.y), float(tex.get_width())]
 	var f: Array = _feet[tex]
 	return Vector2(f[3] - 1.0 - f[0] if flipped else f[0], f[1])
 

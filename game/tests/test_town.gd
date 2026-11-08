@@ -116,7 +116,8 @@ func _street() -> Node:
 func _feet(s: Sprite2D) -> Vector2:
 	var img := s.texture.get_image()
 	var used := img.get_used_rect()
-	var mid := used.position.x + (used.size.x - 1) / 2.0
+	var upper := img.get_region(Rect2i(used.position, Vector2i(used.size.x, used.size.y / 2))).get_used_rect()
+	var mid := used.position.x + upper.position.x + (upper.size.x - 1) / 2.0
 	return s.position + Vector2(img.get_width() - 1 - mid if s.flip_h else mid, used.end.y)
 
 
