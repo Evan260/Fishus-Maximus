@@ -146,6 +146,10 @@ func _spawn() -> void:
 		if i == 0:
 			leader = one
 			one["leader"] = {}
+		else:
+			one["pos"] = Vector2(x, y) + one["offset"]
+		# The fish is put where it swims at once, so a sea that has just opened shows it from its first frame.
+		_show(one, Vector2.ZERO, 0.0)
 		fish.append(one)
 
 
