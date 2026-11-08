@@ -249,3 +249,13 @@ func test_the_board_never_asks_for_a_legend_already_caught() -> void:
 				Game.state["legends"][id] = true)
 	var legends := asked.filter(func(o): return Data.fish[o["fish"]]["legend"])
 	check(legends.is_empty(), "with every legend caught, none is ordered, %d were" % legends.size())
+
+
+func test_the_board_asks_only_for_fish_you_can_catch_now() -> void:
+	var asked := _orders(1, 200)
+	var gearless := asked.filter(func(o): return not Data.fish[o["fish"]]["methods"].any(func(m): return m in ["line", "trap"]))
+	check(gearless.is_empty(), "in the first chapter, with only a rod and pots, nothing is ordered that needs a net or a trident, %d were" % gearless.size())
+	var unseasonal := _orders(5, 200).filter(func(o):
+		var seasons: Array = Data.fish[o["fish"]]["seasons"]
+		return not seasons.is_empty() and not Clock.season(int(o["due"])) in seasons and not Clock.season(int(o["due"]) - 2) in seasons)
+	check(unseasonal.is_empty(), "nor a fish out of its season, %d were" % unseasonal.size())

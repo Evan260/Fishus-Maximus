@@ -16,8 +16,13 @@ static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
 	expire(state)
 	var places := Story.reachable(state)
 	var legends_open := int(state["chapter"]) >= 5
+	var season := Clock.season(Clock.day_of(float(state["time"])))
+	# Only fish he can catch now: with a way of fishing open and the gear for it, and in their season.
+	var ways: Array = Story.unlocks(int(state["chapter"]))["methods"].filter(func(m): return m in ["line", "trap"] \
+		or (m == "net" and str(state["gear"].get("net", "")) != "") or (m == "trident" and str(state["gear"].get("lamp", "")) != ""))
 	var kinds := Data.fish.keys().filter(func(id): return (not Data.fish[id]["legend"] or (legends_open and not state["legends"].has(id))) \
-		and Data.fish[id]["places"].any(func(p): return p in places))
+		and Data.fish[id]["places"].any(func(p): return p in places) and Data.fish[id]["methods"].any(func(m): return m in ways) \
+		and (Data.fish[id]["seasons"].is_empty() or season in Data.fish[id]["seasons"]))
 	if kinds.is_empty():
 		return
 	var today := Clock.day_of(float(state["time"]))
