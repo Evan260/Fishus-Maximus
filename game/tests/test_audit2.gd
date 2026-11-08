@@ -395,3 +395,8 @@ func test_the_title_menu_forgets_a_deleted_save() -> void:
 	t.free()
 	for c in Nav.ui.get_children():
 		c.free()
+
+
+func test_sailing_on_the_bay_map_is_not_being_ashore() -> void:
+	check(Nav.ashore_on("town") and Nav.ashore_on("shore"), "in town and at the ponds you are ashore, while the second fisherman fills the hold")
+	check(not Nav.ashore_on("coast") and not Nav.ashore_on("map"), "but not at sea, nor sailing across the bay on the map")

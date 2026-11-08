@@ -222,7 +222,7 @@ func go(screen: String, args: Dictionary = {}) -> void:
 	current = s
 	current_name = screen
 	if not Game.state.is_empty():
-		Game.state["_ashore"] = screen != "coast"
+		Game.state["_ashore"] = ashore_on(screen)
 	if s.has_method("enter"):
 		s.enter(args)
 	screen_changed.emit(screen)
@@ -230,3 +230,8 @@ func go(screen: String, args: Dictionary = {}) -> void:
 	back.tween_property(_fade, "color:a", 0.0, 0.2)
 	await back.finished
 	_busy = false
+
+
+## Whether a screen is ashore, where the second fisherman fishes for you: not at sea and not sailing on the bay map.
+static func ashore_on(screen: String) -> bool:
+	return not screen in ["coast", "map"]
