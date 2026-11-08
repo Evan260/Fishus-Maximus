@@ -18,13 +18,13 @@ static func advance(state: Dictionary, minutes: float, rng: RandomNumberGenerato
 
 
 static func _pass(state: Dictionary, minutes: float, rng: RandomNumberGenerator) -> void:
-	state["time"] = float(state["time"]) + minutes
+	var start := float(state["time"])
+	state["time"] = start + minutes
 	var hours := minutes * 24.0 / Clock.minutes_per_day()
-	var hour := Clock.hour(float(state["time"]))
 	var season := Clock.season(Clock.day_of(float(state["time"])))
 	for t in state["traps"]:
 		Traps.fill(t, hours, rng)
-		_trap_legend(state, t, hours, hour, season, rng)
+		_trap_legend(state, t, start, minutes, season, rng)
 	Hold.freshen(state, minutes)
 	if state.get("_ashore", false):
 		Helpers.fish(state, minutes, rng)
@@ -56,14 +56,22 @@ static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
 	Helpers.morning(state)
 
 
-## A legend that is caught in pots may wander into one baited with what it likes, while its hours last.
-static func _trap_legend(state: Dictionary, trap: Dictionary, hours: float, hour: float, season: String, rng: RandomNumberGenerator) -> void:
-	if trap["catch"].size() >= int(trap.get("size", 3)):
-		return
-	for id in Legends.here(str(trap["place"]), hour, season, str(state.get("weather", "clear")), state, "trap"):
-		if str(trap.get("bait", "")) in Data.fish[id]["baits"] and rng.randf() < 0.08 * hours \
-				and not state["traps"].any(func(t): return t["catch"].any(func(c): return c["fish"] == id)):
-			trap["catch"].append(Pick.catch_of(id, rng, true))
+## A legend that is caught in pots may wander into one at its depth baited with what it likes, while its hours last.
+## A long stretch, such as a night slept through, is taken an hour at a time, so a night legend still has its night.
+static func _trap_legend(state: Dictionary, trap: Dictionary, start: float, minutes: float, season: String, rng: RandomNumberGenerator) -> void:
+	var hours := minutes * 24.0 / Clock.minutes_per_day()
+	var slices := maxi(1, ceili(hours))
+	for k in slices:
+		if trap["catch"].size() >= int(trap.get("size", 3)):
+			return
+		var hour := Clock.hour(start + (k + 0.5) * minutes / slices)
+		for id in Legends.here(str(trap["place"]), hour, season, str(state.get("weather", "clear")), state, "trap"):
+			var depth: Array = Data.fish[id]["depth"]
+			if float(trap["depth"]) < float(depth[0]) or float(trap["depth"]) > float(depth[1]):
+				continue
+			if str(trap.get("bait", "")) in Data.fish[id]["baits"] and rng.randf() < 0.08 * hours / slices \
+					and not state["traps"].any(func(t): return t["catch"].any(func(c): return c["fish"] == id)):
+				trap["catch"].append(Pick.catch_of(id, rng, true))
 
 
 ## Goes to bed in town and wakes at the next dawn, with everything that happens overnight.

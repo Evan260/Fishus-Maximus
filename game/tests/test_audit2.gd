@@ -284,3 +284,38 @@ func test_the_helpers_morning_work_shows_all_day() -> void:
 	var before := float(Game.state["ponds"][0]["fish"][0]["pounds"])
 	World.new_day(Game.state, Seeds.rng(2, "morning"))
 	check(float(Game.state["ponds"][0]["fish"][0]["pounds"]) > before, "and the fed fish grows overnight")
+
+
+func _pot_legend(place: String, depth: float, bait: String, season_day: int, sleep: bool, seed: int) -> bool:
+	Game.new_game("Test", "mutt")
+	Game.state["chapter"] = 5
+	Game.state["time"] = float(season_day) * Clock.minutes_per_day() + 14.0
+	Game.state["traps"] = [{"place": place, "x": 100.0, "depth": depth, "catch": [], "size": 6, "hours": 0.0, "bait": bait}]
+	var rng := Seeds.rng(seed, "pot legend")
+	if sleep:
+		World.sleep(Game.state, rng)
+	else:
+		for i in 300:
+			World.advance(Game.state, 0.05, rng)
+	return Game.state["traps"][0]["catch"].any(func(c): return Data.fish[c["fish"]]["legend"])
+
+
+func test_the_carteia_octopus_comes_to_a_pot_while_you_sleep() -> void:
+	var nights := 0
+	for seed in 60:
+		if _pot_legend("rocky_shore", 250.0, "salted_fish", 1, true, seed):
+			nights += 1
+	check(nights >= 5, "a pot baited for it, left over a night slept through, sometimes takes it, %d of 60" % nights)
+
+
+func test_a_pot_legend_keeps_to_its_own_depth() -> void:
+	var winter := 22
+	var shallow := 0
+	var deep := 0
+	for seed in 40:
+		if _pot_legend("capri", 115.0, "sardine_strip", winter, false, seed):
+			shallow += 1
+		if _pot_legend("capri", 450.0, "sardine_strip", winter, false, seed):
+			deep += 1
+	check(shallow == 0, "Neptune's lobster never comes to a shallow pot, %d did" % shallow)
+	check(deep > 0, "only to one down in the deepest water, %d did" % deep)
