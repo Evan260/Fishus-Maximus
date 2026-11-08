@@ -72,7 +72,8 @@ func set_idle(on: bool) -> void:
 			"water": screen.seabed.depth_at(screen.hook.x)}
 	else:
 		Game.state.erase("idle")
-		if screen.line_state() in ["taken", "landing"]:
+		# He fishes on his own with the line whatever is picked, so with pots or the net picked it comes back in.
+		if screen.line_state() in ["taken", "landing"] or (method != "line" and screen.line_state() != "reeled"):
 			screen.reel_in()
 	Toast.say("Fishing on his own." if on else "Back at the rod.")
 
