@@ -8,8 +8,11 @@ extends Node2D
 signal bit(fish: Dictionary)
 
 ## How many fish or shoals swim near the camera at once.
-const WANTED := 7
+const WANTED := 6
 const REACH := 260.0
+## How far apart fish and shoals start, and how deep the water must be before it holds as many fish as the open sea.
+const APART := 60.0
+const SHALLOW_ROOM := 180.0
 const LOOK_EVERY := 1.0
 ## The chance that a legend whose time and place have come shows itself when a fish is placed in the water.
 const LEGEND_CHANCE := 0.05
@@ -83,7 +86,7 @@ static func sprite_for(id: String, tex: Texture2D) -> Sprite2D:
 
 ## Fills the water around the camera at once, for arriving at a place.
 func populate() -> void:
-	for i in WANTED * 3:
+	for i in WANTED * 6:
 		if _near_count() < WANTED:
 			_spawn()
 
@@ -99,9 +102,11 @@ func kinds_at(depth: float, water := INF) -> Array:
 
 
 func _spawn() -> void:
-	var x := clampf(cam.x + _rng.randf_range(-REACH, Nav.view().x + REACH), 8.0, float(place["width"]) - 8.0)
+	var lo := maxf(8.0, cam.x - REACH)
+	var hi := minf(float(place["width"]) - 8.0, cam.x + Nav.view().x + REACH)
+	var x := _rng.randf_range(lo, hi)
 	var floor_y := seabed.depth_at(x) - 8.0
-	if floor_y < 12.0:
+	if floor_y < 12.0 or _rng.randf() > room_for_fish(seabed.depth_at(x)):
 		return
 	var y := _rng.randf_range(6.0, floor_y)
 	var kinds := kinds_at(y, seabed.depth_at(x))
@@ -125,7 +130,9 @@ func _spawn() -> void:
 			y = 6.0
 	var f: Dictionary = Data.fish[id]
 	var big := texture_for(id).get_width() > 24
-	var count := (_rng.randi_range(3, 4) if big else _rng.randi_range(5, 9)) if f.get("shoal", false) else 1
+	if fish.any(func(o): return o["leader"].is_empty() and absf(o["pos"].x - x) < APART and absf(o["pos"].y - y) < APART):
+		return
+	var count := (_rng.randi_range(2, 3) if big else _rng.randi_range(4, 7)) if f.get("shoal", false) else 1
 	var heading := -1.0 if _rng.randf() < 0.5 else 1.0
 	var leader := {}
 	_groups += 1
@@ -309,6 +316,11 @@ func _keep_y(f: Dictionary, x: float, y: float) -> float:
 	var lo := maxf(5.0, float(f["band"][0]) * 0.5)
 	var hi := seabed.depth_at(x) - 5.0
 	return clampf(y, minf(lo, hi), hi)
+
+
+## How full of fish water this deep is, from a few in the shallows by the shore to all of them in the open sea.
+static func room_for_fish(water: float) -> float:
+	return clampf(water / SHALLOW_ROOM, 0.3, 1.0)
 
 
 ## Whether the water at x is deep enough for a kind of fish to swim in.
