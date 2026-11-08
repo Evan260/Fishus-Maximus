@@ -41,7 +41,7 @@ The bay is six fishing places. Each is one long stretch of coast, 3 to 5 screens
 1. **Bait.** Choose the bait before you cast: worm, shrimp, bread, a strip of sardine, squid, a live sardine, or a special bait for a legend. Every fish has the baits it likes, and on the wrong bait it rarely bites.
 2. **Cast.** Hold to build up the cast and let go. The float lands that far from the boat and the hook starts to sink.
 3. **Depth.** The hook sinks until you stop it or it reaches the seabed. The line's length sets how deep it can go.
-4. **A bite.** A fish that likes the bait comes to look, swims in to the hook and nibbles: the float twitches one to three times. Then it takes the bait, the float goes under and the dog barks. Strike within a second.
+4. **A bite.** A fish that likes the bait comes to look, swims in to the hook and nibbles: the float twitches one to three times. Then it takes the bait, the float goes under and the dog barks. Strike within two seconds.
    - Strike while it only nibbles and it darts off, but the line stays in the water with its bait.
    - Too late, and the fish takes the bait and goes.
    - Pressing with no fish at the hook reels the line in.
@@ -249,7 +249,7 @@ Your name in town rises with orders, the pond show and legends caught. Five chap
 
 ## Interface
 
-- **On screen:** denarii, the day, the hour and the season, how full the hold and the live well are, the bait and the fishing method.
+- **On screen:** denarii, the day, the season and the weather, how full the hold and the live well are, the bait and the fishing method. No clock ticks on screen: the sky tells the hour.
 - **Panels:** the shops, the logbook, the bay map, the ponds and the garum works.
 
 ## Platform, controls and saving
