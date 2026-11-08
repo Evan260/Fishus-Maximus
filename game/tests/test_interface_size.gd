@@ -103,6 +103,27 @@ func test_the_guide_points_at_the_map_at_every_size() -> void:
 	_restore(before)
 
 
+func test_old_rufus_stands_clear_of_the_top_corners_at_every_size() -> void:
+	var before := Windowing.get_window().size
+	var s := _coast()
+	var panel: Control = s.hud.get_child(0)
+	var tiles: Control = s.hud.find_child("Logbook", true, false).get_parent()
+	for size in [Vector2i(1440, 810), Vector2i(1920, 1080), Vector2i(2560, 1377)]:
+		_resize(size)
+		for step in [-1, 0, 1]:
+			_set_size(step)
+			var note := GuideNote.find()
+			note.refresh()
+			check(note.visible, "%s at %d: old Rufus has a lesson" % [size, step])
+			var r := note.get_global_rect()
+			check(not r.intersects(panel.get_global_rect()), "%s at %d: his note is clear of the boat's panel, %s and %s" % [size, step, r, panel.get_global_rect()])
+			check(not r.intersects(tiles.get_global_rect()), "%s at %d: and of the pictures in the corner" % [size, step])
+			check(Rect2(Vector2.ZERO, Nav.ui_view()).encloses(r), "%s at %d: and on screen" % [size, step])
+	_clear()
+	s.free()
+	_restore(before)
+
+
 func test_the_town_guide_and_speech_follow_the_street_at_every_size() -> void:
 	var before := Windowing.get_window().size
 	_clear()
@@ -209,15 +230,21 @@ func test_a_tip_is_drawn_at_the_interface_size() -> void:
 	_resize(Vector2i(2560, 1377))
 	for step in [-1, 0, 1]:
 		_set_size(step)
+		var owner := Ui.button(Nav.ui, "Tip", func(): pass)
+		owner.position = Vector2(40, 30)
 		var tip := PopupPanel.new()
 		tip.theme_type_variation = "TooltipPanel"
-		var words := Label.new()
-		words.text = "A tip long enough to read"
-		tip.add_child(words)
-		Nav.ui.add_child(tip)
+		owner.add_child(tip)
+		# Placed as Godot places a tip: at the game's zoom, just past the pointer over its control.
+		var pointer := _in_window(owner.get_global_rect()).get_center()
+		var gap := Vector2(ProjectSettings.get_setting("display/mouse_cursor/tooltip_position_offset"))
+		tip.content_scale_factor = Nav.zoom
+		tip.position = Vector2i(pointer + gap)
+		tip.size = Vector2i(120, 20) * Nav.zoom
 		tip.show()
 		Nav.fit_tip(tip)
 		check(tip.content_scale_factor == Nav.ui_zoom, "at %d the tip is drawn %dx like the interface, not %sx" % [step, Nav.ui_zoom, tip.content_scale_factor])
-		check(tip.size.x >= words.get_combined_minimum_size().x * Nav.ui_zoom, "at %d and is wide enough for its words" % step)
-		tip.free()
+		check(tip.size == Vector2i(120, 20) * Nav.ui_zoom, "at %d and sized to match, %s" % [step, tip.size])
+		check(Vector2(tip.position).distance_to(pointer + gap) < 1.0, "at %d it stays just past the pointer, %s for %s" % [step, tip.position, pointer])
+		owner.free()
 	_restore(before)

@@ -127,10 +127,22 @@ func refresh() -> void:
 	if _text.text != say:
 		_text.text = say
 		reset_size()
-	Ui.hang(self, "top_right", Vector2(4, 38))
+	Ui.hang(self, "top_right", Vector2(4, _top()))
 	_arrow.visible = visible and target_rect().has_area()
 	if visible != was:
 		Toast.place()
+
+
+## How far down he stands: under the pictures in the top right corner, or under the panel in the top left corner too
+## when the interface is too narrow for him beside it.
+func _top() -> float:
+	var y := 38.0
+	var mine := Rect2(Nav.ui_view().x - 4.0 - size.x, y, size.x, size.y)
+	for p in Nav.ui.find_children("*", "PanelContainer", true, false):
+		var r: Rect2 = p.get_global_rect()
+		if p != self and r.position == Vector2(4, 4) and p.is_visible_in_tree() and r.intersects(mine):
+			y = maxf(y, r.end.y + 3.0)
+	return y
 
 
 ## The rect, in interface pixels, of what the lesson asks the player to click, or an empty one.

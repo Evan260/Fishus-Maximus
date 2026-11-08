@@ -37,6 +37,9 @@ func _ready() -> void:
 		get_tree().create_timer(float(args.get("catch-at", "1.0"))).timeout.connect(func():
 			var lb: Array = Data.fish[args["catch"]]["pounds"]
 			CatchCard.show_catch(args["catch"], (float(lb[0]) + float(lb[1])) / 2.0, true))
+	# --open=logbook or settings (at --open-at seconds) opens that window, for screenshots.
+	if args.has("open"):
+		get_tree().create_timer(float(args.get("open-at", "1.0"))).timeout.connect(_open_window.bind(args["open"]))
 	if args.has("quit") and _shots.is_empty():
 		get_tree().create_timer(float(args.get("quit-at", "3.0"))).timeout.connect(get_tree().quit)
 
@@ -65,6 +68,13 @@ func _take_shot(path: String, last: bool) -> void:
 	print("saved ", path)
 	if last and args.has("quit"):
 		get_tree().quit()
+
+
+func _open_window(window: String) -> void:
+	if window == "logbook":
+		LogbookPanel.open()
+	elif window == "settings":
+		SettingsPanel.open()
 
 
 func _point(at: Vector2) -> void:

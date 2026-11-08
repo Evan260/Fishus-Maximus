@@ -87,21 +87,32 @@ func _on_node_added(n: Node) -> void:
 
 
 ## Draws a tip at `ui_zoom` window pixels per pixel, below and right of the pointer, or above or left where the window
-## ends.
+## ends, as Godot places it.
 func fit_tip(shown) -> void:
 	if not is_instance_valid(shown) or not shown.visible:
 		return
 	var tip: PopupPanel = shown
+	var was := Rect2(Vector2(tip.position), Vector2(tip.size))
+	var size := (was.size / tip.content_scale_factor * ui_zoom).ceil()
 	tip.content_scale_factor = ui_zoom
-	var size := Vector2(tip.get_contents_minimum_size()).ceil()
-	var room := Vector2(get_window().size)
-	var mouse := get_viewport().get_mouse_position()
 	var gap := Vector2(ProjectSettings.get_setting("display/mouse_cursor/tooltip_position_offset", Vector2(10, 10)))
-	var at := mouse + gap
+	# Godot hung the tip just past the pointer, or before it where it would run off the window, and the pointer is
+	# over the control the tip belongs to, so whichever of the two lies on that control is where the pointer is.
+	var over := was.grow(-1.0)
+	if tip.get_parent() is Control:
+		var r := from_ui(tip.get_parent().get_global_rect())
+		over = Rect2(r.position * zoom + _frame.position, r.size * zoom).grow(1.0)
+	var pointer := was.position - gap
+	if pointer.x < over.position.x or pointer.x > over.end.x:
+		pointer.x = was.end.x + gap.x
+	if pointer.y < over.position.y or pointer.y > over.end.y:
+		pointer.y = was.end.y + gap.y
+	var room := Vector2(get_window().size)
+	var at := pointer + gap
 	if at.x + size.x > room.x:
-		at.x = mouse.x - gap.x - size.x
+		at.x = pointer.x - gap.x - size.x
 	if at.y + size.y > room.y:
-		at.y = mouse.y - gap.y - size.y
+		at.y = pointer.y - gap.y - size.y
 	tip.size = Vector2i(size)
 	tip.position = Vector2i(at.clamp(Vector2.ZERO, (room - size).max(Vector2.ZERO)))
 
