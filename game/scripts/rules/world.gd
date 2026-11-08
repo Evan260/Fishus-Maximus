@@ -50,9 +50,10 @@ static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
 	if "pond_show" in Events.on(day) and not state["ponds"].is_empty():
 		state["_show"] = Ponds.show(state)
 	Orders.new_day(state, rng)
-	Helpers.morning(state)
 	Ponds.day(state, rng)
 	Garum.day(state)
+	# The helpers work once the night is over, so what they feed and stir counts for the day ahead.
+	Helpers.morning(state)
 
 
 ## A legend that is caught in pots may wander into one baited with what it likes, while its hours last.

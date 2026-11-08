@@ -270,3 +270,17 @@ func test_orders_for_the_smallest_fish_ask_a_fair_weight() -> void:
 		var lb := float(o["min_pounds"])
 		check(lb > float(r[0]) * 0.99 and lb < float(r[1]), "%s: asks %.3f lb, inside its %.2f to %.2f lb, not nothing and not its very biggest" % [o["fish"], lb, r[0], r[1]])
 		check(Units.need(lb) != "0 kg" and Units.need(lb) != "0 lb", "%s: and the board shows a weight, not %s" % [o["fish"], Units.need(lb)])
+
+
+func test_the_helpers_morning_work_shows_all_day() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["helpers"] = ["boy", "feeder"]
+	Game.state["ponds"] = [{"site": 0, "size": "large", "water": "sea", "features": ["rocks"], "fish": [
+		{"fish": "bream", "pounds": 2.0, "name": "", "finery": "", "age_days": 9, "fed": false}]}]
+	Game.state["tanks"][0] = {"restored": true, "fish": {"sardine": 6.0}, "pounds": 6.0, "days": 1, "quality": 0.5, "stirred": false}
+	World.new_day(Game.state, Seeds.rng(1, "morning"))
+	check(Game.state["ponds"][0]["fish"][0]["fed"], "the fish Lucilla fed this morning count as fed all day")
+	check(Game.state["tanks"][0]["stirred"], "and the tank Tertius stirred counts as stirred")
+	var before := float(Game.state["ponds"][0]["fish"][0]["pounds"])
+	World.new_day(Game.state, Seeds.rng(2, "morning"))
+	check(float(Game.state["ponds"][0]["fish"][0]["pounds"]) > before, "and the fed fish grows overnight")
