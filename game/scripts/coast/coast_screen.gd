@@ -646,6 +646,7 @@ func _process(delta: float) -> void:
 	if today != _day:
 		_day = today
 		events.refresh()
+	swimmers.held_at = hook if _state in ["nibble", "bite"] else null
 	swimmers.step(delta, hook if hook_baited() else null, bait())
 	_weather_check -= delta
 	if _weather_check <= 0.0 and not Dev.has("weather"):

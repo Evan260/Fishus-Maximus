@@ -58,6 +58,8 @@ var light = null
 ## Whether a legend may show itself, which needs a game in play to know the legends already caught.
 var with_legends := true
 static var _mouths := {}
+## Where the hook is while a fish is at the bait, which it keeps its mouth on; null when no fish is.
+var held_at = null
 
 
 func setup(id: String, bed: Seabed, rng: RandomNumberGenerator) -> void:
@@ -285,8 +287,9 @@ func _move(f: Dictionary, delta: float, bait) -> void:
 				f["state"] = "bit"
 				bit.emit(f)
 	elif f["state"] == "bit":
-		if bait != null:
-			f["pos"] = _biting_spot(f, bait)
+		var at = bait if bait != null else held_at
+		if at != null:
+			f["pos"] = _biting_spot(f, at)
 	elif f["state"] == "swim":
 		var leader: Dictionary = f["leader"]
 		if not leader.is_empty() and leader["state"] in ["swim", "curious"]:

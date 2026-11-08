@@ -56,3 +56,25 @@ func test_the_way_of_fishing_cannot_change_with_a_fish_on() -> void:
 	s.methods.set_method("trap")
 	check(s.methods.method == "line" and s.fight != null, "picking pots while a fish is on keeps the line and the fish")
 	_done(s)
+
+
+func test_a_nibbling_fish_keeps_its_mouth_on_the_drifting_bait() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "mutt")
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": "harbour"})
+	s.cast(0.5)
+	for i in 600:
+		s.sink(0.05)
+	s.swimmers.populate()
+	var f: Dictionary = s.swimmers.fish[0]
+	f["state"] = "bit"
+	s._on_bite(f)
+	check(s.line_state() == "nibble", "the fish is at the bait")
+	s.hook.x += 4.0
+	for i in 3:
+		s._process(0.05)
+	check(Swimmers.mouth_at(f).distance_to(s.hook + Swimmers.BAIT_MIDDLE) <= 2.0, "and its mouth stays on the bait as the hook drifts, %s against %s" % [Swimmers.mouth_at(f), s.hook + Swimmers.BAIT_MIDDLE])
+	_done(s)
