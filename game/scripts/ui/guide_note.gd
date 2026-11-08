@@ -127,7 +127,7 @@ func refresh() -> void:
 	if _text.text != say:
 		_text.text = say
 		reset_size()
-	Ui.hang(self, "top_right", Vector2(4, 30))
+	Ui.hang(self, "top_right", Vector2(4, 38))
 	_arrow.visible = visible and target_rect().has_area()
 	if visible != was:
 		Toast.place()

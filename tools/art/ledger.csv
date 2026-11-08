@@ -479,3 +479,9 @@ time,kind,name,cost_usd,cost_generations,usd_left
 2026-11-07T20:28:30,inpaint,tools\art\town_parts\town_wide.png,0.0312,0,1.0903
 2026-11-07T21:02:50,inpaint,tools\art\town_parts\town_wide.png,0.0313,0,1.0591
 2026-11-07T21:03:19,inpaint,tools\art\town_parts\town_wide.png,0.0315,0,1.0275
+2026-11-07T22:23:26,pixen,tools\art\items_raw\bay_map.png,0.0082,0,1.0194
+2026-11-07T22:24:20,pixen,tools\art\items_raw\logbook.png,0.0098,0,1.0095
+2026-11-07T22:24:45,pixen,tools\art\items_raw\settings.png,0.0072,0,1.0023
+2026-11-07T22:25:22,pixen,tools\art\items_raw\menu.png,0.0083,0,0.9940
+2026-11-07T22:26:13,pixen,tools\art\items_raw\settings.png,0.0075,0,0.9865
+2026-11-07T22:27:05,pixen,tools\art\items_raw\settings.png,0.0080,0,0.9785

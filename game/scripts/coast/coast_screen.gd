@@ -129,11 +129,12 @@ func enter(args: Dictionary) -> void:
 	if args.get("first", false) and not Settings.guide:
 		Toast.say("Your uncle's skiff. Hold Space or the mouse to cast, A and D to row.")
 	if Nav.ui and not Dev.has("no-hud"):
-		_sail = Ui.button(Nav.ui, "Bay map", func():
+		_sail = Ui.tile(Nav.ui, ItemArt.of("bay_map"), "", "Bay map: sail to another fishing place.", func():
 			if fight == null:
 				prepare_to_leave()
-				Nav.go("map"))
-		Ui.hang(_sail, "bottom_left", Vector2(4, 4), Vector2(60, Hud.TILE.y))
+				Nav.go("map"), true, false, Hud.TILE)
+		_sail.name = "BayMap"
+		Ui.hang(_sail, "bottom_left", Vector2(4, 4), Hud.TILE)
 	if place_id == "harbour" and Nav.ui and not Dev.has("no-hud"):
 		_ashore = Ui.button(Nav.ui, "Go ashore", go_ashore)
 		Ui.hang(_ashore, "bottom_right", Vector2(4, 4), Vector2(76, Hud.TILE.y))

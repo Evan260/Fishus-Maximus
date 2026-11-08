@@ -50,6 +50,28 @@ func test_the_ways_of_fishing_are_pictures_with_tips() -> void:
 	s.free()
 
 
+func test_the_map_logbook_settings_and_menu_are_pictures_with_tips() -> void:
+	var s := _coast()
+	var tiles := _tiles(Nav.ui)
+	var buttons := {"Bay map": s._sail}
+	for id in ["Logbook", "Settings", "Menu"]:
+		buttons[id] = s.hud.find_child(id, true, false)
+	for id in buttons:
+		var b: Button = buttons[id]
+		check(b != null and b in tiles, "%s is a picture" % id)
+		if b:
+			check(b.tooltip_text.begins_with(id), "with a tip naming it: %s" % b.tooltip_text)
+			check(b.size == Hud.TILE, "as big as the ways of fishing, not %s" % b.size)
+	for id in ["bay_map", "logbook", "settings", "menu"]:
+		var pic: Texture2D = ItemArt.of(id)
+		check(pic != null and pic.get_width() <= 24 and pic.get_height() <= 24, "%s is painted small enough for its tile" % id)
+	buttons["Settings"].pressed.emit()
+	check(Ui.window_open() and Nav.ui.get_node("Window").find_child("Larger", true, false) != null, "the settings picture opens the settings")
+	Ui.close_window()
+	_clear_ui()
+	s.free()
+
+
 func test_clicking_the_line_opens_the_tackle_above_it() -> void:
 	var s := _coast()
 	s.hud.refresh()

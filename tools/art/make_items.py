@@ -7,7 +7,7 @@ import sys
 import time
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageEnhance
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "game" / "assets" / "art" / "items"
@@ -51,10 +51,16 @@ ITEMS = {
     "help_boy": "a cheerful ancient Roman errand boy in a short brown tunic carrying a basket, full figure",
     "help_feeder": "an ancient Roman young woman pond keeper in a green tunic holding a bowl of fish feed, full figure",
     "help_fisherman": "an ancient Roman fisherman in a brown tunic and straw hat with a net over his shoulder, full figure",
+    "bay_map": "a parchment map half unrolled from a wooden roller, showing a blue bay with a green curving coastline drawn on it",
+    "logbook": "a small closed book bound in brown leather with a bronze clasp and a ribbon bookmark",
+    "settings": "a simple bronze cog wheel, a solid disc with six wide flat-topped teeth round its rim and a round hole in the centre, seen straight on",
+    "menu": "a small Roman arched stone doorway with an open wooden door, warm light inside",
 }
 
-# The ways of fishing are shown small on the boat's bar, so they are painted at the size they are shown.
-SIZES = {"line": "24x24", "trap": "24x24", "trident": "24x24"}
+# The ways of fishing and the boat's own buttons are shown small on its bars, so they are painted at the size they are shown.
+SIZES = {"line": "24x24", "trap": "24x24", "trident": "24x24", "bay_map": "24x24", "logbook": "24x24", "settings": "24x24", "menu": "24x24"}
+# The gear comes out a pale bronze that fades into the pale wooden tile it sits on, so it is darkened by this share.
+DARKEN = {"settings": 0.64}
 
 
 def main(names):
@@ -83,6 +89,11 @@ def main(names):
             im = Image.open(raw).convert("RGBA")
             im.crop(im.getbbox()).save(out)
             subprocess.run([sys.executable, str(Path(__file__).with_name("soften_outlines.py")), str(out)], cwd=ROOT)
+            if name in DARKEN:
+                im = Image.open(out).convert("RGBA")
+                rgb = ImageEnhance.Color(ImageEnhance.Brightness(im.convert("RGB")).enhance(DARKEN[name])).enhance(1.25).convert("RGBA")
+                rgb.putalpha(im.getchannel("A"))
+                rgb.save(out)
             print("painted", name, Image.open(out).size)
         else:
             print("FAILED", name)

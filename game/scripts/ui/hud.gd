@@ -1,8 +1,9 @@
 class_name Hud
 extends Control
 ## The boat's panel on screen: denarii, the day, hour, season and weather, how full the hold and the well are, the bait
-## and the fishing method, with buttons for fishing on his own, the logbook, the map and the settings. Along the bottom
-## the ways of fishing are pictures; clicking the line opens the tackle above it, to choose the bait and the rod.
+## and the fishing method, a button for fishing on his own, and pictures for the logbook, the settings and the menu.
+## Along the bottom the ways of fishing are pictures; clicking the line opens the tackle above it, to choose the bait
+## and the rod.
 
 const TILE := Vector2(30, 30)
 ## What each way of fishing does, for its tip.
@@ -48,17 +49,25 @@ func setup(s: Node) -> void:
 		screen.methods.set_idle(not screen.methods.idle)
 		if screen.methods.idle and screen.line_state() == "reeled":
 			screen.cast(0.6))
-	Ui.hang(bar, "bottom_left", Vector2(68, 4))
+	# It starts just past the bay map's picture, which the coast hangs in the corner.
+	Ui.hang(bar, "bottom_left", Vector2(8 + TILE.x, 4))
 	var right := HBoxContainer.new()
 	right.add_theme_constant_override("separation", 2)
 	add_child(right)
-	Ui.button(right, "Logbook", func(): LogbookPanel.open())
-	Ui.button(right, "Settings", func(): SettingsPanel.open())
-	Ui.button(right, "Menu", func():
-		Saves.save()
-		Nav.go("title"))
+	_corner_tile(right, "Logbook", "Logbook: the fish you have caught, and those still to find.", func(): LogbookPanel.open())
+	_corner_tile(right, "Settings", "Settings", func(): SettingsPanel.open())
+	_corner_tile(right, "Menu", "Menu: saves the game and goes back to the title.", _to_title)
 	Ui.hang(right, "top_right", Vector2(4, 4))
 	refresh()
+
+
+func _corner_tile(row: HBoxContainer, id: String, tip: String, action: Callable) -> void:
+	Ui.tile(row, ItemArt.of(id.to_lower()), "", tip, action, true, false, TILE).name = id
+
+
+func _to_title() -> void:
+	Saves.save()
+	Nav.go("title")
 
 
 func _process(delta: float) -> void:
