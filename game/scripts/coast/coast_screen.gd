@@ -763,7 +763,7 @@ class Painter extends Node2D:
 ## The sea's sounds for the hour and weather, and the dog's delight when a shoal passes under the boat.
 func _sounds(delta: float) -> void:
 	var day := hour >= 5.0 and hour < 20.0
-	Audio.set_ambience({"sea": 0.6, "gulls": 0.35 if day and hour < 17.5 else 0.0, "cicadas": 0.3 if hour >= 16.0 and hour < 20.5 else 0.0,
+	Audio.set_ambience({"gulls": 0.35 if day and hour < 17.5 else 0.0, "cicadas": 0.3 if hour >= 16.0 and hour < 20.5 else 0.0,
 		"night": 0.4 if not day else 0.0, "rain": 0.6 if weather in ["rain", "storm"] else 0.0, "wind": 0.5 if weather in ["wind", "storm"] else 0.0})
 	if randf() < delta / 25.0:
 		Audio.play("creak", -10.0)

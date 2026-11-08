@@ -23,7 +23,6 @@ These come from Farmus Maximus, which credits them the same way:
 
 These were recorded for Freesound and given away under CC0, and are cut by `tools/audio/cut_sounds.py`:
 
-- Lake waves lap against fishing boat hull by kyles, for the sea
 - Rowing boat by ilmari_freesound, for the oars
 - Angel Fly Fish Reel Slow Wind by paulprit, for the reel
 - Rock In Water Splash-Plop 2 by jc144940, for the cast

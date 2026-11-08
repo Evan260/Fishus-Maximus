@@ -97,7 +97,7 @@ func _refresh() -> void:
 
 func _process(delta: float) -> void:
 	World.advance(Game.state, delta / 60.0, _rng)
-	Audio.set_ambience({"sea": 0.5, "gulls": 0.3})
+	Audio.set_ambience({"gulls": 0.3})
 	_relight()
 	_hover = -2 if Ui.window_open() else _thing_at(_stage.get_local_mouse_position())
 	_works.queue_redraw()

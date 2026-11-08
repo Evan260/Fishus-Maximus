@@ -36,7 +36,7 @@ func enter(_args: Dictionary) -> void:
 	Windowing.view_changed.connect(_place)
 	_place()
 	swimmers.populate()
-	Audio.set_ambience({"sea": 0.4, "gulls": 0.15, "cicadas": 0.2})
+	Audio.set_ambience({"gulls": 0.15, "cicadas": 0.2})
 	_show_menu()
 
 
