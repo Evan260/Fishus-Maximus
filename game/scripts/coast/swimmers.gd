@@ -238,6 +238,7 @@ func step(delta: float, bait, bait_id: String) -> void:
 			continue
 		if absf(f["pos"].x - (cam.x + Nav.view().x / 2.0)) > Nav.view().x + REACH * 1.6:
 			f["sprite"].queue_free()
+			f["state"] = "gone"
 			continue
 		_move(f, delta, bait)
 		if bait != null and not biting and f["state"] in ["swim", "curious"]:
@@ -292,6 +293,10 @@ func _move(f: Dictionary, delta: float, bait) -> void:
 			f["pos"] = _biting_spot(f, at)
 	elif f["state"] == "swim":
 		var leader: Dictionary = f["leader"]
+		# A fish whose leader is hooked or gone swims on as a leader of its own, so it is counted and kept moving.
+		if not leader.is_empty() and leader["state"] == "gone":
+			f["leader"] = {}
+			leader = {}
 		if not leader.is_empty() and leader["state"] in ["swim", "curious"]:
 			f["heading"] = leader["heading"]
 			# Each fish of a shoal drifts a little about its place in it, so the shoal never moves as one block.

@@ -483,3 +483,38 @@ func test_the_town_net_button_keeps_out_of_the_strip() -> void:
 	s._on_view_changed()
 	check(button.visible, "and back when the window is whole again")
 	_done(s)
+
+
+func test_a_shoal_whose_leader_has_gone_swims_on() -> void:
+	var sw := _sea("leader")
+	var follower := {}
+	for seed in 30:
+		sw.populate()
+		var shoal := sw.fish.filter(func(f): return not f["leader"].is_empty())
+		if not shoal.is_empty():
+			follower = shoal[0]
+			break
+		sw._spawn_left = 0.0
+	check(not follower.is_empty(), "there is a shoal")
+	if follower.is_empty():
+		sw.free()
+		return
+	var leader: Dictionary = follower["leader"]
+	leader["pos"].x = sw.cam.x + 5000.0
+	sw.step(0.1, null, "")
+	var was: Vector2 = follower["pos"]
+	for i in 100:
+		sw.step(0.1, null, "")
+	check(follower["leader"].is_empty() or follower["leader"] != leader, "once its leader has been taken out of the water, a fish of the shoal no longer follows it")
+	check(follower["pos"].distance_to(was) > 3.0, "and swims on rather than hanging where the leader last was")
+	sw.free()
+
+
+func _sea(seed_name: String) -> Swimmers:
+	Game.new_game("Test", "hound")
+	var sw := Swimmers.new()
+	sw.setup("harbour", Seabed.new(Data.places["harbour"]["seabed"]), Seeds.rng(3, seed_name))
+	Nav.port.add_child(sw)
+	sw.cam = Vector2(200, -160)
+	sw.hour = 9.0
+	return sw
