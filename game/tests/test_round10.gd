@@ -68,3 +68,6 @@ func test_the_panel_shows_no_ticking_clock() -> void:
 		c.free()
 	s.free()
 
+
+func test_there_are_two_seconds_to_strike() -> void:
+	check(is_equal_approx(Bite.window(), 2.0), "the float stays under two seconds before the fish has the bait")

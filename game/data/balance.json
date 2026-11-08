@@ -23,7 +23,7 @@
 		"aurora_sure_after_days": 30
 	},
 	"fishing": {
-		"strike_window": 1.0,
+		"strike_window": 2.0,
 		"bite_reach": 40,
 		"sink_speed": 30,
 		"cast_seconds": 1.5,

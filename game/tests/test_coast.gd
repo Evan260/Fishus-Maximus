@@ -147,7 +147,7 @@ func test_too_slow_a_strike_lets_the_fish_take_the_bait() -> void:
 	s._on_bite({"id": "mullet", "lb": 1.0, "state": "bit", "heading": 1.0})
 	_nibble(s)
 	var worms := int(Game.state["bait"]["worm"])
-	for i in 30:
+	for i in 50:
 		s.bite_step(0.05)
 	check(s.line_state() == "waiting" and s.biter.is_empty(), "with no strike in time the fish goes")
 	check(int(Game.state["bait"]["worm"]) == worms - 1, "and takes the bait with it")

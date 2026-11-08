@@ -59,7 +59,7 @@ func test_fish_only_take_bait_they_like() -> void:
 	check(Bite.chance("mullet", "worm", 10.0) > 0.0 and Bite.chance("mullet", "bread", 10.0) == 0.0, "mullet take worms, not bread")
 	check(Bite.chance("mullet", "worm", 50.0) == 0.0, "nor from too far away")
 	check(Bite.chance("mullet", "worm", 5.0) > Bite.chance("mullet", "worm", 30.0), "a bait right by the fish is likelier taken")
-	check(is_equal_approx(Bite.window(), 1.0), "a second to strike")
+	check(is_equal_approx(Bite.window(), 2.0), "two seconds to strike")
 
 
 func test_running_is_the_opposite_of_resting() -> void:
