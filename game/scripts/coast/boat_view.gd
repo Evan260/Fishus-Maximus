@@ -47,6 +47,8 @@ var front: Sprite2D
 ## The near side of the hull where the dog sits, from the hull's own top edge down to where `front` takes over, so a
 ## stern that rises above the seat still hides the dog's legs.
 var dog_side: Sprite2D
+## The row where the hull's near side starts at the dog's spot, the hull's top edge there.
+var dog_rail := 0.0
 ## The middle of the lantern's flame in the boat's picture, for a boat that carries one, or below zero.
 var lantern := Vector2(-1, -1)
 var facing := 1.0
@@ -149,7 +151,11 @@ func set_boat(id: String) -> void:
 	# The dog sits down inside the boat, so the hull hides its legs.
 	var dog_at: Array = spec.get("dog", [])
 	dog_spot = Vector2(float(dog_at[0]), float(dog_at[1])) if dog_at.size() == 2 else Vector2(0.24, deck + 8.0)
-	dog_side.texture = _near_side(tex.get_image(), dog_spot.x, seat.y)
+	var img := tex.get_image()
+	if img.is_compressed():
+		img.decompress()
+	dog_side.texture = _near_side(img, dog_spot.x, seat.y)
+	dog_rail = float(_hull_top(img, clampi(int(dog_spot.x * img.get_width()), 0, img.get_width() - 1)))
 	var flame: Array = spec.get("lantern", [])
 	lantern = Vector2(float(flame[0]), float(flame[1])) if flame.size() == 2 else Vector2(-1, -1)
 	oars = bool(spec.get("oars", false))
@@ -164,12 +170,17 @@ static func _near_side(img: Image, along: float, end: float) -> ImageTexture:
 	var out := Image.create(img.get_width(), img.get_height(), false, Image.FORMAT_RGBA8)
 	var middle := int(along * img.get_width())
 	for x in range(maxi(0, middle - 14), mini(img.get_width(), middle + 15)):
-		var top := 0
-		while top < img.get_height() - 4 and not (img.get_pixel(x, top).a > 0.5 and img.get_pixel(x, top + 1).a > 0.5 				and img.get_pixel(x, top + 2).a > 0.5 and img.get_pixel(x, top + 3).a > 0.5):
-			top += 1
-		for y in range(top, int(end)):
+		for y in range(_hull_top(img, x), int(end)):
 			out.set_pixel(x, y, img.get_pixel(x, y))
 	return ImageTexture.create_from_image(out)
+
+
+## The hull's top edge in a column: the first of four solid rows, below any thin rigging.
+static func _hull_top(img: Image, x: int) -> int:
+	var top := 0
+	while top < img.get_height() - 4 and not (img.get_pixel(x, top).a > 0.5 and img.get_pixel(x, top + 1).a > 0.5 			and img.get_pixel(x, top + 2).a > 0.5 and img.get_pixel(x, top + 3).a > 0.5):
+		top += 1
+	return top
 
 
 ## The hull's top edge: going up from the hull's widest row, the first row much narrower, which skips masts and sails.

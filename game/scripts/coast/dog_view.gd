@@ -10,6 +10,8 @@ static var HEART: ImageTexture = _heart_texture()
 ## Sitting down and lying down are painted from standing, so they play once and then hold their last frame.
 const SETTLES := ["sit_east", "sleep_east"]
 const FPS := 8.0
+## How many rows of a lying dog's body stay tucked behind the gunwale.
+const TUCK := 3.0
 
 var screen: Node
 var mood := "sit_east"
@@ -20,6 +22,7 @@ var _since := 0.0
 var cut := INF
 var _happy_left := 0.0
 var _bark_left := 0.0
+static var _lowest := {}
 
 
 static func _heart_texture() -> ImageTexture:
@@ -121,12 +124,58 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
+## The lowest row of a frame with any of the dog in it.
+static func _lowest_row(tex: Texture2D) -> int:
+	if not _lowest.has(tex):
+		var img := tex.get_image()
+		if img.is_compressed():
+			img.decompress()
+		var y := img.get_height() - 1
+		while y > 0 and not range(img.get_width()).any(func(x): return img.get_pixel(x, y).a > 0.5):
+			y -= 1
+		_lowest[tex] = y
+	return _lowest[tex]
+
+
+## The row, from the dog's seat, below which the boat's near side hides it.
+func _hidden_from() -> float:
+	return minf(cut, screen.dog_rail() - roundf(screen.dog_seat().y)) if screen else cut
+
+
+## How far up the dog is drawn as it lies down, so its body comes to rest just over the gunwale instead of below it.
+func lift() -> float:
+	var frames: Array = frames_of(mood)
+	if mood != "sleep_east" or frames.is_empty() or screen == null:
+		return 0.0
+	var last: Texture2D = frames[frames.size() - 1]
+	var bottom := _lowest_row(last) + 1.0 - (last.get_height() - 8.0)
+	var k := clampf(float(frame() + 1) / frames.size(), 0.0, 1.0)
+	return minf(0.0, roundf((_hidden_from() + TUCK - bottom) * k))
+
+
+## How many rows of the dog show over the boat's near side now.
+func shown_rows() -> int:
+	var frames: Array = frames_of(mood)
+	if frames.is_empty():
+		return 0
+	var tex: Texture2D = frames[frame()]
+	var img := tex.get_image()
+	if img.is_compressed():
+		img.decompress()
+	var top := -(tex.get_height() - 8.0) + lift()
+	var n := 0
+	for y in img.get_height():
+		if top + y < _hidden_from() and range(img.get_width()).any(func(x): return img.get_pixel(x, y).a > 0.5):
+			n += 1
+	return n
+
+
 func _draw() -> void:
 	var frames: Array = frames_of(mood)
 	if frames.is_empty():
 		return
 	var tex: Texture2D = frames[frame()]
-	var top := -Vector2(tex.get_width() / 2.0, tex.get_height() - 8.0)
+	var top := -Vector2(tex.get_width() / 2.0, tex.get_height() - 8.0) + Vector2(0, lift())
 	var rows := clampf(cut - top.y, 0.0, tex.get_height())
 	draw_texture_rect_region(tex, Rect2(top, Vector2(tex.get_width(), rows)), Rect2(0, 0, tex.get_width(), rows))
 	if _bark_left > 0.0:

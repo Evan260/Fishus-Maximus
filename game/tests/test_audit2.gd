@@ -179,3 +179,17 @@ func test_the_full_hold_choice_is_a_window_of_its_own() -> void:
 	check(shown.size() == 1, "and a second full-hold catch replaces it rather than stacking a copy, %d shown" % shown.size())
 	for c in Nav.ui.get_children():
 		c.free()
+
+
+func test_the_dog_still_shows_when_it_naps() -> void:
+	for id in ["skiff", "fishing_boat", "sailing_boat", "big_boat"]:
+		for breed in ["hound", "sighthound", "lapdog"]:
+			Game.new_game("Test", breed)
+			Game.state["boat"] = id
+			var s := _coast_at("harbour")
+			s.methods.idle = true
+			for i in 40:
+				s.dog._process(0.05)
+			check(s.dog.mood == "sleep_east", "%s, %s: the dog naps while he fishes on his own" % [id, breed])
+			check(s.dog.shown_rows() >= 8, "%s, %s: and enough of it shows over the gunwale to see it lying there, %d rows" % [id, breed, s.dog.shown_rows()])
+			_done(s)
