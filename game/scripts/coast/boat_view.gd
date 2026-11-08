@@ -306,7 +306,7 @@ func _stir() -> void:
 		if _swept >= 3.0:
 			_swept = 0.0
 			_splash.append({"kind": "ring", "at": Vector2(x, 0.0), "vel": Vector2.ZERO, "life": RING_SECONDS})
-		if blade.distance_to(_blade_at) >= 2.0:
+		if blade.y > 3.0 and blade.distance_to(_blade_at) >= 2.0:
 			_splash.append({"kind": "bubble", "at": blade.round() + Vector2(randi_range(-2, 2), randi_range(-3, 0)), "vel": Vector2(0, -BUBBLE_RISE), "life": 0.9})
 		if moved != 0.0 and signf(moved) != _sweep:
 			if _sweep != 0.0:
