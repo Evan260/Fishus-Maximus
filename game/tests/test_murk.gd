@@ -40,6 +40,10 @@ func _chroma(c: Color) -> float:
 	return maxf(c.r, maxf(c.g, c.b)) - minf(c.r, minf(c.g, c.b))
 
 
+func _shaded(c: Color, k: float) -> Color:
+	return Color(c.r * k, c.g * k, c.b * k, c.a)
+
+
 func test_the_water_stays_a_muted_sea() -> void:
 	for p in Data.places.values():
 		var depth := float(p["depth"])
@@ -100,6 +104,8 @@ func test_the_murk_covers_what_is_under_the_water_but_not_the_lamp() -> void:
 	var night := _coast("harbour", 23.0)
 	murk = night.get("_murk")
 	check(murk.material.get_shader_parameter("light") == night.get("_lit").modulate, "at night it keeps the night's light")
+	var land: UnderLand = night.get("_land")
+	check(land.z_index == night.get("_water").z_index and land.get_index() > night.get("_lit").get_index(), "the land under the water shades the water drawn before it")
 	_close(night)
 
 
@@ -139,3 +145,38 @@ func test_the_seabed_is_smooth_sand() -> void:
 		check(bright == 0, "%s: no pebbles or shells stand out of the sand (%d)" % [p["id"], bright])
 		check(coloured == 0, "%s: the sand is a soft grey (%d coloured pixels)" % [p["id"], coloured])
 		check(rim > body, "%s: its top edge is lighter than the sand below" % p["id"])
+
+
+func test_the_land_carries_on_under_the_water() -> void:
+	for p in Data.places.values():
+		var u := UnderLand.new(p)
+		var bed := Seabed.new(p["seabed"])
+		var reaches := false
+		var open := false
+		var gap := false
+		var cam_max := Vector2(float(p["width"]) - 480.0, float(p["depth"]) + 40.0 - 270.0)
+		for k in 9:
+			var cam := Vector2(cam_max.x * k / 8.0, CoastCamera.HOME_Y)
+			var deep := Vector2(cam.x, cam_max.y)
+			for x in range(0, 480, 4):
+				if u.top(UnderLand.FAR, x, cam) <= -cam.y + 1.0:
+					reaches = true
+				if u.top(UnderLand.FAR, x, cam) > 270.0 and u.top(UnderLand.NEAR, x, cam) > 270.0:
+					open = true
+				if u.top(UnderLand.NEAR, x, deep) > bed.depth_at(cam.x + x) - deep.y:
+					gap = true
+		check(reaches, p["id"] + ": the land behind reaches up to the surface somewhere")
+		check(open, p["id"] + ": and somewhere the water is open from the surface to the bottom of the view")
+		check(gap, p["id"] + ": the nearer bank leaves the sand open to the water somewhere")
+		u.free()
+	var water := WaterView.water_at(100.0, 300.0)
+	var far := Murk.colour(_shaded(water, UnderLand.FAR_SHADE), 100.0, 300.0)
+	var near := Murk.colour(_shaded(water, UnderLand.NEAR_SHADE), 100.0, 300.0)
+	var clear := Murk.colour(water, 100.0, 300.0)
+	check(far.get_luminance() < clear.get_luminance() and near.get_luminance() < far.get_luminance(), "the far slope is a darker shade of the water and the near one darker still")
+	check(absf(far.h - clear.h) < 0.03 and absf(near.h - clear.h) < 0.03, "both in the water's own colour")
+
+
+func test_no_old_reef_picture_stands_behind_the_water() -> void:
+	for p in Data.places.values():
+		check(p["layers"].all(func(l): return not str(l.get("file", "")).ends_with("deep_far.png")), p["id"] + ": the land under the water replaces the old reef picture")

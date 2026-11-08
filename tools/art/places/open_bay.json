@@ -125,22 +125,6 @@
    }
   },
   {
-   "file": "deep_far.png",
-   "from": "coast/deep_far.png",
-   "land": true,
-   "at": [
-    -40,
-    540
-   ],
-   "factor": [
-    0.6,
-    0.8
-   ],
-   "z": -9,
-   "alpha": 0.6,
-   "fit": true
-  },
-  {
    "file": "seagrass.png",
    "on_bed": 200,
    "sink": 6,

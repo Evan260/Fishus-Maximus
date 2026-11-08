@@ -88,13 +88,6 @@ def front(name, edge, x, factor=1.6, mirror=False):
     return l
 
 
-def deep(at, fit=False):
-    l = {"file": "deep_far.png", "from": "coast/deep_far.png", "land": True, "at": at, "factor": [0.6, 0.8], "z": -9, "alpha": 0.6}
-    if fit:
-        l["fit"] = True
-    return l
-
-
 specs = {}
 
 p = "harbour"
@@ -114,7 +107,6 @@ specs[p] = {
         {"file": "town.png", "from": "coast/town.png", "land": True, "at": [-190, 28], "factor": [0.55, 0.55], "z": -14, "tone": {"haze": 0.0, "rock": 0.0}},
         {"file": "cape.png", "prompt": f"a green headland seen from the sea with pale golden limestone cliffs down to the water, grass and scrub on top, two umbrella pines and a small round ancient Roman stone watchtower, {LOW_ENDS}, {LAND}, {ROCK}",
          "size": "256x100", "style": LIKE_TOWN, "land": True, "at": [700, 38], "factor": [0.55, 0.55], "z": -14},
-        deep([300, 420]),
     ] + bed(p, "seagrass.png", "a wide clump of tall green Posidonia seagrass ribbons growing up from the sand", "96x48", [250, 560, 830, 1120], sway=True)
       + bed(p, "tuft.png", "a small tuft of short green seagrass with a few pale stones on the sand", "64x40", [420, 700, 980], sway=True)
       + bed(p, "amphora.png", "a broken ancient clay amphora lying half buried on its side in the sand", "48x32", [480])
@@ -143,7 +135,6 @@ specs[p] = {
               f"rugged pale limestone sea cliffs with a deep cave at the waterline and wild fig trees growing from the rock, {ROCK}",
               f"a low rocky point of pale limestone with green scrub, a few pines and a small stone fisherman's hut, {ROCK}"],
              256, style=LIKE_TOWN, gap=96),
-        deep([200, 470]),
     ] + bed(p, "rock.png", "an underwater rock with ledges covered in green and brown seaweed, red sea fans and orange sponges, rounded on both sides, sitting on the sand", "160x96", [300, 1100], sink=10)
       + bed(p, "boulders.png", "a pile of big rounded underwater boulders with sea urchins and anemones, sitting on the sand", "128x80", [640, 1620], sink=8)
       + bed(p, "kelp.png", "a clump of tall brown kelp and green seaweed growing from the sand", "64x64", [480, 900, 1250, 1800], sway=True)
@@ -184,7 +175,6 @@ specs[p] = {
         # The coast seen across the open bay is far off, so its bare hills are toned as distant land.
         dict(mid(["a distant low coastline seen from the open sea, green hills with small white towns and villas",
                   "a distant low coastline seen from the open sea, wooded hills and a small harbour town"], 544), tone={"haze": 0.14, "far": True}),
-        deep([-40, 540], fit=True),
     ] + bed(p, "seagrass.png", "", "", [200, 520, 900, 2250], use="places/harbour/seagrass.png", sway=True)
       + bed(p, "fans.png", "a few red and yellow sea fans on a small rock", "64x48", [1300, 1900], sway=True)
       + bed(p, "pinnacle.png", "a tall underwater rock pinnacle rising from the sand, covered in sponges and sea fans, small dark holes", "128x160", [1520], sink=10)
@@ -207,7 +197,6 @@ specs[p] = {
               f"a steep pale limestone headland with a small white Roman villa among umbrella pines on top, {ALONE}, {ROCK}",
               f"rugged pale limestone cliffs with a sea cave at the waterline and wild fig trees and pines growing from the rock, {ROCK}"],
              240, 128, style=LIKE_CAPE, gap=28),
-        deep([200, 510]),
     ] + bed(p, "white_rock.png", "a pale limestone underwater rock with red coral branches, purple sponges and sea fans, rounded on both sides, sitting on the sand", "160x96", [300, 1050], sink=10)
       + bed(p, "coral.png", "a cluster of bright red Mediterranean coral and white sea fans on a small rock", "64x48", [620, 1720])
       + bed(p, "cave.png", "a huge rough jagged pale limestone sea rock with an irregular natural outline and a dark cave opening in its side, blue light deep inside the opening, sponges and red coral on the rock", "224x160", [1380], sink=12)
@@ -231,7 +220,6 @@ specs[p] = {
               f"a small green hill standing in the sea with white Roman villas among pines and cypresses on it, pale rocks down to the water, {ALONE}, {NO_SKY}",
               f"a rocky shore below the cape with grey limestone cliffs, a sea cave at the waterline and pines on top, {NO_SKY}"],
              256, style=LIKE_TOWN, gap=100),
-        deep([0, 730], fit=True),
     ] + bed(p, "column.png", "a toppled ancient white marble column broken in pieces lying on the sea floor, encrusted with weed", "128x48", [900])
       + bed(p, "dark_rock.png", "a dark volcanic underwater rock with pale sea fans and sponges, rounded on both sides, sitting on the sand", "160x96", [400, 1500, 2100], sink=10)
       + bed(p, "seapens.png", "a few tall pale sea pens and a sea star on dark sand", "64x48", [700, 1200, 1800], sway=True)

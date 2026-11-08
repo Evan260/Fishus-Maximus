@@ -186,22 +186,6 @@
    }
   },
   {
-   "file": "deep_far.png",
-   "from": "coast/deep_far.png",
-   "land": true,
-   "at": [
-    0,
-    730
-   ],
-   "factor": [
-    0.6,
-    0.8
-   ],
-   "z": -9,
-   "alpha": 0.6,
-   "fit": true
-  },
-  {
    "file": "column.png",
    "on_bed": 900,
    "sink": 6,
