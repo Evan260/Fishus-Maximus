@@ -47,6 +47,8 @@ var events: Array[String] = []
 var light_reach := 100.0
 ## Where the lamp's light falls at night, which the night fish swim up to; null when it is not lit.
 var light = null
+## Whether a legend may show itself, which needs a game in play to know the legends already caught.
+var with_legends := true
 
 
 func setup(id: String, bed: Seabed, rng: RandomNumberGenerator) -> void:
@@ -115,7 +117,7 @@ func _spawn() -> void:
 		if pick <= 0.0:
 			id = k
 			break
-	var legends := Legends.here(place_id, hour, season, weather, Game.state, "line") + Legends.here(place_id, hour, season, weather, Game.state, "net")
+	var legends := Legends.here(place_id, hour, season, weather, Game.state, "line") + Legends.here(place_id, hour, season, weather, Game.state, "net") if with_legends else []
 	legends = legends.filter(func(l): return deep_enough(l, x) and (not Data.fish[l].has("spot") or Data.fish[l]["spot"] == null 		or absf(float(place["spots"].get(Data.fish[l]["spot"], 0)) - x) < 300.0))
 	if not legends.is_empty() and _rng.randf() < LEGEND_CHANCE and not fish.any(func(f): return Data.fish[f["id"]]["legend"]):
 		id = legends[_rng.randi() % legends.size()]
