@@ -485,5 +485,13 @@ time,kind,name,cost_usd,cost_generations,usd_left
 2026-11-07T22:25:22,pixen,tools\art\items_raw\menu.png,0.0083,0,0.9940
 2026-11-07T22:26:13,pixen,tools\art\items_raw\settings.png,0.0075,0,0.9865
 2026-11-07T22:27:05,pixen,tools\art\items_raw\settings.png,0.0080,0,0.9785
+2026-11-08T12:40:58,proflash,tools/art/banner_raw/banner_a.png,0.0307,0,0.9479
+2026-11-08T12:42:37,proflash,tools/art/banner_raw/banner_b.png,0.0325,0,0.9154
+2026-11-08T12:46:05,inpaint,tools\art\banner_raw\painted.png,0.0347,0,0.8807
 2026-11-08T12:46:23,proflash,tools/art/town_parts/board_turned.png,0.0590,0,0.8564
+2026-11-08T12:51:16,inpaint,tools\art\banner_raw\plaque.png,0.0339,0,0.8225
+2026-11-08T12:51:45,inpaint,tools\art\banner_raw\wreath.png,0.0242,0,0.7983
+2026-11-08T12:53:05,inpaint,tools\art\banner_raw\plaque.png,0.0327,0,0.7656
 2026-11-08T12:53:25,inpaint,tools\art\town_parts\town_wide.png,0.0644,0,0.7339
+2026-11-08T12:55:38,proflash,tools/art/banner_raw/wreath.png,0.0234,0,0.7105
+2026-11-08T13:06:47,inpaint,tools\art\banner_raw\frame.png,0.0324,0,0.6781
