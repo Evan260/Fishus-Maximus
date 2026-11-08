@@ -13,7 +13,7 @@ const DANGER := Color("#d65a44")
 const BREAKING := Color("#ff9a7a")
 const SPRAY := Color(0.9, 0.97, 1.0, 0.9)
 const HOOK := Color("#b8c0c0")
-## How far the float drifts to either side of where it landed.
+## How far the float, with the hook under it, drifts to either side of where it landed.
 const DRIFT := 5.0
 ## Each bait as it hangs on the hook, a few pixels drawn row by row, with the colour of each letter.
 const BAITS := {
@@ -53,7 +53,9 @@ const LEAP_TRAVEL := 40.0
 const LEAP_TILT := 0.85
 ## The shortest wait between two leaps.
 const LEAP_REST := 2.5
-const SPLASH_SECONDS := 0.6
+const SPLASH_SECONDS := 1.0
+## How fast a thrown drop falls back, in pixels a second each second.
+const SPLASH_FALL := 320.0
 
 var screen: Node
 var _bar_at := Vector2(-999, -999)
@@ -194,7 +196,7 @@ func _under_z() -> int:
 
 
 func _splash(at: Vector2) -> void:
-	_splashes.append({"at": at, "age": 0.0, "seed": randf() * 10.0})
+	_splashes.append({"at": at, "age": 0.0, "seed": randf() * 10.0, "size": splash_size(_fish.texture.get_width() if _fish.texture else 16)})
 	Audio.play("splash_small", -8.0, randf_range(0.9, 1.2))
 
 
@@ -227,7 +229,7 @@ func _draw() -> void:
 			dip = minf(2.0, ceilf(twitch * 8.0))
 		elif under:
 			dip = 5.0
-		var bob := Vector2(at.x - 2 + float_drift(t), surface - 1 + sin(t * 1.9) + dip)
+		var bob := Vector2(at.x - 2, surface - 1 + sin(t * 1.9) + dip)
 		var fight: LineFight = screen.fight
 		if state == "fighting" or at.y <= bob.y:
 			var end := fish_at() - cam - Vector2(0, 2) if _leap >= 0.0 or _back != Vector2.ZERO else at
@@ -271,6 +273,25 @@ static func float_drift(t: float) -> float:
 	return DRIFT * wander * spells
 
 
+## How big a splash a fish this many texels long throws up when it breaks the surface.
+static func splash_size(length: float) -> float:
+	return clampf(length * 0.3, 6.0, 18.0)
+
+
+## Where each drop of a splash is, `age` seconds after it, from where the fish broke the surface; drops at or below
+## zero have fallen back in.
+static func splash_drops(size: float, seed: float, age: float) -> Array:
+	var out := []
+	for i in int(size * 1.6):
+		var r := fposmod(sin(seed * 12.9898 + i * 78.233) * 43758.5453, 1.0)
+		var r2 := fposmod(sin(seed * 39.3468 + i * 11.135) * 24634.6345, 1.0)
+		var side := -1.0 if i % 2 == 0 else 1.0
+		var up := sqrt(2.0 * SPLASH_FALL * size * lerpf(1.0, 1.8, r))
+		var out_speed := side * size * lerpf(0.6, 2.4, r2)
+		out.append(Vector2(out_speed * age, -(up * age - SPLASH_FALL * age * age / 2.0)))
+	return out
+
+
 ## The pixels of a bait as it hangs on the hook: [x, y, colour] from its top left corner; none for a bare hook.
 static func bait_pixels(bait: String) -> Array:
 	var out := []
@@ -302,21 +323,35 @@ func _draw_over() -> void:
 	var cam: Vector2 = screen.camera.cam
 	for s in _splashes:
 		var k: float = s["age"] / SPLASH_SECONDS
-		var at: Vector2 = s["at"] - cam
-		var crown := roundf(7.0 * (1.0 - k * 1.6))
+		var n: float = s["size"]
+		var at: Vector2 = (s["at"] - cam).round()
+		# Two sheets of white water stand up either side of the hole the fish broke, lean out and fall back in.
+		var crown := n * (1.0 - k * 2.5)
 		if crown >= 1.0:
-			_over.draw_rect(Rect2(at + Vector2(-4, -crown), Vector2(2, crown)), Color(SPRAY, 0.85))
-			_over.draw_rect(Rect2(at + Vector2(3, -crown + 1.0), Vector2(2, crown - 1.0)), Color(SPRAY, 0.85))
-			_over.draw_rect(Rect2(at + Vector2(-1, -crown + 2.0), Vector2(2, maxf(1.0, crown - 2.0))), Color(SPRAY, 0.6))
-		for i in 10:
-			var side := -1.0 if i % 2 == 0 else 1.0
-			var out := side * (2.0 + floorf(i / 2.0) * 2.0 + fmod(float(s["seed"]) * (i + 1), 1.5))
-			var up := (8.0 + (i % 4) * 3.5) * 4.0 * k * (1.0 - k)
-			var drop := Vector2(2, 1) if i % 3 == 0 else Vector2.ONE
-			_over.draw_rect(Rect2(at + Vector2(out * (0.6 + k), -up - 1.0), drop), Color(SPRAY, 1.0 - k * 0.6))
-		var ring := 3.0 + k * 9.0
-		_over.draw_rect(Rect2(at + Vector2(-ring - 2.0, 0), Vector2(3, 1)), Color(RIPPLE, 1.0 - k))
-		_over.draw_rect(Rect2(at + Vector2(ring - 1.0, 0), Vector2(3, 1)), Color(RIPPLE, 1.0 - k))
+			var wide := roundf(n * 0.6)
+			for c in range(-wide, wide + 1):
+				var edge := absf(c) / maxf(1.0, wide)
+				if edge < 0.4:
+					continue
+				var h := roundf(crown * edge)
+				var lean := signf(c) * k * n * 1.5 * edge
+				for y in h:
+					var u := y / maxf(1.0, h)
+					_over.draw_rect(Rect2(at + Vector2(c + roundf(lean * u), -y - 1), Vector2.ONE), Color(SPRAY, 0.9 - 0.45 * u))
+		for d in splash_drops(n, float(s["seed"]), float(s["age"])):
+			if d.y < 0.0:
+				var big := Vector2(2, 2) if absf(d.x) < n * 0.5 and k < 0.4 else Vector2.ONE
+				_over.draw_rect(Rect2(at + d.round(), big), Color(SPRAY, 1.0 - k * 0.4))
+		# Foam lies on the water where it fell and thins away, as two rings of ripples spread out from it.
+		var foam := roundf(n * (0.8 + k * 0.6))
+		for c in range(-foam, foam + 1):
+			if fposmod(c * 7.0 + float(s["seed"]) * 3.0, 5.0) < 3.5 - k * 3.0:
+				_over.draw_rect(Rect2(at + Vector2(c, -1), Vector2(1, 2)), Color(SPRAY, 0.75 * (1.0 - k)))
+		for ring_k in [k, k - 0.3]:
+			if ring_k > 0.0:
+				var ring := roundf(n + ring_k * n * 2.2)
+				for side: float in [-1.0, 1.0]:
+					_over.draw_rect(Rect2(at + Vector2(side * ring - 1.0, 0), Vector2(3, 1)), Color(RIPPLE, 0.9 * (1.0 - ring_k)))
 	var fight: LineFight = screen.fight
 	if screen.line_state() != "fighting" or fight == null:
 		return

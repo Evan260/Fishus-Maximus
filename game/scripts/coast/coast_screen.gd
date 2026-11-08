@@ -39,6 +39,8 @@ var hour := 12.0
 var charge := -1.0
 ## Seconds left of the float's flight out after a cast, where it set off from, how long it flies and how high.
 var flight := 0.0
+## How far the float has drifted from where it landed.
+var _drift := 0.0
 var _flight_from := Vector2.ZERO
 var _flight_time := 0.5
 var _arc := 40.0
@@ -355,6 +357,16 @@ func rowing() -> bool:
 
 ## Lets the hook sink, until it rests on the seabed or the line runs out; fishing on his own, he sets his float so the
 ## bait hangs in mid water.
+## Lets the float drift on the water, the hook hanging straight under it, by a whole pixel at a time.
+func _drift_step(delta: float) -> void:
+	if not _state in ["sinking", "waiting", "nibble", "bite", "taken"] or flight > 0.0:
+		_drift = 0.0
+		return
+	var next := move_toward(_drift, LineView.float_drift(_time), delta * 2.0)
+	hook.x += roundf(next) - roundf(_drift)
+	_drift = next
+
+
 func sink(delta: float) -> void:
 	if _state != "sinking":
 		return
@@ -564,6 +576,7 @@ func _process(delta: float) -> void:
 			Audio.play("splash_small", -4.0)
 	else:
 		sink(delta)
+	_drift_step(delta)
 	match _state:
 		"reeling":
 			var tip := _boat.rod_tip(boat_x)
@@ -680,7 +693,9 @@ func _handle_input(delta: float) -> void:
 		return
 	match _state:
 		"reeled":
-			if _pressed():
+			if rowing() or dir != 0.0:
+				charge = -1.0
+			elif _pressed():
 				charge = 0.0
 			elif charge >= 0.0 and _held():
 				charge = minf(1.0, charge + delta / Data.num("fishing.cast_seconds", 1.5))

@@ -31,6 +31,10 @@ const PAUSE_CHANCE := 0.15
 const TURN_NARROW := 0.3
 ## How far ahead a fish feels for water too shallow for it, and turns back towards the deep.
 const SHALLOWS_AHEAD := 30.0
+## Where the middle of the bait hangs below the hook, which a biting fish puts its mouth to.
+const BAIT_MIDDLE := Vector2(0, 5)
+## How far past the view's edge a new fish starts, so it swims into sight rather than appearing in it.
+const OUT_OF_SIGHT := 12.0
 ## What a fish is given to swim with when it was made without it.
 const AT_REST := {"vel": Vector2.ZERO, "width": 1.0, "swim": 0.0, "pace": 1.0, "pace_left": 2.0, "drift": 0.3, "flee": 0.0, "age": 0.0}
 
@@ -53,6 +57,7 @@ var light_reach := 100.0
 var light = null
 ## Whether a legend may show itself, which needs a game in play to know the legends already caught.
 var with_legends := true
+static var _mouths := {}
 
 
 func setup(id: String, bed: Seabed, rng: RandomNumberGenerator) -> void:
@@ -77,6 +82,42 @@ static func wave_for(id: String, tex: Texture2D) -> float:
 	return 1.0 if tex.get_width() < 30 else (2.0 if tex.get_width() < 70 else 3.0)
 
 
+## Where a fish's mouth is on its picture, facing right, from the picture's middle: the middle of its front column.
+static func mouth_of(tex: Texture2D) -> Vector2:
+	if tex == null:
+		return Vector2.ZERO
+	if not _mouths.has(tex):
+		var img := tex.get_image()
+		if img.is_compressed():
+			img.decompress()
+		var w := img.get_width()
+		var h := img.get_height()
+		var rows := []
+		var front := w - 1
+		while front >= 0 and rows.is_empty():
+			for y in h:
+				if img.get_pixel(front, y).a > 0.5:
+					rows.append(y)
+			if rows.is_empty():
+				front -= 1
+		var mid := float(rows[rows.size() / 2]) if not rows.is_empty() else h / 2.0
+		_mouths[tex] = Vector2(front + 1.0 - w / 2.0, mid + 0.5 - h / 2.0)
+	return _mouths[tex]
+
+
+## Where a fish's mouth is in the water.
+static func mouth_at(f: Dictionary) -> Vector2:
+	var s: Sprite2D = f["sprite"]
+	var m := mouth_of(s.texture)
+	return f["pos"] + Vector2(m.x * (-1.0 if s.flip_h else 1.0) * s.scale.x, m.y * s.scale.y)
+
+
+## Where a fish facing `heading` is when its mouth is on the bait on a hook, the bait just covering the tip of it.
+static func at_bait(f: Dictionary, hook: Vector2, heading: float) -> Vector2:
+	var m := mouth_of((f["sprite"] as Sprite2D).texture)
+	return hook + BAIT_MIDDLE - Vector2(heading * (m.x - 1.0), m.y)
+
+
 ## A sprite of a kind of fish that waves its tail as `Pixels.set_swim` beats it.
 static func sprite_for(id: String, tex: Texture2D) -> Sprite2D:
 	var s := Sprite2D.new()
@@ -89,7 +130,7 @@ static func sprite_for(id: String, tex: Texture2D) -> Sprite2D:
 func populate() -> void:
 	for i in WANTED * 6:
 		if _near_count() < WANTED:
-			_spawn()
+			_spawn(true)
 
 
 ## Every fish of a kind that can be on the line or in a net here and now, at this depth, over water this deep.
@@ -102,10 +143,20 @@ func kinds_at(depth: float, water := INF) -> Array:
 	return out
 
 
-func _spawn() -> void:
+## Puts a fish or a shoal in the water: anywhere near the view as a place opens, and after that only out of sight past
+## either side of the view, heading in.
+func _spawn(anywhere := false) -> void:
 	var lo := maxf(8.0, cam.x - REACH)
 	var hi := minf(float(place["width"]) - 8.0, cam.x + Nav.view().x + REACH)
 	var x := _rng.randf_range(lo, hi)
+	if not anywhere:
+		var left := Vector2(lo, cam.x - OUT_OF_SIGHT - 40.0)
+		var right := Vector2(cam.x + Nav.view().x + OUT_OF_SIGHT + 40.0, hi)
+		var sides := [left, right].filter(func(r): return r.y > r.x)
+		if sides.is_empty():
+			return
+		var side: Vector2 = sides[_rng.randi() % sides.size()]
+		x = _rng.randf_range(side.x, side.y)
 	var floor_y := seabed.depth_at(x) - 8.0
 	if floor_y < 12.0 or _rng.randf() > room_for_fish(seabed.depth_at(x)):
 		return
@@ -135,13 +186,14 @@ func _spawn() -> void:
 		return
 	var count := (_rng.randi_range(2, 3) if big else _rng.randi_range(4, 7)) if f.get("shoal", false) else 1
 	var heading := -1.0 if _rng.randf() < 0.5 else 1.0
+	if not anywhere:
+		heading = signf(cam.x + Nav.view().x / 2.0 - x)
 	var leader := {}
 	_groups += 1
 	for i in count:
 		var lb := Catalog.roll_pounds(id, _rng)
 		var s := sprite_for(id, texture_for(id))
 		s.material.set_shader_parameter("keep", Murk.FISH_KEEP)
-		s.scale = Vector2.ONE * (0.85 + 0.3 * Catalog.share(id, lb)) * (0.75 if count > 1 and big else 1.0) * (1.2 if f["legend"] else 1.0)
 		add_child(s)
 		var speed := _rng.randf_range(6.0, 14.0) * (1.0 + float(f["strength"]) * 0.08)
 		var one := {"id": id, "lb": lb, "sprite": s, "pos": Vector2(x, y), "heading": heading, "phase": _rng.randf() * TAU,
@@ -225,14 +277,16 @@ func _move(f: Dictionary, delta: float, bait) -> void:
 		if bait == null:
 			f["state"] = "swim"
 		else:
-			var to: Vector2 = bait + Vector2(-6.0 * f["heading"], 2)
-			# A hook lying on the seabed is lower than a fish may swim, so it noses in as close as it can.
-			to.y = _keep_y(f, to.x, to.y)
 			f["heading"] = signf(bait.x - f["pos"].x) if absf(bait.x - f["pos"].x) > 2.0 else f["heading"]
+			var to := _biting_spot(f, bait)
 			f["pos"] = f["pos"].move_toward(to, (f["speed"] + 10.0) * delta)
-			if f["pos"].distance_to(to) < 2.0:
+			if f["pos"].distance_to(to) < 1.0 and f["face"] == f["heading"]:
+				f["pos"] = to
 				f["state"] = "bit"
 				bit.emit(f)
+	elif f["state"] == "bit":
+		if bait != null:
+			f["pos"] = _biting_spot(f, bait)
 	elif f["state"] == "swim":
 		var leader: Dictionary = f["leader"]
 		if not leader.is_empty() and leader["state"] in ["swim", "curious"]:
@@ -250,7 +304,8 @@ func _move(f: Dictionary, delta: float, bait) -> void:
 			var near: Vector2 = bait + Vector2(-18.0 * signf(bait.x - f["pos"].x + 0.01), sin(t * 0.9 + f["phase"]) * 6.0)
 			f["heading"] = signf(bait.x - f["pos"].x) if absf(bait.x - f["pos"].x) > 4.0 else f["heading"]
 			f["pos"] = f["pos"].move_toward(near, f["speed"] * delta)
-	f["pos"].y = _keep_y(f, f["pos"].x, f["pos"].y)
+	if not f["state"] in ["approach", "bit"]:
+		f["pos"].y = _keep_y(f, f["pos"].x, f["pos"].y)
 	_show(f, (f["pos"] - was) / delta if delta > 0.0 else Vector2.ZERO, delta)
 
 
@@ -310,6 +365,13 @@ func _show(f: Dictionary, moved: Vector2, delta: float) -> void:
 	s.scale = Vector2(f["size"] * f["width"], f["size"])
 	s.position = f["pos"] - cam
 	Pixels.set_swim(s, f["swim"])
+
+
+## Where a fish takes the bait: its mouth on it, though no deeper than lying on the seabed beside a hook resting there.
+func _biting_spot(f: Dictionary, bait: Vector2) -> Vector2:
+	var to := at_bait(f, bait, f["heading"])
+	to.y = minf(to.y, seabed.depth_at(to.x) + 2.0)
+	return to
 
 
 ## The nearest depth to y that a fish keeps to at x: no higher than half its band's top, and clear of the seabed.
