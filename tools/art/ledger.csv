@@ -464,3 +464,16 @@ time,kind,name,cost_usd,cost_generations,usd_left
 2026-11-07T18:57:28,pixen,tools\art\items_raw\net.png,0.0095,0,1.6843
 2026-11-07T18:58:03,pixen,tools\art\items_raw\trident.png,0.0079,0,1.6764
 2026-11-07T18:59:09,pixen,tools\art\items_raw\trident.png,0.0081,0,1.6683
+2026-11-07T20:02:11,inpaint,tools\art\town_parts\town_wide.png,0.0813,0,1.5870
+2026-11-07T20:06:32,inpaint,tools\art\town_parts\town_wide.png,0.0465,0,1.5405
+2026-11-07T20:07:18,inpaint,tools\art\town_parts\town_wide.png,0.0459,0,1.4945
+2026-11-07T20:08:05,inpaint,tools\art\town_parts\town_wide.png,0.0453,0,1.4492
+2026-11-07T20:09:00,inpaint,tools\art\town_parts\town_wide.png,0.0458,0,1.4034
+2026-11-07T20:13:09,inpaint,tools\art\town_parts\town_wide.png,0.0454,0,1.3580
+2026-11-07T20:13:56,inpaint,tools\art\town_parts\town_wide.png,0.0432,0,1.3149
+2026-11-07T20:14:25,inpaint,tools\art\town_parts\town_wide.png,0.0314,0,1.2834
+2026-11-07T20:15:03,inpaint,tools\art\town_parts\town_wide.png,0.0351,0,1.2483
+2026-11-07T20:20:16,inpaint,tools\art\shore_parts\shore_wide.png,0.0448,0,1.2035
+2026-11-07T20:21:11,inpaint,tools\art\shore_parts\shore_wide.png,0.0460,0,1.1575
+2026-11-07T20:26:23,inpaint,tools\art\town_parts\town_wide.png,0.0360,0,1.1215
+2026-11-07T20:28:30,inpaint,tools\art\town_parts\town_wide.png,0.0312,0,1.0903
