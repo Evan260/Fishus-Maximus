@@ -114,10 +114,11 @@ static func _check_box(t: Theme) -> void:
 
 ## A volume slider: a groove cut into the parchment that fills with brass, and a small wooden knob like the buttons.
 static func _slider(t: Theme) -> void:
-	var groove := [".dddd.", "dmmmmd", "dmmmmd", "dmmmmd", ".llll."]
-	var paper := {"d": Color8(85, 53, 41), "l": Color8(252, 243, 220)}
+	# A pale lower edge vanishes into the parchment and the track looks cut off, so it is edged in dark brown all round.
+	var groove := [".dddd.", "dssssd", "dmmmmd", "dmmmmd", ".dddd."]
+	var paper := {"d": Color8(85, 53, 41), "s": Color8(122, 88, 62)}
 	t.set_stylebox("slider", "HSlider", _strip(groove, paper.merged({"m": Color8(150, 112, 78)})))
-	var brass := [".dddd.", "dbbbbd", "dBBBBd", "dBBBBd", ".llll."]
+	var brass := [".dddd.", "dbbbbd", "dBBBBd", "dBBBBd", ".dddd."]
 	t.set_stylebox("grabber_area", "HSlider", _strip(brass, paper.merged({"b": Color8(226, 180, 98), "B": Color8(194, 139, 58)})))
 	t.set_stylebox("grabber_area_highlight", "HSlider", _strip(brass, paper.merged({"b": Color8(240, 204, 128), "B": Color8(214, 160, 74)})))
 	t.set_stylebox("focus", "HSlider", StyleBoxEmpty.new())
