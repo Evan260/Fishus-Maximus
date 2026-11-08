@@ -36,7 +36,6 @@ func test_an_achievement_slides_in_at_the_bottom_right() -> void:
 	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
 	Nav.port.add_child(s)
 	s.enter({"place": "harbour"})
-	AchievementCard._free_at = 0.0
 	AchievementCard.show_earned("first_fish")
 	AchievementCard.show_earned("first_fish")
 	var cards := _cards()
@@ -51,9 +50,24 @@ func test_an_achievement_slides_in_at_the_bottom_right() -> void:
 		for b in Nav.ui.find_children("*", "Button", true, false):
 			if b.is_visible_in_tree():
 				check(not shown.intersects(b.get_global_rect()), "above the buttons along the bottom, clear of %s" % b.get_global_rect())
-	check(cards[1].get_meta("wait") >= 3.0, "the second waits for the first to go, so they take turns")
+	check(cards[0].get_meta("shown", false) and not cards[1].get_meta("shown", false), "the second waits while the first is shown")
+	cards[0].free()
+	check(cards[1].get_meta("shown", false), "and slides in when the first has gone, so they take turns")
 	_clear()
 	s.free()
+
+
+func test_an_achievement_waits_for_the_catch_banner() -> void:
+	_clear()
+	Game.new_game("Test", "mutt")
+	CatchCard.show_catch("bream", 2.0, true)
+	AchievementCard.show_earned("first_fish")
+	var card: Control = _cards()[0]
+	check(not card.get_meta("shown", false), "a card earned with a catch waits while the banner is hung out")
+	CatchCard._open.free()
+	await Nav.get_tree().create_timer(0.3).timeout
+	check(card.get_meta("shown", false), "and slides in once the banner has gone")
+	_clear()
 
 
 func _texts(n: Node) -> String:
