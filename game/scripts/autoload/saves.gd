@@ -5,13 +5,13 @@ const SLOTS := 3
 
 var dir := "user://"
 var slot := 0
-## Off for scripted runs, so recordings and screenshots never overwrite a real game.
+## Off for scripted runs and the game with everything open, so neither ever overwrites a real game.
 var enabled := true
 var _autosave := 60.0
 
 
 func _ready() -> void:
-	if Dev.has("no-save") or Dev.has("demo"):
+	if Dev.has("no-save") or Dev.has("demo") or Dev.has("max-state"):
 		enabled = false
 
 

@@ -20,6 +20,8 @@ func _ready() -> void:
 		Game.demo_state()
 		if Dev.has("boat"):
 			Game.state["boat"] = Dev.get_arg("boat")
+	if Dev.has("max-state"):
+		Game.max_state()
 	if Dev.has("guide"):
 		# A new game with old Rufus's lessons learned up to the one named, for checking that lesson on screen.
 		Game.new_game("Marcus", "mutt")

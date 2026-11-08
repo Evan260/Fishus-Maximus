@@ -78,6 +78,41 @@ func demo_state() -> void:
 	changed.emit()
 
 
+## A game with every chapter open and the best of everything: the biggest boat, the best gear of every kind, a full
+## bait box, all the help, every pond dug large and every garum tank restored, and money to spare.
+func max_state() -> void:
+	new_game("Marcus", "mutt")
+	state["guide"]["finished"] = true
+	var last: Dictionary = Data.chapters[Data.chapters.size() - 1]
+	state["chapter"] = int(last["chapter"])
+	state["_chapter_seen"] = state["chapter"]
+	state["reputation"] = int(last["reputation"]) + 100
+	state["denarii"] = 50000
+	state["boat"] = Data.boats.keys()[Data.boats.size() - 1]
+	var best := {}
+	for id in Data.gear:
+		var g: Dictionary = Data.gear[id]
+		if g["kind"] != "finery" and (not best.has(g["kind"]) or int(g["price"]) > int(Data.gear[best[g["kind"]]]["price"])):
+			best[g["kind"]] = id
+	for kind in best:
+		if kind == "trap":
+			state["gear"]["traps"] = int(Data.gear[best[kind]]["count"])
+		else:
+			state["gear"][kind] = best[kind]
+	state["gear"]["rod_best"] = state["gear"]["rod"]
+	state["bait"] = {}
+	for id in Data.bait:
+		state["bait"][id] = Shop.bait_capacity(state) / Data.bait.size()
+	state["helpers"] = Helpers.HELP.keys()
+	state["finery"] = Data.gear.keys().filter(func(id): return Data.gear[id]["kind"] == "finery")
+	state["ponds"] = []
+	for site in Ponds.allowed(state):
+		state["ponds"].append({"site": site, "size": "large", "water": Data.ponds["sites"][site]["water"], "features": [], "fish": []})
+	for t in state["tanks"]:
+		t["restored"] = true
+	changed.emit()
+
+
 ## Lets the time since the game was last saved pass, up to the cap; says how many minutes of game time that was.
 func catch_up() -> float:
 	var now := Time.get_unix_time_from_system()
