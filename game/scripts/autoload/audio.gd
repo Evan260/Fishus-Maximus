@@ -25,6 +25,7 @@ func _ready() -> void:
 		AudioServer.add_bus()
 		AudioServer.set_bus_name(AudioServer.bus_count - 1, "Ambience")
 		AudioServer.set_bus_send(AudioServer.bus_count - 1, "Master")
+		Settings.apply()
 	for i in 8:
 		var p := AudioStreamPlayer.new()
 		p.bus = "Effects"

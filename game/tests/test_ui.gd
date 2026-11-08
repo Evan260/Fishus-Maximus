@@ -64,3 +64,20 @@ func test_the_pacing_bot_reaches_chapter_two() -> void:
 	var log := bot.run(2.0, 7)
 	check(log["chapters"].has(2), "a keen player reaches the rocky shore within two hours")
 	check(not log["chapters"].has(3), "but not the lake and the bay yet")
+
+
+func test_the_sounds_around_you_have_their_own_volume() -> void:
+	var was: float = Settings.ambience
+	Settings.ambience = 0.25
+	Settings.apply()
+	var bus := AudioServer.get_bus_index("Ambience")
+	check(bus >= 0 and is_equal_approx(AudioServer.get_bus_volume_db(bus), linear_to_db(0.25)), "the sea, the gulls and the rain play at the ambience volume")
+	for c in Nav.ui.get_children():
+		c.free()
+	SettingsPanel.open()
+	var names := Nav.ui.find_children("*", "Label", true, false).map(func(l): return l.text)
+	check("Ambience" in names, "and the settings have a slider for it")
+	for c in Nav.ui.get_children():
+		c.free()
+	Settings.ambience = was
+	Settings.apply()

@@ -3,9 +3,9 @@ class_name SettingsPanel
 
 
 static func open() -> void:
-	var list := Ui.window("Settings", 280, 190)
+	var list := Ui.window("Settings", 280, 205)
 	list.add_theme_constant_override("separation", 3)
-	for key in ["master", "music", "effects"]:
+	for key in ["master", "music", "effects", "ambience"]:
 		var r := HBoxContainer.new()
 		r.add_theme_constant_override("separation", 6)
 		list.add_child(r)

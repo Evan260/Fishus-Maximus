@@ -9,6 +9,8 @@ const PATH := "user://settings.cfg"
 var master := 0.9
 var music := 0.6
 var effects := 0.9
+## The sounds around you: the sea, the gulls, the cicadas, the wind and the rain.
+var ambience := 0.8
 var fullscreen := false
 var maximized := false
 ## Gentle fishing never snaps a line or lets a hook slip.
@@ -25,6 +27,7 @@ func _ready() -> void:
 		master = cfg.get_value("sound", "master", master)
 		music = cfg.get_value("sound", "music", music)
 		effects = cfg.get_value("sound", "effects", effects)
+		ambience = cfg.get_value("sound", "ambience", ambience)
 		fullscreen = cfg.get_value("display", "fullscreen", fullscreen)
 		maximized = cfg.get_value("display", "maximized", maximized)
 		gentle = cfg.get_value("play", "gentle", gentle)
@@ -35,7 +38,7 @@ func _ready() -> void:
 
 
 func apply() -> void:
-	for bus in [["Master", master], ["Music", music], ["Effects", effects]]:
+	for bus in [["Master", master], ["Music", music], ["Effects", effects], ["Ambience", ambience]]:
 		var i := AudioServer.get_bus_index(bus[0])
 		if i >= 0:
 			AudioServer.set_bus_volume_db(i, linear_to_db(maxf(0.0001, bus[1])))
@@ -72,6 +75,7 @@ func save() -> void:
 	cfg.set_value("sound", "master", master)
 	cfg.set_value("sound", "music", music)
 	cfg.set_value("sound", "effects", effects)
+	cfg.set_value("sound", "ambience", ambience)
 	cfg.set_value("display", "fullscreen", fullscreen)
 	cfg.set_value("display", "maximized", maximized)
 	cfg.set_value("play", "gentle", gentle)
