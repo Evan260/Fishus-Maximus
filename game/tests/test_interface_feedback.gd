@@ -161,6 +161,18 @@ func test_the_banner_fits_every_interface_size() -> void:
 	_clear()
 
 
+func test_the_desktop_strip_tells_a_catch_in_one_line() -> void:
+	_clear()
+	Windowing.strip = true
+	CatchCard.show_catch("mullet", 1.2, true)
+	Windowing.strip = false
+	check(not CatchCard.is_open(), "no banner, which the strip is too short for")
+	var box: Control = Toast._box
+	var said := " ".join(box.get_children().map(func(l): return l.text)) if is_instance_valid(box) else ""
+	check("Red mullet, 1.2 lb" in said and "New in your logbook" in said, "a line names the fish, its weight and that it is new: %s" % said)
+	_clear()
+
+
 func test_the_tassels_and_the_fringe_sway() -> void:
 	_clear()
 	CatchCard.show_catch("bream", 2.0, false)

@@ -56,6 +56,11 @@ static func show_catch(fish: String, pounds: float, is_new: bool) -> void:
 	if is_open():
 		_open.queue_free()
 	var legend: bool = Data.fish[fish]["legend"]
+	# The desktop strip is too short for the banner, so the catch gets one line instead.
+	if Windowing.strip:
+		var also := " A legend of the bay!" if legend else (" New in your logbook!" if is_new else "")
+		Toast.say("%s, %s lb, %s.%s" % [Data.fish[fish]["name"], pounds_text(pounds), Catalog.grade(fish, pounds), also])
+		return
 	var card := Control.new()
 	card.name = "CatchCard"
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
