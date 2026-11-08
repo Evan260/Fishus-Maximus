@@ -52,6 +52,24 @@ func _pieces(grid: Rect2i, inside: Callable) -> int:
 	return pieces
 
 
+func test_each_building_is_one_solid_shape() -> void:
+	var s := _open()
+	for id in s.BUILDINGS:
+		var img: Image = s._masks[id]["image"]
+		var grid := _grid(img)
+		check(_pieces(grid, func(p): return _solid(img, p)) == 1, "%s is one piece, with no specks" % id)
+		check(_pieces(grid, func(p): return not _solid(img, p)) == 1, "%s has no holes" % id)
+		var gaps := 0
+		for y in img.get_height():
+			for x in img.get_width():
+				var p := Vector2i(x, y)
+				if not _solid(img, p) and ((_solid(img, p + Vector2i(1, 0)) and _solid(img, p - Vector2i(1, 0)))
+						or (_solid(img, p + Vector2i(0, 1)) and _solid(img, p - Vector2i(0, 1)))):
+					gaps += 1
+		check(gaps == 0, "%s has no gap or notch a pixel wide, %d found" % [id, gaps])
+	_close(s)
+
+
 func test_each_outline_is_one_unbroken_line_round_its_building() -> void:
 	var s := _open()
 	for id in s.BUILDINGS:

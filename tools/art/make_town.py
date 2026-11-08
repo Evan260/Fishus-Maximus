@@ -4,9 +4,9 @@ style. The street is then painted on past each edge of its 480 by 270 scene (wid
 shows more street, and any part of a building that came out wrong is painted again on the wide picture. Wall and
 paving painted inside an outline are given back to the street, so each building ends at its own edges, the paving round
 the goldsmith is laid again from the street's own slabs, the painted sky is cleared so the game's own sky shows above
-the wall, and each building is cut out to be clicked and lit when the mouse is over it. Writes
-game/assets/art/town/street.png (the scene with MARGIN more on every side), <id>.png for each building, and town.json
-with where each stands in the scene.
+the wall, and each building is cut out along the outline traced round it, to be clicked and outlined in gold when the
+mouse is over it. Writes game/assets/art/town/street.png (the scene with MARGIN more on every side), <id>.png for each
+building, and town.json with where each stands in the scene.
 Usage: python tools/art/make_town.py [--no-paint]   (--no-paint only cuts out what is already painted)"""
 import json
 import shutil
@@ -44,6 +44,17 @@ BUILDINGS = {
               f"a wooden notice board on two posts against the wall {FRONT}, wax tablets and scraps of papyrus pinned to it, a little tiled roof on top"),
     "goldsmith": ([("rect", (410, 116, 474, PAVING)), ("poly", [(406, 118), (478, 118), (442, 98)])],
                   f"a narrow Roman goldsmith's shop {FRONT} with a red awning over a small counter of gold earrings and rings, a tiled gable roof"),
+}
+# Each building as the street shows it, traced in the scene's pixels: the mouse finds it there and its outline hugs it.
+SILHOUETTES = {
+    "market": [("poly", [(64, 124), (73, 121), (159, 121), (168, 124), (168, 210), (64, 210)])],
+    "netmaker": [("poly", [(173, 150), (213, 127), (218, 127), (257, 150), (254, 158), (254, 212), (175, 212),
+                           (175, 158)])],
+    "boatwright": [("poly", [(266, 172), (312, 140), (358, 171), (356, 177), (356, 210), (269, 210), (269, 178)])],
+    "board": [("poly", [(367, 166), (402, 166), (402, 181), (400, 182), (400, 209), (367, 209), (367, 182),
+                        (364, 181), (364, 172), (367, 171)])],
+    "goldsmith": [("poly", [(410, 222), (410, 126), (403, 124), (446, 100), (479, 124), (474, 126), (474, 227),
+                            (470, 227), (470, 222)])],
 }
 SCENE = (480, 270)
 # How far the street is painted past the scene on each side, so a window of another shape still shows the whole scene;
@@ -221,16 +232,6 @@ def settle(town: np.ndarray, street: np.ndarray, outline: np.ndarray) -> np.ndar
     return keep
 
 
-def hover_shape(keep: np.ndarray) -> np.ndarray:
-    """Where the mouse finds a building and its gold outline is drawn: its shape with the ragged edges smoothed and the
-    holes filled, which changes nothing on screen since the picture there is the street's own either way."""
-    k = cv2.morphologyEx(keep.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
-    filled = np.pad(k, 1)
-    cv2.floodFill(filled, None, (0, 0), 2)
-    k = (filled[1:-1, 1:-1] != 2).astype(np.uint8)
-    return cv2.morphologyEx(k, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)) > 0
-
-
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     WORK.mkdir(exist_ok=True)
@@ -293,8 +294,8 @@ def main():
     empty[my + 4:my + SCENE[1] - 4, mx + 4:mx + SCENE[0] - 4] = bare[4:SCENE[1] - 4, 4:SCENE[0] - 4]
     final = painted.copy()
     names = list(MENDS)
-    keeps = {}
-    for bid in [bid for bid in BUILDINGS if bid in done]:
+    built = [bid for bid in BUILDINGS if bid in done]
+    for bid in built:
         # Street painted again after a building is already the street, so none of it is given back to the empty street.
         last = max([names.index(n) for n in names if MENDS[n][0] == bid], default=-1)
         restreeted = np.zeros(final.shape[:2], bool)
@@ -302,14 +303,14 @@ def main():
             if not MENDS[name][0]:
                 restreeted |= np.array(shape_mask(final.shape[1::-1], MENDS[name][1], MARGIN)) > 0
         outline = np.array(shape_mask(final.shape[1::-1], outline_of(bid), MARGIN)) > 0
-        keep = settle(painted, empty, outline)
-        back = outline & ~keep & ~restreeted
+        back = outline & ~settle(painted, empty, outline) & ~restreeted
         final[back] = empty[back]
-        keeps[bid] = keep
     final = clear_sky.clear_painted(carry_paving(final), SKY, HORIZON + my)
     spots = {}
-    for bid, keep in keeps.items():
-        shape = hover_shape(keep)
+    for bid in built:
+        shape = np.array(shape_mask(final.shape[1::-1], SILHOUETTES[bid], MARGIN)) > 0
+        if (shape & (final[:, :, 3] == 0)).any():
+            print("sky shows inside", bid)
         im = final.copy()
         im[:, :, 3] = np.where(shape, im[:, :, 3], 0)
         ys, xs = np.where(shape)
