@@ -3,8 +3,12 @@ class_name TacklePanel
 ## here it suits. A rod suits fish of a range of sizes: smaller fish are shy of it, bigger ones fight harder on it.
 
 
-static func open() -> void:
-	var list := Ui.window("Tackle", 300, 190)
+const TILE := Vector2(36, 36)
+
+
+## Opens the tackle, just above `under` when given, such as the line's picture on the boat's bar.
+static func open(under: Control = null) -> void:
+	var list := Ui.window("Tackle", 220, 150)
 	var place := str(Game.state.get("place", "harbour"))
 	Ui.label(list, "BAIT ON THE HOOK", "Heading")
 	var baits := _grid(list)
@@ -16,7 +20,7 @@ static func open() -> void:
 		var on: bool = str(Game.state.get("current_bait", "")) == id
 		Ui.tile(baits, ItemArt.of(id), "x%d" % count, "%s, %d left. %s" % [Data.bait[id]["name"], count, bait_tip(id, place)], func():
 			use_bait(bait_id)
-			open(), true, on)
+			open(under), true, on, TILE)
 	Ui.label(list, "ROD", "Heading")
 	var rods := _grid(list)
 	for id in rods_owned(Game.state):
@@ -24,13 +28,32 @@ static func open() -> void:
 		var held: bool = str(Game.state["gear"].get("rod", "")) == id
 		Ui.tile(rods, ItemArt.of(id), "", "%s. %s" % [Data.gear[id]["name"], rod_tip(id, place)], func():
 			use_rod(rod_id)
-			open(), true, held)
-	Ui.label(list, "Hold the pointer over one to see which fish it suits.", "MutedLabel")
+			open(under), true, held, TILE)
+	var hint := Ui.label(list, "Hold the pointer over one to see which fish it suits.", "MutedLabel")
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size.x = 180
+	if is_instance_valid(under):
+		_hang_above(Nav.ui.get_node("Window"), under)
+
+
+## Moves a window to sit just above a control, kept inside the view.
+static func _hang_above(window: Control, under: Control) -> void:
+	var at := under.get_global_rect()
+	var size := Vector2(window.offset_right - window.offset_left, window.offset_bottom - window.offset_top).max(window.get_combined_minimum_size())
+	window.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	window.grow_horizontal = Control.GROW_DIRECTION_END
+	window.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	var x := clampf(at.position.x, 4.0, Nav.view().x - size.x - 4.0)
+	var y := maxf(4.0, at.position.y - size.y - 2.0)
+	window.offset_left = x
+	window.offset_top = y
+	window.offset_right = x + size.x
+	window.offset_bottom = y + size.y
 
 
 static func _grid(list: Control) -> GridContainer:
 	var g := GridContainer.new()
-	g.columns = 6
+	g.columns = 5
 	g.add_theme_constant_override("h_separation", 2)
 	g.add_theme_constant_override("v_separation", 2)
 	list.add_child(g)

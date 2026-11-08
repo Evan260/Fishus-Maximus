@@ -50,17 +50,21 @@ func test_the_ways_of_fishing_are_pictures_with_tips() -> void:
 	s.free()
 
 
-func test_the_bait_and_rod_sit_beside_the_line() -> void:
+func test_clicking_the_line_opens_the_tackle_above_it() -> void:
 	var s := _coast()
 	s.hud.refresh()
-	check(s.hud.bait_tile.visible and s.hud.rod_tile.visible, "with the line out, the bait and the rod show on the bar")
-	check("worm" in s.hud.bait_tile.tooltip_text.to_lower(), "the bait's tip names the bait on the hook")
-	s.hud.bait_tile.pressed.emit()
-	check(Ui.window_open(), "and clicking it opens the tackle to choose another")
+	check(not "bait_tile" in s.hud and not "rod_tile" in s.hud, "the bait and the rod are no longer tiles of their own on the bar")
+	var line: Button = s.hud.method_buttons["line"]
+	line.pressed.emit()
+	check(Ui.window_open(), "clicking the line opens the tackle")
+	var window: Control = Nav.ui.get_node("Window")
+	var at := line.get_global_rect()
+	var box := Rect2(window.position, window.size)
+	check(box.end.y <= at.position.y + 0.5 and box.position.x <= at.end.x and box.end.x >= at.position.x, "just above the line's picture, at %s over %s" % [box, at])
 	Ui.close_window()
 	s.methods.method = "trap"
-	s.hud.refresh()
-	check(not s.hud.bait_tile.visible, "pots need no bait or rod, so those are put away")
+	s.hud.method_buttons["line"].pressed.emit()
+	check(s.methods.method == "line", "and it picks the line too")
 	_clear_ui()
 	s.free()
 

@@ -137,7 +137,7 @@ func enter(args: Dictionary) -> void:
 		Ui.hang(_ashore, "bottom_right", Vector2(4, 4), Vector2(76, Hud.TILE.y))
 	relayout()
 	if Dev.has("tackle"):
-		TacklePanel.open()
+		TacklePanel.open(hud.method_buttons["line"] if hud else null)
 
 
 ## Where a lesson of the guide points, in interface pixels: the button to press, or nothing while it is hidden.

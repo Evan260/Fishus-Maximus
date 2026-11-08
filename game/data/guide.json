@@ -54,7 +54,7 @@
 		{
 			"id": "bait",
 			"screen": "town",
-			"text": "Each fish likes its own bait. The netmaker sells shrimp and bread too. Buy some, then click the bait on the boat's bar to put it on the hook.",
+			"text": "Each fish likes its own bait. The netmaker sells shrimp and bread too. Buy some, then click the float on the boat's bar to put it on the hook.",
 			"done": {
 				"stat": "bought"
 			},
