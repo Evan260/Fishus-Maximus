@@ -2,10 +2,11 @@
 buildings painted straight into it inside a building-shaped outline, so every one shares the street's angle, light and
 style. The street is then painted on past each edge of its 480 by 270 scene (widen.py), so a window of another shape
 shows more street, and any part of a building that came out wrong is painted again on the wide picture. Wall and
-paving painted inside an outline are given back to the street, so each building ends at its own edges, the painted sky
-is cleared so the game's own sky shows above the wall, and each building is cut out to be clicked and lit when the
-mouse is over it. Writes game/assets/art/town/street.png (the scene with MARGIN more on every side), <id>.png for each
-building, and town.json with where each stands in the scene.
+paving painted inside an outline are given back to the street, so each building ends at its own edges, the paving round
+the goldsmith is laid again from the street's own slabs, the painted sky is cleared so the game's own sky shows above
+the wall, and each building is cut out to be clicked and lit when the mouse is over it. Writes
+game/assets/art/town/street.png (the scene with MARGIN more on every side), <id>.png for each building, and town.json
+with where each stands in the scene.
 Usage: python tools/art/make_town.py [--no-paint]   (--no-paint only cuts out what is already painted)"""
 import json
 import shutil
@@ -86,7 +87,17 @@ MENDS = {
                   "the building filling the whole shape: a red tiled gable roof with a neat row of tiles down both "
                   "sloping edges, dark wooden walls with a wooden post at each side, a red awning over a wooden counter "
                   "of gold earrings and rings, a small hanging lamp, a red banner, its wooden step at the bottom", ""),
+    "goldsmith_peak": ("", [("poly", [(428, 99), (448, 99), (448, 102), (434, 109), (428, 109)])],
+                       "the shadowed plastered wall and dark doorway of the tall house behind, carrying on down to the "
+                       "top of the small tiled roof in front of it, no sky", ""),
 }
+# The paving's slanting joints run to this point in the scene, a slope of 0.4 apart, slope being columns per row down.
+VANISH = (261, 152)
+JOINT = 0.4
+# The paving round the goldsmith is laid again from the street's own, past the joint of this slope.
+CARRY_FROM = 1.86
+# Where that paving starts, as (from this column on, the top row), since the goldsmith and the pillar stand on it.
+CARRY_TOPS = [(0, 211), (410, 223), (470, 229)]
 # The painted sky's own colours, the last the bluish edge of the rigging against it, and the row of the wall's top.
 SKY = [(127, 174, 239), (142, 188, 246), (162, 208, 250), (227, 236, 255), (198, 217, 250), (139, 150, 166)]
 HORIZON = 110
@@ -142,6 +153,33 @@ def even_rows(arr: np.ndarray, box) -> np.ndarray:
     off = rgb[:, x1:x1 + 8].mean(axis=1) - rgb[:, x1 - 8:x1].mean(axis=1)
     off = cv2.blur(off[:, None, :], (1, 9))[:, 0, :]
     out[y0:y1, x0:x1, :3] = np.clip(rgb[:, x0:x1] + off[:, None, :], 0, 255).astype(np.uint8)
+    return out
+
+
+def carry_paving(arr: np.ndarray) -> np.ndarray:
+    """The picture with the paving round the goldsmith laid again from the street's own slabs four joints to the left,
+    each row moved along the street's perspective so the joints meet those beside it, and each column toned to the
+    paving just past the joint it starts at."""
+    h, w = arr.shape[:2]
+    vx, vy = VANISH[0] + MARGIN[0], VANISH[1] + MARGIN[1]
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    slope = (xx - vx) / np.maximum(yy - vy, 1.0)
+    top = np.zeros(w)
+    for x0, y0 in CARRY_TOPS:
+        top[x0 + MARGIN[0]:] = y0 + MARGIN[1]
+    area = (slope > CARRY_FROM) & (yy >= top[None, :])
+    laid = cv2.remap(arr, xx - 4 * JOINT * (yy - vy), yy, cv2.INTER_NEAREST)
+    weights = np.array([0.3, 0.59, 0.11], dtype=np.float32)
+    was, now = arr[:, :, :3].astype(np.float32) @ weights, laid[:, :, :3].astype(np.float32) @ weights
+    past = (slope <= CARRY_FROM - 0.08) & (slope > CARRY_FROM - 0.6) & (yy >= top.max())
+    gain = np.ones(w, dtype=np.float32)
+    for x in range(int(np.argmax(area.any(axis=0))), w):
+        rows = past[:, x]
+        gain[x] = was[rows, x].mean() / max(now[rows, x].mean(), 1.0) if rows.sum() > 6 else gain[x - 1]
+    gain = np.convolve(np.pad(gain, 12, mode="edge"), np.ones(25) / 25, "valid")
+    out = arr.copy()
+    toned = laid[:, :, :3].astype(np.float32) * gain[None, :, None]
+    out[area, :3] = np.clip(toned[area], 0, 255).astype(np.uint8)
     return out
 
 
@@ -254,15 +292,21 @@ def main():
     bare = np.array(Image.open(street).convert("RGBA"))
     empty[my + 4:my + SCENE[1] - 4, mx + 4:mx + SCENE[0] - 4] = bare[4:SCENE[1] - 4, 4:SCENE[0] - 4]
     final = painted.copy()
+    names = list(MENDS)
     keeps = {}
-    for bid in BUILDINGS:
-        if bid not in done:
-            continue
+    for bid in [bid for bid in BUILDINGS if bid in done]:
+        # Street painted again after a building is already the street, so none of it is given back to the empty street.
+        last = max([names.index(n) for n in names if MENDS[n][0] == bid], default=-1)
+        restreeted = np.zeros(final.shape[:2], bool)
+        for name in names[last + 1:]:
+            if not MENDS[name][0]:
+                restreeted |= np.array(shape_mask(final.shape[1::-1], MENDS[name][1], MARGIN)) > 0
         outline = np.array(shape_mask(final.shape[1::-1], outline_of(bid), MARGIN)) > 0
         keep = settle(painted, empty, outline)
-        final[outline & ~keep] = empty[outline & ~keep]
+        back = outline & ~keep & ~restreeted
+        final[back] = empty[back]
         keeps[bid] = keep
-    final = clear_sky.clear_painted(final, SKY, HORIZON + my)
+    final = clear_sky.clear_painted(carry_paving(final), SKY, HORIZON + my)
     spots = {}
     for bid, keep in keeps.items():
         shape = hover_shape(keep)

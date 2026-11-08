@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
-## The gold outline round each building in the town: one unbroken line hugging the building's whole shape, and the
-## mouse finding the building wherever that line encloses it.
+## The gold outline round each building in the town: one unbroken line hugging the building's whole shape, the mouse
+## finding the building wherever that line encloses it, and the goldsmith standing whole on the street's own paving.
 
 const AROUND := [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
 	Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]
@@ -93,4 +93,48 @@ func test_the_mouse_finds_a_building_wherever_its_outline_encloses_it() -> void:
 			if s._building_at(p + Vector2(0.5, 0.5)) == id:
 				beyond += 1
 		check(beyond == 0, "%s: and not on the outline itself, found at %d" % [id, beyond])
+	_close(s)
+
+
+func test_each_building_is_cut_from_the_street_as_it_is_painted() -> void:
+	var s := _open()
+	var street: Image = s._street.texture.get_image()
+	for id in s.BUILDINGS:
+		var img: Image = s._masks[id]["image"]
+		var at := Vector2i(Vector2(s._masks[id]["at"]) + s.margin)
+		var off := 0
+		for y in img.get_height():
+			for x in img.get_width():
+				var c := img.get_pixel(x, y)
+				if c.a > 0.5 and not c.is_equal_approx(street.get_pixel(at.x + x, at.y + y)):
+					off += 1
+		check(off == 0, "%s: its cut-out is the street's own picture of it, %d pixels differ" % [id, off])
+	_close(s)
+
+
+## The mean colour of a box of the street, given in the scene's own pixels.
+func _colour(street: Image, margin: Vector2, box: Rect2i) -> Color:
+	var sum := Color(0, 0, 0, 0)
+	for y in range(box.position.y, box.end.y):
+		for x in range(box.position.x, box.end.x):
+			sum += street.get_pixel(x + int(margin.x), y + int(margin.y))
+	return sum / float(box.get_area())
+
+
+func test_the_goldsmith_stands_on_the_streets_own_paving() -> void:
+	var s := _open()
+	var street: Image = s._street.texture.get_image()
+	var band := _colour(street, s.margin, Rect2i(340, 211, 30, 12)).get_luminance()
+	var by_it := _colour(street, s.margin, Rect2i(394, 211, 16, 12)).get_luminance()
+	check(absf(by_it - band) < 0.15, "the sunlit paving along the wall runs up to the goldsmith, %.2f against %.2f" % [by_it, band])
+	var front := _colour(street, s.margin, Rect2i(410, 223, 60, 6))
+	var below := _colour(street, s.margin, Rect2i(410, 232, 60, 10))
+	check(maxf(maxf(absf(front.r - below.r), absf(front.g - below.g)), absf(front.b - below.b)) < 0.04,
+		"and the paving in front of it has the colour of the paving round it, %s against %s" % [front, below])
+	var sky := 0
+	for y in range(100, 110):
+		for x in range(428, 448):
+			if street.get_pixel(x + int(s.margin.x), y + int(s.margin.y)).a < 0.5:
+				sky += 1
+	check(sky == 0, "its roof is whole, with no sky showing beside its peak, %d pixels open" % sky)
 	_close(s)
