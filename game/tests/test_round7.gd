@@ -106,3 +106,24 @@ func test_the_jetty_runs_on_to_the_shore_past_the_view() -> void:
 	var width := float(load("res://assets/art/" + str(jetty["file"])).get_width())
 	var under := layers.filter(func(l): return str(l.get("file", "")).ends_with("boulders.png") and float(l["world"][0]) < float(jetty["world"][0]) + width)
 	check(under.is_empty(), "and no round boulder sits under it")
+
+
+func test_the_oar_splashes_where_it_dips_into_the_water() -> void:
+	var b := BoatView.new()
+	b.set_boat("skiff")
+	var seen := []
+	for i in 90:
+		b.rowing = 1.0
+		b._process(1.0 / 30.0)
+		b.place(100.0, Vector2(0, -160), i / 30.0)
+		seen += b.splashes()
+	check(seen.size() > 0, "rowing throws up splashes")
+	check(seen.any(func(p): return p["kind"] == "ring") and seen.any(func(p): return p["kind"] == "bubble"), "rings on the surface and bubbles under it")
+	check(seen.filter(func(p): return p["kind"] != "bubble").all(func(p): return absf(p["at"].y) < 16.0), "the rings and drops at the water's surface")
+	check(seen.filter(func(p): return p["kind"] == "bubble").all(func(p): return p["at"].y > 0.0 and p["at"].y < 34.0), "and the bubbles in the water by the blade")
+	check(seen.all(func(p): return p["at"].x > 60.0 and p["at"].x < 260.0), "beside the boat, where the oar is")
+	for i in 90:
+		b._process(1.0 / 30.0)
+		b.place(100.0, Vector2(0, -160), 3.0 + i / 30.0)
+	check(b.splashes().is_empty(), "and they settle once he stops rowing")
+	b.free()

@@ -24,6 +24,13 @@ const THROW_FPS := 14.0
 ## Where the oarlock is on his canvas, ahead of him on the gunwale, and how far the oar reaches past it.
 const OARLOCK := Vector2(50, 38)
 const OAR_OUT := 30.0
+## How fast the drops thrown up by the oar fall back, how long a ring spreads where it cut the water, and how fast the
+## bubbles stirred up by the blade rise.
+const DROP_FALL := 170.0
+const RING_SECONDS := 0.7
+const BUBBLE_RISE := 14.0
+const SPRAY := Color(0.94, 0.97, 0.96, 0.95)
+const BUBBLE := Color(0.82, 0.93, 0.95, 0.7)
 const OAR_COLOUR := Color("#7a5532")
 const OAR_LIGHT := Color("#a5774a")
 
@@ -61,6 +68,13 @@ var _painted := false
 var _overlay: Node2D
 var _cam := Vector2.ZERO
 var _x := 0.0
+## The drops, rings and bubbles the oar stirs up, in the world: {"kind", "at", "vel", "life"}; where its shaft last cut
+## the water and where its blade last was, how far it has swept since the last ring, and which way it was sweeping.
+var _splash: Array = []
+var _cut := NAN
+var _blade_at := Vector2.ZERO
+var _swept := 0.0
+var _sweep := 0.0
 
 
 func _init() -> void:
@@ -232,7 +246,64 @@ func _process(delta: float) -> void:
 		_throw += delta
 		if WIND_FRAMES + int(_throw * THROW_FPS) > 8 and _throw > 0.3:
 			_throw = -1.0
+	_splash_step(delta)
 
+
+func splashes() -> Array:
+	return _splash
+
+
+## Where the oar's blade is in the world, and where its shaft cuts the water, while he rows.
+func _oar() -> Array:
+	var hands := _hands_at(_x)
+	var lock := _on_person(_x, OARLOCK)
+	var blade := lock + (lock - hands).normalized() * OAR_OUT
+	var t := clampf(-lock.y / (blade.y - lock.y), 0.0, 1.0) if blade.y != lock.y else 0.0
+	return [blade, lock.lerp(blade, t)]
+
+
+## The drops fly and fall back, and the rings spread and fade.
+func _splash_step(delta: float) -> void:
+	var keep := []
+	for p in _splash:
+		p["life"] -= delta
+		if p["kind"] == "drop":
+			p["vel"].y += DROP_FALL * delta
+		p["at"] += p["vel"] * delta
+		var landed: bool = p["kind"] == "drop" and p["at"].y >= 1.0
+		var surfaced: bool = p["kind"] == "bubble" and p["at"].y <= 1.0
+		if p["life"] > 0.0 and not landed and not surfaced:
+			keep.append(p)
+	_splash = keep
+
+
+## As the oar sweeps through the water it leaves rings behind it where its shaft cuts the surface, and flicks up drops
+## where the stroke turns.
+func _stir() -> void:
+	if not (person and person.visible and pose()[0] == "row"):
+		_cut = NAN
+		return
+	var oar := _oar()
+	if oar[0].y <= 0.0:
+		_cut = NAN
+		return
+	var x: float = oar[1].x
+	var blade: Vector2 = oar[0]
+	if not is_nan(_cut):
+		var moved := x - _cut
+		_swept += absf(moved)
+		if _swept >= 3.0:
+			_swept = 0.0
+			_splash.append({"kind": "ring", "at": Vector2(x, 0.0), "vel": Vector2.ZERO, "life": RING_SECONDS})
+		if blade.distance_to(_blade_at) >= 2.0:
+			_splash.append({"kind": "bubble", "at": blade.round() + Vector2(randi_range(-2, 2), randi_range(-3, 0)), "vel": Vector2(0, -BUBBLE_RISE), "life": 0.9})
+		if moved != 0.0 and signf(moved) != _sweep:
+			if _sweep != 0.0:
+				for k in 4:
+					_splash.append({"kind": "drop", "at": Vector2(x + k - 1.5, -1.0), "vel": Vector2((k - 1.5) * 12.0 - signf(moved) * 10.0, -48.0 - 9.0 * (k % 3)), "life": 1.2})
+			_sweep = signf(moved)
+	_cut = x
+	_blade_at = blade
 
 func place(x: float, cam: Vector2, time: float) -> void:
 	bob = sin(time * 1.6)
@@ -257,12 +328,26 @@ func place(x: float, cam: Vector2, time: float) -> void:
 		front.position = boat.position + Vector2(0, seat.y)
 	_cam = cam
 	_x = x
+	_stir()
 	if _overlay:
 		_overlay.queue_redraw()
 
 
 ## The near oar while he rows and the rod while he holds it, over the hull, since both cross its near side.
 func _draw_in_hands() -> void:
+	for p in _splash:
+		var at: Vector2 = (p["at"] - _cam).round()
+		match p["kind"]:
+			"ring":
+				var spread: float = 1.0 - p["life"] / RING_SECONDS
+				var half := roundf(2.0 + spread * 9.0)
+				var fade := Color(SPRAY, SPRAY.a * (1.0 - spread * spread))
+				_overlay.draw_rect(Rect2(at + Vector2(-half - 3.0, 0), Vector2(3, 1)), fade)
+				_overlay.draw_rect(Rect2(at + Vector2(half, 0), Vector2(3, 1)), fade)
+			"bubble":
+				_overlay.draw_rect(Rect2(at, Vector2.ONE), Color(BUBBLE, BUBBLE.a * clampf(p["life"] / 0.9, 0.0, 1.0)))
+			_:
+				_overlay.draw_rect(Rect2(at, Vector2.ONE), SPRAY)
 	if not person.visible:
 		return
 	var hands := _hands_at(_x) - _cam
