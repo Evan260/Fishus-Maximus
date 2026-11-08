@@ -7,6 +7,8 @@ uniform float root = 48.0;
 uniform float amount = 1.5;
 uniform float phase = 0.0;
 uniform float time = 0.0;
+// The share of its own colour the plant keeps, seen through murky water.
+uniform float keep = 1.0;
 
 varying vec4 tint;
 
@@ -21,4 +23,5 @@ void fragment() {
 	float wave = sin(time * 1.1 + phase - px.y * 0.09) + 0.35 * sin(time * 2.3 + phase * 1.7 - px.y * 0.21);
 	float x = px.x - floor(wave * amount * up * up + 0.5);
 	COLOR = x < 0.0 || x >= size.x ? vec4(0.0) : texture(TEXTURE, (vec2(x, px.y) + 0.5) / size) * tint;
+	COLOR.rgb = mix(vec3(dot(COLOR.rgb, vec3(0.299, 0.587, 0.114))), COLOR.rgb, keep);
 }

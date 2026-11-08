@@ -50,6 +50,7 @@ var _splashes: Array = []
 func _ready() -> void:
 	_fish = Sprite2D.new()
 	_fish.visible = false
+	_fish.z_index = _under_z()
 	add_child(_fish)
 	_over = Node2D.new()
 	_over.draw.connect(_draw_over)
@@ -151,11 +152,19 @@ func _place_fish() -> void:
 	if above != _above:
 		_above = above
 		_splash(Vector2(at.x, 0.0))
+	_fish.z_index = 0 if above else _under_z()
+	if _fish.material:
+		_fish.material.set_shader_parameter("keep", 1.0 if above else Murk.FISH_KEEP)
 	_fish.position = at - screen.camera.cam
 	_fish.rotation = turn
 	_fish.flip_h = facing < 0.0
 	_fish.modulate = Color(0.95, 1.0, 1.0)
 	Pixels.set_swim(_fish, _swim)
+
+
+## Under the water the fish on the line is drawn with the other fish, so the murk lies over it as over them.
+func _under_z() -> int:
+	return screen.swimmers.z_index - z_index if screen else 0
 
 
 func _splash(at: Vector2) -> void:

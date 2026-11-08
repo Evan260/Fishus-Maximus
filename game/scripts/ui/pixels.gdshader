@@ -7,6 +7,8 @@ uniform float wave = 0.0;
 uniform float waves = 0.7;
 // Texels of room drawn round the picture, so the pixels along its edge are never cut off when it is turned.
 uniform float edge = 0.0;
+// The share of its own colour the picture keeps; a fish in murky water keeps less.
+uniform float keep = 1.0;
 
 varying vec2 world;
 // The fragment's own COLOR comes already multiplied by the texture at UV, so the tint is carried through here.
@@ -45,5 +47,6 @@ void fragment() {
 		COLOR = vec4(0.0);
 	} else {
 		COLOR = tint * texture(TEXTURE, (texel + 0.5) / size);
+		COLOR.rgb = mix(vec3(dot(COLOR.rgb, vec3(0.299, 0.587, 0.114))), COLOR.rgb, keep);
 	}
 }

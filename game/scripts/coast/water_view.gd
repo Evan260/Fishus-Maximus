@@ -1,7 +1,7 @@
 class_name WaterView
 extends Node2D
 ## The water in front of everything above the surface: lighter at the top and darker with depth, with rays of light
-## falling through from above.
+## falling through from above. The murk over it mutes it into a murkier sea.
 
 const SURFACE := Color("#6fb8b2")
 const MID_WATER := Color("#2f7f8f")
@@ -13,14 +13,23 @@ var time := 0.0
 var rays := 1.0
 
 
+## The water's colour some rows under the waterline of a place so deep, as painted.
+static func water_at(below: float, place_depth: float) -> Color:
+	var d := below / span(place_depth)
+	return SURFACE.lerp(MID_WATER, clampf(d * 2.2, 0.0, 1.0)).lerp(DEEP_WATER, clampf(d * 2.0 - 0.6, 0.0, 1.0))
+
+
+## The depth over which the water darkens: the place's own, or more for a shallow one.
+static func span(place_depth: float) -> float:
+	return maxf(200.0, place_depth)
+
+
 func _draw() -> void:
 	var top := maxf(0.0, -cam.y)
 	var view := Nav.view()
 	# The desktop strip shifts the canvas up to the waterline, so the water runs to the bottom of what is on screen.
 	for y in range(int(top), int(view.y - get_canvas_transform().origin.y), 2):
-		var d := (y + cam.y) / maxf(200.0, depth)
-		var c := SURFACE.lerp(MID_WATER, clampf(d * 2.2, 0.0, 1.0)).lerp(DEEP_WATER, clampf(d * 2.0 - 0.6, 0.0, 1.0))
-		draw_rect(Rect2(0, y, view.x, 2), c)
+		draw_rect(Rect2(0, y, view.x, 2), water_at(y + cam.y, depth))
 	if rays <= 0.0:
 		return
 	for i in 7:

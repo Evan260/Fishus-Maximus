@@ -130,6 +130,7 @@ func _spawn() -> void:
 	for i in count:
 		var lb := Catalog.roll_pounds(id, _rng)
 		var s := sprite_for(id, texture_for(id))
+		s.material.set_shader_parameter("keep", Murk.FISH_KEEP)
 		s.scale = Vector2.ONE * (0.85 + 0.3 * Catalog.share(id, lb)) * (0.75 if count > 1 and big else 1.0) * (1.2 if f["legend"] else 1.0)
 		add_child(s)
 		var speed := _rng.randf_range(6.0, 14.0) * (1.0 + float(f["strength"]) * 0.08)
@@ -294,8 +295,6 @@ func _show(f: Dictionary, moved: Vector2, delta: float) -> void:
 	s.flip_h = f["face"] < 0.0
 	s.scale = Vector2(f["size"] * f["width"], f["size"])
 	s.position = f["pos"] - cam
-	var depth := clampf(f["pos"].y / maxf(200.0, float(place["depth"])), 0.0, 1.0)
-	s.modulate = Color(0.95, 1.0, 1.0).lerp(Color(0.55, 0.72, 0.8), depth)
 	Pixels.set_swim(s, f["swim"])
 
 

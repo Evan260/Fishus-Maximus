@@ -26,6 +26,7 @@ const FRONT_CELL := 2.0
 const FRONT_ROOM := 24.0
 ## How far the view may dip into the water before the plants standing at the bottom break away.
 const FRONT_DIP := 24.0
+const BED := preload("res://scripts/coast/bed.gdshader")
 ## How far up from a picture's bottom a column's waterline may lie; land ending higher hangs over the water.
 const SHORE_SCAN := 28
 const MAX_REACH := 40.0
@@ -59,6 +60,7 @@ var _fronts: Array = []
 var _clear: Array = []
 var _fight := false
 var _front_time := 0.0
+var _bed_look: ShaderMaterial
 var time := 0.0
 ## The sky the sea mirrors; without one the sea shows a clear noon.
 var sky: SkyView
@@ -119,6 +121,10 @@ func build(layers: Array) -> void:
 		s.z_index = int(l.get("z", 0))
 		if l.has("alpha"):
 			s.modulate.a = float(l["alpha"])
+		if l.has("world") and not l.get("through", false):
+			s.self_modulate = Murk.shade_for(l)
+			if not l.get("sway", false):
+				s.material = _bed()
 		add_child(s)
 		_nodes.append({"node": s, "at": at, "factor": factor})
 		if l.get("sway", false):
@@ -317,6 +323,7 @@ func _sway(s: Sprite2D, x: float) -> void:
 	m.set_shader_parameter("root", float(used.end.y))
 	m.set_shader_parameter("amount", clampf(used.size.y / 22.0, 1.0, 2.2))
 	m.set_shader_parameter("phase", x * 0.37)
+	m.set_shader_parameter("keep", Murk.PLANT_KEEP)
 	s.material = m
 	_swaying.append(s)
 
@@ -378,6 +385,13 @@ func _place_fronts(cam: Vector2) -> void:
 		var away := _fight or (bottom and lift < -FRONT_DIP) or _clear.any(func(r: Rect2): return area.intersects(r, true))
 		f["progress"] = move_toward(f["progress"], 1.0 if away else 0.0, dt / FRONT_SECONDS)
 		s.material.set_shader_parameter("progress", f["progress"])
+## The look of a piece lying on the seabed, its colours mostly drained by the murky water; one is shared by them all.
+func _bed() -> ShaderMaterial:
+	if _bed_look == null:
+		_bed_look = ShaderMaterial.new()
+		_bed_look.shader = BED
+		_bed_look.set_shader_parameter("keep", Murk.PIECE_KEEP)
+	return _bed_look
 
 
 func reflections() -> Array:

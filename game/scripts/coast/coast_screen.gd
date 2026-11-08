@@ -66,6 +66,7 @@ var _lit: Node2D
 var _layers: ParallaxLayers
 var _floor: FloorView
 var _water: WaterView
+var _murk: Murk
 var _boat: BoatView
 var _ground: Node2D
 var _line: LineView
@@ -216,6 +217,11 @@ func _build() -> void:
 	methods.net_view.screen = self
 	methods.net_view.z_index = 1
 	_lit.add_child(methods.net_view)
+	# The murk shades the lit picture under it, so inside the light it would tint it a second time.
+	_murk = Murk.new()
+	_murk.z_index = swimmers.z_index
+	_murk.set_depth(float(place["depth"]))
+	add_child(_murk)
 
 
 func _end() -> float:
@@ -500,6 +506,7 @@ func relayout() -> void:
 		_water.rays = 1.0
 	_layers.rough = 1.8 if weather in ["rain", "storm"] else 1.0
 	_lit.modulate = Color(light, 1.0)
+	_murk.place_at(camera.cam, _lit.modulate)
 	_ground.queue_redraw()
 	_line.queue_redraw()
 	_water.queue_redraw()
