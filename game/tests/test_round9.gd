@@ -69,3 +69,23 @@ func test_the_shoals_and_fish_keep_apart() -> void:
 func test_the_shallows_by_the_shore_hold_fewer_fish() -> void:
 	check(Swimmers.room_for_fish(40.0) < Swimmers.room_for_fish(160.0), "fewer fish swim where the water is shallow")
 	check(Swimmers.room_for_fish(400.0) == 1.0, "and the open water is as full as ever")
+
+
+func test_fishing_on_his_own_he_hangs_the_bait_in_mid_water() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "hound")
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": "harbour", "boat_x": 900.0})
+	s.methods.set_idle(true)
+	s.cast(0.6)
+	s.flight = 0.0
+	for i in 300:
+		s.sink(0.1)
+	var floor_y: float = s.seabed.depth_at(s.hook.x)
+	check(s.hook.y < floor_y * 0.6 and s.hook.y > 15.0, "his float holds the bait in mid water, at %d of %d, not on the seabed" % [s.hook.y, floor_y])
+	check(s.line_state() == "waiting", "and he waits there for a bite")
+	for c in Nav.ui.get_children():
+		c.free()
+	s.free()

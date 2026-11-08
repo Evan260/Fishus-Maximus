@@ -17,6 +17,8 @@ const FLIGHT_ARC := [40.0, 130.0]
 const TWITCH := 0.25
 ## Seconds the float stays under when a fish takes his bait while he fishes on his own, before he brings it in.
 const TAKEN_SECONDS := 1.2
+## How far down the water he hangs his bait when he fishes on his own.
+const IDLE_DEPTH := 0.4
 
 var place := {}
 var place_id := ""
@@ -350,11 +352,14 @@ func rowing() -> bool:
 	return _boat.rowing > 0.0 and _boat.oars
 
 
-## Lets the hook sink, until it rests on the seabed or the line runs out.
+## Lets the hook sink, until it rests on the seabed or the line runs out; fishing on his own, he sets his float so the
+## bait hangs in mid water.
 func sink(delta: float) -> void:
 	if _state != "sinking":
 		return
 	var floor_y := minf(seabed.depth_at(hook.x) - 2.0, _line_length())
+	if methods.idle:
+		floor_y = minf(floor_y, clampf(seabed.depth_at(hook.x) * IDLE_DEPTH, 18.0, 90.0))
 	hook.y = minf(hook.y + Data.num("fishing.sink_speed", 30) * delta, floor_y)
 	# The hook's position is kept in single precision, so it only ever reaches the floor to within a rounding.
 	if hook.y >= floor_y - 0.01:
