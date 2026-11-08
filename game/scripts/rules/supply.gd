@@ -1,25 +1,30 @@
 class_name Supply
-## Finding a fish to hand over for an order or a client's request: from the live well first when it must be alive,
-## then a pond for a live one, and the hold for a dead one.
+## Finding a fish to hand over for an order or a client's request: for a live one the live well first, then a pond's
+## plainest fish before a named or dressed one; for a dead one the hold first, then the well.
 
 
 ## Where a suitable fish is, as {"where": "well"|"pond"|"hold", "index", "pond"}, or an empty dictionary.
 static func find(state: Dictionary, want: Dictionary) -> Dictionary:
 	var alive: bool = want.get("alive", false)
+	if not alive:
+		for i in state["hold"].size():
+			if Orders.suits(want, state["hold"][i], false):
+				return {"where": "hold", "index": i}
 	for i in state["live_well"].size():
 		if Orders.suits(want, state["live_well"][i], true):
 			return {"where": "well", "index": i}
-	if alive:
-		for p in state["ponds"].size():
-			var fish: Array = state["ponds"][p]["fish"]
-			for i in fish.size():
-				if Orders.suits(want, fish[i], true):
-					return {"where": "pond", "pond": p, "index": i}
+	if not alive:
 		return {}
-	for i in state["hold"].size():
-		if Orders.suits(want, state["hold"][i], false):
-			return {"where": "hold", "index": i}
-	return {}
+	var pet := {}
+	for p in state["ponds"].size():
+		var fish: Array = state["ponds"][p]["fish"]
+		for i in fish.size():
+			if Orders.suits(want, fish[i], true):
+				if str(fish[i].get("name", "")) == "" and str(fish[i].get("finery", "")) == "":
+					return {"where": "pond", "pond": p, "index": i}
+				if pet.is_empty():
+					pet = {"where": "pond", "pond": p, "index": i}
+	return pet
 
 
 ## Takes the fish from where it was found, or nothing when it is no longer there.

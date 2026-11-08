@@ -417,3 +417,17 @@ func test_the_ponds_on_the_shore_show_a_new_day() -> void:
 		s._process(0.5)
 	check(s.views[0]._fish.size() == 2, "the young born overnight swim in the pond's picture without leaving and coming back, %d shown" % s.views[0]._fish.size())
 	_done(s)
+
+
+func test_filling_an_order_takes_the_fish_you_would_give() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["live_well"] = [{"fish": "bream", "pounds": 2.0, "live": true}]
+	Game.state["hold"] = [{"fish": "bream", "pounds": 2.0, "fresh": 1.0}]
+	check(Supply.find(Game.state, {"fish": "bream", "min_pounds": 1.0, "alive": false})["where"] == "hold",
+		"an order for a dead bream takes the one in the hold, keeping the live one in the well")
+	Game.state["live_well"] = []
+	Game.state["ponds"] = [{"site": 0, "size": "large", "water": "sea", "features": [], "fish": [
+		{"fish": "bream", "pounds": 4.2, "name": "Aurata", "finery": "gold_ring", "age_days": 30, "fed": true},
+		{"fish": "bream", "pounds": 3.1, "name": "", "finery": "", "age_days": 30, "fed": true}]}]
+	var at := Supply.find(Game.state, {"fish": "bream", "min_pounds": 1.0, "alive": true})
+	check(at["where"] == "pond" and int(at["index"]) == 1, "and a live order from the ponds takes the unnamed bream, not Aurata in her gold ring")
