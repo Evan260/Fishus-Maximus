@@ -16,7 +16,7 @@ static func travel_minutes(place: String, boat: String) -> float:
 	return float(Data.places[place].get("travel_minutes", 60)) * float(Data.boats["skiff"]["speed"]) / maxf(1.0, float(Data.boats[boat]["speed"]))
 
 
-## Sails to a place you can reach; says whether you went.
+## Sails to a place you can reach, or stays put when it is the place you are at; says whether you went.
 static func sail(state: Dictionary, place: String) -> bool:
 	if locked_reason(state, place) != "":
 		return false
@@ -24,8 +24,8 @@ static func sail(state: Dictionary, place: String) -> bool:
 		var hours := travel_minutes(place, str(state["boat"])) / 60.0
 		World.advance(state, Clock.minutes_for_hours(float(state["time"]), hours), Seeds.rng(int(state["seed"]), "sail", Clock.day_of(float(state["time"]))))
 		state["stats"]["sails"] = int(state["stats"].get("sails", 0)) + 1
+		state["boat_x"] = 150.0
 	state["place"] = place
-	state["boat_x"] = 150.0
 	return true
 
 
@@ -115,6 +115,6 @@ func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT and _hover != "" and not _sailing:
 		if sail(Game.state, _hover):
 			_sailing = true
-			Nav.go("coast", {"place": _hover, "boat_x": 150.0})
+			Nav.go("coast", {"place": _hover})
 		else:
 			Toast.say(locked_reason(Game.state, _hover))
