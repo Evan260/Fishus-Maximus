@@ -24,6 +24,11 @@ const THROW_FPS := 14.0
 ## Where the oarlock is on his canvas, ahead of him on the gunwale, and how far the oar reaches past it.
 const OARLOCK := Vector2(50, 38)
 const OAR_OUT := 30.0
+## How far out of the water the blade swings in each frame of the stroke, from none while it pulls through the water
+## to all the way up while it swings back.
+const ROW_LIFT := [1.0, 1.0, 0.3, 0.0, 0.0, 0.0, 0.0, 0.45]
+## How high above the water the blade swings back.
+const LIFT_CLEAR := 2.0
 ## How fast the drops thrown up by the oar fall back, how long a ring spreads where it cut the water, and how fast the
 ## bubbles stirred up by the blade rise.
 const DROP_FALL := 170.0
@@ -253,13 +258,19 @@ func splashes() -> Array:
 	return _splash
 
 
-## Where the oar's blade is in the world, and where its shaft cuts the water, while he rows.
+## Where the oar's blade is in the world, where its shaft cuts the water and where it turns in the oarlock, while he
+## rows. Between strokes the blade is lifted clear of the water, the oar then pointing out towards us and so looking
+## shorter from the side.
 func _oar() -> Array:
 	var hands := _hands_at(_x)
 	var lock := _on_person(_x, OARLOCK)
 	var blade := lock + (lock - hands).normalized() * OAR_OUT
+	var frame: int = pose()[1] if pose()[0] == "row" else 0
+	var lift: float = ROW_LIFT[frame] if frame < ROW_LIFT.size() else 0.0
+	if lift > 0.0 and blade.y > -LIFT_CLEAR:
+		blade.y = lerpf(blade.y, -LIFT_CLEAR, lift)
 	var t := clampf(-lock.y / (blade.y - lock.y), 0.0, 1.0) if blade.y != lock.y else 0.0
-	return [blade, lock.lerp(blade, t)]
+	return [blade, lock.lerp(blade, t), lock]
 
 
 ## The drops fly and fall back, and the rings spread and fade.
@@ -354,14 +365,16 @@ func _draw_in_hands() -> void:
 	if pose()[0] != "row":
 		_rod(_overlay, hands, rod_tip(_x) - _cam)
 		return
-	var lock := _on_person(_x, OARLOCK) - _cam
-	var along := (lock - hands).normalized()
-	var blade := lock + along * OAR_OUT
+	var oar := _oar()
+	var lock: Vector2 = oar[2] - _cam
+	var blade: Vector2 = oar[0] - _cam
+	var along := (blade - lock).normalized() if blade.distance_to(lock) > 0.5 else Vector2.DOWN
 	var water := -_cam.y
-	Pixels.line(_overlay, hands, blade, OAR_COLOUR, 2)
+	Pixels.line(_overlay, hands, lock, OAR_COLOUR, 2)
+	Pixels.line(_overlay, lock, blade, OAR_COLOUR, 2)
 	Pixels.line(_overlay, hands, lock, OAR_LIGHT)
 	# The blade is the last third of the oar, broader, and tinted where it is under the water.
-	var root := lock + along * OAR_OUT * 0.62
+	var root := lock.lerp(blade, 0.62)
 	var side := Vector2(-along.y, along.x)
 	var shape := PackedVector2Array([root - side, blade - side * 2.0, blade + side * 2.0, root + side])
 	Pixels.polygon(_overlay, shape, OAR_COLOUR if blade.y < water else OAR_COLOUR.lerp(TINT, 0.55), hands)
