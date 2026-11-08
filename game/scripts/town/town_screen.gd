@@ -148,6 +148,7 @@ func guide_target(id: String) -> Rect2:
 func _place() -> void:
 	if is_instance_valid(_stage):
 		_stage.transform = Nav.cover(margin)
+	_refresh_ui()
 
 
 ## Lays the live sky behind the street and lights the street for the hour and the weather, and the lamps the more the
@@ -167,9 +168,14 @@ func _refresh_ui() -> void:
 	var day := Clock.day_of(float(Game.state["time"]))
 	_sleep.visible = Clock.hour(float(Game.state["time"])) >= 16.0 or Clock.is_night(float(Game.state["time"]))
 	var ch: Dictionary = Data.chapters[int(Game.state["chapter"]) - 1]
-	_top.text = "%s   Day %d, %s   %s: name %d   Hold %d/%d" % [Ui.coins_text(int(Game.state["denarii"])), day + 1,
+	var line := "%s   Day %d, %s   %s: name %d   Hold %d/%d" % [Ui.coins_text(int(Game.state["denarii"])), day + 1,
 		Clock.season(day), ch["name"], int(Game.state["reputation"]), Game.state["hold"].size(),
 		int(Data.boats[Game.state["boat"]]["hold"])]
+	# A larger interface can leave too little room across for one line, so the chapter and the hold then go on a second.
+	if UiTheme.body_font().get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.TEXT).x + 24.0 > Nav.ui_view().x:
+		line = line.replace("   %s:" % ch["name"], "\n%s:" % ch["name"])
+	_top.text = line
+	_top.get_parent().reset_size()
 
 
 ## The pixels touching a building on a side or a corner, past its picture's edges too, drawn in gold round it on hover.

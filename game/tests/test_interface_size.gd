@@ -124,6 +124,26 @@ func test_old_rufus_stands_clear_of_the_top_corners_at_every_size() -> void:
 	_restore(before)
 
 
+func test_the_town_bar_fits_across_every_size() -> void:
+	var before := Windowing.get_window().size
+	_clear()
+	Game.new_game("Test", "mutt")
+	Game.state["chapter"] = 3
+	Game.state["denarii"] = 12345
+	var s: Node = load(Nav.SCREENS["town"]).new()
+	Nav.port.add_child(s)
+	s.enter({})
+	for size in [Vector2i(1440, 810), Vector2i(1920, 1080)]:
+		_resize(size)
+		for step in [-1, 0, 1]:
+			_set_size(step)
+			var bar: Control = s._top.get_parent()
+			check(bar.get_global_rect().end.x <= Nav.ui_view().x - 4.0, "%s at %d: the town's bar fits across, %s in %s" % [size, step, bar.get_global_rect(), Nav.ui_view()])
+	_clear()
+	s.free()
+	_restore(before)
+
+
 func test_the_town_guide_and_speech_follow_the_street_at_every_size() -> void:
 	var before := Windowing.get_window().size
 	_clear()
