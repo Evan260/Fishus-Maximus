@@ -231,6 +231,10 @@ func _build() -> void:
 	_murk.z_index = swimmers.z_index
 	_murk.set_depth(float(place["depth"]))
 	add_child(_murk)
+	var lantern := BoatLantern.new()
+	lantern.screen = self
+	lantern.z_index = 1
+	add_child(lantern)
 
 
 func _end() -> float:
@@ -262,6 +266,15 @@ func gunwale(x: float) -> float:
 
 func time() -> float:
 	return _time
+
+
+func boat_view() -> BoatView:
+	return _boat
+
+
+## The light over the scene now, for the hour and the weather.
+func light_now() -> Color:
+	return _lit.modulate
 
 
 func facing() -> float:

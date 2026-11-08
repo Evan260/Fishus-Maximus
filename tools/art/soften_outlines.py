@@ -2,8 +2,10 @@
 of a sprite becomes a darker shade of the colour just inside it, so the edge reads without a black line round it.
 Sprites with no dark rim are left as they are. With --lines it also takes off the near-black lines drawn inside a
 picture, such as round each house of a row of town, each becoming a darker shade of the colours beside it, while
-windows, doorways and other dark shapes at least two pixels thick stay as they are. Writes the pictures back in place.
-Usage: python tools/art/soften_outlines.py [--lines] PATH [PATH...]   (files or folders of .png)"""
+windows, doorways and other dark shapes at least two pixels thick stay as they are. With --marks it also takes off the
+short dark dashes and the near-black browns, for a picture with no windows to keep dark, such as a boat's hull. Writes
+the pictures back in place.
+Usage: python tools/art/soften_outlines.py [--lines] [--marks] PATH [PATH...]   (files or folders of .png)"""
 import sys
 from pathlib import Path
 
@@ -72,17 +74,18 @@ def soften(path: Path) -> int:
     return changed
 
 
-def soften_lines(arr: np.ndarray) -> tuple[np.ndarray, int]:
+def soften_lines(arr: np.ndarray, marks: bool = False) -> tuple[np.ndarray, int]:
     """The picture with its near-black lines drawn in darker shades of the colours beside them, and how many pixels
-    changed. A line is what a 2 by 2 block of dark cannot fit inside, so windows and doorways keep their dark."""
+    changed. A line is what a 2 by 2 block of dark cannot fit inside, so windows and doorways keep their dark; with
+    `marks`, a dash of any length and a near-black of any hue counts too."""
     rgb = arr[:, :, :3].astype(np.float32)
     solid = arr[:, :, 3] > 127
-    dark = solid & (lum(rgb) < LINE_DARK) & (rgb[:, :, 1] <= rgb[:, :, 2] + 2)
+    dark = solid & (lum(rgb) < LINE_DARK) & ((rgb[:, :, 1] <= rgb[:, :, 2] + 2) | marks)
     thin = dark & ~(cv2.morphologyEx(dark.astype(np.uint8), cv2.MORPH_OPEN, np.ones((2, 2), np.uint8)) > 0)
     n, labels, stats, _c = cv2.connectedComponentsWithStats(dark.astype(np.uint8), connectivity=8)
     w, h, area = stats[:, cv2.CC_STAT_WIDTH], stats[:, cv2.CC_STAT_HEIGHT], stats[:, cv2.CC_STAT_AREA]
     # A short dark mark such as a slit window stays; a long one, or a sprawling one, is a line.
-    line = (np.maximum(w, h) >= LINE_RUN) & ((np.minimum(w, h) == 1) | (area < 0.5 * w * h))
+    line = (np.maximum(w, h) >= (1 if marks else LINE_RUN)) & ((np.minimum(w, h) == 1) | (area < 0.5 * w * h) | marks)
     line[0] = False
     todo = thin & line[labels]
     H, W = dark.shape
@@ -101,10 +104,11 @@ def soften_lines(arr: np.ndarray) -> tuple[np.ndarray, int]:
 
 
 def main(args):
-    lines = "--lines" in args
+    marks = "--marks" in args
+    lines = "--lines" in args or marks
     files = []
     for a in args:
-        if a == "--lines":
+        if a in ("--lines", "--marks"):
             continue
         p = Path(a)
         files += sorted(p.rglob("*.png")) if p.is_dir() else [p]
@@ -113,7 +117,7 @@ def main(args):
         if n:
             print(f"softened {n:4d} edge pixels in {f}")
         if lines:
-            arr, n = soften_lines(np.array(Image.open(f).convert("RGBA")))
+            arr, n = soften_lines(np.array(Image.open(f).convert("RGBA")), marks)
             if n:
                 Image.fromarray(arr).save(f)
                 print(f"softened {n:4d} line pixels in {f}")

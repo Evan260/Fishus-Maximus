@@ -171,3 +171,62 @@ func test_messages_start_below_the_info_panel() -> void:
 		var bottom := panel.position.y + panel.get_combined_minimum_size().y
 		check(Toast._box.offset_top >= bottom, "the message starts at %.0f, below the panel's bottom at %.0f, so it is never written over it" % [Toast._box.offset_top, bottom])
 	_done(s)
+
+
+func test_the_dog_sits_behind_the_near_side_of_every_boat() -> void:
+	for id in Data.boats:
+		var b := BoatView.new()
+		b.set_boat(id)
+		var img: Image = b.boat.texture.get_image()
+		if img.is_compressed():
+			img.decompress()
+		var near: Image = b.dog_side.texture.get_image()
+		var col := int(b.dog_spot.x * img.get_width())
+		var top := 0
+		while top < img.get_height() - 4 and not range(4).all(func(k): return img.get_pixel(col, top + k).a > 0.5):
+			top += 1
+		check(near.get_pixel(col, top).a > 0.5, "%s: the hull's top edge where the dog sits, row %d, is drawn over the dog" % [id, top])
+		check(b.dog_side.z_index > 0, "%s: in front of the dog" % id)
+		b.free()
+
+
+func test_the_big_boat_has_no_black_lines() -> void:
+	var img: Image = load("res://assets/art/props/big_boat.png").get_image()
+	var black := 0
+	for y in img.get_height():
+		for x in img.get_width():
+			var c := img.get_pixel(x, y)
+			if c.a > 0.5 and c.r + c.g + c.b < 90.0 / 255.0:
+				black += 1
+	check(black < 20, "the big boat is drawn without near-black lines, %d pixels" % black)
+	var dog: Array = Data.boats["big_boat"]["dog"]
+	var seat: Array = Data.boats["big_boat"]["seat"]
+	check(float(dog[0]) < float(seat[0]), "and its dog sits at the stern, behind him")
+
+
+func test_the_big_boats_lantern_flickers_and_glows_at_night() -> void:
+	var b := BoatView.new()
+	b.set_boat("big_boat")
+	check(b.lantern.x >= 0.0, "the big boat names where its lantern's flame is")
+	var img: Image = b.boat.texture.get_image()
+	if img.is_compressed():
+		img.decompress()
+	var flame := img.get_pixelv(Vector2i(b.lantern))
+	check(flame.r > 0.9 and flame.g > 0.75, "on the painted flame itself, %s" % flame)
+	b.place(200.0, Vector2.ZERO, 0.0)
+	var east := b.lantern_at()
+	b.facing = -1.0
+	b.place(200.0, Vector2.ZERO, 0.0)
+	check(b.lantern_at().x < east.x - 50.0, "and it moves to the other end when the boat turns round")
+	b.free()
+	var day := BoatLantern.glow(0.0, 1.0)
+	var night := BoatLantern.glow(1.0, 1.0)
+	check(night > day * 2.0 and day > 0.0, "it glows far more at night, %.2f against %.2f by day" % [night, day])
+	var seen := {}
+	for i in 40:
+		seen[snappedf(BoatLantern.glow(1.0, i * 0.05), 0.01)] = true
+	check(seen.size() > 10, "and its flame wavers as it burns")
+	var skiff := BoatView.new()
+	skiff.set_boat("skiff")
+	check(skiff.lantern.x < 0.0, "a boat without a lantern has none")
+	skiff.free()
