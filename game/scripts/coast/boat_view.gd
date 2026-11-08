@@ -269,8 +269,18 @@ func _oar() -> Array:
 	var lift: float = ROW_LIFT[frame] if frame < ROW_LIFT.size() else 0.0
 	if lift > 0.0 and blade.y > -LIFT_CLEAR:
 		blade.y = lerpf(blade.y, -LIFT_CLEAR, lift)
-	var t := clampf(-lock.y / (blade.y - lock.y), 0.0, 1.0) if blade.y != lock.y else 0.0
-	return [blade, lock.lerp(blade, t), lock]
+	var t := clampf(-hands.y / (blade.y - hands.y), 0.0, 1.0) if blade.y != hands.y else 0.0
+	return [blade, hands.lerp(blade, t), lock]
+
+
+## The oar as it is drawn, one straight pole from his hands to the blade: [hands, blade, where the handle ends], in the
+## world; the handle runs as far along it as the oarlock is from his hands.
+func oar_line() -> Array:
+	var hands := _hands_at(_x)
+	var oar := _oar()
+	var blade: Vector2 = oar[0]
+	var along := (blade - hands).normalized() if blade.distance_to(hands) > 0.5 else Vector2.DOWN
+	return [hands, blade, hands + along * minf(hands.distance_to(oar[2]), hands.distance_to(blade))]
 
 
 ## The drops fly and fall back, and the rings spread and fade.
@@ -365,16 +375,15 @@ func _draw_in_hands() -> void:
 	if pose()[0] != "row":
 		_rod(_overlay, hands, rod_tip(_x) - _cam)
 		return
-	var oar := _oar()
-	var lock: Vector2 = oar[2] - _cam
-	var blade: Vector2 = oar[0] - _cam
-	var along := (blade - lock).normalized() if blade.distance_to(lock) > 0.5 else Vector2.DOWN
+	var line := oar_line()
+	var blade: Vector2 = line[1] - _cam
+	var handle: Vector2 = line[2] - _cam
+	var along := (blade - hands).normalized() if blade.distance_to(hands) > 0.5 else Vector2.DOWN
 	var water := -_cam.y
-	Pixels.line(_overlay, hands, lock, OAR_COLOUR, 2)
-	Pixels.line(_overlay, lock, blade, OAR_COLOUR, 2)
-	Pixels.line(_overlay, hands, lock, OAR_LIGHT)
+	Pixels.line(_overlay, hands, blade, OAR_COLOUR, 2)
+	Pixels.line(_overlay, hands, handle, OAR_LIGHT)
 	# The blade is the last third of the oar, broader, and tinted where it is under the water.
-	var root := lock.lerp(blade, 0.62)
+	var root := handle.lerp(blade, 0.62)
 	var side := Vector2(-along.y, along.x)
 	var shape := PackedVector2Array([root - side, blade - side * 2.0, blade + side * 2.0, root + side])
 	Pixels.polygon(_overlay, shape, OAR_COLOUR if blade.y < water else OAR_COLOUR.lerp(TINT, 0.55), hands)

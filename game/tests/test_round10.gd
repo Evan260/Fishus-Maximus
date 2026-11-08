@@ -71,3 +71,19 @@ func test_the_panel_shows_no_ticking_clock() -> void:
 
 func test_there_are_two_seconds_to_strike() -> void:
 	check(is_equal_approx(Bite.window(), 2.0), "the float stays under two seconds before the fish has the bait")
+
+
+func test_the_oar_is_one_straight_pole_in_every_frame() -> void:
+	var b := BoatView.new()
+	b.set_boat("skiff")
+	for i in 90:
+		b.rowing = 1.0
+		b._process(1.0 / 30.0)
+		b.place(100.0, Vector2(0, -160), i / 30.0)
+		var line: Array = b.oar_line()
+		var hands: Vector2 = line[0]
+		var blade: Vector2 = line[1]
+		var through: Vector2 = line[2]
+		var off := absf((blade - hands).normalized().cross(through - hands))
+		check(off < 0.5, "frame %d: the handle and the blade lie on one straight line, %.2f off" % [b.pose()[1], off])
+	b.free()
