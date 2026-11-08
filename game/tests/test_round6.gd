@@ -202,3 +202,14 @@ func test_the_dog_is_drawn_inside_the_boat_not_behind_it() -> void:
 	check(s.dog.z_index == boat.z_index and s.dog.get_index() > boat.get_index(), "the dog is drawn over the boat behind it")
 	check(boat.front.z_index > 0 and boat.front.z_as_relative, "and under the hull's near side, which is drawn over it")
 	_done(s)
+
+
+func test_the_land_under_the_water_follows_the_land_not_the_plants_in_front() -> void:
+	for p in Data.places.values():
+		var land: Array = p["layers"].filter(func(l): return l.has("at") and l.has("file") and l.has("factor"))
+		var nearest := 0.0
+		for l in land:
+			nearest = maxf(nearest, float(l["factor"][0]))
+		var u := UnderLand.new(p)
+		check(u._factor[UnderLand.FAR] == nearest, "%s: the far slope under the water slides with the nearest land, at %s, not %s" % [p["id"], nearest, u._factor[UnderLand.FAR]])
+		u.free()

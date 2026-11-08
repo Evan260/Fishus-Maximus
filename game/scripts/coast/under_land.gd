@@ -78,7 +78,7 @@ static func _texture(tops: PackedFloat32Array) -> ImageTexture:
 ## The far slope from the nearest row of land: under its tall hills and cliffs it reaches up to the surface, under
 ## lower land it lies deeper, and away from the land it falls steeply into the deep between.
 func _build_far(place: Dictionary) -> void:
-	var rows: Array = place.get("layers", []).filter(func(l): return l.has("file") and not l.has("world") and l.has("factor"))
+	var rows: Array = place.get("layers", []).filter(func(l): return l.has("file") and l.has("at") and l.has("factor"))
 	var nearest := 0.0
 	for l in rows:
 		nearest = maxf(nearest, float(l["factor"][0]))
