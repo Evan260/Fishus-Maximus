@@ -305,7 +305,7 @@ static func speech(at: Vector2, text: String, follow := Callable()) -> PanelCont
 
 
 static func fish_text(f: Dictionary) -> String:
-	var t := "%s, %s lb" % [Data.fish[f["fish"]]["name"], CatchCard.pounds_text(float(f["pounds"]))]
+	var t := "%s, %s" % [Data.fish[f["fish"]]["name"], Units.weight(float(f["pounds"]))]
 	if f.get("salted", false):
 		t += ", salted"
 	elif f.get("live", false):

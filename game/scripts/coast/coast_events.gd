@@ -87,7 +87,7 @@ func _on_caught(fish: String, pounds: float) -> void:
 	if hour >= CONTEST_HOURS[0] and hour < CONTEST_HOURS[1] and pounds > float(Game.state["contest"]["best"]):
 		Game.state["contest"]["best"] = pounds
 		Game.state["contest"]["fish"] = fish
-		Toast.say("Your best in the contest: %s lb." % CatchCard.pounds_text(pounds))
+		Toast.say("Your best in the contest: %s." % Units.weight(pounds))
 
 
 ## At noon the contest is judged against the best of the town's fishermen.
@@ -104,9 +104,9 @@ func _check_contest() -> void:
 		Game.state["denarii"] = int(Game.state["denarii"]) + prize
 		Story.add_reputation(Game.state, 10)
 		Game.state["stats"]["neptunalia_won"] = int(Game.state["stats"].get("neptunalia_won", 0)) + 1
-		Toast.say("You won the Neptunalia with a %s lb %s! +%s" % [CatchCard.pounds_text(float(c["best"])), str(Data.fish[c["fish"]]["name"]).to_lower(), Ui.coins_text(prize)])
+		Toast.say("You won the Neptunalia with a %s %s! +%s" % [Units.weight(float(c["best"])), str(Data.fish[c["fish"]]["name"]).to_lower(), Ui.coins_text(prize)])
 	else:
-		Toast.say("The Neptunalia went to old Rufus with a %s lb fish." % CatchCard.pounds_text(bar + 0.4))
+		Toast.say("The Neptunalia went to old Rufus with a %s fish." % Units.weight(bar + 0.4))
 
 
 ## The town's net: a marker runs along a bar, and hauling while it is in the gold brings up the most tuna.

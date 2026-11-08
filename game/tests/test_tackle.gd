@@ -32,7 +32,7 @@ func test_a_heavy_rod_puts_small_fish_off() -> void:
 func test_the_tips_name_the_fish_each_suits() -> void:
 	check("mullet" in TacklePanel.bait_tip("worm", "harbour").to_lower(), "the worm's tip names the mullet that take it here")
 	var tip := TacklePanel.rod_tip("cane_rod", "harbour")
-	check("lb" in tip and "small" in tip.to_lower(), "the cane rod's tip says the size of fish it suits")
+	check("kg" in tip and "small" in tip.to_lower(), "the cane rod's tip says the size of fish it suits")
 
 
 func test_a_long_tip_is_broken_into_short_lines() -> void:

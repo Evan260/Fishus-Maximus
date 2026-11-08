@@ -9,7 +9,7 @@
 		"look": "a cheerful slim Roman woman cook in her forties in a rust red dress with rolled sleeves under a stained cream apron, her dark hair tied in a cream cloth",
 		"steps": [
 			{
-				"text": "Two pounds of red mullet, no less. The patina waits for nobody.",
+				"text": "{weight} of red mullet, no less. The patina waits for nobody.",
 				"fish": "mullet",
 				"min_pounds": 2.0,
 				"alive": false,
@@ -18,7 +18,7 @@
 				"thanks": "Lovely and red. Come back tomorrow!"
 			},
 			{
-				"text": "A gilt-head bream for the magistrate's table, three pounds at least.",
+				"text": "A gilt-head bream for the magistrate's table, {weight} at least.",
 				"fish": "bream",
 				"min_pounds": 3.0,
 				"alive": false,
@@ -36,7 +36,7 @@
 				"thanks": "Look at those arms!"
 			},
 			{
-				"text": "A sea bass of eight pounds, for the aedile's wedding feast.",
+				"text": "A sea bass of {weight}, for the aedile's wedding feast.",
 				"fish": "sea_bass",
 				"min_pounds": 8.0,
 				"alive": false,
@@ -168,7 +168,7 @@
 				"thanks": "It catches the light beautifully."
 			},
 			{
-				"text": "A moray for my rock caves, alive and at least fifteen pounds.",
+				"text": "A moray for my rock caves, alive and at least {weight}.",
 				"fish": "moray",
 				"min_pounds": 15.0,
 				"alive": true,
@@ -197,7 +197,7 @@
 		"look": "a solemn elderly Roman priest with a kind lined face and a short grey beard, a pale toga drawn over the back of his head and a wreath of sea lavender",
 		"steps": [
 			{
-				"text": "The god asks for a dentex, the toothed fish, of ten pounds.",
+				"text": "The god asks for a dentex, the toothed fish, of {weight}.",
 				"fish": "dentex",
 				"min_pounds": 10.0,
 				"alive": false,
@@ -244,7 +244,7 @@
 		"look": "an elegant proud Roman widow in her sixties in dark violet silk with a pearl necklace and her grey hair piled high",
 		"steps": [
 			{
-				"text": "A grouper for my deepest pond, alive and at least twenty pounds.",
+				"text": "A grouper for my deepest pond, alive and at least {weight}.",
 				"fish": "grouper",
 				"min_pounds": 20.0,
 				"alive": true,
@@ -253,7 +253,7 @@
 				"thanks": "Hm. Acceptable."
 			},
 			{
-				"text": "A prize bream, alive. Six pounds or don't trouble me.",
+				"text": "A prize bream, alive. {weight} or don't trouble me.",
 				"fish": "bream",
 				"min_pounds": 6.0,
 				"alive": true,

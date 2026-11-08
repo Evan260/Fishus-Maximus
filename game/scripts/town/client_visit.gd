@@ -22,7 +22,7 @@ static func open(client: String) -> void:
 	if step.is_empty():
 		Ui.label(words, "Nothing more today, thank you.").autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		return
-	Ui.label(words, "\"%s\"" % step["text"]).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	Ui.label(words, "\"%s\"" % Units.fill(step["text"], float(step.get("min_pounds", 0.0)))).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	Ui.label(list, "Pays %s and +%d name." % [Ui.coins_text(int(step["reward"])), int(step["reputation"])], "MutedLabel")
 	var at := Supply.find(Game.state, step)
 	var what := ("Give the %s%s" % [str(Data.fish[step["fish"]]["name"]).to_lower(), " from your pond" if at.get("where", "") == "pond" else ""]) \

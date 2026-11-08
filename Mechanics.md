@@ -97,7 +97,7 @@ About sixty kinds, each with:
 - whether it can live in a pond, and what it needs there;
 - what it is worth to the garum works.
 
-**Size.** Every fish caught has its own weight within its kind's range, in four grades: small, good, fine and prize. Prize fish sell for many times a small one.
+**Size.** Every fish caught has its own weight within its kind's range, in four grades: small, good, fine and prize. Prize fish sell for many times a small one. Weights are shown in kilograms, or in pounds when the settings say so.
 
 **The logbook** has a page for every kind:
 - **Seen:** once a fish has been seen swimming, its page shows its outline.
@@ -259,7 +259,7 @@ Your name in town rises with orders, the pond show and legends caught. Five chap
   - **Mouse:** click to cast, strike and reel. A and D row.
   - **Controller:** full support.
 - **Saving:** three save slots, kept with Steam Cloud.
-- **Settings:** gentle fishing, text size, the desktop strip, and fishing on its own.
+- **Settings:** gentle fishing, text size, weights in kilograms or pounds (kilograms by default), the desktop strip, and fishing on its own.
 
 ## Content
 

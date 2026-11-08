@@ -59,7 +59,7 @@ static func show_catch(fish: String, pounds: float, is_new: bool) -> void:
 	# The desktop strip is too short for the banner, so the catch gets one line instead.
 	if Windowing.strip:
 		var also := " A legend of the bay!" if legend else (" New in your logbook!" if is_new else "")
-		Toast.say("%s, %s lb, %s.%s" % [Data.fish[fish]["name"], pounds_text(pounds), Catalog.grade(fish, pounds), also])
+		Toast.say("%s, %s, %s.%s" % [Data.fish[fish]["name"], Units.weight(pounds), Catalog.grade(fish, pounds), also])
 		return
 	var card := Control.new()
 	card.name = "CatchCard"
@@ -98,10 +98,6 @@ static func show_catch(fish: String, pounds: float, is_new: bool) -> void:
 	card.gui_input.connect(func(e): if e is InputEventMouseButton and e.pressed: card.queue_free())
 
 
-static func pounds_text(lb: float) -> String:
-	return ("%.2f" % lb) if lb < 1.0 else ("%.1f" % lb)
-
-
 ## The name, the tablet with the fish, the weight and grade, and the note, one under another in the middle of the cloth.
 static func _lay_out(hang: Control, fish: String, pounds: float, note: String) -> void:
 	var name := _title(str(Data.fish[fish]["name"]).to_upper())
@@ -116,7 +112,7 @@ static func _lay_out(hang: Control, fish: String, pounds: float, note: String) -
 	y += NAME_CAPS.y * lines + NAME_GAP * (lines - 1) + GAP
 	_tablet(hang, fish, y)
 	y += PLAQUE.get_height() + GAP
-	_words(hang, "%s lb, %s" % [pounds_text(pounds), Catalog.grade(fish, pounds)], "LightLabel", y - LINE_CAPS.x)
+	_words(hang, "%s, %s" % [Units.weight(pounds), Catalog.grade(fish, pounds)], "LightLabel", y - LINE_CAPS.x)
 	y += LINE_CAPS.y + GAP
 	if note != "":
 		var l := _words(hang, note, "LightHeading", y - NOTE_CAPS.x)

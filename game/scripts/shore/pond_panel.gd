@@ -38,7 +38,7 @@ static func open(site: int, view: PondView) -> void:
 		var fi: int = i
 		var who := ("%s the %s" % [f["name"], str(Data.fish[f["fish"]]["name"]).to_lower()]) if f["name"] != "" else str(Data.fish[f["fish"]]["name"])
 		var mood := int(roundf(Ponds.happiness(p, f) * 100.0))
-		var line := "%s, %s lb, %d%% happy%s%s" % [who, CatchCard.pounds_text(float(f["pounds"])), mood, ", fed" if f.get("fed", false) else "",
+		var line := "%s, %s, %d%% happy%s%s" % [who, Units.weight(float(f["pounds"])), mood, ", fed" if f.get("fed", false) else "",
 			", wearing " + str(Data.gear[f["finery"]]["name"]).to_lower() if f.get("finery", "") != "" else ""]
 		var r := Ui.row(list, line)
 		if f["name"] == "":

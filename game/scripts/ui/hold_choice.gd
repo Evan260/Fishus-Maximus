@@ -8,7 +8,7 @@ static func ask(fish: Dictionary) -> void:
 	var col := Ui.panel(Nav.ui, "The hold is full")
 	var panel: Control = col.get_parent()
 	var name: String = Data.fish[fish["fish"]]["name"]
-	Ui.label(col, "Keep the %s (%s lb)?" % [name.to_lower(), CatchCard.pounds_text(float(fish["pounds"]))])
+	Ui.label(col, "Keep the %s (%s)?" % [name.to_lower(), Units.weight(float(fish["pounds"]))])
 	Ui.button(col, "Let the new one go", panel.queue_free)
 	var live: bool = fish.get("live", false)
 	var list: Array = Game.state["live_well"] if live and Hold.well_room(Game.state) <= 0 and not Game.state["live_well"].is_empty() else Game.state["hold"]
@@ -19,7 +19,7 @@ static func ask(fish: Dictionary) -> void:
 			break
 		var held: Dictionary = list[i]
 
-		Ui.button(col, "Let go a %s (%s lb)" % [Data.fish[held["fish"]]["name"].to_lower(), CatchCard.pounds_text(float(held["pounds"]))], func():
+		Ui.button(col, "Let go a %s (%s)" % [Data.fish[held["fish"]]["name"].to_lower(), Units.weight(float(held["pounds"]))], func():
 			if not Hold.release_fish(Game.state, held):
 				panel.queue_free()
 				return

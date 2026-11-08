@@ -13,7 +13,7 @@ static func open() -> void:
 		var o: Dictionary = Game.state["orders"][i]
 		var due := int(o["due"])
 		var when := "today" if due <= today else ("tomorrow" if due == today + 1 else "in %d days" % (due - today))
-		var size := "any size" if float(o["min_pounds"]) < 0.05 else CatchCard.pounds_text(float(o["min_pounds"])) + " lb or more"
+		var size := "any size" if float(o["min_pounds"]) < 0.05 else Units.need(float(o["min_pounds"])) + " or more"
 		var text := "%s, %s%s: %s, +%d name, due %s" % [Data.fish[o["fish"]]["name"], size,
 			", alive" if o["alive"] else "", Ui.coins_text(int(o["reward"])), int(o["reputation"]), when]
 		var at := Supply.find(Game.state, o)

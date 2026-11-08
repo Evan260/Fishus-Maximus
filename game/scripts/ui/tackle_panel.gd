@@ -118,7 +118,7 @@ static func rod_tip(id: String, place: String) -> String:
 		var typical := (float(size[0]) + float(size[1])) / 2.0
 		if typical >= lo and typical <= hi:
 			suits.append(str(Data.fish[f]["name"]).to_lower())
-	var range_text := ("up to %d lb" % int(hi)) if lo <= 0.0 else ("%s lb and over" % _lb(lo) if hi >= 1000.0 else "%s to %d lb" % [_lb(lo), int(hi)])
+	var range_text := ("up to %s" % Units.need(hi)) if lo <= 0.0 else ("%s and over" % Units.need(lo) if hi >= 1000.0 else "%s to %s" % [Units.need(lo), Units.need(hi)])
 	var text := "Best for %s, %s" % [kind, range_text]
 	text += (", such as %s." % _and(suits.slice(0, 4))) if not suits.is_empty() else "."
 	return text + " Smaller fish are shy of a rod too heavy for them, and bigger ones fight harder."
@@ -136,7 +136,3 @@ static func _and(names: Array) -> String:
 	if names.size() <= 1:
 		return "".join(names)
 	return ", ".join(names.slice(0, names.size() - 1)) + " and " + str(names[-1])
-
-
-static func _lb(v: float) -> String:
-	return str(int(v)) if v == floorf(v) else str(v)

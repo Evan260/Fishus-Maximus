@@ -217,7 +217,7 @@ static func _entry(page: VBoxContainer, id: String) -> void:
 	var width := ROW.x - PICTURE.x - 4
 	if not got.is_empty():
 		_line(words, _short_name(f), "")
-		_line(words, "x%d, best %s lb" % [int(got["count"]), CatchCard.pounds_text(float(got["best"]))], "MutedLabel")
+		_line(words, "x%d, best %s" % [int(got["count"]), Units.weight(float(got["best"]))], "MutedLabel")
 	elif f["legend"]:
 		var clue := _two_lines("\"%s\"" % Legends.clue(id), width)
 		_line(words, clue[0], "MutedLabel")
@@ -334,7 +334,7 @@ static func _detail(page: VBoxContainer, id: String) -> void:
 		_para(page, "Not yet caught.", "")
 		_para(page, waters, "MutedLabel")
 	else:
-		_para(page, "Caught %d. Best %s lb, %s." % [int(got["count"]), CatchCard.pounds_text(float(got["best"])), Catalog.grade(id, float(got["best"]))], "")
+		_para(page, "Caught %d. Best %s, %s." % [int(got["count"]), Units.weight(float(got["best"])), Catalog.grade(id, float(got["best"]))], "")
 		if f["legend"]:
 			_para(page, "A legend of the bay.", "")
 		_para(page, waters, "MutedLabel")

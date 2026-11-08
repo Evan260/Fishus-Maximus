@@ -33,7 +33,7 @@ static func open() -> void:
 			for f in fish:
 				pounds += float(f["pounds"])
 			var need := Garum.salt_needed(pounds)
-			Ui.row(list, "Tank %d: empty. Fill it with the hold's %s lb of fish and %d salt" % [i + 1, CatchCard.pounds_text(pounds), need], "Fill", func():
+			Ui.row(list, "Tank %d: empty. Fill it with the hold's %s of fish and %d salt" % [i + 1, Units.weight(pounds), need], "Fill", func():
 				if Garum.fill(Game.state, ti, fish, need):
 					for f in fish:
 						Game.state["hold"].erase(f)
@@ -44,7 +44,7 @@ static func open() -> void:
 		else:
 			var g := Garum.grade(t)
 			var name: String = Garum.grade_info(g).get("name", "not ready")
-			var r := Ui.row(list, "Tank %d: %s lb, day %d, %s%s" % [i + 1, CatchCard.pounds_text(float(t["pounds"])), int(t["days"]), name.to_lower(),
+			var r := Ui.row(list, "Tank %d: %s, day %d, %s%s" % [i + 1, Units.weight(float(t["pounds"])), int(t["days"]), name.to_lower(),
 				", stirred" if t["stirred"] else ""])
 			if not t["stirred"]:
 				Ui.button(r, "Stir", func():

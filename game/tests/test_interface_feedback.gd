@@ -84,7 +84,7 @@ func test_a_catch_is_hung_out_on_a_banner() -> void:
 	var card: Control = CatchCard._open
 	var words := _texts(card)
 	check("MULLET" in words, "the banner names the fish: %s" % words)
-	check("1.2 lb" in words and Catalog.grade("mullet", 1.2) in words.to_lower(), "with its weight and grade: %s" % words)
+	check("0.54 kg" in words and Catalog.grade("mullet", 1.2) in words.to_lower(), "with its weight and grade: %s" % words)
 	check("NEW" in words.to_upper(), "and says it is new to the logbook")
 	var shown := _pictures(card)
 	for part in [CatchCard.TOP, CatchCard.CLOTH, CatchCard.PLAQUE, CatchCard.TASSELS[0], CatchCard.TASSELS[1]]:
@@ -169,7 +169,7 @@ func test_the_desktop_strip_tells_a_catch_in_one_line() -> void:
 	check(not CatchCard.is_open(), "no banner, which the strip is too short for")
 	var box: Control = Toast._box
 	var said := " ".join(box.get_children().map(func(l): return l.text)) if is_instance_valid(box) else ""
-	check("Red mullet, 1.2 lb" in said and "New in your logbook" in said, "a line names the fish, its weight and that it is new: %s" % said)
+	check("Red mullet, 0.54 kg" in said and "New in your logbook" in said, "a line names the fish, its weight and that it is new: %s" % said)
 	_clear()
 
 
