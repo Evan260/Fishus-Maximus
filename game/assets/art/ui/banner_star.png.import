@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://chclvdh5i3d0a"
-path="res://.godot/imported/banner_tassel_left.png-bbdacffc7567843ea4738c6826b7d967.ctex"
+uid="uid://dx3dr8s55syib"
+path="res://.godot/imported/banner_star.png-17b6393cb8949a09b6a400efefb987c9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/ui/banner_tassel_left.png"
-dest_files=["res://.godot/imported/banner_tassel_left.png-bbdacffc7567843ea4738c6826b7d967.ctex"]
+source_file="res://assets/art/ui/banner_star.png"
+dest_files=["res://.godot/imported/banner_star.png-17b6393cb8949a09b6a400efefb987c9.ctex"]
 
 [params]
 

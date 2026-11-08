@@ -1,342 +1,273 @@
-"""Paints the catch banner, a Roman vexillum, into game/assets/art/ui/banner_*.png.
+"""Draws the catch banner, a fisherman's linen banner, into game/assets/art/ui/banner_*.png.
 
-The gilded eagle, the crossbar's caps and the tassels come from a small vexillum painted whole (banner_raw/banner_a.png).
-The crossbar is laid out to the cloth's width with its middle repainted, the tassels' cords are lengthened, and the wide
-cloth with its fringe is painted in place with PixelLab over a smoothed enlargement of a wider vexillum (banner_b.png),
-seeing the eagle and the bar round it. The tablet the fish lies on is pale marble painted in place on the cloth, set in
-a gilded frame with handles drawn in the eagle's own gold; the laurel wreath hung round the eagle's ball for a new fish
-is painted on its own in the eagle's style. The result is cut into the parts the game moves apart: the top (eagle and
-crossbar), each tassel, the cloth with its fringe, the roll the cloth unfurls from, the tablet and the wreath. A part
-already painted is kept.
-Usage: python tools/art/make_banner.py [--paint]"""
-import subprocess
-import sys
+Every picture is drawn here pixel by pixel at the size the game shows it, one texel to a game pixel: undyed linen with
+a fine weave, a few slubbed threads and soft folds, hung by rope ties from a plain wooden pole on a rope looped over a
+peg, a sea blue border stripe painted round it by hand, and a frayed foot. The parts are the ones the game moves apart:
+the top (peg, rope, pole and ties), the cloth, the roll the cloth unfurls from, and the little painted starfish that
+marks a new or legendary catch.
+Usage: python tools/art/make_banner.py"""
+import random
 from pathlib import Path
 
-import cv2
 import numpy as np
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parents[2]
-RAW = Path(__file__).with_name("banner_raw")
-OUT = ROOT / "game" / "assets" / "art" / "ui"
-PIXELLAB = Path(__file__).with_name("pixellab.py")
+OUT = Path(__file__).resolve().parents[2] / "game" / "assets" / "art" / "ui"
 
-# The finished picture, the cloth's place and size under the bar, and the fringe below it.
-W, H = 232, 188
-CLOTH = (16, 44, 200, 132)
-FRINGE = 12
-# Rows of banner_a.png: the eagle's top, the crossbar's top and the cloth's first row under it.
-EAGLE_TOP, BAR_TOP, BAR_END = 17, 53, 61
-# Columns of banner_a.png: the bar's ends, the staff, and each tassel; a cap is the bar's last 20 columns.
-BAR_LEFT, BAR_RIGHT, STAFF = 61, 161, (108, 114)
-TASSELS = ((65, 72), (150, 157))
-CAP = 20
-# Clear columns either side of each tassel's picture, room for it to sway.
-SWAY = 3
-# The tassels' cords run this many rows longer than in the small vexillum, to hang beside the taller cloth.
-LONGER = 26
-CORD_ROW = 70
-# The tablet with handles (a tabula ansata): its size, each handle's length, its gilded rim, and where it is painted.
-PLAQUE = (152, 60)
-EAR = 14
-RIM = 4
-PLAQUE_AT = (40, 80)
-# Where PixelLab painted the marble, inside a frame of its own, in the tablet's pixels.
-MARBLE = (24, 6, 128, 53)
-# The tablet's frame is drawn in the eagle's darkest golds and the cloth's own gold, darkest to lightest.
-GOLD = [(71, 42, 31), (112, 58, 26), (150, 82, 30), (183, 104, 36), (208, 129, 43), (225, 152, 56), (238, 180, 80),
-        (247, 207, 112), (250, 232, 150)]
-# How far a handle reaches above and below the middle, as a share of the tablet's height, where it meets the face and
-# at its end: in the guide PixelLab painted over, and in the frame drawn round the marble.
-GUIDE_EARS = (0.12, 0.38)
-EARS = (0.1, 0.32)
+# The whole banner, and the cloth hanging under the pole from HANG; these match CatchCard in catch_card.gd.
+SIZE = (176, 135)
+HANG = (7, 13)
+CLOTH = (162, 122)
+# The cloth's hem, its stripe's inset, top, width and foot, and the row where the weave ends and the fraying starts.
+HEM = 4
+STRIPE_IN, STRIPE_TOP, STRIPE_W = 3, 5, 3
+STRIPE_FOOT = 110
+WOVEN = 117
+# Columns of the cloth where a rope tie holds it to the pole.
+TIES = (13, 57, 104, 148)
+# Rows of the top picture: the peg's top and the pole's top row; the pole is POLE rows thick.
+PEG_TOP, POLE_TOP, POLE = 0, 9, 5
 
-SMALL_PROMPT = ("ancient Roman vexillum banner standard seen straight from the front, symmetrical: at the very top a small "
-                "gilded golden eagle with spread wings standing on a gold ball, below it a short wooden staff, then one long "
-                "horizontal dark wooden crossbar with gold end caps; from each end of the crossbar a red cord hangs down "
-                "ending in a golden tassel; hanging from the crossbar a large square cloth of deep crimson red woven wool "
-                "with soft vertical folds and shading, a thin gold border embroidered along its edges, and a gold fringe "
-                "along its bottom edge; the middle of the cloth is plain and empty, no letters, no emblem; detailed pixel "
-                "art, warm light from the upper left, no outlines")
-WIDE_PROMPT = ("ancient Roman vexillum cloth banner seen straight from the front, symmetrical and wide: one long horizontal "
-               "dark wooden crossbar across the top of the picture with gold end caps; from each end of the crossbar a red "
-               "cord hangs down ending in a golden tassel; hanging from the crossbar a wide cloth of deep crimson red "
-               "woven wool, wider than it is tall, filling most of the picture, with soft vertical folds and shading, a "
-               "thin gold border embroidered along its edges, and a gold fringe along its bottom edge; the middle of the "
-               "cloth is plain and empty, no letters, no emblem; detailed pixel art, warm light from the upper left, no "
-               "outlines")
-CLOTH_PROMPT = ("deep crimson red woven wool cloth of a Roman vexillum hanging from a dark wooden crossbar, soft vertical "
-                "folds with rich shading, fine woven texture, a thin gold embroidered border inset along its edges, a "
-                "dense gold fringe of threads along its straight bottom edge; the middle of the cloth is plain and empty, "
-                "no letters, no emblem, no outlines")
-PLAQUE_PROMPT = ("smooth polished pale cream marble with soft faint veins, framed by a gilded gold moulded rim with bright "
-                 "highlights along its top and left and deep shadow along its bottom and right, plain and empty, no "
-                 "letters, no outlines")
-WREATH_PROMPT = ("a small golden laurel wreath, a ring of gilded gold laurel leaves open at the top, tied with a small red "
-                 "ribbon at the bottom, seen from the front, the middle of the ring empty, shining gold, lit from the "
-                 "upper left, no outlines")
+LINEN = [(146, 128, 101), (165, 147, 116), (182, 165, 132), (197, 181, 147), (210, 195, 161), (221, 207, 174),
+         (231, 219, 188)]
+BLUE = [(44, 74, 88), (55, 90, 104), (67, 106, 118), (82, 121, 131), (99, 137, 145)]
+OCHRE = [(132, 88, 42), (168, 118, 54), (198, 150, 72), (220, 180, 100)]
+WOOD = [(62, 41, 30), (84, 57, 38), (107, 74, 48), (131, 94, 61), (152, 113, 75)]
+ROPE = [(96, 74, 50), (128, 101, 66), (160, 131, 87), (189, 161, 112)]
+# A 4 by 4 ordered dither, so soft shading is laid as a pattern of whole pixels.
+BAYER = np.array([[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]) / 16.0 - 0.47
 
 
-def small():
-    return np.asarray(Image.open(RAW / "banner_a.png").convert("RGBA"))
+def fold_shade(w, h):
+    """The cloth's light: soft folds hanging from between the ties, darker toward the foot and the right."""
+    x = np.arange(w)[None, :].astype(float)
+    y = np.arange(h)[:, None].astype(float)
+    v = np.zeros((h, w))
+    for a, b in zip((0,) + TIES, TIES + (w - 1,)):
+        mid = (a + b) / 2.0
+        reach = 46.0 + (b - a) * 0.6
+        fade = np.clip(1.0 - y / reach, 0.0, 1.0) ** 1.4
+        u = (x - mid) / max(4.0, (b - a) * 0.16)
+        v += (-1.9 * np.exp(-u ** 2) + 1.0 * np.exp(-(u + 1.7) ** 2)) * fade
+        # A sag between two ties, just under the hem.
+        v += -0.6 * np.exp(-((y - HEM - 2) / 3.0) ** 2) * np.exp(-((x - mid) / ((b - a) * 0.3)) ** 2)
+    for fx, top, bottom, depth in ((38, 40, 112, 1.1), (122, 55, 112, 1.0), (83, 70, 114, 0.8)):
+        grow = np.clip((y - top) / 18.0, 0.0, 1.0) * np.clip((bottom - y) / 10.0, 0.0, 1.0)
+        u = (x - fx - (y - top) * 0.05) / 2.2
+        v += (-depth * np.exp(-u ** 2) + depth * 0.55 * np.exp(-(u + 1.6) ** 2)) * grow
+    v += -0.55 * (y / h) - 0.35 * (x / w) + 0.2
+    return v
 
 
-def top(a):
-    """The eagle on its staff over a crossbar as long as the picture, its middle carried on from the small one's."""
-    out = np.zeros((BAR_END - EAGLE_TOP, W, 4), np.uint8)
-    dx = W // 2 - (STAFF[0] + STAFF[1]) // 2
-    out[:BAR_TOP - EAGLE_TOP, BAR_LEFT + dx:BAR_RIGHT + 1 + dx] = a[EAGLE_TOP:BAR_TOP, BAR_LEFT:BAR_RIGHT + 1]
-    bar = a[BAR_TOP:BAR_END, :]
-    y0 = BAR_TOP - EAGLE_TOP
-    out[y0:, :CAP] = bar[:, BAR_LEFT:BAR_LEFT + CAP]
-    out[y0:, W - CAP:] = bar[:, BAR_RIGHT + 1 - CAP:BAR_RIGHT + 1]
-    middle = bar[:, BAR_LEFT + CAP:STAFF[0]]
-    for x in range(CAP, W - CAP):
-        out[y0:, x] = middle[:, (x - CAP) % middle.shape[1]]
-    staff_x = STAFF[0] + dx
-    out[y0:, staff_x:staff_x + STAFF[1] - STAFF[0] + 1] = bar[:, STAFF[0]:STAFF[1] + 1]
-    return out
+def weave(w, h, rng):
+    """The weave's grain: a faint checker of crossing threads, with slubbed threads running across here and there."""
+    x = np.arange(w)[None, :]
+    y = np.arange(h)[:, None]
+    v = np.where((x + 2 * y) % 4 == 0, -0.22, 0.0) + np.where((x % 2 == 1) & (y % 3 == 0), 0.12, 0.0)
+    v = v + np.zeros((h, w))
+    for _ in range(w * h // 260):
+        r, c, n = rng.randrange(h), rng.randrange(w), rng.randrange(3, 11)
+        v[r, c:c + n] += rng.choice((-0.55, 0.5))
+    for _ in range(w // 18):
+        c, r, n = rng.randrange(w), rng.randrange(h), rng.randrange(6, 20)
+        v[r:r + n, c] += -0.35
+    return v
 
 
-def tassel(a, cols):
-    """A tassel on its cord, from the bar's last row down, the cord lengthened by repeating one of its rows."""
-    piece = a[BAR_END:, cols[0]:cols[1] + 1]
-    piece = piece[:np.nonzero(piece[:, :, 3].any(axis=1))[0].max() + 1]
-    at = CORD_ROW - BAR_END
-    return np.concatenate([piece[:at], np.repeat(piece[at:at + 1], LONGER, axis=0), piece[at:]])
+def levels(v, ramp, base):
+    """Turns light into the ramp's colours, dithered by whole pixels."""
+    h, w = v.shape
+    d = BAYER[np.arange(h)[:, None] % 4, np.arange(w)[None, :] % 4]
+    return np.clip(np.floor(base + v + d * 0.85 + 0.5), 0, len(ramp) - 1).astype(int)
 
 
-def tassel_columns():
-    """Where each tassel hangs in the finished picture: as far in from the bar's end as in the small vexillum."""
-    left, right = TASSELS
-    return left[0] - BAR_LEFT, W - 1 - (BAR_RIGHT - right[0])
+def paint(img, idx, mask, ramp, offset=0):
+    h, w = idx.shape
+    for yy in range(h):
+        for xx in range(w):
+            if mask[yy, xx]:
+                img.putpixel((xx, yy), ramp[int(np.clip(idx[yy, xx] + offset, 0, len(ramp) - 1))] + (255,))
 
 
-def guide(a):
-    """The banner laid out at its full size, the cloth a smoothed enlargement of the wide one as a hint to paint over."""
-    out = np.zeros((H, W, 4), np.uint8)
-    t = top(a)
-    out[:t.shape[0]] = t
-    for cols, x in zip(TASSELS, tassel_columns()):
-        piece = tassel(a, cols)
-        region = out[t.shape[0]:t.shape[0] + piece.shape[0], x:x + piece.shape[1]]
-        region[:] = np.where(piece[:, :, 3:] > 0, piece, region)
-    wide = Image.open(RAW / "banner_b.png").convert("RGBA")
-    cx, cy, cw, ch = CLOTH
-    canvas = Image.fromarray(out)
-    canvas.alpha_composite(wide.crop((64, 34, 195, 125)).resize((cw, ch), Image.LANCZOS), (cx, cy))
-    canvas.alpha_composite(wide.crop((63, 125, 196, 132)).resize((cw, FRINGE), Image.LANCZOS), (cx, cy + ch))
-    return canvas
-
-
-def cloth_mask():
-    """The cloth, its fringe and the crossbar's middle, which PixelLab paints."""
-    m = Image.new("L", (W, H), 0)
-    cx, cy, cw, ch = CLOTH
-    m.paste(255, (cx, cy, cx + cw, cy + ch + FRINGE))
-    m.paste(255, (CAP, BAR_TOP - EAGLE_TOP + 2, W - CAP, cy))
+def stripe_mask(w, rng):
+    """The painted border: a stripe round the cloth, its edges wavering a pixel as a brush would leave them."""
+    m = np.zeros((WOVEN, w), bool)
+    left, right = STRIPE_IN, w - 1 - STRIPE_IN
+    top, foot = STRIPE_TOP, STRIPE_FOOT + STRIPE_W - 1
+    m[top:top + STRIPE_W, left:right + 1] = True
+    m[STRIPE_FOOT:foot + 1, left:right + 1] = True
+    m[top:foot + 1, left:left + STRIPE_W] = True
+    m[top:foot + 1, right - STRIPE_W + 1:right + 1] = True
+    edges = []
+    for xx in range(left + STRIPE_W, right - STRIPE_W + 1):
+        edges += [(top + STRIPE_W, xx, 1), (top - 1, xx, 1), (STRIPE_FOOT - 1, xx, 1), (foot + 1, xx, 1)]
+    for yy in range(top + STRIPE_W, STRIPE_FOOT):
+        edges += [(yy, left + STRIPE_W, 1), (yy, left - 1, 1), (yy, right - STRIPE_W, 1), (yy, right + 1, 1)]
+    for yy, xx, _ in edges:
+        if rng.random() < 0.025:
+            run = rng.randrange(2, 4)
+            horizontal = yy in (top + STRIPE_W, top - 1, STRIPE_FOOT - 1, foot + 1)
+            for k in range(run):
+                a, b = (yy, xx + k) if horizontal else (yy + k, xx)
+                if 0 <= a < WOVEN and 0 <= b < w:
+                    m[a, b] = True
+    for yy, xx in zip(*np.nonzero(m)):
+        if rng.random() < 0.012 and (yy in (top, foot) or xx in (left, right)):
+            m[yy, xx] = False
     return m
 
 
-def plaque_shape(ears=EARS):
-    """The tablet's face and its handles, each handle a dovetail widening from where it meets the face to its end."""
-    w, h = PLAQUE
-    shape = np.zeros((h, w), bool)
-    shape[:, EAR:w - EAR] = True
-    for x in range(EAR):
-        reach = h * (ears[0] + (ears[1] - ears[0]) * (EAR - x) / EAR)
-        for y in range(h):
-            if abs(y - (h - 1) / 2.0) <= reach:
-                shape[y, x] = shape[y, w - 1 - x] = True
-    return shape
+def cloth():
+    rng = random.Random(7)
+    w, h = CLOTH
+    shade = fold_shade(w, h) + weave(w, h, rng)
+    idx = levels(shade, LINEN, 4)
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    body = np.zeros((h, w), bool)
+    body[:WOVEN] = True
+    # The selvedges and the hem fold read a shade darker, the hem's crease and its stitches darker still.
+    idx[:, 0] -= 1
+    idx[:, w - 1] -= 1
+    idx[0] = np.minimum(idx[0], 2)
+    idx[1:3] += 1
+    idx[HEM - 1] -= 1
+    idx[HEM - 1, 1::4] = 1
+    paint(img, idx, body, LINEN)
+    m = stripe_mask(w, rng)
+    blue = idx.copy() - 2
+    for yy, xx in zip(*np.nonzero(m)):
+        if rng.random() < 0.07:
+            blue[yy, xx] += 1
+    paint(img, blue[:WOVEN], m, BLUE)
+    fray(img, idx, rng)
+    return img
 
 
-def depth_of(shape):
-    # The picture's own border is not counted as outside the shape, so it is padded with a row of outside first.
-    return cv2.distanceTransform(np.pad(shape, 1).astype(np.uint8), cv2.DIST_C, 3)[1:-1, 1:-1]
+def fray(img, idx, rng):
+    """The foot where the weft has worn away: the last woven row uneven, and loose warp threads hanging in clumps."""
+    w, h = CLOTH
+    clump = 0
+    for xx in range(1, w - 1):
+        if rng.random() < 0.18:
+            clump = rng.choice((0, 1, 2, 3, 4))
+        if rng.random() < 0.12:
+            img.putpixel((xx, WOVEN - 1), (0, 0, 0, 0))
+            continue
+        if rng.random() < 0.3:
+            continue
+        n = max(1, min(h - WOVEN, clump + rng.choice((-1, 0, 0, 1))))
+        tone = 3 if xx % 2 else 4
+        for k in range(n):
+            t = tone - (1 if k == n - 1 else 0) - (1 if k > 2 else 0)
+            img.putpixel((xx, WOVEN + k), LINEN[t] + (255,))
 
 
-def plaque_guide(painted):
-    """The tablet drawn roughly in place on the cloth: a gold rim lit from the upper left round a pale cream face."""
-    shape = plaque_shape(GUIDE_EARS)
-    depth = depth_of(shape)
-    h, w = shape.shape
-    art = np.zeros((h, w, 4), np.uint8)
-    ink = {"l": (252, 232, 160), "g": (236, 196, 96), "d": (176, 126, 52)}
-    for y in range(h):
-        for x in range(w):
-            if not shape[y, x]:
+def roll():
+    """The cloth rolled up tight under the pole, its painted stripe showing at both ends."""
+    w = CLOTH[0]
+    rows = [1, 3, 5, 4, 3, 1]
+    img = Image.new("RGBA", (w, len(rows)), (0, 0, 0, 0))
+    rng = random.Random(3)
+    for yy, t in enumerate(rows):
+        for xx in range(w):
+            k = t - (1 if xx in (0, w - 1) else 0) - (1 if rng.random() < 0.08 else 0)
+            col = LINEN[max(0, k)]
+            if STRIPE_IN <= xx < STRIPE_IN + STRIPE_W or w - 1 - STRIPE_IN - STRIPE_W < xx <= w - 1 - STRIPE_IN:
+                col = BLUE[max(0, min(4, k - 1))]
+            img.putpixel((xx, yy), col + (255,))
+    return img
+
+
+def rope_line(img, a, b):
+    """A thin twisted rope from a to b, a pixel thick, its strands light and dark in turn."""
+    (x0, y0), (x1, y1) = a, b
+    n = max(abs(x1 - x0), abs(y1 - y0))
+    for i in range(n + 1):
+        x = round(x0 + (x1 - x0) * i / n)
+        y = round(y0 + (y1 - y0) * i / n)
+        img.putpixel((x, y), ROPE[(1, 2, 3, 2)[i % 4]] + (255,))
+        img.putpixel((x, y + 1), ROPE[0] + (255,))
+
+
+def coil(img, x, top, rows, width=3):
+    """Rope wound round the pole: diagonal turns of light and shade."""
+    for yy in range(top, top + rows):
+        for k in range(width):
+            turn = (k + yy) % 3
+            img.putpixel((x + k, yy), ROPE[(3, 2, 1)[turn] - (1 if k == width - 1 else 0)] + (255,))
+
+
+def top():
+    rng = random.Random(11)
+    w = SIZE[0]
+    img = Image.new("RGBA", (w, HANG[1] + HEM + 1), (0, 0, 0, 0))
+    mid = w // 2
+    # The rope hung over the peg, from where it is tied near each end of the pole.
+    rope_line(img, (4, POLE_TOP - 1), (mid - 2, PEG_TOP + 2))
+    rope_line(img, (w - 5, POLE_TOP - 1), (mid + 1, PEG_TOP + 2))
+    for xx, yy, t in ((mid - 2, 0, 2), (mid - 1, 0, 3), (mid, 0, 3), (mid + 1, 0, 2), (mid - 2, 1, 1), (mid - 1, 1, 1),
+                      (mid, 1, 1), (mid + 1, 1, 0), (mid - 1, 2, 0), (mid, 2, 0)):
+        img.putpixel((xx, yy), WOOD[t] + (255,))
+    # The pole: a plain round length of wood, lit from above, with grain, a knot and worn ends.
+    rows = [3, 4, 3, 2, 1]
+    for yy in range(POLE):
+        for xx in range(w):
+            if xx in (0, w - 1) and yy in (0, POLE - 1):
                 continue
-            if depth[y, x] > RIM:
-                art[y, x] = (*np.round(np.array((242, 232, 210)) - (y / h) * np.array((18, 22, 30))).astype(int), 255)
-                continue
-            lit = (y - RIM < 0 or not shape[y - RIM, x]) or (x - RIM < 0 or not shape[y, x - RIM])
-            art[y, x] = (*ink["l" if lit else "d"], 255) if depth[y, x] <= 1 or depth[y, x] >= RIM else (*ink["g"], 255)
-    out = painted.copy()
-    out.alpha_composite(Image.fromarray(art), PLAQUE_AT)
-    m = Image.new("L", (W, H), 0)
-    m.paste(Image.fromarray(shape.astype(np.uint8) * 255), PLAQUE_AT)
-    return out, m
+            t = rows[yy]
+            img.putpixel((xx, POLE_TOP + yy), WOOD[t] + (255,))
+    for _ in range(26):
+        yy, xx, n = rng.choice((1, 2, 3)), rng.randrange(2, w - 14), rng.randrange(5, 16)
+        dark = rng.random() < 0.65
+        for k in range(n):
+            t = rows[yy] + (-1 if dark else 1)
+            img.putpixel((xx + k, POLE_TOP + yy), WOOD[max(0, min(4, t))] + (255,))
+    for kx in (31, 118):
+        for (dx, dy, t) in ((0, 1, 0), (1, 1, 1), (0, 2, 1), (1, 2, 0), (-1, 2, 3), (2, 1, 3)):
+            img.putpixel((kx + dx, POLE_TOP + dy), WOOD[t] + (255,))
+    for xx in (0, w - 1):
+        for yy, t in ((1, 4), (2, 3), (3, 2)):
+            img.putpixel((xx, POLE_TOP + yy), WOOD[t] + (255,))
+    coil(img, 2, POLE_TOP, POLE)
+    coil(img, w - 5, POLE_TOP, POLE)
+    # Each tie: rope wound round the pole and down through a hole in the cloth's hem.
+    for c in TIES:
+        x = HANG[0] + c - 1
+        coil(img, x, POLE_TOP - 1, POLE + 1)
+        for yy in range(POLE_TOP + POLE, HANG[1] + HEM - 1):
+            for k in range(3):
+                t = (2, 1, 0)[k] if yy % 2 else (3, 2, 1)[k]
+                img.putpixel((x + k, yy), ROPE[t] + (255,))
+        img.putpixel((x + 1, HANG[1] + HEM - 1), LINEN[0] + (255,))
+        img.putpixel((x, HANG[1] + HEM - 1), ROPE[0] + (255,))
+        img.putpixel((x + 2, HANG[1] + HEM - 1), ROPE[0] + (255,))
+    return img
 
 
-def marble(painted):
-    """The painted marble carried out a few pixels to the frame's inner edge, its own edges mirrored."""
-    x0, y0, x1, y1 = MARBLE
-    w, h = PLAQUE
-    face = np.ascontiguousarray(painted[y0:y1, x0:x1])
-    grown = cv2.copyMakeBorder(face, y0 - RIM, (h - RIM) - y1, x0 - EAR - RIM, (w - EAR - RIM) - x1, cv2.BORDER_REFLECT)
-    out = np.zeros((h, w, 4), np.uint8)
-    out[RIM:h - RIM, EAR + RIM:w - EAR - RIM] = grown
-    return out
-
-
-def handle_tone(shape, x, y):
-    """A handle is a gold wedge: its upper face catches the light, its lower face is in shadow, and its end faces the
-    side it points to."""
-    h, w = shape.shape
-    left = x < EAR
-    rows = np.nonzero(shape[:, x])[0]
-    sides = {"top": y - rows.min(), "bottom": rows.max() - y, "end": x if left else w - 1 - x}
-    side = min(sides, key=sides.get)
-    if sides[side] == 0:
-        return {"top": 5, "bottom": 1, "end": 3 if left else 1}[side]
-    if side == "top":
-        return 8 if sides[side] == 1 else 7
-    if side == "bottom":
-        return 3
-    return 6 if left else 4
-
-
-def framed(face_art):
-    """The marble face inside a gilded moulding, with handles of solid gold, lit from the upper left: the moulding runs
-    from a dark outer edge over a bright ridge to a groove beside the face, shadowed along the top and left."""
-    shape = plaque_shape()
-    h, w = shape.shape
-    depth = depth_of(shape)
-    soft = cv2.GaussianBlur(np.pad(shape, 4).astype(np.float32), (9, 9), 2.0)[4:-4, 4:-4]
-    gy, gx = np.gradient(soft)
-    # The slope of the blurred shape rises inward, so it is positive along the edges that face the upper left.
-    facing = gx + gy
-    face = np.zeros_like(shape)
-    face[RIM:h - RIM, EAR + RIM:w - EAR - RIM] = True
-    out = np.zeros((h, w, 4), np.uint8)
-    out[face] = face_art[face]
-    for y in range(h):
-        for x in range(w):
-            if not shape[y, x] or face[y, x]:
-                continue
-            d = int(depth[y, x])
-            lit, dark = facing[y, x] > 0.02, facing[y, x] < -0.02
-            beside = [(y + dy, x + dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1) if 0 <= y + dy < h and 0 <= x + dx < w]
-            if x < EAR or x >= w - EAR:
-                tone = handle_tone(shape, x, y)
-            elif any(face[p] for p in beside):
-                tone = 2 if (y + 1 < h and face[y + 1, x]) or (x + 1 < w and face[y, x + 1]) else 6
-            elif d == 1:
-                tone = 3 if lit else (1 if dark else 2)
-            elif d == 2:
-                tone = 8 if lit else (4 if dark else 6)
-            else:
-                tone = 6 if lit else (3 if dark else 5)
-            out[y, x] = (*GOLD[tone], 255)
-    shade = np.ones((h, w), np.float32)
-    shade[RIM, :] *= 0.82
-    shade[RIM + 1, :] *= 0.92
-    shade[:, EAR + RIM] *= 0.86
-    out[face, :3] = (out[face, :3] * shade[face, None]).astype(np.uint8)
-    return out
-
-
-def roll(cloth):
-    """The cloth still rolled up: a band of its own colours shaded as a cylinder lit from above."""
-    band = cloth[20:21, :, :].astype(float)
-    shades = [1.3, 1.12, 1.0, 0.86, 0.68, 0.5]
-    return np.concatenate([np.clip(band * (s, s, s, 1.0), 0, 255) for s in shades]).astype(np.uint8)
-
-
-def wreath_art(painted):
-    """The wreath trimmed to its leaves, a stray pale pixel in its ribbon given the ribbon's red."""
-    a = np.asarray(painted).copy()
-    a = a[slice(*bounds(a[:, :, 3] > 0, 0)), slice(*bounds(a[:, :, 3] > 0, 1))]
-    h = a.shape[0]
-    for y, x in zip(*np.nonzero(a[:, :, 3] > 0)):
-        r, g, _ = (int(v) for v in a[y, x, :3])
-        if y > h * 0.75 and g > 100 and r - g < 60:
-            a[y, x] = a[y, x - 1]
-    return a
-
-
-def bounds(mask, axis):
-    hit = np.nonzero(mask.any(axis=1 - axis))[0]
-    return hit.min(), hit.max() + 1
-
-
-def run(args):
-    subprocess.run([sys.executable, str(PIXELLAB)] + args, cwd=ROOT, check=True)
-
-
-def inpaint(image, mask, prompt, out, transparent):
-    """Paints the white of `mask` over `image`. Only the cloth, with gaps between its fringe's threads, is painted with a
-    see-through background: a part inside the banner painted so comes back as a smaller copy with holes round it."""
-    if out.exists():
-        return
-    image.save(RAW / "work.png")
-    mask.save(RAW / "work_mask.png")
-    run(["inpaint", str((RAW / "work.png").relative_to(ROOT)), str((RAW / "work_mask.png").relative_to(ROOT)), prompt,
-         "--out", str(out.relative_to(ROOT))] + (["--transparent"] if transparent else []))
-
-
-def proflash(prompt, size, style, style_picture, use, out):
-    """Paints a picture on its own in the style of `style_picture`, saved first as `style`."""
-    if out.exists():
-        return
-    style_picture.save(style)
-    run(["proflash", prompt, size, "--transparent", "--style", str(style.relative_to(ROOT)), "--style-use", use,
-         "--out", str(out.relative_to(ROOT))])
-
-
-def paint():
-    # The small vexillum is painted in the style of the goldsmith's red awning and banner in the town street.
-    street = Image.open(ROOT / "game" / "assets" / "art" / "town" / "street.png").convert("RGBA")
-    proflash(SMALL_PROMPT, "224x192", RAW / "style.png", street.crop((292, 116, 512, 260)),
-             "match this art style, palette, shading and lighting; no outlines", RAW / "banner_a.png")
-    a = small()
-    proflash(WIDE_PROMPT, "256x176", RAW / "style_a.png", Image.fromarray(a[16:176, 60:164]),
-             "match this banner exactly: its art style, palette, cloth, gold and wood, shading and lighting; no outlines",
-             RAW / "banner_b.png")
-    painted = RAW / "painted.png"
-    inpaint(guide(a), cloth_mask(), CLOTH_PROMPT, painted, True)
-    inpaint(*plaque_guide(Image.open(painted).convert("RGBA")), PLAQUE_PROMPT, RAW / "plaque.png", False)
-    proflash(WREATH_PROMPT, "32x32", RAW / "style_eagle.png", Image.fromarray(a[20:52, 95:127]),
-             "match this gilded gold: its palette, shading and lighting; no outlines", RAW / "wreath.png")
-
-
-def cut():
-    a = np.asarray(Image.open(RAW / "painted.png").convert("RGBA")).copy()
-    cx, cy, cw, ch = CLOTH
-    cloth = a[cy:cy + ch + FRINGE, cx:cx + cw].copy()
-    # A few stray near-white pixels among the fringe's threads are dropped.
-    stray = (cloth[:, :, :3].min(axis=2) > 200) & (np.arange(cloth.shape[0])[:, None] > ch)
-    cloth[stray] = 0
-    Image.fromarray(cloth).save(OUT / "banner_cloth.png")
-    Image.fromarray(roll(cloth)).save(OUT / "banner_roll.png")
-    Image.fromarray(a[:cy]).save(OUT / "banner_top.png")
-    for name, x in zip(("left", "right"), tassel_columns()):
-        piece = a[cy:, x:x + TASSELS[0][1] - TASSELS[0][0] + 1]
-        piece = piece[:np.nonzero(piece[:, :, 3].any(axis=1))[0].max() + 1]
-        Image.fromarray(np.pad(piece, ((0, 0), (SWAY, SWAY), (0, 0)))).save(OUT / f"banner_tassel_{name}.png")
-    px, py = PLAQUE_AT
-    plaque = np.asarray(Image.open(RAW / "plaque.png").convert("RGBA"))[py:py + PLAQUE[1], px:px + PLAQUE[0]]
-    Image.fromarray(framed(marble(plaque))).save(OUT / "banner_plaque.png")
-    Image.fromarray(wreath_art(Image.open(RAW / "wreath.png").convert("RGBA"))).save(OUT / "banner_wreath.png")
+def star():
+    """A little starfish painted in ochre, the mark of a new or legendary catch."""
+    shape = ["...3...",
+             "...2...",
+             "32221..",
+             ".22110.",
+             "..211..",
+             ".21.10.",
+             ".1...0."]
+    img = Image.new("RGBA", (7, 7), (0, 0, 0, 0))
+    for yy, row in enumerate(shape):
+        for xx, ch in enumerate(row):
+            if ch != ".":
+                img.putpixel((xx, yy), OCHRE[int(ch)] + (255,))
+    img.putpixel((6, 2), OCHRE[1] + (255,))
+    img.putpixel((5, 2), OCHRE[2] + (255,))
+    return img
 
 
 def main():
-    RAW.mkdir(exist_ok=True)
-    if "--paint" in sys.argv:
-        paint()
-    cut()
+    parts = {"banner_top.png": top(), "banner_cloth.png": cloth(), "banner_roll.png": roll(), "banner_star.png": star()}
+    for name, img in parts.items():
+        img.save(OUT / name)
+        print(name, img.size)
 
 
 if __name__ == "__main__":
