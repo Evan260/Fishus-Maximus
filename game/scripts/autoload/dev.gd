@@ -32,6 +32,11 @@ func _ready() -> void:
 	if args.has("point"):
 		var xy: PackedStringArray = args["point"].split(",")
 		get_tree().create_timer(float(args.get("point-at", "1.5"))).timeout.connect(_point.bind(Vector2(float(xy[0]), float(xy[1]))))
+	# --catch=ID (at --catch-at seconds) hangs out the banner for that fish, as if it had just been landed for the first time.
+	if args.has("catch"):
+		get_tree().create_timer(float(args.get("catch-at", "1.0"))).timeout.connect(func():
+			var lb: Array = Data.fish[args["catch"]]["pounds"]
+			CatchCard.show_catch(args["catch"], (float(lb[0]) + float(lb[1])) / 2.0, true))
 	if args.has("quit") and _shots.is_empty():
 		get_tree().create_timer(float(args.get("quit-at", "3.0"))).timeout.connect(get_tree().quit)
 

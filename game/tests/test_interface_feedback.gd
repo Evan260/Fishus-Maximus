@@ -54,3 +54,57 @@ func test_an_achievement_slides_in_at_the_bottom_right() -> void:
 	check(cards[1].get_meta("wait") >= 3.0, "the second waits for the first to go, so they take turns")
 	_clear()
 	s.free()
+
+
+func _texts(n: Node) -> String:
+	return " ".join(n.find_children("*", "Label", true, false).map(func(l): return l.text))
+
+
+func test_a_catch_is_hung_out_on_a_banner() -> void:
+	_clear()
+	CatchCard.show_catch("mullet", 1.2, true)
+	var card: Control = CatchCard._open
+	var words := _texts(card)
+	check("MULLET" in words, "the banner names the fish: %s" % words)
+	check("1.2 lb" in words and Catalog.grade("mullet", 1.2) in words.to_lower(), "with its weight and grade: %s" % words)
+	check("NEW" in words.to_upper(), "and says it is new to the logbook")
+	check(card.get_meta("wreath", false), "a golden wreath crowns the staff for a new fish")
+	var pic: TextureRect = card.find_child("Fish", true, false)
+	check(pic != null and pic.texture == load("res://assets/art/fish/mullet.png"), "the fish's own picture is on it")
+	if pic:
+		var k := pic.size / pic.texture.get_size()
+		check(k.x == k.y and k.x >= 2.0 and k.x == roundf(k.x), "drawn large, at a whole number of pixels each: %s" % k)
+	_clear()
+	CatchCard.show_catch("mullet", 1.2, false)
+	card = CatchCard._open
+	check(not card.get_meta("wreath", true) and not "NEW" in _texts(card).to_upper(), "a fish caught before has no wreath and no note")
+	_clear()
+
+
+func test_every_catch_banner_fits_the_smallest_interface() -> void:
+	_clear()
+	for id in Data.fish:
+		CatchCard.show_catch(id, float(Data.fish[id]["pounds"][1]), true)
+		var card: Control = CatchCard._open
+		var size := Vector2(card.offset_right - card.offset_left, card.offset_bottom - card.offset_top)
+		check(size.x <= Nav.UI_LEAST.x - 8.0 and size.y <= Nav.UI_LEAST.y - 8.0, "%s: the banner fits the smallest interface, %s" % [id, size])
+		var pic: TextureRect = card.find_child("Fish", true, false)
+		var box: Control = card.find_child("Tablet", true, false)
+		if pic and box:
+			check(Rect2(Vector2.ZERO, box.size).grow(1.0).encloses(Rect2(pic.position, pic.size)), "%s: the fish sits inside its tablet" % id)
+		for l in card.find_children("*", "Label", true, false):
+			check(l.get_combined_minimum_size().x <= card.find_child("Cloth", true, false).size.x, "%s: '%s' fits across the cloth" % [id, l.text])
+		card.free()
+
+
+func test_the_banner_unfurls() -> void:
+	_clear()
+	CatchCard.show_catch("bream", 2.0, false)
+	var card: Control = CatchCard._open
+	var cloth: Control = card.find_child("Hang", true, false)
+	var full: float = cloth.get_meta("full")
+	check(cloth.size.y < full * 0.2, "the cloth starts rolled up under the crossbar")
+	var tw: Tween = card.get_meta("tween")
+	tw.custom_step(0.9)
+	check(is_equal_approx(cloth.size.y, full), "and has unfurled within a second, %s of %s" % [cloth.size.y, full])
+	_clear()
