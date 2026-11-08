@@ -98,6 +98,10 @@
     "#b4c4cc",
     0.35
    ],
+   "tone": {
+    "haze": 0.3,
+    "far": true
+   },
    "shore": {
     "reeds": 1,
     "beach": 1,
@@ -109,12 +113,16 @@
    "file": "mid.png",
    "strip": [
     {
-     "prompt": "wooded green hills around a lake at a middle distance, chestnut and oak woods, the dark crater rim of Lake Avernus, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "384x80"
+     "prompt": "low wooded hills at a middle distance around a lake, dark umbrella pines, oaks and olive scrub, pale rocks at the water, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
     },
     {
-     "prompt": "green hills with vineyards and a few white ancient Roman villas with red tiled roofs, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "384x80"
+     "prompt": "the low rounded crater rim of Lake Avernus at a middle distance seen from the side, covered in dark woods and olive scrub, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
+    },
+    {
+     "prompt": "gentle hills at a middle distance with terraced vineyards and a small white Roman villa with a red tiled roof among cypresses and umbrella pines, the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
     }
    ],
    "land": true,
@@ -131,6 +139,11 @@
     0.3
    ],
    "z": -16,
+   "tone": {
+    "haze": 0.14
+   },
+   "style": "game/assets/art/places/harbour/cape.png",
+   "gap": 32,
    "shore": {
     "reeds": 3,
     "bushes": 2,
@@ -141,12 +154,20 @@
    "file": "near.png",
    "strip": [
     {
-     "prompt": "the lakeside at Baiae: grand ancient Roman bath houses with domes and white colonnades, villas with red tiled roofs and gardens, umbrella pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "512x112"
+     "prompt": "the lakeside at Baiae: a grand ancient Roman bath house with a pale stone dome and white colonnades on a low bank, umbrella pines and olive scrub beside it, the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "240x112"
     },
     {
-     "prompt": "the reedy shore of a lake with small ancient Roman fishermen's cottages of cream plastered stone with red tiled roofs, oyster sheds, nets drying on poles and umbrella pines, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "512x112"
+     "prompt": "a low grassy bank by a lake with two small ancient Roman fishermen's cottages of pale stone with red tiled roofs, nets drying on poles, reeds at the water, the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "240x112"
+    },
+    {
+     "prompt": "a low rise above a lake with an ancient Roman villa with red tiled roofs and a walled garden, cypresses and umbrella pines, the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "240x112"
+    },
+    {
+     "prompt": "the reedy shore of a lake with wooden oyster sheds, a small stone jetty and an umbrella pine on a low grassy bank, the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "240x112"
     }
    ],
    "land": true,
@@ -159,6 +180,11 @@
     0.55
    ],
    "z": -14,
+   "tone": {
+    "haze": 0.0
+   },
+   "style": "game/assets/art/places/harbour/cape.png",
+   "gap": 32,
    "shore": {
     "reeds": 3,
     "beach": 2,

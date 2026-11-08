@@ -2,7 +2,7 @@
 
 Each layer in a spec is one of:
   {"band": colour, ...}                            the sea under a row of land, drawn in code
-  {"file", "use": "coast/far.png", ...}            a picture already painted
+  {"file", "use": "places/harbour/seagrass.png"}   a picture already painted
   {"file", "prompt", "size", ...}                  one picture
   {"file", "strip": [{"prompt", "size"}, ...], "seam": text, ...}
                                                    pieces joined side by side, each join repainted across, or
@@ -12,7 +12,8 @@ painted before it far better than words alone.
   {"file", "from": "coast/cape.png", "extend": {"left": text}, ...}
                                                    a copy of a picture, its cut sides painted on outwards
   {"on_bed": x, "sink": n, ...}                    a seabed piece whose bottom is set into the sand at x
-A land layer with "shore": {"beach": 2, "rocks": 1, ...} gets a shore of those kinds along its bottom (shore.py).
+A land layer with "shore": {"beach": 2, "rocks": 1, ...} gets a shore of those kinds along its bottom (shore.py), and
+one with "tone": {"haze": 0.14, ...} is then brought into the harbour cape's colours (tone_land.py).
 Pictures are painted once; delete a file (and its parts) to paint it again. Usage:
   python tools/art/make_places.py [PLACE...] [--place-only]
 """
@@ -29,6 +30,7 @@ from PIL import Image
 
 import places_json
 import shore
+import tone_land
 
 ROOT = Path(__file__).resolve().parents[2]
 SPECS = Path(__file__).with_name("places")
@@ -217,7 +219,26 @@ def shore_land(pid, layer, path: Path):
     rel = path.relative_to(ART).as_posix()
     shore.shore(Image.open(inland), scale, layer["shore"], zlib.crc32(rel.encode()), layer.get("haze")).save(path)
     mark.write_text("done")
+    # A newly shored picture is toned again from itself.
+    (PARTS / pid / f"{path.stem}.toned").unlink(missing_ok=True)
+    (PARTS / pid / f"{path.stem}_untoned.png").unlink(missing_ok=True)
     print("shored", rel)
+
+
+def tone(pid, layer, path: Path):
+    """Once per picture: brings a row of land into the harbour cape's colours, hazed by its distance (tone_land.py).
+    The picture as it was is kept in parts, so deleting the mark tones it again from there."""
+    mark = PARTS / pid / f"{path.stem}.toned"
+    if mark.exists() or not path.exists():
+        return
+    before = PARTS / pid / f"{path.stem}_untoned.png"
+    mark.parent.mkdir(parents=True, exist_ok=True)
+    if not before.exists():
+        Image.open(path).save(before)
+    t = layer["tone"]
+    tone_land.tone(Image.open(before), float(t.get("haze", 0)), float(t.get("rock", 0.8)), far=bool(t.get("far"))).save(path)
+    mark.write_text("done")
+    print("toned", path.relative_to(ART).as_posix())
 
 
 def make_strip(pid, layer, out: Path, clear: bool):
@@ -366,7 +387,9 @@ def build(pid, place_only=False):
             finish_land(pid, layer, ART / rel)
         if "shore" in layer and not place_only:
             shore_land(pid, layer, ART / rel)
-        for k in ("prompt", "size", "strip", "seam", "wrap", "from", "extend", "land", "haze", "shore", "style", "gap"):
+        if "tone" in layer and not place_only:
+            tone(pid, layer, ART / rel)
+        for k in ("prompt", "size", "strip", "seam", "wrap", "from", "extend", "land", "haze", "shore", "style", "gap", "tone"):
             layer.pop(k, None)
         layer["file"] = rel
         pads = PARTS / pid / (Path(rel).stem + ".pads.json")

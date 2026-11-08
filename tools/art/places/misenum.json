@@ -95,6 +95,10 @@
     "#b4c4cc",
     0.35
    ],
+   "tone": {
+    "haze": 0.3,
+    "far": true
+   },
    "shore": {
     "rocks": 1,
     "beach": 1,
@@ -135,6 +139,9 @@
     0.3
    ],
    "z": -16,
+   "tone": {
+    "haze": 0.14
+   },
    "style": "tools/art/places/style_land.png",
    "gap": 48,
    "shore": {
@@ -174,6 +181,9 @@
     0.55
    ],
    "z": -14,
+   "tone": {
+    "haze": 0.0
+   },
    "style": "tools/art/places/style_land.png",
    "gap": 100,
    "shore": {

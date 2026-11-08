@@ -83,6 +83,10 @@
     "#b4c4cc",
     0.35
    ],
+   "tone": {
+    "haze": 0.3,
+    "far": true
+   },
    "shore": {
     "beach": 1,
     "rocks": 1,
@@ -115,6 +119,10 @@
     0.3
    ],
    "z": -16,
+   "tone": {
+    "haze": 0.14,
+    "far": true
+   },
    "shore": {
     "beach": 2,
     "rocks": 2,

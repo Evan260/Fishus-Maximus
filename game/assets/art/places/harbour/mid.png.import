@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkwmfoury5dyh"
-path="res://.godot/imported/mid.png-55188267189f54ed9faacba803f19cb5.ctex"
+uid="uid://lwkbjw2juspi"
+path="res://.godot/imported/mid.png-ef2aaa20747727c3c17840ed2dee7e4f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/coast/mid.png"
-dest_files=["res://.godot/imported/mid.png-55188267189f54ed9faacba803f19cb5.ctex"]
+source_file="res://assets/art/places/harbour/mid.png"
+dest_files=["res://.godot/imported/mid.png-ef2aaa20747727c3c17840ed2dee7e4f.ctex"]
 
 [params]
 

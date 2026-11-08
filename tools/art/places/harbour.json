@@ -83,7 +83,22 @@
   },
   {
    "file": "far.png",
-   "use": "coast/far.png",
+   "strip": [
+    {
+     "prompt": "the distant mountains of the Sorrento peninsula across the bay, soft olive green slopes with pale limestone crags, faded by distance and haze, flat straight bottom edge, nothing below the mountains, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background",
+     "size": "224x72"
+    },
+    {
+     "prompt": "Mount Vesuvius far off across the bay before it ever erupted, one broad flat-topped green mountain with vineyards and woods on its slopes, faded by distance and haze, flat straight bottom edge, nothing below the mountains, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background",
+     "size": "224x72"
+    },
+    {
+     "prompt": "low distant hills along the far shore of the bay, olive green scrub and a few pale limestone cliffs, faded by distance and haze, flat straight bottom edge, nothing below the mountains, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background",
+     "size": "224x72"
+    }
+   ],
+   "style": "game/assets/art/places/harbour/cape.png",
+   "land": true,
    "at": [
     -40,
     36
@@ -93,6 +108,10 @@
     0.12
    ],
    "z": -18,
+   "tone": {
+    "haze": 0.3,
+    "far": true
+   },
    "shore": {
     "beach": 2,
     "rocks": 1,
@@ -102,9 +121,27 @@
   },
   {
    "file": "mid.png",
-   "use": "coast/mid.png",
+   "strip": [
+    {
+     "prompt": "low hills at a middle distance covered in olive scrub and olive groves, umbrella pines along the top, a small white Roman farmhouse with a red tiled roof, pale golden limestone rocks at the water, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
+    },
+    {
+     "prompt": "a green headland at a middle distance with pale golden limestone cliffs down to the water, dark olive scrub and two umbrella pines on top, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
+    },
+    {
+     "prompt": "a low hill at a middle distance with a white Roman villa with red tiled roofs among cypresses and umbrella pines, olive scrub on its slopes and pale rocks at the water, the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right, natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "256x80"
+    }
+   ],
+   "land": true,
+   "haze": [
+    "#a9bcc4",
+    0.18
+   ],
    "at": [
-    0,
+    -16,
     38
    ],
    "factor": [
@@ -112,6 +149,11 @@
     0.3
    ],
    "z": -16,
+   "tone": {
+    "haze": 0.14
+   },
+   "style": "game/assets/art/places/harbour/cape.png",
+   "gap": 32,
    "shore": {
     "beach": 2,
     "rocks": 2,
@@ -132,6 +174,10 @@
     0.55
    ],
    "z": -14,
+   "tone": {
+    "haze": 0.0,
+    "rock": 0.0
+   },
    "shore": {
     "rocks": 2,
     "plain": 3

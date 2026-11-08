@@ -60,34 +60,22 @@ func test_rain_breaks_up_the_reflections() -> void:
 	layers.free()
 
 
-func test_the_stacks_at_capri_are_mirrored_from_their_feet() -> void:
-	var tex: Texture2D = load("res://assets/art/places/capri/near.png")
-	var img := tex.get_image()
-	var lines := ParallaxLayers.waterlines(tex)
-	var h := img.get_height()
-	# The tall stack stands in sea painted along the picture's bottom, about two thirds of the way along.
-	var stack := range(560, 640).filter(func(x): return img.get_pixel(x, h - 30).a > 0.5)
-	check(not stack.is_empty() and stack.all(func(x): return lines[x] >= h - ParallaxLayers.SHORE_SCAN and lines[x] < h - 10),
-		"the sea painted round the stacks is found, so they are mirrored from where they stand in it")
-	var empty := range(img.get_width()).filter(func(x): return range(h).all(func(y): return img.get_pixel(x, y).a == 0.0))
-	check(not empty.is_empty() and empty.all(func(x): return lines[x] == -1.0), "and where there is no land there is nothing to mirror")
-
-
 func test_land_with_no_sea_painted_is_mirrored_from_its_foot() -> void:
-	var tex: Texture2D = load("res://assets/art/places/harbour/cape.png")
-	var img := tex.get_image()
-	var lines := ParallaxLayers.waterlines(tex)
-	var h := img.get_height()
-	for x in img.get_width():
-		var foot := -1
-		for y in range(h - 1, -1, -1):
-			if img.get_pixel(x, y).a > 0.5:
-				foot = y + 1
-				break
-		if foot >= h - ParallaxLayers.SHORE_SCAN and lines[x] != foot:
-			check(false, "column %d of the cape is mirrored about the foot of its rock" % x)
-			return
-	check(true, "the cape is mirrored about the foot of its rocks")
+	for file in ["places/harbour/cape.png", "places/harbour/mid.png", "places/lucrine/mid.png", "places/lucrine/near.png", "places/capri/near.png"]:
+		var tex: Texture2D = load("res://assets/art/" + file)
+		var img := tex.get_image()
+		var lines := ParallaxLayers.waterlines(tex)
+		var h := img.get_height()
+		var wrong := range(img.get_width()).filter(func(x):
+			var foot := -1
+			for y in range(h - 1, -1, -1):
+				if img.get_pixel(x, y).a > 0.5:
+					foot = y + 1
+					break
+			return foot >= h - ParallaxLayers.SHORE_SCAN and lines[x] != foot)
+		check(wrong.is_empty(), "%s is mirrored about the foot of its land in every column" % file)
+		var empty := range(img.get_width()).filter(func(x): return range(h).all(func(y): return img.get_pixel(x, y).a == 0.0))
+		check(empty.all(func(x): return lines[x] == -1.0), "and where there is no land there is nothing to mirror")
 
 
 func test_no_picture_is_mirrored_from_far_above_its_bottom() -> void:

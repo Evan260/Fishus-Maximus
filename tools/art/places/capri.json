@@ -102,6 +102,10 @@
     "#b4c4cc",
     0.35
    ],
+   "tone": {
+    "haze": 0.3,
+    "far": true
+   },
    "shore": {
     "rocks": 1,
     "beach": 1,
@@ -134,6 +138,9 @@
     0.3
    ],
    "z": -16,
+   "tone": {
+    "haze": 0.14
+   },
    "shore": {
     "rocks": 3,
     "bushes": 1,
@@ -144,16 +151,24 @@
    "file": "near.png",
    "strip": [
     {
-     "prompt": "towering pale limestone sea cliffs with a dark cave mouth at the waterline and wild bushes, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "448x128"
+     "prompt": "towering pale golden limestone sea cliffs with a dark cave mouth at the waterline, olive scrub and umbrella pines on top, natural weathered rock with soft rounded shading and no outlines, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "240x128"
     },
     {
-     "prompt": "three tall rock stacks rising from the sea in front of white limestone cliffs, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "448x128"
+     "prompt": "three tall pale limestone rock stacks standing in a row, scrub and a small pine on the tallest, the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right, natural weathered rock with soft rounded shading and no outlines, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "240x128"
     },
     {
-     "prompt": "white limestone sea cliffs with a natural rock arch at the water and pines on top, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
-     "size": "448x128"
+     "prompt": "pale golden limestone sea cliffs with a natural rock arch at the water, olive scrub and umbrella pines on top, natural weathered rock with soft rounded shading and no outlines, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "240x128"
+    },
+    {
+     "prompt": "a steep pale limestone headland with a small white Roman villa among umbrella pines on top, the hill sloping down to rocks at the water on both sides and ending well inside the picture, empty space on the left and right, natural weathered rock with soft rounded shading and no outlines, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "240x128"
+    },
+    {
+     "prompt": "rugged pale limestone cliffs with a sea cave at the waterline and wild fig trees and pines growing from the rock, natural weathered rock with soft rounded shading and no outlines, empty transparent background, low at the far left and far right ends, seen from the sea, side view, flat straight bottom edge where it meets the sea, no water",
+     "size": "240x128"
     }
    ],
    "land": true,
@@ -166,6 +181,11 @@
     0.55
    ],
    "z": -14,
+   "tone": {
+    "haze": 0.0
+   },
+   "style": "game/assets/art/places/harbour/cape.png",
+   "gap": 28,
    "shore": {
     "rocks": 3,
     "bushes": 1,

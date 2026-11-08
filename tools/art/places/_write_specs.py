@@ -10,6 +10,12 @@ WHOLE = "a single object on its own, nothing behind it, empty transparent backgr
 FLOOR = "seamless flat even texture filling the whole picture, seen from the side"
 # A piece of the harbour town, so land painted to match it shares the town's palette, light and soft natural rock.
 LIKE_TOWN = "tools/art/places/style_land.png"
+# The harbour's cape, whose olive scrub, pale limestone and dark pines every row of land is painted and toned to match.
+LIKE_CAPE = "game/assets/art/places/harbour/cape.png"
+# How each row of land is toned to the cape by tone_land.py: a little more haze the farther back it lies.
+FAR_TONE = {"haze": 0.3, "far": True}
+MID_TONE = {"haze": 0.14}
+NEAR_TONE = {"haze": 0.0}
 ROCK = "natural weathered rock with soft rounded shading and no outlines, empty transparent background"
 # Land with nothing painted above it, so the game's own drifting sky shows there.
 NO_SKY = "natural shapes with soft shading and no outlines, nothing in the sky, no clouds, no sun, empty transparent background"
@@ -27,12 +33,12 @@ def bands(far, mid, near=None):
 
 def far(prompt, w):
     return {"file": "far.png", "prompt": prompt + ", " + FAR, "size": f"{w}x72", "at": [-20, 36], "factor": [0.12, 0.12], "z": -18,
-            "land": True, "haze": ["#b4c4cc", 0.35]}
+            "land": True, "haze": ["#b4c4cc", 0.35], "tone": FAR_TONE}
 
 
 def mid(prompts, w, style=None, gap=0):
     out = {"file": "mid.png", "strip": [{"prompt": f"{p}, {LOW_ENDS}, {LAND}", "size": f"{w}x80"} for p in prompts],
-           "land": True, "haze": ["#a9bcc4", 0.18], "at": [-16, 38], "factor": [0.3, 0.3], "z": -16}
+           "land": True, "haze": ["#a9bcc4", 0.18], "at": [-16, 38], "factor": [0.3, 0.3], "z": -16, "tone": MID_TONE}
     if style:
         out["style"] = style
     if gap:
@@ -42,7 +48,7 @@ def mid(prompts, w, style=None, gap=0):
 
 def near(prompts, w, h=112, style=None, gap=0):
     out = {"file": "near.png", "strip": [{"prompt": f"{p}, {LOW_ENDS}, {LAND}", "size": f"{w}x{h}"} for p in prompts],
-           "land": True, "at": [-16, 136 - h + 2], "factor": [0.55, 0.55], "z": -14}
+           "land": True, "at": [-16, 136 - h + 2], "factor": [0.55, 0.55], "z": -14, "tone": NEAR_TONE}
     if style:
         out["style"] = style
     if gap:
@@ -89,9 +95,16 @@ specs[p] = {
     "width": 1440, "seabed": [[0, 60], [200, 68], [360, 96], [600, 128], [850, 168], [1050, 214], [1250, 262], [1440, 294]],
     "floor": floor("pale harbour sand on the sea floor with fine grains, small pebbles and broken shells"),
     "layers": bands("#8fa0a8", "#6f93a0", "#4f8494") + [
-        {"file": "far.png", "use": "coast/far.png", "at": [-40, 36], "factor": [0.12, 0.12], "z": -18},
-        {"file": "mid.png", "use": "coast/mid.png", "at": [0, 38], "factor": [0.3, 0.3], "z": -16},
-        {"file": "town.png", "from": "coast/town.png", "land": True, "at": [-190, 28], "factor": [0.55, 0.55], "z": -14},
+        {"file": "far.png", "strip": [{"prompt": f"{p}, {FAR}, {NO_SKY}", "size": "224x72"} for p in (
+            "the distant mountains of the Sorrento peninsula across the bay, soft olive green slopes with pale limestone crags",
+            "Mount Vesuvius far off across the bay before it ever erupted, one broad flat-topped green mountain with vineyards and woods on its slopes",
+            "low distant hills along the far shore of the bay, olive green scrub and a few pale limestone cliffs")],
+         "style": LIKE_CAPE, "land": True, "at": [-40, 36], "factor": [0.12, 0.12], "z": -18, "tone": FAR_TONE},
+        mid([f"low hills at a middle distance covered in olive scrub and olive groves, umbrella pines along the top, a small white Roman farmhouse with a red tiled roof, pale golden limestone rocks at the water, {NO_SKY}",
+             f"a green headland at a middle distance with pale golden limestone cliffs down to the water, dark olive scrub and two umbrella pines on top, {NO_SKY}",
+             f"a low hill at a middle distance with a white Roman villa with red tiled roofs among cypresses and umbrella pines, olive scrub on its slopes and pale rocks at the water, {ALONE}, {NO_SKY}"],
+            256, style=LIKE_CAPE, gap=32),
+        {"file": "town.png", "from": "coast/town.png", "land": True, "at": [-190, 28], "factor": [0.55, 0.55], "z": -14, "tone": {"haze": 0.0, "rock": 0.0}},
         {"file": "cape.png", "prompt": f"a green headland seen from the sea with pale golden limestone cliffs down to the water, grass and scrub on top, two umbrella pines and a small round ancient Roman stone watchtower, {LOW_ENDS}, {LAND}, {ROCK}",
          "size": "256x100", "style": LIKE_TOWN, "land": True, "at": [700, 38], "factor": [0.55, 0.55], "z": -14},
         deep([300, 420]),
@@ -139,10 +152,15 @@ specs[p] = {
     "floor": floor("soft grey-brown lake mud on the lake floor with scattered pale oyster shells and small pebbles"),
     "layers": bands("#93a4a8", "#78a0a0", "#5a8f94") + [
         far("distant low green volcanic hills seen across a lake", 640),
-        mid(["wooded green hills around a lake at a middle distance, chestnut and oak woods, the dark crater rim of Lake Avernus",
-             "green hills with vineyards and a few white ancient Roman villas with red tiled roofs"], 384),
-        near(["the lakeside at Baiae: grand ancient Roman bath houses with domes and white colonnades, villas with red tiled roofs and gardens, umbrella pines",
-              "the reedy shore of a lake with small ancient Roman fishermen's cottages of cream plastered stone with red tiled roofs, oyster sheds, nets drying on poles and umbrella pines"], 512),
+        mid([f"low wooded hills at a middle distance around a lake, dark umbrella pines, oaks and olive scrub, pale rocks at the water, {NO_SKY}",
+             f"the low rounded crater rim of Lake Avernus at a middle distance seen from the side, covered in dark woods and olive scrub, {NO_SKY}",
+             f"gentle hills at a middle distance with terraced vineyards and a small white Roman villa with a red tiled roof among cypresses and umbrella pines, {ALONE}, {NO_SKY}"],
+            256, style=LIKE_CAPE, gap=32),
+        near([f"the lakeside at Baiae: a grand ancient Roman bath house with a pale stone dome and white colonnades on a low bank, umbrella pines and olive scrub beside it, {ALONE}, {NO_SKY}",
+              f"a low grassy bank by a lake with two small ancient Roman fishermen's cottages of pale stone with red tiled roofs, nets drying on poles, reeds at the water, {ALONE}, {NO_SKY}",
+              f"a low rise above a lake with an ancient Roman villa with red tiled roofs and a walled garden, cypresses and umbrella pines, {ALONE}, {NO_SKY}",
+              f"the reedy shore of a lake with wooden oyster sheds, a small stone jetty and an umbrella pine on a low grassy bank, {ALONE}, {NO_SKY}"],
+             240, style=LIKE_CAPE, gap=32),
     ] + bed(p, "reeds.png", "a clump of green reeds and eelgrass growing up from the mud", "64x64", [110, 380, 1000, 1300], sway=True)
       + bed(p, "oysters.png", "a bed of rough grey oyster shells and blue mussels on the mud", "96x40", [520, 860])
       + bed(p, "basket.png", "an old sunken wicker fish basket lying on the mud", "48x40", [1150])
@@ -156,8 +174,9 @@ specs[p] = {
     "floor": floor("fine pale sand on a deep sea floor with scattered small shells and tiny pebbles, no ripples, no lines"),
     "layers": bands("#8fa6b0", "#6f98a8") + [
         far("distant mountains seen from the open sea, the large green cone of Mount Vesuvius with a wisp of cloud, the long rocky Sorrento peninsula on the right", 768),
-        mid(["a distant low coastline seen from the open sea, green hills with small white towns and villas",
-             "a distant low coastline seen from the open sea, wooded hills and a small harbour town"], 544),
+        # The coast seen across the open bay is far off, so its bare hills are toned as distant land.
+        dict(mid(["a distant low coastline seen from the open sea, green hills with small white towns and villas",
+                  "a distant low coastline seen from the open sea, wooded hills and a small harbour town"], 544), tone={"haze": 0.14, "far": True}),
         deep([-40, 540], fit=True),
     ] + bed(p, "seagrass.png", "", "", [200, 520, 900, 2250], use="places/harbour/seagrass.png", sway=True)
       + bed(p, "fans.png", "a few red and yellow sea fans on a small rock", "64x48", [1300, 1900], sway=True)
@@ -175,9 +194,12 @@ specs[p] = {
         far("the long green mountain ridge of the Sorrento peninsula, soft rounded green and grey-blue slopes, no snow", 704),
         mid(["the steep green slopes of the island of Capri at a middle distance with white ancient Roman villas, terraces and pines",
              "the rocky upper cliffs of Capri with the ruins of an imperial Roman villa on the summit and pines"], 480),
-        near(["towering pale limestone sea cliffs with a dark cave mouth at the waterline and wild bushes",
-              "three tall rock stacks rising from the sea in front of white limestone cliffs",
-              "white limestone sea cliffs with a natural rock arch at the water and pines on top"], 448, 128),
+        near([f"towering pale golden limestone sea cliffs with a dark cave mouth at the waterline, olive scrub and umbrella pines on top, {ROCK}",
+              f"three tall pale limestone rock stacks standing in a row, scrub and a small pine on the tallest, {ALONE}, {ROCK}",
+              f"pale golden limestone sea cliffs with a natural rock arch at the water, olive scrub and umbrella pines on top, {ROCK}",
+              f"a steep pale limestone headland with a small white Roman villa among umbrella pines on top, {ALONE}, {ROCK}",
+              f"rugged pale limestone cliffs with a sea cave at the waterline and wild fig trees and pines growing from the rock, {ROCK}"],
+             240, 128, style=LIKE_CAPE, gap=28),
         deep([200, 510]),
     ] + bed(p, "white_rock.png", "a pale limestone underwater rock with red coral branches, purple sponges and sea fans, rounded on both sides, sitting on the sand", "160x96", [300, 1050], sink=10)
       + bed(p, "coral.png", "a cluster of bright red Mediterranean coral and white sea fans on a small rock", "64x48", [620, 1720])
