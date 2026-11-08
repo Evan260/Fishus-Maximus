@@ -337,3 +337,26 @@ func test_a_legend_a_client_still_wants_can_be_found_again() -> void:
 	Game.state["clients"]["priest"] = 3
 	Catches.record(Game.state, "sleeping_sunfish", 300.0, false)
 	check(int(Game.state["reputation"]) == rep, "and catching it again does not raise your name again")
+
+
+func _town_at(hour: float) -> Node:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "mutt")
+	var t := Clock.minutes_per_day()
+	while Clock.hour(t) < hour:
+		t += 0.05
+	Game.state["time"] = t
+	var s: Node = load("res://scripts/town/town_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({})
+	return s
+
+
+func test_the_town_keeps_up_with_the_hour() -> void:
+	var s := _town_at(15.5)
+	check(not s._sleep.visible, "at half past three there is no going to bed yet")
+	while Clock.hour(float(Game.state["time"])) < 16.5:
+		s._process(0.5)
+	check(s._sleep.visible, "but staying on in town past four, the bed is offered without leaving and coming back")
+	_done(s)

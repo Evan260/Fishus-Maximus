@@ -245,6 +245,9 @@ func _process(delta: float) -> void:
 		_folk[0]["x"] = 200.0
 		_gossip(_folk[0])
 	Audio.set_ambience({"market": 0.5, "gulls": 0.2})
+	# The top bar and the bed follow the hour and the hold, which change while you stay in town.
+	if floori(_clock + delta) > floori(_clock):
+		_refresh_ui()
 	_clock += delta
 	_relight()
 	for f in _folk:
