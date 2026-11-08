@@ -16,8 +16,9 @@ const SHALLOW_ROOM := 180.0
 const LOOK_EVERY := 1.0
 ## The chance that a legend whose time and place have come shows itself when a fish is placed in the water.
 const LEGEND_CHANCE := 0.05
-## How far off a fish notices a bait it likes and comes to look at it.
+## How far off a fish notices a bait it likes, and the chance each second that one in reach comes to look at it.
 const NOTICE := 110.0
+const NOTICE_CHANCE := 0.5
 const CURIOUS_FOR := 7.0
 ## How many times its usual speed a scared fish darts away at.
 const FLEE_SPEED := 3.0
@@ -191,7 +192,7 @@ func step(delta: float, bait, bait_id: String) -> void:
 				f["look"] = LOOK_EVERY
 				var likes: bool = "line" in Data.fish[f["id"]]["methods"] and Bite.chance(f["id"], bait_id, 0.0) > 0.0
 				var away: float = f["pos"].distance_to(bait)
-				if f["state"] == "swim" and likes and away < NOTICE and deep_enough(f["id"], bait.x) and _rng.randf() < 0.35:
+				if f["state"] == "swim" and likes and away < NOTICE and deep_enough(f["id"], bait.x) and _rng.randf() < NOTICE_CHANCE:
 					f["state"] = "curious"
 					f["curious"] = CURIOUS_FOR
 				elif f["state"] == "curious" and _rng.randf() < Bite.chance(f["id"], bait_id, away, weather):

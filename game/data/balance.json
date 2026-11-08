@@ -29,7 +29,7 @@
 		"cast_seconds": 1.5,
 		"rod_too_heavy": 0.5,
 		"deep_water": [40, 30],
-		"shoal_bite": 0.02,
+		"shoal_bite": 0.12,
 		"nibbles": [1, 3],
 		"nibble_gap": [0.5, 1.2],
 		"fight": {

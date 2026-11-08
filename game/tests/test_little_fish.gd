@@ -30,7 +30,7 @@ func test_little_fish_bite_by_the_shore() -> void:
 	for i in 6000:
 		sw.step(0.1, Vector2(300, 58), "worm")
 	check(count["little"] >= 2, "in ten minutes by the shore the little fish take the worm %d times" % count["little"])
-	check(count["all"] <= 30, "and the bites still come a while apart, not every few seconds: %d" % count["all"])
+	check(count["all"] <= 60, "and the bites still come some seconds apart, not all at once: %d" % count["all"])
 	sw.free()
 
 
