@@ -176,7 +176,11 @@ specs[p] = {
         far("distant mountains seen from the open sea, the large green cone of Mount Vesuvius with a wisp of cloud, the long rocky Sorrento peninsula on the right", 768),
         # The coast seen across the open bay is far off, so its bare hills are toned as distant land.
         dict(mid(["a distant low coastline seen from the open sea, green hills with small white towns and villas",
-                  "a distant low coastline seen from the open sea, wooded hills and a small harbour town"], 544), tone={"haze": 0.14, "far": True}),
+                  "a distant low coastline seen from the open sea, wooded hills and a small harbour town"], 544), tone={"haze": 0.14, "far": True},
+             # The harbour is painted with its water, which the clear background cuts away, so it is painted again on solid ground.
+             mend=[{"clear": [[690, 80, 704, 83], [704, 40, 846, 83], [846, 80, 944, 83]],
+                    "ground": [[690, 74, 704, 80], [704, 73, 836, 80], [746, 68, 758, 73], [824, 64, 836, 73], [826, 58, 834, 64], [846, 73, 944, 80]],
+                    "prompt": "a small ancient Roman harbour seen from far off across the bay: a long low mole of pale golden stone with a row of small dark arches along its face, a little stone warehouse with a red tiled roof on the mole, a small square stone lighthouse tower at its far end, and on the right the town's stone quay wall with dark arched boathouses, solid stonework right down to the bottom edge, side view, no water, no sky"}]),
     ] + bed(p, "seagrass.png", "", "", [200, 520, 900, 2250], use="places/harbour/seagrass.png", sway=True)
       + bed(p, "fans.png", "a few red and yellow sea fans on a small rock", "64x48", [1300, 1900], sway=True)
       + bed(p, "pinnacle.png", "a tall underwater rock pinnacle rising from the sand, covered in sponges and sea fans, small dark holes", "128x160", [1520], sink=10)

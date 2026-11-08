@@ -499,3 +499,5 @@ time,kind,name,cost_usd,cost_generations,usd_left
 2026-11-08T16:14:58,inpaint,game\assets\art\places\capri\mid.png,0.0865,0,0.5678
 2026-11-08T16:15:57,proflash,tools/art/places/parts/front/bank_rock.png,0.0325,0,0.5353
 2026-11-08T16:18:01,inpaint,game\assets\art\places\capri\mid.png,0.0869,0,0.4484
+2026-11-08T16:22:25,inpaint,tools\art\places\parts\open_bay\mid_mending.png,0.0422,0,0.4062
+2026-11-08T16:27:54,inpaint,tools\art\places\parts\open_bay\mid_mending.png,0.0421,0,0.3641

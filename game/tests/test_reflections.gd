@@ -117,3 +117,31 @@ func test_no_shore_runs_ruler_straight() -> void:
 			var img: Image = (load("res://assets/art/" + str(l["file"])) as Texture2D).get_image()
 			img.decompress()
 			check(_straightest(img) < 100, "%s: %s meets the water with rocks, coves and beaches, never along a ruler" % [p["id"], l["file"]])
+
+
+## The columns where land stands over a gap of sea just above a nearer piece, as a pier with its water cut away does,
+## hanging in the air with no reflection under it.
+func _hanging(img: Image) -> Array:
+	var out: Array = []
+	for x in img.get_width():
+		var y := img.get_height() - 1
+		while y >= 0 and img.get_pixel(x, y).a <= 0.5:
+			y -= 1
+		var foot := y
+		while y >= 0 and img.get_pixel(x, y).a > 0.5:
+			y -= 1
+		var below := foot - y
+		var gap := 0
+		while y >= 0 and img.get_pixel(x, y).a <= 0.5:
+			y -= 1
+			gap += 1
+		if foot >= 0 and y >= 0 and gap >= 2 and below >= 3 and foot - y <= 12 + gap:
+			out.append(x)
+	return out
+
+
+func test_the_open_bays_harbour_stands_whole_on_the_water() -> void:
+	var img: Image = (load("res://assets/art/places/open_bay/mid.png") as Texture2D).get_image()
+	img.decompress()
+	var hanging := _hanging(img)
+	check(hanging.is_empty(), "the open bay's harbour has no pier hanging over a gap of sea, at columns %s" % [hanging.slice(0, 12)])

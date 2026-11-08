@@ -13,12 +13,15 @@ painted before it far better than words alone.
                                                    a copy of a picture, its cut sides painted on outwards
   {"on_bed": x, "sink": n, ...}                    a seabed piece whose bottom is set into the sand at x
 A land layer with "shore": {"beach": 2, "rocks": 1, ...} gets a shore of those kinds along its bottom (shore.py), and
-one with "tone": {"haze": 0.14, ...} is then brought into the harbour cape's colours (tone_land.py).
+one with "tone": {"haze": 0.14, ...} is then brought into the harbour cape's colours (tone_land.py). A picture with
+"mend": [{"clear": [box...], "ground": [box...], "prompt"}] then has the clear boxes emptied and the ground boxes filled
+solid and inpainted with the prompt, so a part that came out in pieces is painted again standing whole in the sea.
 Pictures are painted once; delete a file (and its parts) to paint it again. Usage:
   python tools/art/make_places.py [PLACE...] [--place-only]
 """
 import json
 import math
+import random
 import subprocess
 import sys
 import time
@@ -280,6 +283,79 @@ def tone(pid, layer, path: Path):
     print("toned", path.relative_to(ART).as_posix())
 
 
+def mend_ground(arr, m, seed):
+    """Clears each box [x0, y0, x1, y1] in the mend's "clear" and fills each in its "ground" solid, so what is painted
+    there stands whole in the sea. The foot sinks a pixel or two in short clusters, like a rubble of boulders, so it never
+    runs ruler straight. Returns the picture with the ground filled in the colour of the land round it, and the mask."""
+    a = arr.copy()
+    h = a.shape[0]
+    for x0, y0, x1, y1 in m.get("clear", []):
+        a[y0:y1, x0:x1, 3] = 0
+    mask = np.zeros(a.shape[:2], bool)
+    rng = random.Random(seed)
+    for x0, y0, x1, y1 in m["ground"]:
+        sink = left = 0
+        for x in range(x0, x1):
+            if left == 0:
+                sink, left = rng.choice([0, 0, 1, 2]), rng.randint(2, 6)
+            left -= 1
+            mask[y0:min(h, y1 + sink), x] = True
+    xs = np.where(mask.any(axis=0))[0]
+    near = a[:, max(0, xs[0] - 40):xs[-1] + 40]
+    a[mask & (a[:, :, 3] <= 127), :3] = np.median(near[near[:, :, 3] > 127][:, :3], axis=0)
+    a[mask, 3] = 255
+    return a, mask
+
+
+def settle_mend(arr, mask):
+    """Keeps what an inpaint painted over the ground solid, clears the plain white it leaves where it saw sky, and moves
+    its colours as a whole onto those of the land round it, which carries the row's haze."""
+    a = arr.copy()
+    white = mask & (a[:, :, :3] == 255).all(axis=2)
+    solid = ((a[:, :, 3] > 127) | mask) & ~white
+    # Paint over white with land still below it would hang in the air once the white is cleared, so it goes too.
+    gap = white & (np.cumsum(solid[::-1], axis=0)[::-1] > solid)
+    lowest = np.where(gap.any(axis=0), gap.shape[0] - 1 - np.argmax(gap[::-1], axis=0), -1)
+    white |= mask & (np.arange(white.shape[0])[:, None] < lowest[None, :])
+    a[mask, 3] = 255
+    a[white, 3] = 0
+    painted = mask & ~white
+    xs = np.where(mask.any(axis=0))[0]
+    near = np.zeros_like(mask)
+    near[:, max(0, xs[0] - 40):xs[-1] + 40] = True
+    near &= ~mask & (a[:, :, 3] > 127)
+    lab = tone_land.to_oklab(a[:, :, :3] / 255.0)
+    lab[painted] += lab[near].mean(axis=0) - lab[painted].mean(axis=0)
+    a[painted, :3] = np.clip(tone_land.from_oklab(lab[painted]) * 255 + 0.5, 0, 255)
+    return a
+
+
+def mend(pid, layer, path: Path):
+    """Once per picture: paints the parts listed in its "mend" again, each one inpaint of a prompt over the ground
+    mend_ground lays. The picture as it was is kept in parts, so deleting the mark mends it again from there."""
+    mark = PARTS / pid / f"{path.stem}.mended"
+    if mark.exists() or not path.exists():
+        return
+    before = PARTS / pid / f"{path.stem}_unmended.png"
+    if not before.exists():
+        Image.open(path).save(before)
+    arr = np.array(Image.open(before).convert("RGBA"))
+    h, w = arr.shape[:2]
+    # PixelLab's tiles start on multiples of 4, so the picture is padded to them or its bottom rows could never be reached.
+    pad = ((0, -h % 4), (0, -w % 4), (0, 0))
+    work = PARTS / pid / f"{path.stem}_mending.png"
+    for i, m in enumerate(layer["mend"]):
+        arr, mask = mend_ground(arr, m, zlib.crc32(f"{pid}/{path.name}/{i}".encode()))
+        Image.fromarray(np.pad(arr, pad)).save(work)
+        if not inpaint(work, Image.fromarray(np.pad(mask, pad[:2]).astype(np.uint8) * 255), m["prompt"], False):
+            return
+        arr = settle_mend(np.array(Image.open(work).convert("RGBA"))[:h, :w], mask)
+    work.unlink(missing_ok=True)
+    Image.fromarray(arr).save(path)
+    mark.write_text("done")
+    print("mended", path.relative_to(ART).as_posix())
+
+
 def make_strip(pid, layer, out: Path, clear: bool):
     """Paints the pieces and sets them side by side on their bottom edges. Land pieces each end low, so the sea shows
     between them; other strips are repainted across every join so they run on seamlessly."""
@@ -416,7 +492,9 @@ def build(pid, place_only=False):
             shore_land(pid, layer, ART / rel)
         if "tone" in layer and not place_only:
             tone(pid, layer, ART / rel)
-        for k in ("prompt", "size", "strip", "seam", "wrap", "from", "extend", "land", "haze", "shore", "style", "gap", "tone", "set_back"):
+        if "mend" in layer and not place_only:
+            mend(pid, layer, ART / rel)
+        for k in ("prompt", "size", "strip", "seam", "wrap", "from", "extend", "land", "haze", "shore", "style", "gap", "tone", "mend", "set_back"):
             layer.pop(k, None)
         layer["file"] = rel
         pads = PARTS / pid / (Path(rel).stem + ".pads.json")
