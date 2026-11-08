@@ -12,6 +12,7 @@ be clicked and outlined in gold when the mouse is over it. Writes game/assets/ar
 MARGIN more on every side), <id>.png for each building, and town.json with where each stands in the scene.
 Usage: python tools/art/make_town.py [--no-paint]   (--no-paint only cuts out what is already painted)"""
 import json
+import math
 import shutil
 import subprocess
 import sys
@@ -139,6 +140,10 @@ POST_FILL = [(49, 63, 398, 18), (63, 73, 434, 13), (73, 98, 407, 9), (98, 122, 3
 # The pillar's courses repeat down to its foot: (first column, first row, end row), and (joint row, rows repeated).
 PILLAR = (447, 91, 230)
 COURSES = (34, 57)
+# The column where the pillar's front face starts, past its side face, and how far its painted joints drop for each
+# column they run back along the side face.
+PILLAR_FRONT = 459
+PILLAR_SLOPE = 0.68
 # The goldsmith's lantern as first painted, (row, first column, last column), kept in lantern.png.
 LANTERN = [(156, 416, 417), (157, 416, 417), (158, 416, 417), (159, 416, 417), (160, 414, 418)] + \
           [(y, 413, 418) for y in range(161, 170)]
@@ -203,7 +208,37 @@ def even_rows(arr: np.ndarray, box) -> np.ndarray:
     return out
 
 
-def carry_paving(arr: np.ndarray) -> np.ndarray:
+def pillar_foot(x: int) -> float:
+    """The row where the pillar's side face meets the paving at column x, rising towards the vanishing point."""
+    d = PILLAR_FRONT - x
+    return PILLAR[2] + d * (VANISH[1] - PILLAR[2]) / (PILLAR_FRONT - VANISH[0])
+
+
+def pillar_in_perspective(arr: np.ndarray) -> np.ndarray:
+    """The picture with the pillar's side face drawn again so each joint, and its foot, runs to the street's vanishing
+    point as the paving's joints do, rising towards it below eye level, and the paving laid again where the foot rose."""
+    mx, my = MARGIN
+    column, top, foot = PILLAR
+    vx, vy = VANISH
+    far = PILLAR_FRONT - vx
+    # The courses carried down from the top, which have had the specks of sky on their edge taken out.
+    courses = arr[top + my:top + COURSES[1] + my].copy()
+    out = arr.copy()
+    bare = np.zeros(arr.shape[:2], bool)
+    for x in range(column, PILLAR_FRONT):
+        d = PILLAR_FRONT - x
+        for y in range(COURSES[0], foot):
+            v = (y - d * vy / far) / (1.0 - d / far)
+            if v >= foot:
+                bare[y + my, x + mx] = True
+                continue
+            out[y + my, x + mx] = courses[(int(round(v + d * PILLAR_SLOPE)) - top) % COURSES[1], x + mx]
+    paved = carry_paving(out, pillar_foot)
+    out[bare] = paved[bare]
+    return out
+
+
+def carry_paving(arr: np.ndarray, foot=None) -> np.ndarray:
     """The picture with the paving round the goldsmith laid again from the street's own slabs four joints to the left,
     each row moved along the street's perspective so the joints meet those beside it, and each column toned to the
     paving just past the joint it starts at."""
@@ -214,6 +249,9 @@ def carry_paving(arr: np.ndarray) -> np.ndarray:
     top = np.zeros(w)
     for x0, y0 in CARRY_TOPS:
         top[x0 + MARGIN[0]:] = y0 + MARGIN[1]
+    if foot is not None:
+        for x in range(PILLAR[0], PILLAR_FRONT):
+            top[x + MARGIN[0]] = math.ceil(foot(x)) + MARGIN[1]
     area = (slope > CARRY_FROM) & (yy >= top[None, :])
     laid = cv2.remap(arr, xx - 4 * JOINT * (yy - vy), yy, cv2.INTER_NEAREST)
     weights = np.array([0.3, 0.59, 0.11], dtype=np.float32)
@@ -464,7 +502,7 @@ def main():
         back = outline & ~settle(painted, empty, outline) & ~restreeted
         final[back] = empty[back]
     trim_board(Image.open(WORK / BOARD_RAW).convert("RGBA")).save(WORK / BOARD)
-    final = stand_board(hang_lantern(finish_column(final)))
+    final = stand_board(hang_lantern(pillar_in_perspective(finish_column(final))))
     final = clear_sky.clear_painted(final, SKY, HORIZON + my)
     spots = {}
     board = np.array(shape_mask(final.shape[1::-1], SILHOUETTES["board"], MARGIN)) > 0

@@ -190,3 +190,20 @@ func test_the_townsfolk_turn_back_before_the_board() -> void:
 	for x in s.CLIENT_SPOTS:
 		check(x - 12.0 > board.end.x, "nor does a client stand there, at %.0f" % x)
 	_close(s)
+
+
+## The lowest row of a column of the pillar's lit side face that is still stone, not the darker paving below it.
+func _pillar_foot(s: Node, street: Image, x: int) -> int:
+	var y := 223
+	while y < 240 and _pixel(s, street, x, y + 1).get_luminance() > 0.4:
+		y += 1
+	return y
+
+
+func test_the_pillars_foot_rises_towards_the_vanishing_point() -> void:
+	var s := _open()
+	var street: Image = s._street.texture.get_image()
+	var front := _pillar_foot(s, street, 457)
+	var back := _pillar_foot(s, street, 448)
+	check(back < front - 2, "below eye level the pillar's side face meets the paving higher the farther back it runs, %d at the back and %d at the corner" % [back, front])
+	_close(s)
