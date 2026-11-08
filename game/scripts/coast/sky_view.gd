@@ -71,6 +71,9 @@ const HORIZON := 106.0
 ## How far the sky moves for each row the view rises above home, as the farthest land does, so its sun, moon and low
 ## clouds stay above that land while he rows.
 const RISE_FOLLOW := 0.12
+
+## How far the sky moves for each row the view rises; ashore it is laid on a picture's own horizon, so it moves fully.
+var rise_follow := RISE_FOLLOW
 ## The sky reaches this far above the view and below the horizon, past the waterline, so its ends never show.
 const TOP := -40.0
 const BELOW := 80.0
@@ -321,7 +324,7 @@ func _lay_out() -> void:
 	var view := Nav.view()
 	# The sky rises with the waterline as the camera goes down, and moves with the coast in the desktop strip.
 	var below := _cam.y - CoastCamera.HOME_Y
-	position = Vector2(-_cam.x * DRIFT, -below * (1.0 if below > 0.0 else RISE_FOLLOW) + Nav.port.canvas_transform.origin.y)
+	position = Vector2(-_cam.x * DRIFT, -below * (1.0 if below > 0.0 else rise_follow) + Nav.port.canvas_transform.origin.y)
 	# The camera rises above home while he rows or a float flies, so the sky reaches up to the view's top as well.
 	var top := minf(TOP, floorf(-position.y) - 2.0)
 	_gradient.position = Vector2(floorf(-position.x) - 2.0, top)

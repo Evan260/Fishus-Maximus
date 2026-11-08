@@ -18,6 +18,7 @@ func _ready() -> void:
 	if not Game.state.has("weather"):
 		Game.state["weather"] = Weather.for_day(int(Game.state["seed"]), Clock.day_of(float(Game.state["time"])))
 	sky = SkyView.new()
+	sky.rise_follow = 1.0
 	Nav.sky.add_child(sky)
 
 
