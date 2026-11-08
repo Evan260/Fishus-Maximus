@@ -62,6 +62,9 @@ func set_method(m: String) -> void:
 
 
 func set_idle(on: bool) -> void:
+	if on and screen.bait() == "":
+		Toast.say("No bait on the hook.")
+		return
 	idle = on
 	_idle_minutes = 0.0
 	if on:

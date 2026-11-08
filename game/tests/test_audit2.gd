@@ -119,3 +119,14 @@ func test_fishing_on_his_own_while_away_uses_bait() -> void:
 	Game.state["last_real_time"] = Time.get_unix_time_from_system() - 8 * 3600
 	Game.catch_up()
 	check(Game.state["hold"].is_empty(), "and with no bait he catches nothing")
+
+
+func test_he_will_not_fish_on_his_own_without_bait() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["bait"] = {}
+	Game.state["current_bait"] = ""
+	var s := _coast_at("harbour")
+	s.methods.set_idle(true)
+	check(not s.methods.idle and not Game.state.has("idle"), "with no bait he stays at the rod")
+	_done(s)
+
