@@ -537,3 +537,15 @@ func test_the_glow_stays_on_the_horizon_after_sunset() -> void:
 		check(glow.a > 0.0, "at %.2f the sky still glows with the sun just below the horizon" % hour)
 		check(centre.y >= SkyView.HORIZON - 4.0, "at %.2f the glow sits low on the horizon where the sun is, not at %s high in the sky" % [hour, centre])
 		_done(s)
+
+
+func test_the_sky_stays_behind_the_far_land_when_the_view_rises() -> void:
+	Game.new_game("Test", "mutt")
+	var s := _coast_at("harbour")
+	var sky: SkyView = s._sky
+	sky.follow(Vector2(0, CoastCamera.HOME_Y), 18.6, "clear")
+	var home := sky.position.y
+	sky.follow(Vector2(0, CoastCamera.HOME_Y - 66.0), 18.6, "clear")
+	var moved := sky.position.y - home
+	check(moved <= 66.0 * 0.12 + 1.0, "rowing lifts the view 66 rows and the sky moves %.0f, no more than the farthest land, so the low sun stays in sight" % moved)
+	_done(s)
