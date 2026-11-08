@@ -13,9 +13,11 @@ const CLIENT_SPOTS := [146.0, 318.0]
 const PEOPLE := "res://assets/art/people/"
 const AROUND := [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
 	Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]
-## The flames of the town's lamps, in the scene's pixels: the goldsmith's lantern beside the hall's post, the hall's
-## lantern on its left post, and the oil lamp hanging under the fish market's awning.
-const LAMPS := [Vector2(426.5, 165.5), Vector2(40.5, 159.5), Vector2(103.5, 153.5)]
+## Where the townsfolk turn back: past the harbour board at the left, so they never stand in front of it.
+const WALK := Vector2(56.0, 440.0)
+## The flames of the town's lamps, in the scene's pixels: the lantern in the goldsmith's stall, the hall's lantern on
+## its left post, and the oil lamp hanging under the fish market's awning.
+const LAMPS := [Vector2(394.5, 175.5), Vector2(40.5, 159.5), Vector2(103.5, 153.5)]
 ## The green of the light at night, when the lamps burn their brightest.
 const NIGHT_GREEN := 0.5
 
@@ -215,7 +217,7 @@ func _spawn_folk() -> void:
 		s.z_index = 1
 		_lit.add_child(s)
 		_folk.append({"id": ids[i], "sprite": s, "walk": walk, "stand": load(PEOPLE + ids[i] + "/east.png"),
-			"x": _rng.randf_range(20, 420), "dir": -1.0 if _rng.randf() < 0.5 else 1.0, "speed": _rng.randf_range(12, 18),
+			"x": _rng.randf_range(WALK.x, WALK.y - 20.0), "dir": -1.0 if _rng.randf() < 0.5 else 1.0, "speed": _rng.randf_range(12, 18),
 			"pause": 0.0, "phase": _rng.randf() * 8.0})
 
 
@@ -251,7 +253,7 @@ func _process(delta: float) -> void:
 			f["pause"] -= delta
 		else:
 			f["x"] += f["dir"] * f["speed"] * delta
-			if f["x"] < -8.0 or f["x"] > 440.0:
+			if f["x"] < WALK.x or f["x"] > WALK.y:
 				f["dir"] = -f["dir"]
 			if _rng.randf() < delta * 0.08:
 				f["pause"] = _rng.randf_range(1.5, 4.0)
@@ -291,6 +293,8 @@ func _draw_over() -> void:
 		var font := UiTheme.title_font()
 		var w := font.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
 		var at := _pointer() + Vector2(-w / 2.0, -10)
+		# Kept inside the scene, which every window shows whole, so the name of the board at its edge is not cut off.
+		at.x = clampf(at.x, 3.0, Nav.SIZE.x - w - 3.0)
 		_painter.draw_rect(Rect2(at + Vector2(-3, -8), Vector2(w + 6, 11)), Color(UiTheme.INK, 0.85))
 		_painter.draw_string(font, at, name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.CREAM)
 	# A gold mark bobs over each client who has something to ask.
