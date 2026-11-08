@@ -203,3 +203,18 @@ func test_a_tank_needs_an_amphoras_worth_of_fish() -> void:
 	check(Garum.fill(Game.state, 0, [{"fish": "mackerel", "pounds": each * 2.4}], Garum.salt_needed(each * 2.4)), "a tank's worth of fish fills it")
 	Game.state["tanks"][0]["days"] = 30
 	check(int(Garum.take(Game.state, 0)["amphorae"]) == 2, "and gives an amphora for each %.0f lb of fish" % each)
+
+
+func test_a_pot_partly_emptied_does_not_fill_again_at_once() -> void:
+	Game.new_game("Test", "mutt")
+	var pot := {"place": "rocky_shore", "x": 100.0, "depth": 60.0, "catch": [], "size": 3, "hours": 0.0, "bait": ""}
+	var rng := Seeds.rng(1, "pot")
+	Traps.fill(pot, 12.0, rng)
+	check(pot["catch"].size() == 3, "a pot left long enough fills up")
+	for i in Data.boats[Game.state["boat"]]["hold"] - 1:
+		Game.state["hold"].append({"fish": "mullet", "pounds": 1.0, "fresh": 1.0})
+	var taken := Traps.empty_into(Game.state, pot)
+	check(taken.size() == 1 and pot["catch"].size() == 2, "with room for one, one comes out and two stay")
+	Traps.fill(pot, 0.01, rng)
+	check(pot["catch"].size() == 2, "and the pot does not fill its empty basket the moment after, %d in it" % pot["catch"].size())
+

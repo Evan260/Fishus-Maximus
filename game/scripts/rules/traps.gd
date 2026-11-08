@@ -30,8 +30,8 @@ static func empty_into(state: Dictionary, trap: Dictionary) -> Array:
 		else:
 			left.append(c)
 	trap["catch"] = left
-	if left.is_empty():
-		trap["hours"] = 0.0
+	# The pot's hours go back to what the catch left in it took, so the baskets just emptied fill again in time.
+	trap["hours"] = left.size() * Data.num("traps.hours_per_catch", 2.0)
 	return taken
 
 
