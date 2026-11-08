@@ -9,10 +9,10 @@ const RAIN_LIGHT := Color(0.72, 0.75, 0.8)
 const ROWED := 30.0
 const REEL_SPEED := 70.0
 const CAST_NEAR := 20.0
-const CAST_FAR := 140.0
-## How long the float takes to fly out to where it lands, and how high it arcs on the way.
-const FLIGHT_SECONDS := 0.45
-const FLIGHT_ARC := 28.0
+const CAST_FAR := 240.0
+## How long the float takes to fly out, and how high it arcs on the way, for the gentlest and the hardest cast.
+const FLIGHT_SECONDS := [0.5, 1.1]
+const FLIGHT_ARC := [40.0, 130.0]
 ## Seconds the float dips for at each nibble.
 const TWITCH := 0.25
 ## Seconds the float stays under when a fish takes his bait while he fishes on his own, before he brings it in.
@@ -35,9 +35,11 @@ var fight: LineFight
 var weather := "clear"
 var hour := 12.0
 var charge := -1.0
-## Seconds left of the float's flight out after a cast, and where it set off from.
+## Seconds left of the float's flight out after a cast, where it set off from, how long it flies and how high.
 var flight := 0.0
 var _flight_from := Vector2.ZERO
+var _flight_time := 0.5
+var _arc := 40.0
 ## A click on the water this frame, and whether the mouse is still held down after one; clicks on buttons never get here.
 var _click := false
 var _mouse_held := false
@@ -302,10 +304,13 @@ func row(dir: float, seconds: float) -> void:
 func cast(power: float) -> void:
 	var tip := _boat.rest_tip(boat_x)
 	_boat.throw()
-	hook = seabed.clamp_hook(Vector2(tip.x + _boat.facing * lerpf(CAST_NEAR, CAST_FAR, clampf(power, 0.0, 1.0)), 0.0))
+	power = clampf(power, 0.0, 1.0)
+	hook = seabed.clamp_hook(Vector2(tip.x + _boat.facing * lerpf(CAST_NEAR, CAST_FAR, power), 0.0))
 	_state = "sinking"
 	charge = -1.0
-	flight = FLIGHT_SECONDS
+	_flight_time = lerpf(FLIGHT_SECONDS[0], FLIGHT_SECONDS[1], power)
+	_arc = lerpf(FLIGHT_ARC[0], FLIGHT_ARC[1], power)
+	flight = _flight_time
 	_flight_from = _boat.rod_tip(boat_x)
 	# Only a cast by the player's own hand counts as learning to cast.
 	if not methods.idle and not _demo:
@@ -314,8 +319,8 @@ func cast(power: float) -> void:
 
 ## Where the float is on its flight out, arcing from the rod's tip to where it lands.
 func flying() -> Vector2:
-	var u := 1.0 - clampf(flight / FLIGHT_SECONDS, 0.0, 1.0)
-	return _flight_from.lerp(Vector2(hook.x, 0.0), u) + Vector2(0, -FLIGHT_ARC * 4.0 * u * (1.0 - u))
+	var u := 1.0 - clampf(flight / _flight_time, 0.0, 1.0)
+	return _flight_from.lerp(Vector2(hook.x, 0.0), u) + Vector2(0, -_arc * 4.0 * u * (1.0 - u))
 
 
 ## Whether a click at a point pets the dog: never while a fish is at the bait, when a click strikes.
@@ -553,7 +558,8 @@ func _process(delta: float) -> void:
 				Audio.play("splash_big", -6.0)
 	camera.view = Nav.view()
 	if not _pinned:
-		camera.follow(boat_x, hook, _state != "reeled" and not Windowing.strip, delta)
+		var watched := Vector2(hook.x, flying().y) if flight > 0.0 else hook
+		camera.follow(boat_x, watched, _state != "reeled" and not Windowing.strip, delta, rowing() and not Windowing.strip)
 	methods.tick(delta)
 	_update_swimmer_world()
 	swimmers.light = methods.trident_view.light_at() if methods.trident_view.lit else null

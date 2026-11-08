@@ -4,6 +4,22 @@ extends "res://tests/test_case.gd"
 const BOATS := ["skiff", "fishing_boat", "sailing_boat", "big_boat"]
 
 
+func _coast() -> Node:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "hound")
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": "harbour", "boat_x": 400.0})
+	return s
+
+
+func _done(s: Node) -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	s.free()
+
+
 func test_picking_the_place_you_are_at_keeps_the_boat_where_it_lies() -> void:
 	Game.new_game("Test", "hound")
 	Game.state["boat_x"] = 640.0
@@ -44,3 +60,62 @@ func test_every_hull_is_rounded_underneath() -> void:
 		var w: int = bottoms.size() - left
 		var near_end: int = bottoms[left + int(w * 0.12)]
 		check(lowest - near_end >= 3, "%s: towards its end the hull curves up, by %d rows" % [id, lowest - near_end])
+
+
+func test_the_view_rises_while_he_rows() -> void:
+	var c := CoastCamera.new(Vector2(1440, 340))
+	for i in 200:
+		c.follow(500.0, Vector2(560, -30), false, 0.05, true)
+	check(-c.cam.y >= c.view.y - CoastCamera.ROW_SEA - 1.0, "rowing, the waterline sits near the bottom, so little under the water shows: %s" % c.cam)
+	for i in 400:
+		c.follow(500.0, Vector2(560, -30), false, 0.05, false)
+	check(c.cam.y == CoastCamera.HOME_Y, "stopped, the view comes back down to look under the water")
+
+
+func test_the_rowing_view_waits_out_a_short_pause() -> void:
+	var c := CoastCamera.new(Vector2(1440, 340))
+	for i in 200:
+		c.follow(500.0, Vector2(560, -30), false, 0.05, true)
+	var up := c.cam.y
+	for i in 6:
+		c.follow(500.0, Vector2(560, -30), false, 0.05, false)
+	check(absf(c.cam.y - up) < 1.0, "letting go of the key for a moment does not bob the view")
+
+
+func test_a_full_cast_flies_far_and_high() -> void:
+	var s := _coast()
+	var tip: Vector2 = s._boat.rest_tip(s.boat_x)
+	s.cast(1.0)
+	check(absf(s.hook.x - tip.x) >= 220.0, "a full cast lands far out, %d pixels off" % absf(s.hook.x - tip.x))
+	var highest := 0.0
+	while s.flight > 0.0:
+		highest = minf(highest, s.flying().y)
+		s.flight -= 0.02
+	check(highest <= tip.y - 90.0, "and the float arcs well up into the air on its way, to %d" % highest)
+	_done(s)
+
+
+func test_the_view_follows_the_float_up_and_out() -> void:
+	var s := _coast()
+	s.cast(1.0)
+	var top := 0.0
+	var seen := true
+	while s.flight > 0.0:
+		s._process(1.0 / 30.0)
+		top = minf(top, s.camera.cam.y)
+		var at: Vector2 = s.flying() if s.flight > 0.0 else Vector2(s.hook.x, 0.0)
+		seen = seen and at.x > s.camera.cam.x and at.x < s.camera.cam.x + s.camera.view.x and at.y > s.camera.cam.y
+	check(top < CoastCamera.HOME_Y - 25.0, "the view rises with the float, to %d" % top)
+	for i in 30:
+		s._process(1.0 / 30.0)
+	check(s.hook.x > s.camera.cam.x + 20.0 and s.hook.x < s.camera.cam.x + s.camera.view.x - 20.0, "and the float stays on screen where it lands")
+	check(seen, "the float never leaves the screen on its way out")
+	_done(s)
+
+
+func test_the_sky_reaches_the_top_of_a_raised_view() -> void:
+	var sky := SkyView.new()
+	Nav.sky.add_child(sky)
+	sky.follow(Vector2(300, CoastCamera.HOME_Y - 110.0), 12.0, "clear")
+	check(sky.position.y + sky._gradient.position.y <= Nav.port.canvas_transform.origin.y + 0.5, "no black band shows above the sky while the view is up")
+	sky.free()

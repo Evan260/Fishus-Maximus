@@ -295,8 +295,10 @@ func _lay_out() -> void:
 	var view := Nav.view()
 	# The sky rises with the waterline as the camera goes down, and moves with the coast in the desktop strip.
 	position = Vector2(-_cam.x * DRIFT, -(_cam.y - CoastCamera.HOME_Y) + Nav.port.canvas_transform.origin.y)
-	_gradient.position = Vector2(floorf(-position.x) - 2.0, TOP)
-	_gradient.scale = Vector2(view.x + 4.0, HORIZON + BELOW - TOP)
+	# The camera rises above home while he rows or a float flies, so the sky reaches up to the view's top as well.
+	var top := minf(TOP, floorf(-position.y) - 2.0)
+	_gradient.position = Vector2(floorf(-position.x) - 2.0, top)
+	_gradient.scale = Vector2(view.x + 4.0, HORIZON + BELOW - top)
 	var paint := _gradient.material as ShaderMaterial
 	paint.set_shader_parameter("area", _gradient.scale)
 	paint.set_shader_parameter("origin", _gradient.position)
