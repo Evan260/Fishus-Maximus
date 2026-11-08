@@ -74,6 +74,10 @@ func _texts(n: Node) -> String:
 	return " ".join(n.find_children("*", "Label", true, false).map(func(l): return l.text))
 
 
+func _pictures(card: Control) -> Array:
+	return card.find_children("*", "TextureRect", true, false).map(func(r): return r.texture)
+
+
 func test_a_catch_is_hung_out_on_a_banner() -> void:
 	_clear()
 	CatchCard.show_catch("mullet", 1.2, true)
@@ -82,7 +86,10 @@ func test_a_catch_is_hung_out_on_a_banner() -> void:
 	check("MULLET" in words, "the banner names the fish: %s" % words)
 	check("1.2 lb" in words and Catalog.grade("mullet", 1.2) in words.to_lower(), "with its weight and grade: %s" % words)
 	check("NEW" in words.to_upper(), "and says it is new to the logbook")
-	check(card.get_meta("wreath", false), "a golden wreath crowns the staff for a new fish")
+	var shown := _pictures(card)
+	for part in [CatchCard.TOP, CatchCard.CLOTH, CatchCard.PLAQUE, CatchCard.TASSELS[0], CatchCard.TASSELS[1]]:
+		check(part in shown, "the painted vexillum is hung out whole: %s" % part.resource_path)
+	check(card.get_meta("wreath", false) and CatchCard.WREATH in shown, "a golden wreath hangs on the staff for a new fish")
 	var pic: TextureRect = card.find_child("Fish", true, false)
 	check(pic != null and pic.texture == load("res://assets/art/fish/mullet.png"), "the fish's own picture is on it")
 	if pic:
@@ -91,8 +98,18 @@ func test_a_catch_is_hung_out_on_a_banner() -> void:
 	_clear()
 	CatchCard.show_catch("mullet", 1.2, false)
 	card = CatchCard._open
-	check(not card.get_meta("wreath", true) and not "NEW" in _texts(card).to_upper(), "a fish caught before has no wreath and no note")
+	check(not card.get_meta("wreath", true) and not CatchCard.WREATH in _pictures(card), "a fish caught before has no wreath")
+	check(not "NEW" in _texts(card).to_upper(), "and no note")
 	_clear()
+	CatchCard.show_catch("great_tuna", 300.0, false)
+	card = CatchCard._open
+	check("LEGEND" in _texts(card).to_upper() and CatchCard.WREATH in _pictures(card), "a legend is hailed as one and crowned with the wreath")
+	_clear()
+
+
+## The rows of each kind of line's capitals, below the top of its label.
+func _caps(l: Label) -> Vector2:
+	return {"Title": CatchCard.NAME_CAPS, "LightLabel": CatchCard.LINE_CAPS, "LightHeading": CatchCard.NOTE_CAPS}[l.theme_type_variation]
 
 
 func test_every_catch_banner_fits_the_smallest_interface() -> void:
@@ -104,11 +121,54 @@ func test_every_catch_banner_fits_the_smallest_interface() -> void:
 		check(size.x <= Nav.UI_LEAST.x - 8.0 and size.y <= Nav.UI_LEAST.y - 8.0, "%s: the banner fits the smallest interface, %s" % [id, size])
 		var pic: TextureRect = card.find_child("Fish", true, false)
 		var box: Control = card.find_child("Tablet", true, false)
+		check(pic != null and box != null, "%s: the fish is shown on its tablet" % id)
 		if pic and box:
-			check(Rect2(Vector2.ZERO, box.size).grow(1.0).encloses(Rect2(pic.position, pic.size)), "%s: the fish sits inside its tablet" % id)
-		for l in card.find_children("*", "Label", true, false):
-			check(l.get_combined_minimum_size().x <= card.find_child("Cloth", true, false).size.x, "%s: '%s' fits across the cloth" % [id, l.text])
+			check(Rect2(Vector2.ZERO, box.size).encloses(Rect2(pic.position, pic.size)), "%s: the fish sits inside its tablet" % id)
+			check(pic.position.x >= CatchCard.FACE.position.x and pic.position.x + pic.size.x <= CatchCard.FACE.end.x, "%s: between its handles" % id)
+			check(CatchCard.INSIDE.encloses(Rect2(box.position, box.size)), "%s: the tablet lies inside the cloth's gold border" % id)
+		var lines := card.find_children("*", "Label", true, false)
+		check(lines.size() == 3, "%s: the name, the weight and grade, and the note" % id)
+		for l: Label in lines:
+			check(l.get_combined_minimum_size().x <= CatchCard.INSIDE.size.x, "%s: '%s' fits across the cloth" % [id, l.text])
+			var caps := _caps(l)
+			var rows := l.get_line_count()
+			var tall := caps.y * rows + CatchCard.NAME_GAP * (rows - 1)
+			var top := l.position.y + caps.x
+			check(top >= CatchCard.INSIDE.position.y and top + tall <= CatchCard.INSIDE.end.y, "%s: '%s' lies inside the cloth's gold border" % [id, l.text])
 		card.free()
+
+
+func test_the_banner_fits_every_interface_size() -> void:
+	_clear()
+	var before := Windowing.get_window().size
+	for size in [Vector2i(1440, 810), Vector2i(1280, 800), Vector2i(1920, 1080), Vector2i(2560, 1377)]:
+		Windowing.get_window().size = size
+		Windowing._process(0.0)
+		for step in [-1, 0, 1]:
+			Settings.interface_size = step
+			Windowing._fit()
+			for id in ["misenum_swordfish", "sleeping_sunfish", "anchovy"]:
+				CatchCard.show_catch(id, float(Data.fish[id]["pounds"][1]), true)
+				var card: Control = CatchCard._open
+				var tw: Tween = card.get_meta("tween")
+				tw.custom_step(0.9)
+				check(Rect2(Vector2.ZERO, Nav.ui_view()).encloses(card.get_rect()), "%s at %d, %s: the banner is all on screen, %s in %s" % [size, step, id, card.get_rect(), Nav.ui_view()])
+				card.free()
+	Settings.interface_size = 0
+	Windowing._fit()
+	Windowing.get_window().size = before
+	Windowing._process(0.0)
+	_clear()
+
+
+func test_the_tassels_and_the_fringe_sway() -> void:
+	_clear()
+	CatchCard.show_catch("bream", 2.0, false)
+	var swaying := CatchCard._open.find_children("*", "TextureRect", true, false).filter(func(r):
+		return r.material is ShaderMaterial and r.material.shader == CatchCard.SWAY)
+	var parts := swaying.map(func(r): return r.texture)
+	check(CatchCard.CLOTH in parts and CatchCard.TASSELS[0] in parts and CatchCard.TASSELS[1] in parts, "the fringe and both tassels sway")
+	_clear()
 
 
 func test_the_banner_unfurls() -> void:
@@ -121,4 +181,18 @@ func test_the_banner_unfurls() -> void:
 	var tw: Tween = card.get_meta("tween")
 	tw.custom_step(0.9)
 	check(is_equal_approx(cloth.size.y, full), "and has unfurled within a second, %s of %s" % [cloth.size.y, full])
+	_clear()
+
+
+func test_the_banner_stays_up_a_second_longer() -> void:
+	_clear()
+	CatchCard.show_catch("bream", 2.0, false)
+	var card: Control = CatchCard._open
+	var cloth: Control = card.find_child("Hang", true, false)
+	var tw: Tween = card.get_meta("tween")
+	tw.custom_step(4.9)
+	check(is_equal_approx(cloth.size.y, cloth.get_meta("full")) and not card.is_queued_for_deletion(),
+		"still hung out 4.9 seconds on, a second past when it used to have rolled up and gone")
+	tw.custom_step(0.6)
+	check(card.is_queued_for_deletion(), "and rolled up and gone by 5.5 seconds")
 	_clear()
