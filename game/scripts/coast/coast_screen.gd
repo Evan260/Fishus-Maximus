@@ -314,6 +314,8 @@ func _on_view_changed() -> void:
 		hud.visible = not Windowing.strip
 	if is_instance_valid(_sail):
 		_sail.visible = not Windowing.strip
+	if is_instance_valid(events._haul_button):
+		events._haul_button.visible = not Windowing.strip
 	# The see-through strip shows only the sea and what is on it, so the sky and the land behind the water are hidden.
 	var see_through := Windowing.strip and Windowing.transparent
 	_sky.visible = not see_through

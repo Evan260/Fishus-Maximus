@@ -41,6 +41,7 @@ func refresh() -> void:
 	if "tuna_run" in events and screen.place_id == "open_bay" and Nav.ui and int(Game.state.get("tuna_haul_day", -1)) != day:
 		_haul_button = Ui.button(Nav.ui, "Join the town's net", _open_haul)
 		Ui.hang(_haul_button, "top_right", Vector2(4, 38), Vector2(120, 18))
+		_haul_button.visible = not Windowing.strip
 	if "neptunalia" in events and screen.place_id == "harbour":
 		Game.state["contest"] = Game.state.get("contest", {"day": day, "best": 0.0, "fish": "", "done": false})
 		if int(Game.state["contest"]["day"]) != day:

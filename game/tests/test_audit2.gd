@@ -463,3 +463,23 @@ func test_the_dolphins_help_only_where_they_come() -> void:
 	s._process(0.05)
 	check("dolphins" in s.swimmers.events, "but in the open bay the dolphins drive the shoals up")
 	_done(s)
+
+
+func test_the_town_net_button_keeps_out_of_the_strip() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["chapter"] = 3
+	Game.state["boat"] = "fishing_boat"
+	var day := 0
+	while not "tuna_run" in Events.on(day):
+		day += 1
+	Game.state["time"] = day * Clock.minutes_per_day() + 8.0
+	var s := _coast_at("open_bay")
+	var button: Button = s.events._haul_button
+	check(is_instance_valid(button) and button.visible, "in the open bay during the tuna run the town's net can be joined")
+	Windowing.strip = true
+	s._on_view_changed()
+	check(not button.visible, "but its button is hidden in the desktop strip, as the other panels are")
+	Windowing.strip = false
+	s._on_view_changed()
+	check(button.visible, "and back when the window is whole again")
+	_done(s)
