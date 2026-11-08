@@ -28,6 +28,7 @@ static func _pass(state: Dictionary, minutes: float, rng: RandomNumberGenerator)
 	Hold.freshen(state, minutes)
 	if state.get("_ashore", false):
 		Helpers.fish(state, minutes, rng)
+	_judge_contest(state)
 	Rescue.check(state)
 
 
@@ -72,6 +73,26 @@ static func _trap_legend(state: Dictionary, trap: Dictionary, start: float, minu
 			if str(trap.get("bait", "")) in Data.fish[id]["baits"] and rng.randf() < 0.08 * hours / slices \
 					and not state["traps"].any(func(t): return t["catch"].any(func(c): return c["fish"] == id)):
 				trap["catch"].append(Pick.catch_of(id, rng, true))
+
+
+## At noon on its day the Neptunalia is judged against the best of the town's fishermen, wherever you are by then,
+## leaving word of it in `_contest` to be told.
+static func _judge_contest(state: Dictionary) -> void:
+	if not state.has("contest") or state["contest"]["done"]:
+		return
+	var c: Dictionary = state["contest"]
+	var t := float(state["time"])
+	if Clock.day_of(t) < int(c["day"]) or (Clock.day_of(t) == int(c["day"]) and Clock.hour(t) < 12.0):
+		return
+	c["done"] = true
+	var bar := 2.5 + int(state["chapter"]) * 1.5
+	var won := float(c["best"]) > bar
+	var prize := 40 * int(state["chapter"]) if won else 0
+	if won:
+		state["denarii"] = int(state["denarii"]) + prize
+		Story.add_reputation(state, 10)
+		state["stats"]["neptunalia_won"] = int(state["stats"].get("neptunalia_won", 0)) + 1
+	state["_contest"] = {"won": won, "pounds": float(c["best"]) if won else bar + 0.4, "fish": str(c["fish"]), "prize": prize}
 
 
 ## Goes to bed in town and wakes at the next dawn, with everything that happens overnight.

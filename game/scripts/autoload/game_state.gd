@@ -147,6 +147,13 @@ func _process(delta: float) -> void:
 		Toast.say("Chapter %d: %s. %s" % [int(c["chapter"]), c["name"], c["text"]])
 		Audio.play("market_bell")
 	state["_chapter_seen"] = int(state["chapter"])
+	if state.has("_contest"):
+		var c: Dictionary = state["_contest"]
+		if c["won"]:
+			Toast.say("You won the Neptunalia with a %s %s! +%s" % [Units.weight(float(c["pounds"])), str(Data.fish[c["fish"]]["name"]).to_lower(), Ui.coins_text(int(c["prize"]))])
+		else:
+			Toast.say("The Neptunalia went to old Rufus with a %s fish." % Units.weight(float(c["pounds"])))
+		state.erase("_contest")
 	if state.has("_rescued"):
 		Toast.say("Old Rufus: \"Out of bait and coin? Here are %d worms from my garden. And your pots need no bait at all.\"" % int(state["_rescued"]))
 		Audio.play("coins")

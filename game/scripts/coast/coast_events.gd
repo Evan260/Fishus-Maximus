@@ -77,7 +77,6 @@ func _process(delta: float) -> void:
 		s.visible = arc > 0.0
 		s.position = Vector2(d["x"] - 40.0, surface - arc * 16.0 - 6.0)
 		s.rotation = -cos(t * 1.6 + d["phase"]) * 0.5
-	_check_contest()
 
 
 func _on_caught(fish: String, pounds: float) -> void:
@@ -90,23 +89,6 @@ func _on_caught(fish: String, pounds: float) -> void:
 		Toast.say("Your best in the contest: %s." % Units.weight(pounds))
 
 
-## At noon the contest is judged against the best of the town's fishermen.
-func _check_contest() -> void:
-	if not Game.state.has("contest") or Game.state["contest"]["done"]:
-		return
-	var c: Dictionary = Game.state["contest"]
-	if Clock.day_of(float(Game.state["time"])) != int(c["day"]) or Clock.hour(float(Game.state["time"])) < CONTEST_HOURS[1]:
-		return
-	c["done"] = true
-	var bar := 2.5 + int(Game.state["chapter"]) * 1.5
-	if float(c["best"]) > bar:
-		var prize := 40 * int(Game.state["chapter"])
-		Game.state["denarii"] = int(Game.state["denarii"]) + prize
-		Story.add_reputation(Game.state, 10)
-		Game.state["stats"]["neptunalia_won"] = int(Game.state["stats"].get("neptunalia_won", 0)) + 1
-		Toast.say("You won the Neptunalia with a %s %s! +%s" % [Units.weight(float(c["best"])), str(Data.fish[c["fish"]]["name"]).to_lower(), Ui.coins_text(prize)])
-	else:
-		Toast.say("The Neptunalia went to old Rufus with a %s fish." % Units.weight(bar + 0.4))
 
 
 ## The town's net: a marker runs along a bar, and hauling while it is in the gold brings up the most tuna.

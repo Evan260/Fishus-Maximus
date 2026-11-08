@@ -431,3 +431,16 @@ func test_filling_an_order_takes_the_fish_you_would_give() -> void:
 		{"fish": "bream", "pounds": 3.1, "name": "", "finery": "", "age_days": 30, "fed": true}]}]
 	var at := Supply.find(Game.state, {"fish": "bream", "min_pounds": 1.0, "alive": true})
 	check(at["where"] == "pond" and int(at["index"]) == 1, "and a live order from the ponds takes the unnamed bream, not Aurata in her gold ring")
+
+
+func test_the_neptunalia_is_judged_wherever_you_are() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["chapter"] = 1
+	var day := 3
+	Game.state["time"] = day * Clock.minutes_per_day() + 6.0
+	Game.state["contest"] = {"day": day, "best": 9.0, "fish": "bream", "done": false}
+	var money := int(Game.state["denarii"])
+	World.sleep(Game.state, Seeds.rng(1, "contest"))
+	check(Game.state["contest"]["done"], "a contest won in the morning is judged though you spent the afternoon and night in town")
+	check(int(Game.state["denarii"]) > money and int(Game.state["stats"].get("neptunalia_won", 0)) == 1, "and its prize is paid")
+	check(Game.state.has("_contest"), "with word of it waiting to be told")
