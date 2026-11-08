@@ -17,7 +17,7 @@ static func open(client: String) -> void:
 	var words := VBoxContainer.new()
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(words)
-	var title := Ui.label(words, str(c["title"]).capitalize() if str(c["title"]).begins_with("the") else str(c["title"]), "MutedLabel")
+	var title := Ui.label(words, title_of(c), "MutedLabel")
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if step.is_empty():
 		Ui.label(words, "Nothing more today, thank you.").autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -33,3 +33,9 @@ static func open(client: String) -> void:
 			Game.changed.emit()
 			Ui.close_window()
 			Toast.say("%s: \"%s\"" % [c["name"], thanks]), not at.is_empty())
+
+
+## A client's title as shown over the request, its first letter raised when it starts with "the".
+static func title_of(c: Dictionary) -> String:
+	var t := str(c["title"])
+	return t[0].to_upper() + t.substr(1) if t.begins_with("the") else t
