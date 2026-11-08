@@ -54,7 +54,7 @@
 		{
 			"id": "bait",
 			"screen": "town",
-			"text": "Each fish likes its own bait. The netmaker sells shrimp and bread too. Buy some and see who bites.",
+			"text": "Each fish likes its own bait. The netmaker sells shrimp and bread too. Buy some, then click the bait on the boat's bar to put it on the hook.",
 			"done": {
 				"stat": "bought"
 			},
@@ -72,7 +72,7 @@
 		{
 			"id": "pots",
 			"screen": "coast",
-			"text": "Pots fish while you do. Pick Pots, then press Space to sink one. Row over it later to lift it.",
+			"text": "Pots fish while you do. Pick the pot down below, then press Space to sink one. Row over it later to lift it.",
 			"done": {
 				"stat": "pots_set"
 			},

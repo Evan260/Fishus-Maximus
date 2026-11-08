@@ -129,11 +129,8 @@ func test_he_points_at_the_pots_button() -> void:
 	coast.enter({"place": "harbour"})
 	var note: GuideNote = GuideNote.find()
 	note.refresh()
-	var pots: Button = null
-	for b in coast.hud.find_children("*", "Button", true, false):
-		if b.text == "Pots":
-			pots = b
-	check(pots != null and note.target_rect() == pots.get_global_rect(), "the arrow is at the Pots button")
+	var pots: Button = coast.hud.method_buttons["trap"]
+	check(note.target_rect() == pots.get_global_rect(), "the arrow is at the pot's picture")
 	_clear_ui()
 	coast.free()
 

@@ -77,6 +77,16 @@ func _build_ui() -> void:
 	if not Dev.has("no-hud"):
 		GuideNote.add(self, "town")
 	_refresh_ui()
+	# --shop=market, netmaker, boatwright or goldsmith opens that shop, for screenshots.
+	match Dev.get_arg("shop"):
+		"market":
+			ShopPanel.market()
+		"netmaker":
+			ShopPanel.netmaker()
+		"boatwright":
+			ShopPanel.boatwright()
+		"goldsmith":
+			ShopPanel.goldsmith()
 
 
 ## A night at the inn: the pots fill, the ponds and tanks have their morning, and the day starts fresh.

@@ -4,28 +4,37 @@ class_name TacklePanel
 
 
 static func open() -> void:
-	var list := Ui.window("Tackle", 340, 220)
+	var list := Ui.window("Tackle", 300, 190)
 	var place := str(Game.state.get("place", "harbour"))
 	Ui.label(list, "BAIT ON THE HOOK", "Heading")
+	var baits := _grid(list)
 	for id in Data.bait:
 		var count := int(Game.state["bait"].get(id, 0))
 		if count <= 0:
 			continue
 		var bait_id: String = id
 		var on: bool = str(Game.state.get("current_bait", "")) == id
-		var choose_bait := func():
+		Ui.tile(baits, ItemArt.of(id), "x%d" % count, "%s, %d left. %s" % [Data.bait[id]["name"], count, bait_tip(id, place)], func():
 			use_bait(bait_id)
-			open()
-		_tip(Ui.row(list, "%s x%d" % [Data.bait[id]["name"], count], "On the hook" if on else "Use", choose_bait, not on), bait_tip(id, place))
+			open(), true, on)
 	Ui.label(list, "ROD", "Heading")
+	var rods := _grid(list)
 	for id in rods_owned(Game.state):
 		var rod_id: String = id
 		var held: bool = str(Game.state["gear"].get("rod", "")) == id
-		var choose_rod := func():
+		Ui.tile(rods, ItemArt.of(id), "", "%s. %s" % [Data.gear[id]["name"], rod_tip(id, place)], func():
 			use_rod(rod_id)
-			open()
-		_tip(Ui.row(list, str(Data.gear[id]["name"]), "In hand" if held else "Use", choose_rod, not held), rod_tip(id, place))
+			open(), true, held)
 	Ui.label(list, "Hold the pointer over one to see which fish it suits.", "MutedLabel")
+
+
+static func _grid(list: Control) -> GridContainer:
+	var g := GridContainer.new()
+	g.columns = 6
+	g.add_theme_constant_override("h_separation", 2)
+	g.add_theme_constant_override("v_separation", 2)
+	list.add_child(g)
+	return g
 
 
 ## The rods he has: the best he bought and every lighter one, lightest first.
@@ -108,28 +117,3 @@ static func _and(names: Array) -> String:
 
 static func _lb(v: float) -> String:
 	return str(int(v)) if v == floorf(v) else str(v)
-
-
-## Godot's tooltips never wrap, so the tip is broken into short lines by hand.
-static func _tip(row: Control, text: String) -> void:
-	text = wrapped(text, 46)
-	row.mouse_filter = Control.MOUSE_FILTER_STOP
-	row.tooltip_text = text
-	for c in row.get_children():
-		if c is Control:
-			c.tooltip_text = text
-			if c is Label:
-				c.mouse_filter = Control.MOUSE_FILTER_PASS
-
-
-static func wrapped(text: String, width: int) -> String:
-	var lines := []
-	var line := ""
-	for word in text.split(" "):
-		if line != "" and line.length() + 1 + word.length() > width:
-			lines.append(line)
-			line = word
-		else:
-			line = word if line == "" else line + " " + word
-	lines.append(line)
-	return "\n".join(lines)

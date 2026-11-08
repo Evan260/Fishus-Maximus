@@ -129,11 +129,13 @@ func enter(args: Dictionary) -> void:
 			if fight == null:
 				prepare_to_leave()
 				Nav.go("map"))
-		Ui.hang(_sail, "bottom_left", Vector2(4, 4), Vector2(60, 18))
+		Ui.hang(_sail, "bottom_left", Vector2(4, 4), Vector2(60, Hud.TILE.y))
 	if place_id == "harbour" and Nav.ui and not Dev.has("no-hud"):
 		_ashore = Ui.button(Nav.ui, "Go ashore", go_ashore)
-		Ui.hang(_ashore, "bottom_right", Vector2(4, 4), Vector2(76, 18))
+		Ui.hang(_ashore, "bottom_right", Vector2(4, 4), Vector2(76, Hud.TILE.y))
 	relayout()
+	if Dev.has("tackle"):
+		TacklePanel.open()
 
 
 ## Where a lesson of the guide points, in interface pixels: the button to press, or nothing while it is hidden.

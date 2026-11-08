@@ -4,6 +4,19 @@ class_name Ui
 ## As wide as a button is tall, so a button of one letter comes out square.
 const BUTTON_MIN_WIDTH := 22.0
 
+## A denarius, five pixels across, for prices under pictures.
+static var COIN: ImageTexture = _coin()
+
+
+static func _coin() -> ImageTexture:
+	var rows := [".ooo.", "oxxxo", "oxoxo", "oxxxo", ".ooo."]
+	var img := Image.create(5, 5, false, Image.FORMAT_RGBA8)
+	for y in 5:
+		for x in 5:
+			if rows[y][x] != ".":
+				img.set_pixel(x, y, UiTheme.GOLD if rows[y][x] == "x" else UiTheme.GOLD.darkened(0.35))
+	return ImageTexture.create_from_image(img)
+
 
 static func coins_text(n: int) -> String:
 	return "1 denarius" if n == 1 else "%d denarii" % n
@@ -137,6 +150,94 @@ static func row(list: Control, text: String, action_text := "", action := Callab
 		var b := button(r, action_text, action)
 		b.disabled = not enabled
 	return r
+
+
+## A button showing a picture with a tip on hover, for the shops, the tackle and the boat's bar: `caption` (a price or
+## a count) sits under the picture, and a chosen tile is ringed in gold.
+static func tile(parent: Node, picture: Texture2D, caption: String, tip: String, action: Callable, enabled := true,
+		chosen := false, size := Vector2(40, 40)) -> Button:
+	var b := Button.new()
+	b.focus_mode = Control.FOCUS_NONE
+	b.custom_minimum_size = size
+	b.tooltip_text = wrapped(tip, 46)
+	b.disabled = not enabled
+	b.pressed.connect(Audio.play.bind("click", -6.0))
+	b.pressed.connect(action)
+	parent.add_child(b)
+	var under := 11.0 if caption != "" else 0.0
+	var pic := TextureRect.new()
+	pic.name = "Picture"
+	pic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pic.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	pic.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	pic.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	pic.offset_left = 3
+	pic.offset_top = 3
+	pic.offset_right = -3
+	pic.offset_bottom = -3 - under
+	if picture:
+		pic.texture = ItemArt.fitted(picture, Vector2(size.x - 6.0, size.y - 6.0 - under))
+	pic.modulate.a = 1.0 if enabled else 0.4
+	b.add_child(pic)
+	if caption != "":
+		var l := Label.new()
+		l.name = "Caption"
+		l.text = caption
+		l.theme_type_variation = "Heading"
+		l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+		l.offset_top = -under - 4
+		l.offset_bottom = -4
+		b.add_child(l)
+	var ring := Panel.new()
+	ring.name = "Ring"
+	ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var gold := StyleBoxFlat.new()
+	gold.draw_center = false
+	gold.set_border_width_all(1)
+	gold.border_color = UiTheme.GOLD
+	ring.add_theme_stylebox_override("panel", gold)
+	b.add_child(ring)
+	choose(b, chosen)
+	return b
+
+
+## A tile with its price under the picture, after a small gold coin.
+static func price_tile(parent: Node, picture: Texture2D, price: int, tip: String, action: Callable, enabled := true,
+		size := Vector2(40, 40)) -> Button:
+	var t := tile(parent, picture, str(price), tip, action, enabled, false, size)
+	var words := UiTheme.title_font().get_string_size(str(price), HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.HEADING).x
+	var coin := TextureRect.new()
+	coin.texture = COIN
+	coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	coin.position = Vector2(roundf((size.x - words) / 2.0) - 4.0, size.y - 12.0)
+	t.add_child(coin)
+	t.get_node("Caption").offset_left += 3
+	t.get_node("Caption").offset_right += 3
+	return t
+
+
+## Rings a tile in gold, or takes the ring away.
+static func choose(t: Button, on: bool) -> void:
+	t.set_meta("chosen", on)
+	t.get_node("Ring").visible = on
+
+
+## Breaks a tip into lines of at most `width` letters, since Godot's tooltips never wrap.
+static func wrapped(text: String, width: int) -> String:
+	var lines := []
+	for para in text.split("\n"):
+		var line := ""
+		for word in para.split(" "):
+			if line != "" and line.length() + 1 + word.length() > width:
+				lines.append(line)
+				line = word
+			else:
+				line = word if line == "" else line + " " + word
+		lines.append(line)
+	return "\n".join(lines)
 
 
 static func fish_text(f: Dictionary) -> String:

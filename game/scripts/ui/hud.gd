@@ -1,15 +1,28 @@
 class_name Hud
 extends Control
 ## The boat's panel on screen: denarii, the day, hour, season and weather, how full the hold and the well are, the bait
-## and the fishing method, with buttons for fishing on his own, the logbook, the map and the settings.
+## and the fishing method, with buttons for fishing on his own, the logbook, the map and the settings. Along the bottom
+## the ways of fishing are pictures, and beside the line the bait on the hook and the rod, which open the tackle.
+
+const TILE := Vector2(30, 30)
+## What each way of fishing does, for its tip.
+const METHOD_TIPS := {
+	"line": "Line (key 1). Hold Space or the mouse to cast, wait for the float to go under, then click to strike and hold to reel in.",
+	"trap": "Pots (key 2). Sink a pot to the seabed for crabs, lobsters and octopus, then row back over it later to haul it up.",
+	"net": "Cast net (key 3). Throw it over a shoal swimming near the surface. The netmaker in town sells them.",
+	"trident": "Trident (key 4). At night, with a lamp, spear the fish that come up to its light.",
+}
 
 var screen: Node
 var _info: Label
 var _method: Label
 var _idle: Button
-## The method buttons along the bottom, by method.
+## The method tiles along the bottom, by method, and the bait and rod beside the line.
 var method_buttons := {}
+var bait_tile: Button
+var rod_tile: Button
 var _left := 0.0
+var _count: Label
 
 
 func setup(s: Node) -> void:
@@ -27,11 +40,21 @@ func setup(s: Node) -> void:
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 2)
 	add_child(bar)
-	for m in [["line", "Line"], ["trap", "Pots"], ["net", "Net"], ["trident", "Trident"]]:
-		var id: String = m[0]
-		var b := Ui.button(bar, m[1], func(): screen.methods.set_method(id))
-		b.tooltip_text = "Keys 1 to 4"
-		method_buttons[id] = b
+	for m in CoastMethods.METHODS:
+		var id: String = m
+		method_buttons[id] = Ui.tile(bar, ItemArt.of(id), "", METHOD_TIPS[id], func(): screen.methods.set_method(id), true, false, TILE)
+	bait_tile = Ui.tile(bar, null, "", "", TacklePanel.open, true, false, TILE)
+	rod_tile = Ui.tile(bar, null, "", "", TacklePanel.open, true, false, TILE)
+	_count = Label.new()
+	_count.theme_type_variation = "Heading"
+	_count.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_count.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_count.offset_left = -16
+	_count.offset_top = -11
+	_count.offset_right = -3
+	_count.offset_bottom = -2
+	_count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	bait_tile.add_child(_count)
 	_idle = Ui.button(bar, "Fish on his own", func():
 		screen.methods.set_idle(not screen.methods.idle)
 		if screen.methods.idle and screen.line_state() == "reeled":
@@ -40,7 +63,6 @@ func setup(s: Node) -> void:
 	var right := HBoxContainer.new()
 	right.add_theme_constant_override("separation", 2)
 	add_child(right)
-	Ui.button(right, "Tackle", func(): TacklePanel.open()).tooltip_text = "Choose the bait and the rod"
 	Ui.button(right, "Logbook", func(): LogbookPanel.open())
 	Ui.button(right, "Settings", func(): SettingsPanel.open())
 	Ui.button(right, "Menu", func():
@@ -71,3 +93,24 @@ func refresh() -> void:
 	_method.text = "Hold %d/%d%s   %s%s" % [s["hold"].size(), int(boat["hold"]), well, {"line": "Line", "trap": "Pots", "net": "Cast net", "trident": "Trident"}[method],
 		(", %s x%d" % [str(Data.bait[bait]["name"]).to_lower(), int(s["bait"][bait])]) if method == "line" and bait != "" else (", no bait" if method == "line" else "")]
 	_idle.text = "At the rod" if screen.methods.idle else "Fish on his own"
+	for m in method_buttons:
+		Ui.choose(method_buttons[m], m == method)
+	var usable := {"net": str(s["gear"].get("net", "")) != "", "trident": Trident.can_use(screen.hour, str(s["gear"].get("lamp", "")))}
+	for m in usable:
+		(method_buttons[m].get_node("Picture") as TextureRect).modulate.a = 1.0 if usable[m] else 0.4
+	bait_tile.visible = method == "line"
+	rod_tile.visible = method == "line"
+	var rod := str(s["gear"].get("rod", ""))
+	_show(bait_tile, ItemArt.of(bait) if bait != "" else null)
+	_count.text = str(int(s["bait"][bait])) if bait != "" else ""
+	bait_tile.tooltip_text = Ui.wrapped(("Bait on the hook: %s, %d left." % [Data.bait[bait]["name"], int(s["bait"][bait])] if bait != "" else "No bait on the hook.")
+		+ " Click to choose the bait and the rod.", 46)
+	_show(rod_tile, ItemArt.of(rod) if rod != "" else null)
+	rod_tile.tooltip_text = Ui.wrapped("Rod in hand: %s. Click to choose the bait and the rod." % Data.gear.get(rod, {"name": "none"})["name"], 46)
+
+
+func _show(t: Button, picture: Texture2D) -> void:
+	var pic := t.get_node("Picture") as TextureRect
+	var fitted: Texture2D = ItemArt.fitted(picture, TILE.x - 6.0) if picture else null
+	if pic.texture != fitted:
+		pic.texture = fitted

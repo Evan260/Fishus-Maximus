@@ -30,7 +30,8 @@ static func show_earned(id: String) -> void:
 	var tw := card.create_tween()
 	tw.tween_interval(wait)
 	tw.tween_callback(func(): Audio.play("pond_bell", -6.0))
-	tw.tween_property(card, "position:y", bottom - 44.0, 0.3)
+	# It stops above the row of buttons along the bottom of the boat's screen.
+	tw.tween_property(card, "position:y", bottom - 44.0 - Hud.TILE.y - 4.0, 0.3)
 	tw.tween_interval(3.0)
 	tw.tween_property(card, "position:y", bottom + 4.0, 0.3)
 	tw.tween_callback(card.queue_free)

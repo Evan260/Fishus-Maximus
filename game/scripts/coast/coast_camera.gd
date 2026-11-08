@@ -8,8 +8,8 @@ extends RefCounted
 const HOME_Y := -160.0
 const LEAD := 40.0
 const HOOK_ROOM := 200.0
-## Rows of sea left showing under the waterline while he rows.
-const ROW_SEA := 34.0
+## Rows of sea left showing under the waterline while he rows, which keeps the boat clear of the bar along the bottom.
+const ROW_SEA := 44.0
 ## Seconds the rowing view waits after the oars stop before it looks back down, so a short pause does not bob it.
 const ROW_LINGER := 1.2
 ## How far below the top of the view a flying float is kept, and how far in from the sides the float is kept.
