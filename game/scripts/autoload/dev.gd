@@ -75,6 +75,8 @@ func _open_window(window: String) -> void:
 		LogbookPanel.open()
 	elif window == "settings":
 		SettingsPanel.open()
+	elif window in ["new_game", "load"] and Nav.current and Nav.current.has_method("_load"):
+		Nav.current.call("_new_game" if window == "new_game" else "_load")
 
 
 func _point(at: Vector2) -> void:

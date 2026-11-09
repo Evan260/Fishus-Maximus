@@ -25,6 +25,12 @@ var _surface: Node2D
 var _land: UnderLand
 var _murk: Murk
 var _menu: VBoxContainer
+## The dog being chosen for a new game, as in Farmus: its breed and coat, its picture, the labels between the arrows
+## and its name.
+var _dog_choice := {"breed": "hound", "coat": "golden"}
+var _dog_picture: TextureRect
+var _dog_labels := {}
+var _dog_name: LineEdit
 var _heading: Label
 var _sub: Label
 
@@ -195,45 +201,80 @@ func _play(n: int) -> void:
 
 
 func _new_game() -> void:
-	var list := Ui.window("A new game", 300, 200)
+	var list := Ui.window("A new game", 300, 196)
 	Ui.label(list, "Your name", "MutedLabel")
 	var name := LineEdit.new()
 	name.text = "Marcus"
 	name.max_length = 16
 	list.add_child(name)
 	Ui.label(list, "Your dog, who rides in the bow", "MutedLabel")
+	_dog_choice = {"breed": "hound", "coat": "golden"}
 	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
 	list.add_child(row)
-	var chosen := ["hound"]
-	var buttons := []
-	for breed in Dogs.breeds():
-		var b := Button.new()
-		var frames := Dogs.frames(breed, "sit_east")
-		if not frames.is_empty():
-			b.icon = frames[0]
-		b.tooltip_text = Dogs.NAMES[breed]
-		b.toggle_mode = true
-		b.button_pressed = breed == "hound"
-		b.expand_icon = true
-		b.focus_mode = Control.FOCUS_NONE
-		b.custom_minimum_size = Vector2(48, 48)
-		var id: String = breed
-		b.pressed.connect(func():
-			chosen[0] = id
-			for other in buttons:
-				other.button_pressed = other == b)
-		row.add_child(b)
-		buttons.append(b)
+	_dog_picture = TextureRect.new()
+	_dog_picture.custom_minimum_size = Vector2(72, 60)
+	_dog_picture.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	row.add_child(_dog_picture)
+	var col := VBoxContainer.new()
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.add_theme_constant_override("separation", 2)
+	row.add_child(col)
+	_dog_labels["breed"] = _chooser(col, _step_breed)
+	_dog_labels["coat"] = _chooser(col, _step_coat)
+	_dog_name = LineEdit.new()
+	_dog_name.text = Dogs.DEFAULT_NAME
+	_dog_name.max_length = 14
+	_dog_name.placeholder_text = "Its name"
+	col.add_child(_dog_name)
+	_show_dog()
 	var slot := Saves.free_slot()
 	if slot == 0:
 		Ui.label(list, "All three slots are used; this will replace slot 1.", "MutedLabel")
 		slot = 1
 	Ui.button(list, "Set out", func():
-		Game.new_game(name.text.strip_edges() if name.text.strip_edges() != "" else "Marcus", chosen[0])
+		var dog_name := _dog_name.text.strip_edges()
+		Game.new_game(name.text.strip_edges() if name.text.strip_edges() != "" else "Marcus", _dog_choice["breed"], _dog_choice["coat"],
+			dog_name if dog_name != "" else Dogs.DEFAULT_NAME)
 		Saves.slot = slot
 		Saves.save(slot)
 		Ui.close_window()
 		Nav.go("coast", {"place": "harbour", "first": true}))
+
+
+## A row with arrows either side of a label, for stepping through a list of choices.
+func _chooser(parent: Node, step: Callable) -> Label:
+	var r := HBoxContainer.new()
+	parent.add_child(r)
+	Ui.button(r, "<", func(): step.call(-1))
+	var label := Ui.label(r, "")
+	# The label takes the room between the arrows, so both rows are the same width and their arrows line up.
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.clip_text = true
+	Ui.button(r, ">", func(): step.call(1))
+	return label
+
+
+func _step_breed(by: int) -> void:
+	var breeds := Dogs.breeds()
+	_dog_choice["breed"] = breeds[posmod(breeds.find(_dog_choice["breed"]) + by, breeds.size())]
+	# Each breed has its own coats, so the coat starts again from that breed's first.
+	_dog_choice["coat"] = Dogs.coats(_dog_choice["breed"]).keys()[0]
+	_show_dog()
+
+
+func _step_coat(by: int) -> void:
+	var coats := Dogs.coats(_dog_choice["breed"]).keys()
+	_dog_choice["coat"] = coats[posmod(coats.find(_dog_choice["coat"]) + by, coats.size())]
+	_show_dog()
+
+
+func _show_dog() -> void:
+	var frames := Dogs.frames(_dog_choice["breed"], "sit_east", _dog_choice["coat"])
+	_dog_picture.texture = frames[0] if not frames.is_empty() else null
+	_dog_labels["breed"].text = Dogs.NAMES[_dog_choice["breed"]]
+	_dog_labels["coat"].text = Dogs.coats(_dog_choice["breed"])[_dog_choice["coat"]]
 
 
 func _load() -> void:

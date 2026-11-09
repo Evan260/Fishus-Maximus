@@ -561,3 +561,60 @@ func test_the_sky_stays_behind_the_far_land_when_the_view_rises() -> void:
 	var moved := sky.position.y - home
 	check(moved <= 66.0 * 0.12 + 1.0, "rowing lifts the view 66 rows and the sky moves %.0f, no more than the farthest land, so the low sun stays in sight" % moved)
 	_done(s)
+
+
+func _new_game_window() -> Node:
+	for c in Nav.ui.get_children():
+		c.free()
+	var t: Node = load("res://scripts/screens/title.gd").new()
+	Nav.port.add_child(t)
+	t.enter({})
+	t._new_game()
+	return t
+
+
+func _arrows(text: String) -> Array:
+	return _shown(Button).filter(func(b): return b.text == text)
+
+
+func test_the_dog_is_chosen_as_in_farmus() -> void:
+	var t := _new_game_window()
+	var breed: Label = t._dog_labels["breed"]
+	var coat: Label = t._dog_labels["coat"]
+	check(breed.text == "Farm hound" and coat.text == "Golden", "a new game offers the farm hound in its golden coat first, as Farmus does: %s, %s" % [breed.text, coat.text])
+	check(_arrows("<").size() == 2 and _arrows(">").size() == 2, "with arrows either side of the breed and of the coat")
+	var golden: Texture2D = t._dog_picture.texture
+	_arrows(">")[1].pressed.emit()
+	check(coat.text == "Black" and t._dog_picture.texture != golden, "the coat arrow steps to the next colour, and the picture shows it")
+	_arrows(">")[0].pressed.emit()
+	check(breed.text == "Mastiff" and coat.text == "Natural coat", "the breed arrow steps to the next breed, which comes in its own colours")
+	_arrows("<")[0].pressed.emit()
+	_arrows(">")[1].pressed.emit()
+	_arrows(">")[1].pressed.emit()
+	var dog_name: LineEdit = t._dog_name
+	check(dog_name.text == "Fidus", "and the dog has a name, Fidus unless you give it another")
+	dog_name.text = "Argos"
+	dog_name.text_changed.emit("Argos")
+	var go: Button = _shown(Button).filter(func(b): return b.text == "Set out")[0]
+	Saves.enabled = false
+	go.pressed.emit()
+	Saves.enabled = true
+	check(Game.state["dog"] == "hound" and Game.state["dog_coat"] == "chocolate" and Game.state["dog_name"] == "Argos",
+		"setting out keeps the breed, coat and name chosen: %s, %s, %s" % [Game.state["dog"], Game.state.get("dog_coat"), Game.state.get("dog_name")])
+	t.free()
+	for c in Nav.ui.get_children():
+		c.free()
+
+
+func test_the_dog_in_the_boat_wears_its_coat() -> void:
+	var plain := Dogs.frames("hound", "sit_east")
+	var black := Dogs.frames("hound", "sit_east", "black")
+	check(plain.size() == black.size() and black[0] != plain[0], "a black farm hound's frames are its own")
+	var img := black[0].get_image()
+	var dark := 0
+	for y in img.get_height():
+		for x in img.get_width():
+			if img.get_pixel(x, y).a > 0.5 and img.get_pixel(x, y).v < 0.35:
+				dark += 1
+	check(dark > 40, "and are mostly dark fur, %d dark pixels" % dark)
+	check(Dogs.frames("molossian", "sit_east", "black")[0] == Dogs.frames("molossian", "sit_east")[0], "a breed with only its natural coat is never recoloured")

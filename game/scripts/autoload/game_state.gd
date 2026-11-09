@@ -10,10 +10,12 @@ var state := {}
 var _check_left := 2.0
 
 
-func new_game(name: String, dog: String) -> void:
+func new_game(name: String, dog: String, coat := "golden", dog_name := Dogs.DEFAULT_NAME) -> void:
 	state = defaults()
 	state["name"] = name
 	state["dog"] = dog
+	state["dog_coat"] = coat
+	state["dog_name"] = dog_name
 	state["seed"] = int(Time.get_unix_time_from_system()) % 1000000007
 	state["tanks"] = Garum.new_tanks()
 	Orders.new_day(state, Seeds.rng(int(state["seed"]), "orders", 0))
@@ -26,7 +28,7 @@ func defaults() -> Dictionary:
 		"gear": {"rod": "cane_rod", "line": "flax_line", "hook": "bronze_hook", "net": "", "traps": 2, "lamp": "", "bait_box": 1},
 		"bait": {"worm": 20}, "current_bait": "worm", "method": "line",
 		"hold": [], "live_well": [], "traps": [], "ponds": [], "tanks": [], "orders": [], "clients": {}, "logbook": {},
-		"legends": {}, "market": {}, "achievements": [], "dog": "", "helpers": [], "stats": {}, "finery": [], "salt": 6, "garum": {}, "guide": {"done": [], "finished": false},
+		"legends": {}, "market": {}, "achievements": [], "dog": "", "dog_coat": "golden", "dog_name": Dogs.DEFAULT_NAME, "helpers": [], "stats": {}, "finery": [], "salt": 6, "garum": {}, "guide": {"done": [], "finished": false},
 		"last_real_time": Time.get_unix_time_from_system()}
 
 

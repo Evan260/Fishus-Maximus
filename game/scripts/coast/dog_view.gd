@@ -39,7 +39,7 @@ func setup(s: Node) -> void:
 	screen = s
 	var breed := str(Game.state.get("dog", "hound"))
 	for move in ["sit_east", "sleep_east", "happy_east"]:
-		_frames[move] = Dogs.frames(breed, move)
+		_frames[move] = Dogs.frames(breed, move, str(Game.state.get("dog_coat", "golden")))
 
 
 func cheer(seconds := 2.5) -> void:
