@@ -233,13 +233,18 @@ func _new_game() -> void:
 		Ui.label(list, "All three slots are used; this will replace slot 1.", "MutedLabel")
 		slot = 1
 	Ui.button(list, "Set out", func():
-		var dog_name := _dog_name.text.strip_edges()
-		Game.new_game(name.text.strip_edges() if name.text.strip_edges() != "" else "Marcus", _dog_choice["breed"], _dog_choice["coat"],
-			dog_name if dog_name != "" else Dogs.DEFAULT_NAME)
-		Saves.slot = slot
-		Saves.save(slot)
-		Ui.close_window()
+		_begin(name.text, slot)
 		Nav.go("coast", {"place": "harbour", "first": true}))
+
+
+## Starts the new game chosen in the window: you, your dog as chosen, saved in its slot.
+func _begin(your_name: String, slot: int) -> void:
+	var dog_name := _dog_name.text.strip_edges()
+	Game.new_game(your_name.strip_edges() if your_name.strip_edges() != "" else "Marcus", _dog_choice["breed"], _dog_choice["coat"],
+		dog_name if dog_name != "" else Dogs.DEFAULT_NAME)
+	Saves.slot = slot
+	Saves.save(slot)
+	Ui.close_window()
 
 
 ## A row with arrows either side of a label, for stepping through a list of choices.

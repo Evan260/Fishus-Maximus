@@ -595,10 +595,7 @@ func test_the_dog_is_chosen_as_in_farmus() -> void:
 	check(dog_name.text == "Fidus", "and the dog has a name, Fidus unless you give it another")
 	dog_name.text = "Argos"
 	dog_name.text_changed.emit("Argos")
-	var go: Button = _shown(Button).filter(func(b): return b.text == "Set out")[0]
-	Saves.enabled = false
-	go.pressed.emit()
-	Saves.enabled = true
+	t._begin("Marcus", 0)
 	check(Game.state["dog"] == "hound" and Game.state["dog_coat"] == "chocolate" and Game.state["dog_name"] == "Argos",
 		"setting out keeps the breed, coat and name chosen: %s, %s, %s" % [Game.state["dog"], Game.state.get("dog_coat"), Game.state.get("dog_name")])
 	t.free()
