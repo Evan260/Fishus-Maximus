@@ -7,7 +7,7 @@ extends Node2D
 
 const ART := "res://assets/art/props/"
 const MAN := "res://assets/art/fisherman/"
-const FALLBACK := "res://assets/art/style_test/boat.png"
+const FALLBACK := "res://assets/art/props/boat_fallback.png"
 const TINT := Color(0.5, 0.78, 0.84, 0.85)
 ## How deep the hull sits in the water.
 const DRAFT := 8.0
