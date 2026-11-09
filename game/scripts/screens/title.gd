@@ -245,16 +245,34 @@ func _load() -> void:
 			Ui.row(list, "Slot %d: empty" % n)
 			continue
 		var r := Ui.row(list, "Slot %d: %s, day %d, chapter %d" % [n, info["name"], int(info["day"]), int(info["chapter"])], "Play", func(): _play(slot))
-		var confirm := LineEdit.new()
-		confirm.placeholder_text = "type delete"
-		confirm.custom_minimum_size = Vector2(70, 0)
-		confirm.text_changed.connect(func(t):
-			if t.strip_edges().to_lower() == "delete":
-				Saves.delete(slot)
-				if Saves.slot == slot:
-					Saves.slot = 0
-				# The menu is laid out again, so Continue goes to a save that is still there, or goes with the last.
-				_show_menu()
-				if _latest_slot() > 0:
-					_load())
-		r.add_child(confirm)
+		Ui.button(r, "Delete", func(): _confirm_delete(slot, info))
+
+
+## A game cannot be brought back, so deleting one asks for the word typed out, which no stray click can do.
+func _confirm_delete(slot: int, info: Dictionary) -> void:
+	var list := Ui.window("Delete a game", 260, 120)
+	var ask := Ui.label(list, "Type \"delete\" to delete %s's game, day %d, for good." % [info["name"], int(info["day"])])
+	ask.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var field := LineEdit.new()
+	field.placeholder_text = "delete"
+	field.max_length = 20
+	list.add_child(field)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	list.add_child(row)
+	var gone := func():
+		if field.text.strip_edges().to_lower() != "delete":
+			return
+		Saves.delete(slot)
+		if Saves.slot == slot:
+			Saves.slot = 0
+		# The menu is laid out again, so Continue goes to a save that is still there, or goes with the last.
+		_show_menu()
+		if _latest_slot() > 0:
+			_load()
+	var delete := Ui.button(row, "Delete", gone)
+	delete.disabled = true
+	field.text_changed.connect(func(t: String): delete.disabled = t.strip_edges().to_lower() != "delete")
+	field.text_submitted.connect(func(_t): gone.call())
+	Ui.button(row, "Cancel", _load)
+	field.grab_focus.call_deferred()

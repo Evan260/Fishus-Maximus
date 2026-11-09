@@ -375,6 +375,11 @@ func test_a_client_with_nothing_left_to_ask_has_no_mark() -> void:
 	_done(s)
 
 
+## The controls of a kind showing in the interface now, leaving out any on their way out.
+func _shown(kind) -> Array:
+	return Nav.ui.find_children("*", "", true, false).filter(func(c): return is_instance_of(c, kind) and c.is_visible_in_tree() and not _going(c))
+
+
 func test_the_title_menu_forgets_a_deleted_save() -> void:
 	for c in Nav.ui.get_children():
 		c.free()
@@ -388,9 +393,16 @@ func test_the_title_menu_forgets_a_deleted_save() -> void:
 	var words := func(): return t._menu.get_children().filter(func(b): return b is Button and not _going(b)).map(func(b): return b.text)
 	check("Continue" in words.call(), "with a save the title offers to continue it")
 	t._load()
-	var confirm: LineEdit = Nav.ui.find_children("*", "LineEdit", true, false).filter(func(l): return not _going(l))[0]
+	check(_shown(LineEdit).is_empty(), "the load window shows no box to type in, only a button to delete a save")
+	var delete: Button = _shown(Button).filter(func(b): return b.text == "Delete")[0]
+	delete.pressed.emit()
+	var confirm: LineEdit = _shown(LineEdit)[0]
+	var gone: Button = _shown(Button).filter(func(b): return b.text == "Delete")[0]
+	check(gone.disabled, "the delete button opens a window asking for the word typed out, its own Delete greyed until then")
 	confirm.text = "delete"
 	confirm.text_changed.emit("delete")
+	check(not gone.disabled, "typing it lets the save be deleted")
+	gone.pressed.emit()
 	check(not "Continue" in words.call() and not "Load" in words.call(), "once the only save is deleted, Continue and Load go: %s" % [words.call()])
 	t.free()
 	for c in Nav.ui.get_children():
