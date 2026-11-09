@@ -12,7 +12,8 @@ static var _busy := false
 
 
 static func show_earned(id: String) -> void:
-	if Nav.ui == null:
+	# Pictures taken with --no-hud show the scene alone.
+	if Nav.ui == null or Dev.has("no-hud"):
 		return
 	var a := Achievements.find(id)
 	# The desktop strip is too short for the card, which would cover the boat, so it gets one line instead.

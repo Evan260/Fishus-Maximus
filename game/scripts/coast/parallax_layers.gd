@@ -93,7 +93,9 @@ func build(layers: Array) -> void:
 	var seas := {}
 	for l in layers:
 		if l.has("front"):
-			_front(l)
+			# --no-front leaves the plants in front out, for marketing pictures cut from the view.
+			if not Dev.has("no-front"):
+				_front(l)
 			continue
 		var factor := Vector2(l["factor"][0], l["factor"][1]) if l.has("factor") else Vector2.ONE
 		var at := Vector2(l["world"][0], l["world"][1]) - HOME if l.has("world") else Vector2(l["at"][0], l["at"][1])
