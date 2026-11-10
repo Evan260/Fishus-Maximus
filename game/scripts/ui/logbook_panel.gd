@@ -278,8 +278,7 @@ static func _draw_flip(canvas: Control) -> void:
 	var curl := sin(PI * progress)
 	var flip_uv := (direction < 0) != reverse
 	var fixed_x := STACK if direction > 0 else STACK + PAGE_W + SPINE
-	var fixed_alpha := 1.0 - smoothstep(0.93, 1.0, progress)
-	var landing_blend := smoothstep(0.9, 1.0, progress)
+	var fixed_alpha := 0.0 if progress >= 1.0 else 1.0
 	canvas.draw_texture_rect(canvas.get_meta("fixed"), Rect2(fixed_x, 0, PAGE_W, PAGE_H), false,
 		Color(1, 1, 1, fixed_alpha))
 	if progress >= 1.0:
@@ -306,31 +305,48 @@ static func _draw_flip(canvas: Control) -> void:
 			var p01 := _flip_point(u0, y1, progress, direction, angle, hinge)
 			var points := PackedVector2Array([p00, p10, p11, p01])
 			var shadow_shift := Vector2(direction * 4.0 * curl, 2.0 * curl)
-			canvas.draw_colored_polygon(PackedVector2Array([
-				p00 + shadow_shift, p10 + shadow_shift, p11 + shadow_shift, p01 + shadow_shift]),
-				Color(UiTheme.INK, 0.16 * curl * (1.0 - landing_blend)))
+			var shadow_color := Color(UiTheme.INK, 0.16 * curl)
+			var shadow_points := PackedVector2Array([
+				p00 + shadow_shift, p10 + shadow_shift, p11 + shadow_shift, p01 + shadow_shift])
+			var shadow_colors := PackedColorArray([shadow_color, shadow_color, shadow_color, shadow_color])
+			_draw_flip_triangle(canvas, shadow_points[0], shadow_points[1], shadow_points[2], shadow_colors[0], shadow_colors[1], shadow_colors[2])
+			_draw_flip_triangle(canvas, shadow_points[0], shadow_points[2], shadow_points[3], shadow_colors[0], shadow_colors[2], shadow_colors[3])
 			var uvs := PackedVector2Array([
 				Vector2(sx0, v0), Vector2(sx1, v0), Vector2(sx1, v1), Vector2(sx0, v1)])
 			var across := (u0 + u1) * 0.5
 			var bend_light := sin(PI * across) * curl
 			var light := clampf(0.92 - bend_light * 0.28 + 0.07 * absf(cos(angle)), 0.55, 1.0)
-			var color := Color(light, light, light, 1.0 - landing_blend)
+			var color := Color(light, light, light, 1.0)
 			mesh_points.append(points)
 			mesh_uvs.append(uvs)
 			mesh_colors.append(PackedColorArray([color, color, color, color]))
 	for i in mesh_points.size():
-		canvas.draw_polygon(mesh_points[i], mesh_colors[i], mesh_uvs[i], texture)
-	var landing_x := STACK if direction > 0 else STACK + PAGE_W + SPINE
-	canvas.draw_texture_rect(texture, Rect2(landing_x, 0, PAGE_W, PAGE_H), false,
-		Color(1, 1, 1, landing_blend))
+		_draw_flip_triangle(canvas, mesh_points[i][0], mesh_points[i][1], mesh_points[i][2],
+			mesh_colors[i][0], mesh_colors[i][1], mesh_colors[i][2],
+			mesh_uvs[i][0], mesh_uvs[i][1], mesh_uvs[i][2], texture)
+		_draw_flip_triangle(canvas, mesh_points[i][0], mesh_points[i][2], mesh_points[i][3],
+			mesh_colors[i][0], mesh_colors[i][2], mesh_colors[i][3],
+			mesh_uvs[i][0], mesh_uvs[i][2], mesh_uvs[i][3], texture)
 	_draw_spine(canvas)
+
+
+## Draw one indexed triangle directly; warped quads can self-intersect and defeat Godot's polygon triangulator.
+static func _draw_flip_triangle(canvas: Control, a: Vector2, b: Vector2, c: Vector2,
+		color_a: Color, color_b: Color, color_c: Color,
+		uv_a := Vector2.ZERO, uv_b := Vector2.ZERO, uv_c := Vector2.ZERO, texture: Texture2D = null) -> void:
+	if absf((b - a).cross(c - a)) < 0.001:
+		return
+	canvas.draw_polygon(PackedVector2Array([a, b, c]), PackedColorArray([color_a, color_b, color_c]),
+		PackedVector2Array([uv_a, uv_b, uv_c]), texture)
 
 
 ## Bow the page edges and curl its middle away from the flat plane as it passes the spine.
 static func _flip_point(u: float, y: float, progress: float, direction: int, angle: float, hinge: float) -> Vector2:
 	var bend := sin(PI * u) * sin(PI * progress)
 	var roll := pow(u, 3.0) * sin(PI * progress)
-	var x := hinge + u * PAGE_W * cos(angle) - direction * bend * 11.0 - direction * roll * sin(PI * y / PAGE_H) * 48.0
+	# Rightward turns rasterize one logical pixel left of the settled page, so ease that side onto its exact landing.
+	var landing_shift := smoothstep(0.9, 1.0, progress) if direction < 0 else 0.0
+	var x := hinge + u * PAGE_W * cos(angle) - direction * bend * 11.0 - direction * roll * sin(PI * y / PAGE_H) * 48.0 + landing_shift
 	var edge_y := (y - PAGE_H * 0.5) / (PAGE_H * 0.5)
 	return Vector2(x, y + bend * edge_y * 4.0 + roll * edge_y * 20.0)
 
