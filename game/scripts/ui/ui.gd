@@ -6,6 +6,7 @@ const BUTTON_MIN_WIDTH := 22.0
 
 ## A denarius, five pixels across, for prices under pictures.
 static var COIN: ImageTexture = _coin()
+static var _close_icon: ImageTexture
 
 
 static func _coin() -> ImageTexture:
@@ -124,12 +125,28 @@ static func frame(title: String, width := 300.0, height := 200.0) -> VBoxContain
 	col.add_child(top)
 	var head := label(top, title.to_upper(), "Heading")
 	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button(top, "x", close_window)
+	var close := button(top, "", close_window)
+	close.custom_minimum_size = Vector2(BUTTON_MIN_WIDTH, BUTTON_MIN_WIDTH)
+	close.icon = _close_texture()
+	close.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	close.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 	var fit := func(): fit_window(p)
 	p.resized.connect(fit)
 	Nav.ui.resized.connect(fit)
 	p.tree_exiting.connect(func(): Nav.ui.resized.disconnect(fit))
 	return col
+
+
+## A small pixel X used as the centered icon on every window's close button.
+static func _close_texture() -> ImageTexture:
+	if _close_icon == null:
+		var img := Image.create(6, 6, false, Image.FORMAT_RGBA8)
+		var ink := UiTheme.INK if ResourceLoader.exists(UiTheme.DIR + "button.png") else UiTheme.CREAM
+		for i in 6:
+			img.set_pixel(i, i, ink)
+			img.set_pixel(5 - i, i, ink)
+		_close_icon = ImageTexture.create_from_image(img)
+	return _close_icon
 
 
 ## Draws a window too big for the interface at the most window pixels per pixel that fit it, about its middle, so a
