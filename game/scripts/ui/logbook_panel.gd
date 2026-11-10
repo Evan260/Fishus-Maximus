@@ -31,6 +31,9 @@ static var _cover: StyleBoxTexture
 
 static func open(at := -1) -> void:
 	var sections := _sections()
+	if at < 0:
+		var place := str(Game.state.get("place", "harbour"))
+		at = sections.find(place) if place in Data.places else 0
 	if at >= 0 and at != section:
 		section = at
 		spread = 0
@@ -102,7 +105,7 @@ static func _turn(to: int) -> void:
 	Audio.play("page_turn")
 	spread = to
 	selected = ""
-	open()
+	open(section)
 
 
 static func _caught(id: String) -> Dictionary:
@@ -200,7 +203,7 @@ static func _entry(page: VBoxContainer, id: String) -> void:
 	b.pressed.connect(func():
 		Audio.play("click", -8.0)
 		selected = "" if selected == id else id
-		open())
+		open(section))
 	page.add_child(b)
 	var line := HBoxContainer.new()
 	line.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -314,7 +317,7 @@ static func _detail(page: VBoxContainer, id: String) -> void:
 	title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	Ui.button(head, "Back", func():
 		selected = ""
-		open()).size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		open(section)).size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	if not got.is_empty() and str(f.get("latin", "")) != "":
 		_para(page, str(f["latin"]).substr(0, 1).to_upper() + str(f["latin"]).substr(1), "MutedLabel")
 	var frame := PanelContainer.new()
