@@ -232,7 +232,7 @@ func _draw() -> void:
 		var bob := Vector2(at.x - 2, surface - 1 + sin(t * 1.9) + dip)
 		var fight: LineFight = screen.fight
 		if state == "fighting" or at.y <= bob.y:
-			var end := fish_at() - cam - Vector2(0, 2) if _leap >= 0.0 or _back != Vector2.ZERO else at
+			var end := _mouth_screen() if fish_on_line() != "" and _fish.visible else (fish_at() - cam - Vector2(0, 2) if _leap >= 0.0 or _back != Vector2.ZERO else at)
 			_curve(tip, end, (0.25 - fight.tension) * 40.0 if fight != null and fight.tension < 0.25 else 0.0)
 		else:
 			_curve(tip, bob, 5.0)
@@ -252,12 +252,14 @@ func _draw() -> void:
 			if state == "bite":
 				draw_string(UiTheme.title_font(), Vector2(bob.x - 1, surface - 6), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
 	if hook_shown:
-		draw_rect(Rect2(at, Vector2(1, 3)), HOOK)
 		var bait: String = screen.bait()
-		var rows: Array = BAITS.get(bait, [])
-		var corner := at + Vector2(-floorf(str(rows[0]).length() / 2.0) if not rows.is_empty() else 0.0, 3)
-		for p in bait_pixels(bait):
-			draw_rect(Rect2(corner + Vector2(p[0], p[1]), Vector2.ONE), p[2])
+		var hooked_fish := fish_on_line()
+		if hooked_fish != "" and _fish.visible:
+			# Keep the bait on the fish's mouth as it turns, darts and leaps on the line.
+			_draw_bait(_mouth_screen() - Swimmers.BAIT_MIDDLE, bait)
+		else:
+			draw_rect(Rect2(at, Vector2(1, 3)), HOOK)
+			_draw_bait(at, bait)
 	if screen.charge >= 0.0:
 		_bar(tip + Vector2(-14, -14), 28, screen.charge, CALM)
 	for r in screen.rain():
@@ -302,6 +304,21 @@ static func bait_pixels(bait: String) -> Array:
 			if row[x] != ".":
 				out.append([x, y, BAIT_COLOURS[bait][row[x]]])
 	return out
+
+
+## Draw bait with its middle at the given hook position.
+func _draw_bait(at: Vector2, bait: String) -> void:
+	var rows: Array = BAITS.get(bait, [])
+	var corner := at + Vector2(-floorf(str(rows[0]).length() / 2.0) if not rows.is_empty() else 0.0, 3)
+	for p in bait_pixels(bait):
+		draw_rect(Rect2(corner + Vector2(p[0], p[1]), Vector2.ONE), p[2])
+
+
+## The hooked fish's mouth in screen coordinates, including its turn and the direction it faces.
+func _mouth_screen() -> Vector2:
+	var mouth := Swimmers.mouth_of(_fish.texture)
+	mouth.x *= -1.0 if _fish.flip_h else 1.0
+	return _fish.position + (mouth * _fish.scale).rotated(_fish.rotation)
 
 
 ## The line from a to b, sagging by some pixels in the middle, its pixels all on the grid of a.
