@@ -255,16 +255,49 @@ func test_a_tip_is_drawn_at_the_interface_size() -> void:
 		var tip := PopupPanel.new()
 		tip.theme_type_variation = "TooltipPanel"
 		owner.add_child(tip)
-		# Placed as Godot places a tip: at the game's zoom, just past the pointer over its control.
+		# Placed as Godot places a tip: at the game's zoom, its gap at the game's zoom too.
 		var pointer := _in_window(owner.get_global_rect()).get_center()
 		var gap := Vector2(ProjectSettings.get_setting("display/mouse_cursor/tooltip_position_offset"))
+		Nav.pointer = pointer
 		tip.content_scale_factor = Nav.zoom
-		tip.position = Vector2i(pointer + gap)
+		tip.position = Vector2i(pointer + gap * Nav.zoom)
 		tip.size = Vector2i(120, 20) * Nav.zoom
 		tip.show()
 		Nav.fit_tip(tip)
 		check(tip.content_scale_factor == Nav.ui_zoom, "at %d the tip is drawn %dx like the interface, not %sx" % [step, Nav.ui_zoom, tip.content_scale_factor])
 		check(tip.size == Vector2i(120, 20) * Nav.ui_zoom, "at %d and sized to match, %s" % [step, tip.size])
-		check(Vector2(tip.position).distance_to(pointer + gap) < 1.0, "at %d it stays just past the pointer, %s for %s" % [step, tip.position, pointer])
+		check(Vector2(tip.position).distance_to(pointer + gap * Nav.ui_zoom) < 1.0, "at %d it stays just past the pointer, %s for %s" % [step, tip.position, pointer])
 		owner.free()
+	_restore(before)
+
+
+func test_a_corner_button_tip_stays_by_the_pointer_wherever_it_rests_on_the_button() -> void:
+	var before := Windowing.get_window().size
+	var s := _coast()
+	for size in [Vector2i(1440, 810), Vector2i(1920, 1080), Vector2i(2560, 1377)]:
+		_resize(size)
+		for step in [-1, 0, 1]:
+			_set_size(step)
+			var settings: Control = s.hud.find_child("Settings", true, false)
+			var r := _in_window(settings.get_global_rect())
+			for at in [r.get_center(), r.end - Vector2(2, 2), r.position + Vector2(2, 2), Vector2(r.end.x - 2.0, r.position.y + 2.0)]:
+				Nav.pointer = at
+				var tip := PopupPanel.new()
+				tip.theme_type_variation = "TooltipPanel"
+				settings.add_child(tip)
+				# Godot puts it a game pixel gap left of the pointer, at the game's zoom.
+				tip.content_scale_factor = Nav.zoom
+				tip.size = Vector2i(48, 22) * Nav.zoom
+				tip.position = Vector2i(at.x - 10.0 * Nav.zoom - tip.size.x, at.y + 10.0 * Nav.zoom)
+				tip.show()
+				Nav.fit_tip(tip)
+				var shown := Rect2(Vector2(tip.position), Vector2(tip.size))
+				var gap := 10.0 * Nav.ui_zoom
+				var right: bool = at.x + gap + shown.size.x <= size.x
+				check(absf((shown.position.x - gap if right else shown.end.x + gap) - at.x) < 1.0 and absf(shown.position.y - (at.y + gap)) < 1.0,
+					"%s at %d, pointer %s: the tip hangs just below the pointer and beside it, %s" % [size, step, at, shown])
+				check(Rect2(Vector2.ZERO, Vector2(size)).encloses(shown), "%s at %d: and inside the window" % [size, step])
+				tip.free()
+	_clear()
+	s.free()
 	_restore(before)
