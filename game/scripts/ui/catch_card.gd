@@ -4,7 +4,7 @@ class_name CatchCard
 ## a note when it is new to the logbook or a legend, when a little starfish is also painted in its lower corners. It
 ## drops in and unfurls, its frayed foot sways, and it rolls up again after a few seconds or when clicked. It is drawn
 ## in the game's own pixels, one texel to a game pixel, at any interface size. The pictures are made by
-## tools/art/make_banner.py.
+## tools/art/make_catch_banner.py.
 
 const TOP := preload("res://assets/art/ui/banner_top.png")
 const CLOTH := preload("res://assets/art/ui/banner_cloth.png")

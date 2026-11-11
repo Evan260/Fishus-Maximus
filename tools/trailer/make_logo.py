@@ -6,7 +6,7 @@ rendered large and sampled down to whole pixels, then shaded by hand rules: sunl
 a carved edge, a dark outline and a little depth underneath, with a laurel sprig curling out from each side.
 
 Usage: python tools/trailer/make_logo.py
-Writes tools/marketing/logo.png and logo_plain.png (the name without the laurel) at 1 pixel per game pixel.
+Writes tools/trailer/logo.png and logo_plain.png (the name without the laurel) at 1 pixel per game pixel.
 """
 import math
 from pathlib import Path

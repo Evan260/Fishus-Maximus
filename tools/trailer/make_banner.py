@@ -7,8 +7,8 @@ the town, the cape and the boat, with the logo in the sky above them at the same
 carries on up into the dusk, and below it the sea darkens into the deep, both in bands a game pixel tall, for
 televisions.
 
-Usage: python tools/marketing/make_banner.py
-Writes marketing/youtube_banner.png; the logo comes from tools/marketing/make_logo.py.
+Usage: python tools/trailer/make_banner.py
+Writes marketing/youtube_banner.png; the logo comes from tools/trailer/make_logo.py.
 """
 import subprocess
 import tempfile

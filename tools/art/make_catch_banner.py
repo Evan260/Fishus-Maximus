@@ -5,7 +5,7 @@ a fine weave, a few slubbed threads and soft folds, hung by rope ties from a pla
 peg, a sea blue border stripe painted round it by hand, and a frayed foot. The parts are the ones the game moves apart:
 the top (peg, rope, pole and ties), the cloth, the roll the cloth unfurls from, and the little painted starfish that
 marks a new or legendary catch.
-Usage: python tools/art/make_banner.py"""
+Usage: python tools/art/make_catch_banner.py"""
 import random
 from pathlib import Path
 
