@@ -57,7 +57,7 @@ func setup(s: Node) -> void:
 	add_child(right)
 	_corner_tile(right, "Logbook", "Logbook: the fish you have caught, those still to find, and your achievements.", func(): LogbookPanel.open())
 	_corner_tile(right, "Settings", "Settings", func(): SettingsPanel.open())
-	_corner_tile(right, "Menu", "Menu: saves the game and goes back to the title.", _to_title)
+	_corner_tile(right, "Menu", "Save and go back to the title", _to_title)
 	Ui.hang(right, "top_right", Vector2(4, 4))
 	refresh()
 
