@@ -470,12 +470,22 @@ static func _detail(page: VBoxContainer, id: String) -> void:
 	elif got.is_empty():
 		_para(page, "Not yet caught.", "")
 		_para(page, waters, "MutedLabel")
+		_habits(page, id)
 	else:
 		_para(page, "Caught %d. Best %s, %s." % [int(got["count"]), Units.weight(float(got["best"])), Catalog.grade(id, float(got["best"]))], "")
 		if f["legend"]:
 			_para(page, "A legend of the bay.", "")
 		_para(page, waters, "MutedLabel")
+		_habits(page, id)
 		_para(page, "Baits: %s." % ", ".join(f["baits"].map(func(b): return str(Data.bait[b]["name"]).to_lower())), "MutedLabel")
+
+
+## When and where an ordinary fish is found, if it keeps to a time of day or a depth.
+static func _habits(page: VBoxContainer, id: String) -> void:
+	var habits := Catalog.habits(id)
+	if not habits.is_empty():
+		var said := ", ".join(habits)
+		_para(page, Nav.tr("Found %s.") % said, "MutedLabel")
 
 
 ## A paragraph wrapped at the page's width, which it is given before it goes in so it is measured at that width.

@@ -86,16 +86,19 @@ static func use_bait(id: String) -> void:
 	Game.changed.emit()
 
 
-## Which of this place's line fish love a bait and which take it.
+## Which of this place's line fish love a bait and which take it, and when and where those that keep to a time or a
+## depth are found.
 static func bait_tip(id: String, place: String) -> String:
 	var loved := []
 	var taken := []
 	for f in _line_fish(place):
 		var baits: Array = Data.fish[f]["baits"]
+		var habits := Catalog.habits(f)
+		var named := str(Data.fish[f]["name"]).to_lower() + ((" (%s)" % ", ".join(habits)) if not habits.is_empty() else "")
 		if baits.find(id) == 0:
-			loved.append(str(Data.fish[f]["name"]).to_lower())
+			loved.append(named)
 		elif id in baits:
-			taken.append(str(Data.fish[f]["name"]).to_lower())
+			taken.append(named)
 	if loved.is_empty() and taken.is_empty():
 		return "Nothing here takes %s." % str(Data.bait[id]["name"]).to_lower()
 	var parts := []

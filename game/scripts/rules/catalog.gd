@@ -24,6 +24,29 @@ static func available(place: String, depth: float, hour: float, season: String, 
 	return out
 
 
+## When and where a kind is found, in a few words for the tips and the logbook: the time of day it is about, if not
+## all day, and "deep down" or "near the surface" where its depth keeps it there.
+static func habits(id: String) -> Array:
+	var f: Dictionary = Data.fish[id]
+	var out := []
+	var hours: Array = f["hours"]
+	var from := float(hours[0])
+	var to := float(hours[1])
+	if from >= 4.0 and from <= 7.0 and to <= 10.0:
+		out.append(str(TranslationServer.translate("at dawn")))
+	elif from >= 16.0 and from <= 19.0 and to <= 22.0:
+		out.append(str(TranslationServer.translate("at dusk")))
+	elif in_hours(12.0, hours) and not in_hours(0.0, hours):
+		out.append(str(TranslationServer.translate("by day")))
+	elif in_hours(0.0, hours) and not in_hours(12.0, hours):
+		out.append(str(TranslationServer.translate("at night")))
+	if float(f["depth"][0]) >= 200.0:
+		out.append(str(TranslationServer.translate("deep down")))
+	elif float(f["depth"][1]) <= 100.0:
+		out.append(str(TranslationServer.translate("near the surface")))
+	return out
+
+
 ## How deep the water must be, down to the seabed, for a fish to swim there: the bigger the fish, the deeper.
 static func water_needed(id: String) -> float:
 	var r: Array = Data.fish[id]["pounds"]

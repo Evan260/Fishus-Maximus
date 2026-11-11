@@ -7,8 +7,11 @@ extends Node2D
 
 signal bit(fish: Dictionary)
 
-## How many fish or shoals swim near the camera at once.
+## How many fish or shoals swim near the camera at once, and how many of those may be of one kind, so no kind crowds
+## the screen.
 const WANTED := 6
+const MOST_SHOALS := 2
+const MOST_SINGLES := 3
 const REACH := 260.0
 ## How far apart fish and shoals start, and how deep the water must be before it holds as many fish as the open sea.
 const APART := 60.0
@@ -163,7 +166,7 @@ func _spawn(anywhere := false) -> void:
 	if floor_y < 12.0 or _rng.randf() > room_for_fish(seabed.depth_at(x)):
 		return
 	var y := _rng.randf_range(6.0, floor_y)
-	var kinds := kinds_at(y, seabed.depth_at(x))
+	var kinds := kinds_at(y, seabed.depth_at(x)).filter(func(k): return not crowded(k))
 	if kinds.is_empty():
 		return
 	var total := 0.0
@@ -258,7 +261,17 @@ func step(delta: float, bait, bait_id: String) -> void:
 
 
 func _near_count() -> int:
-	return fish.filter(func(f): return f["leader"].is_empty() and absf(f["pos"].x - (cam.x + 240.0)) < 240.0 + REACH).size()
+	return _near_leaders().size()
+
+
+func _near_leaders() -> Array:
+	return fish.filter(func(f): return f["leader"].is_empty() and absf(f["pos"].x - (cam.x + 240.0)) < 240.0 + REACH)
+
+
+## Whether a kind already has as many fish or shoals near the camera as one kind may.
+func crowded(kind: String) -> bool:
+	var most := MOST_SHOALS if Data.fish[kind].get("shoal", false) else MOST_SINGLES
+	return _near_leaders().filter(func(f): return f["id"] == kind).size() >= most
 
 
 ## Gives a fish what it swims with that it was made without: its pace, its facing, its turn and its tail's beat.
