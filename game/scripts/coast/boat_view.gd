@@ -42,12 +42,12 @@ const OAR_LIGHT := Color("#a5774a")
 var boat: Sprite2D
 var hull: Sprite2D
 var person: Sprite2D
-## The hull's near side, drawn again over the fisherman so he sits in the boat with the sail and mast behind him.
+## The hull's near side, from its near rail down, drawn again over the fisherman and the dog so they sit inside the
+## boat, in front of its far side, sail and mast.
 var front: Sprite2D
-## The near side of the hull where the dog sits, from the hull's own top edge down to where `front` takes over, so a
-## stern that rises above the seat still hides the dog's legs.
-var dog_side: Sprite2D
-## The row where the hull's near side starts at the dog's spot, the hull's top edge there.
+## For each column of the boat's picture, the row where its near side starts, from `rail` in boats.json.
+var near_rail := PackedFloat32Array()
+## The row where the hull's near side starts at the dog's spot.
 var dog_rail := 0.0
 ## The middle of the lantern's flame in the boat's picture, for a boat that carries one, or below zero.
 var lantern := Vector2(-1, -1)
@@ -121,24 +121,19 @@ func set_boat(id: String) -> void:
 		add_child(person)
 		front = Sprite2D.new()
 		front.centered = false
-		front.region_enabled = true
 		add_child(front)
 		hull = Sprite2D.new()
 		hull.centered = false
 		hull.region_enabled = true
 		hull.modulate = TINT
 		add_child(hull)
-		dog_side = Sprite2D.new()
-		dog_side.centered = false
-		add_child(dog_side)
 		_overlay = Node2D.new()
 		_overlay.draw.connect(_draw_in_hands)
 		add_child(_overlay)
 		# The dog is drawn between the boat and its near side, so it sits down inside the hull.
-		for near in [front, hull, dog_side, _overlay]:
+		for near in [front, hull, _overlay]:
 			near.z_index = 1
 	boat.texture = tex
-	front.texture = tex
 	hull.texture = tex
 	var h := float(tex.get_height())
 	ride = h - DRAFT if _painted else 44.0
@@ -154,33 +149,41 @@ func set_boat(id: String) -> void:
 	var img := tex.get_image()
 	if img.is_compressed():
 		img.decompress()
-	dog_side.texture = _near_side(img, dog_spot.x, seat.y)
-	dog_rail = float(_hull_top(img, clampi(int(dog_spot.x * img.get_width()), 0, img.get_width() - 1)))
+	near_rail = _near_rail_rows(spec.get("rail", []), img.get_width(), seat.y)
+	front.texture = _near_side(img, near_rail)
+	dog_rail = near_rail[clampi(int(dog_spot.x * img.get_width()), 0, img.get_width() - 1)]
 	var flame: Array = spec.get("lantern", [])
 	lantern = Vector2(float(flame[0]), float(flame[1])) if flame.size() == 2 else Vector2(-1, -1)
 	oars = bool(spec.get("oars", false))
 	person.visible = _painted and _frames.has("sit") and not (_frames["sit"] as Array).is_empty()
 
 
-## The hull's columns either side of a spot along it, from the hull's top edge (the first row of four solid ones, below
-## any thin rigging) down to the row `end`.
-static func _near_side(img: Image, along: float, end: float) -> ImageTexture:
-	if img.is_compressed():
-		img.decompress()
+## The near rail's row in every column, along the line through the points [column, row] given, kept level past its
+## ends; a boat that names none has its near rail at the seat's row all along.
+static func _near_rail_rows(points: Array, width: int, fallback: float) -> PackedFloat32Array:
+	var rows := PackedFloat32Array()
+	rows.resize(width)
+	for x in width:
+		rows[x] = fallback
+		if points.is_empty():
+			continue
+		rows[x] = float(points[0][1]) if x <= float(points[0][0]) else float(points[points.size() - 1][1])
+		for k in range(1, points.size()):
+			var a: Array = points[k - 1]
+			var b: Array = points[k]
+			if x >= float(a[0]) and x <= float(b[0]):
+				rows[x] = roundf(lerpf(float(a[1]), float(b[1]), (x - float(a[0])) / maxf(1.0, float(b[0]) - float(a[0]))))
+				break
+	return rows
+
+
+## The boat's picture from the near rail down in every column, the side nearest us.
+static func _near_side(img: Image, rails: PackedFloat32Array) -> ImageTexture:
 	var out := Image.create(img.get_width(), img.get_height(), false, Image.FORMAT_RGBA8)
-	var middle := int(along * img.get_width())
-	for x in range(maxi(0, middle - 14), mini(img.get_width(), middle + 15)):
-		for y in range(_hull_top(img, x), int(end)):
+	for x in img.get_width():
+		for y in range(int(rails[x]), img.get_height()):
 			out.set_pixel(x, y, img.get_pixel(x, y))
 	return ImageTexture.create_from_image(out)
-
-
-## The hull's top edge in a column: the first of four solid rows, below any thin rigging.
-static func _hull_top(img: Image, x: int) -> int:
-	var top := 0
-	while top < img.get_height() - 4 and not (img.get_pixel(x, top).a > 0.5 and img.get_pixel(x, top + 1).a > 0.5 			and img.get_pixel(x, top + 2).a > 0.5 and img.get_pixel(x, top + 3).a > 0.5):
-		top += 1
-	return top
 
 
 ## The hull's top edge: going up from the hull's widest row, the first row much narrower, which skips masts and sails.
@@ -398,15 +401,14 @@ func place(x: float, cam: Vector2, time: float) -> void:
 	boat.flip_h = facing < 0.0
 	hull.flip_h = boat.flip_h
 	front.flip_h = boat.flip_h
-	dog_side.flip_h = boat.flip_h
 	boat.position = Vector2(x, -ride + bob) - cam
-	dog_side.position = boat.position
+	front.position = boat.position
 	var h := float(boat.texture.get_height())
 	# The tint starts on a whole row of the hull, so its pixels lie exactly over the boat's.
 	var cut := clampf(roundf(ride - bob + 1.0), 0.0, h - 1.0)
 	hull.region_rect = Rect2(0, cut, boat.texture.get_width(), h - cut)
 	hull.position = boat.position + Vector2(0, cut)
-	front.visible = person.visible
+	front.visible = _painted
 	if person.visible:
 		var p: Array = pose()
 		person.texture = _frames[p[0]][p[1]]
@@ -414,8 +416,6 @@ func place(x: float, cam: Vector2, time: float) -> void:
 		person.region_rect = Rect2(0, 0, 64, _hip - 1.0)
 		person.flip_h = _turned()
 		person.position = _person_at(x, _turned()) - cam
-		front.region_rect = Rect2(0, seat.y, boat.texture.get_width(), h - seat.y)
-		front.position = boat.position + Vector2(0, seat.y)
 	_cam = cam
 	_x = x
 	_stir()

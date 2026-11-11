@@ -180,13 +180,13 @@ func test_the_dog_sits_behind_the_near_side_of_every_boat() -> void:
 		var img: Image = b.boat.texture.get_image()
 		if img.is_compressed():
 			img.decompress()
-		var near: Image = b.dog_side.texture.get_image()
+		var near: Image = b.front.texture.get_image()
 		var col := int(b.dog_spot.x * img.get_width())
-		var top := 0
-		while top < img.get_height() - 4 and not range(4).all(func(k): return img.get_pixel(col, top + k).a > 0.5):
+		var top := int(b.near_rail[col])
+		while top < img.get_height() - 1 and img.get_pixel(col, top).a <= 0.5:
 			top += 1
-		check(near.get_pixel(col, top).a > 0.5, "%s: the hull's top edge where the dog sits, row %d, is drawn over the dog" % [id, top])
-		check(b.dog_side.z_index > 0, "%s: in front of the dog" % id)
+		check(near.get_pixel(col, top).a > 0.5, "%s: the near side where the dog sits, row %d, is drawn over the dog" % [id, top])
+		check(b.front.z_index > 0, "%s: in front of the dog" % id)
 		b.free()
 
 

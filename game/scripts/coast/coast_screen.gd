@@ -293,12 +293,12 @@ func dog_seat() -> Vector2:
 	return _boat.dog_seat()
 
 
-## The row of the boat's picture below which the hull's near side hides the dog, so it is drawn down to there only.
 ## The row in the boat's picture where its near side starts at the dog's spot.
 func dog_rail() -> float:
 	return _boat.dog_rail
 
 
+## The row of the boat's picture the dog is drawn down to, below which the hull's near side hides it.
 func dog_cut() -> float:
 	return _boat.seat.y + 3.0
 
