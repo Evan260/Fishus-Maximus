@@ -6,6 +6,8 @@ class_name Pixels
 const SHADER := preload("res://scripts/ui/pixels.gdshader")
 
 static var _shrunk := {}
+## Each disc's rows as triangles, by radius.
+static var _discs := {}
 
 
 ## A material for a Sprite2D drawn centred: its pixels stay whole at any size or turn, and with `wave` above zero its
@@ -76,13 +78,26 @@ static func ring(on: CanvasItem, centre: Vector2, radius: float, colour: Color) 
 			on.draw_rect(Rect2(centre + Vector2(inner, y), Vector2(outer - inner, 1)), colour)
 
 
-## A filled disc round a centre on the corner between four pixels.
+## A filled disc round a centre on the corner between four pixels, its rows worked out once for each radius and sent
+## to the renderer in one call.
 static func disc(on: CanvasItem, centre: Vector2, radius: float, colour: Color) -> void:
-	var r := ceili(radius)
-	for y in range(-r, r):
-		var half := _half(radius, y)
-		if half > 0:
-			on.draw_rect(Rect2(centre + Vector2(-half, y), Vector2(half * 2, 1)), colour)
+	if not _discs.has(radius):
+		var points := PackedVector2Array()
+		var indices := PackedInt32Array()
+		var r := ceili(radius)
+		for y in range(-r, r):
+			var half := _half(radius, y)
+			if half > 0:
+				var first := points.size()
+				points.append_array([Vector2(-half, y), Vector2(half, y), Vector2(half, y + 1), Vector2(-half, y + 1)])
+				indices.append_array([first, first + 1, first + 2, first, first + 2, first + 3])
+		_discs[radius] = [indices, points]
+	var shape: Array = _discs[radius]
+	if shape[0].is_empty():
+		return
+	on.draw_set_transform(centre)
+	RenderingServer.canvas_item_add_triangle_array(on.get_canvas_item(), shape[0], shape[1], PackedColorArray([colour]))
+	on.draw_set_transform_matrix(Transform2D.IDENTITY)
 
 
 ## How many pixels each side of the middle a row of a disc reaches, or -1 when the row misses it.

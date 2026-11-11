@@ -40,8 +40,9 @@ func _draw() -> void:
 			var a0 := -cam.y + k * 22.0
 			var f0 := k / 8.0
 			var f1 := (k + 1) / 8.0
-			draw_colored_polygon(PackedVector2Array([Vector2(x + 70 * f0, a0), Vector2(x + 22 + 82 * f0, a0),
-				Vector2(x + 22 + 82 * f1, a0 + 22), Vector2(x + 70 * f1, a0 + 22)]), Color(1.0, 0.93, 0.8, alpha * (1.0 - f0)))
+			var c := Color(1.0, 0.93, 0.8, alpha * (1.0 - f0))
+			draw_primitive(PackedVector2Array([Vector2(x + 70 * f0, a0), Vector2(x + 22 + 82 * f0, a0),
+				Vector2(x + 22 + 82 * f1, a0 + 22), Vector2(x + 70 * f1, a0 + 22)]), PackedColorArray([c, c, c, c]), PackedVector2Array())
 
 
 ## The glints along the waterline, drawn in front of the boat.
