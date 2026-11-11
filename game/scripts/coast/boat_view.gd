@@ -15,7 +15,7 @@ const FILL_SECONDS := 0.8
 ## How many texels the flag's free end rises and falls at rest, and under way.
 const FLUTTER := [0.6, 1.0]
 const TINT := Color(0.5, 0.78, 0.84, 0.85)
-## How deep the hull sits in the water.
+## How deep the hull sits in the water, unless the boat names its own `draft` in boats.json.
 const DRAFT := 8.0
 const ROD_LENGTH := 26.0
 const ROD_COLOUR := Color("#6b4a2b")
@@ -145,10 +145,10 @@ func set_boat(id: String) -> void:
 	boat.texture = tex
 	hull.texture = tex
 	var h := float(tex.get_height())
-	ride = h - DRAFT if _painted else 44.0
+	var spec: Dictionary = Data.boats.get(id, {})
+	ride = h - float(spec.get("draft", DRAFT)) if _painted else 44.0
 	deck = _deck_row(tex.get_image()) if _painted else 30.0
 	_rails = _rail_rows(tex.get_image())
-	var spec: Dictionary = Data.boats.get(id, {})
 	# A boat with a tall sail or high sides names its seat in boats.json, since the outline alone cannot find it.
 	var at: Array = spec.get("seat", [])
 	seat = Vector2(float(at[0]), float(at[1])) if at.size() == 2 else Vector2(0.62, deck)
