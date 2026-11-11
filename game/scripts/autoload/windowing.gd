@@ -65,6 +65,12 @@ func _ready() -> void:
 	Nav.screen_changed.connect(_on_screen_changed)
 	_fit.call_deferred()
 	_update_fps()
+	# Minimising does not tell the game, so it looks once a second.
+	var look := Timer.new()
+	look.wait_time = 1.0
+	look.timeout.connect(func() -> void: if not strip_dragging: _update_fps())
+	add_child(look)
+	look.start()
 
 
 func _notification(what: int) -> void:
@@ -407,6 +413,9 @@ func _update_fps() -> void:
 		fps = 15
 	elif strip or not _focused:
 		fps = 30
+	# A minimised window shows nothing, so the game only needs to keep its time.
+	if get_window().mode == Window.MODE_MINIMIZED:
+		fps = 5
 	Engine.max_fps = fps
 
 
