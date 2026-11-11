@@ -73,7 +73,7 @@ var _water: WaterView
 var _murk: Murk
 var _land: UnderLand
 var _boat: BoatView
-var _ground: Node2D
+var _ground: GroundView
 var _line: LineView
 var _rain: Array = []
 var _ashore: Button
@@ -185,8 +185,8 @@ func _build() -> void:
 	_water.depth = float(place["depth"])
 	_water.z_index = -10
 	_lit.add_child(_water)
-	_ground = Painter.new()
-	_ground.fn = _draw_ground
+	_ground = GroundView.new()
+	_ground.build(seabed, float(place["width"]), _ground_below)
 	_ground.z_index = -6
 	_lit.add_child(_ground)
 	swimmers = Swimmers.new()
@@ -567,7 +567,7 @@ func relayout() -> void:
 	_lit.modulate = Color(light, 1.0)
 	_land.place_at(camera.cam)
 	_murk.place_at(camera.cam, _lit.modulate)
-	_ground.queue_redraw()
+	_ground.place_at(camera.cam)
 	_line.queue_redraw()
 	_water.queue_redraw()
 
@@ -791,31 +791,6 @@ func _rain_step(delta: float) -> void:
 
 func rain() -> Array:
 	return _rain
-
-
-## Solid shadow below the seabed, fading in over sixteen pixels, so pieces in front of the floor never end in a cut.
-func _draw_ground(node: Node2D) -> void:
-	var cam := camera.cam
-	var x0 := floorf(cam.x / 8.0) * 8.0 - 8.0
-	var view := Nav.view()
-	while x0 < cam.x + view.x:
-		var x1 := x0 + 8.0
-		var a := Vector2(x0, roundf(seabed.depth_at(x0) + _ground_below)) - cam
-		var b := Vector2(x1, roundf(seabed.depth_at(x1) + _ground_below)) - cam
-		var bottom := maxf(view.y + 10.0, maxf(a.y, b.y) + 1.0)
-		node.draw_colored_polygon(PackedVector2Array([a, b, Vector2(b.x, bottom), Vector2(a.x, bottom)]), FloorView.SHADOW)
-		for k in 8:
-			var up := Vector2(0, 16.0 - k * 2.0)
-			var down := Vector2(0, 14.0 - k * 2.0)
-			node.draw_colored_polygon(PackedVector2Array([a - up, b - up, b - down, a - down]), Color(FloorView.SHADOW, (k + 1) / 9.0))
-		x0 = x1
-
-
-class Painter extends Node2D:
-	var fn: Callable
-
-	func _draw() -> void:
-		fn.call(self)
 
 
 ## The sea's sounds for the hour and weather, and the dog's delight when a shoal passes under the boat.

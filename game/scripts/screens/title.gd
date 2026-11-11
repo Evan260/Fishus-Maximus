@@ -20,7 +20,7 @@ var _lit: Node2D
 var _layers: ParallaxLayers
 var _floor: FloorView
 var _water: WaterView
-var _ground: Node2D
+var _ground: GroundView
 var _surface: Node2D
 var _land: UnderLand
 var _murk: Murk
@@ -70,9 +70,9 @@ func _build() -> void:
 	_water.depth = float(place["depth"])
 	_water.z_index = -10
 	_lit.add_child(_water)
-	_ground = Node2D.new()
+	_ground = GroundView.new()
+	_ground.build(seabed, float(place["width"]), float(place.get("ground_below", 24)))
 	_ground.z_index = -6
-	_ground.draw.connect(_draw_ground)
 	_lit.add_child(_ground)
 	swimmers = Swimmers.new()
 	swimmers.z_index = -4
@@ -136,26 +136,8 @@ func _relayout() -> void:
 	_murk.place_at(cam, _lit.modulate)
 	swimmers.cam = cam
 	_water.queue_redraw()
-	_ground.queue_redraw()
+	_ground.place_at(cam)
 	_surface.queue_redraw()
-
-
-## Solid shadow below the seabed, fading in over sixteen pixels, as the coast draws it.
-func _draw_ground() -> void:
-	var below := float(place.get("ground_below", 24))
-	var view := Nav.view()
-	var x0 := floorf(cam.x / 8.0) * 8.0 - 8.0
-	while x0 < cam.x + view.x:
-		var x1 := x0 + 8.0
-		var a := Vector2(x0, roundf(seabed.depth_at(x0) + below)) - cam
-		var b := Vector2(x1, roundf(seabed.depth_at(x1) + below)) - cam
-		var bottom := maxf(view.y + 10.0, maxf(a.y, b.y) + 1.0)
-		_ground.draw_colored_polygon(PackedVector2Array([a, b, Vector2(b.x, bottom), Vector2(a.x, bottom)]), FloorView.SHADOW)
-		for k in 8:
-			var up := Vector2(0, 16.0 - k * 2.0)
-			var down := Vector2(0, 14.0 - k * 2.0)
-			_ground.draw_colored_polygon(PackedVector2Array([a - up, b - up, b - down, a - down]), Color(FloorView.SHADOW, (k + 1) / 9.0))
-		x0 = x1
 
 
 func _show_menu() -> void:
