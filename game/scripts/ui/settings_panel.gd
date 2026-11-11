@@ -33,20 +33,11 @@ static func open() -> void:
 	Ui.label(own, "Your music").custom_minimum_size = Vector2(53, 0)
 	Ui.button(own, "Open folder", func(): Audio.open_music_folder()).tooltip_text = "Songs you put in this folder play between the game's own."
 	Ui.label(own, ".ogg, .mp3 or .wav", "MutedLabel").size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	var sizes := HBoxContainer.new()
-	sizes.add_theme_constant_override("separation", 3)
-	list.add_child(sizes)
-	Ui.label(sizes, "Interface").custom_minimum_size = Vector2(53, 0)
-	var group := ButtonGroup.new()
-	for choice in [[-1, "Normal", "The usual size."], [0, "Larger", "A step larger, the size of the scene's own pixels."],
-			[1, "Largest", "Larger still, while the window has room for it."]]:
-		var step: int = choice[0]
-		var b := Ui.button(sizes, choice[1], func(): Settings.set_value("interface_size", step))
-		b.name = choice[1]
-		b.toggle_mode = true
-		b.button_group = group
-		b.tooltip_text = choice[2]
-		b.set_pressed_no_signal(Settings.interface_size == step)
+	var sizes := {-1: "Smaller", 0: "Normal", 1: "Larger", 2: "Largest"}
+	var size_row := Ui.row(list, "Interface size", sizes[Settings.ui_scale_step], func():
+		Settings.set_value("ui_scale_step", Settings.next_ui_step(Settings.ui_scale_step))
+		SettingsPanel.open())
+	size_row.name = "InterfaceSize"
 	var units := HBoxContainer.new()
 	units.add_theme_constant_override("separation", 3)
 	list.add_child(units)

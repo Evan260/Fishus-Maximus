@@ -16,9 +16,9 @@ var maximized := false
 ## Gentle fishing never snaps a line or lets a hook slip.
 var gentle := false
 var large_text := false
-## How large the interface is drawn, as a step from the game's own size: -1 Normal, a step smaller than the game,
-## 0 Larger, the game's own size, and 1 Largest, a step larger still.
-var interface_size := -1
+## How large the interface is drawn: -1 Smaller, 0 Normal (a step under the game's own size), 1 Larger (the game's
+## own size) or 2 Largest.
+var ui_scale_step := 0
 ## The units weights are shown in: "metric" for kilograms or "imperial" for pounds.
 var units := "metric"
 ## Old Rufus's lessons for a new player.
@@ -32,9 +32,9 @@ func _ready() -> void:
 	var cfg := ConfigFile.new()
 	if not Dev.has("no-save") and not Dev.has("run-tests") and cfg.load(PATH) == OK:
 		read_from(cfg)
-	# --ui-size=-1 (Normal), 0 (Larger) or 1 (Largest) tries an interface size without saving it, for screenshots.
+	# --ui-size=-1 (Smaller), 0 (Normal), 1 (Larger) or 2 (Largest) tries an interface size without saving it.
 	if Dev.has("ui-size"):
-		interface_size = clampi(int(Dev.num("ui-size", -1)), -1, 1)
+		ui_scale_step = clampi(int(Dev.num("ui-size", 0)), -1, 2)
 	apply()
 	_restore_window.call_deferred()
 
@@ -47,7 +47,11 @@ func read_from(cfg: ConfigFile) -> void:
 	ambience = cfg.get_value("sound", "ambience", ambience)
 	fullscreen = cfg.get_value("display", "fullscreen", fullscreen)
 	maximized = cfg.get_value("display", "maximized", maximized)
-	interface_size = clampi(int(cfg.get_value("display", "interface_size", interface_size)), -1, 1)
+	if cfg.has_section_key("display", "ui_scale_step"):
+		ui_scale_step = clampi(int(cfg.get_value("display", "ui_scale_step")), -1, 2)
+	elif cfg.has_section_key("display", "interface_size"):
+		# The old steps counted Normal as -1, so each saved size moves up one and still draws the same.
+		ui_scale_step = clampi(int(cfg.get_value("display", "interface_size")) + 1, 0, 2)
 	gentle = cfg.get_value("play", "gentle", gentle)
 	large_text = cfg.get_value("play", "large_text", large_text)
 	guide = cfg.get_value("play", "guide", guide)
@@ -102,12 +106,17 @@ func write_to(cfg: ConfigFile) -> void:
 	cfg.set_value("sound", "ambience", ambience)
 	cfg.set_value("display", "fullscreen", fullscreen)
 	cfg.set_value("display", "maximized", maximized)
-	cfg.set_value("display", "interface_size", interface_size)
+	cfg.set_value("display", "ui_scale_step", ui_scale_step)
 	cfg.set_value("display", "units", units)
 	cfg.set_value("play", "gentle", gentle)
 	cfg.set_value("play", "large_text", large_text)
 	cfg.set_value("play", "guide", guide)
 	cfg.set_value("play", "tooltips", tooltips)
+
+
+## The interface size after `step`: Normal, Larger, Largest, Smaller, then Normal again.
+static func next_ui_step(step: int) -> int:
+	return (step + 2) % 4 - 1
 
 
 func toggle_fullscreen() -> void:

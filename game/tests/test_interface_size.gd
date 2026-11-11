@@ -11,7 +11,7 @@ func _resize(size: Vector2i) -> void:
 
 
 func _set_size(step: int) -> void:
-	Settings.interface_size = step
+	Settings.ui_scale_step = step
 	Windowing._fit()
 
 
@@ -37,7 +37,7 @@ func _in_window(r: Rect2) -> Rect2:
 
 
 func _restore(before: Vector2i) -> void:
-	_set_size(-1)
+	_set_size(0)
 	_resize(before)
 
 
@@ -46,11 +46,11 @@ func test_each_interface_size_draws_its_pixels_whole() -> void:
 	for size in SIZES:
 		_resize(size)
 		var zoom := Nav.zoom
-		for step in [-1, 0, 1]:
+		for step in [-1, 0, 1, 2]:
 			_set_size(step)
 			var room := Vector2(size) / float(zoom + 1)
-			var want := maxi(1, zoom + step)
-			if step > 0 and (room.x < Nav.UI_LEAST.x or room.y < Nav.UI_LEAST.y):
+			var want := maxi(1, zoom - 1 + step)
+			if step > 1 and (room.x < Nav.UI_LEAST.x or room.y < Nav.UI_LEAST.y):
 				want = zoom
 			check(Nav.ui_zoom == want, "%s at %d: the interface is %dx, not %dx" % [size, step, want, Nav.ui_zoom])
 			var corner := _in_window(Rect2(Vector2(5, 7), Vector2(11, 3)))
@@ -60,15 +60,17 @@ func test_each_interface_size_draws_its_pixels_whole() -> void:
 	_restore(before)
 
 
-func test_normal_larger_and_largest_differ_where_there_is_room() -> void:
+func test_each_interface_size_differs_where_there_is_room() -> void:
 	var before := Windowing.get_window().size
 	_resize(Vector2i(2560, 1377))
 	var zoom := Nav.zoom
 	_set_size(-1)
-	check(Nav.ui_zoom == zoom - 1, "Normal draws the interface a step smaller than the game")
+	check(Nav.ui_zoom == zoom - 2, "Smaller draws the interface two steps smaller than the game")
 	_set_size(0)
-	check(Nav.ui_zoom == zoom, "Larger at the game's own size")
+	check(Nav.ui_zoom == zoom - 1, "Normal draws the interface a step smaller than the game")
 	_set_size(1)
+	check(Nav.ui_zoom == zoom, "Larger at the game's own size")
+	_set_size(2)
 	check(Nav.ui_zoom == zoom + 1, "Largest a step larger still, while it has room")
 	_resize(Vector2i(480, 270))
 	_set_size(-1)
@@ -81,7 +83,7 @@ func test_the_boat_buttons_hang_from_the_window_corners_at_every_size() -> void:
 	var s := _coast()
 	for size in [Vector2i(1440, 810), Vector2i(1920, 1080), Vector2i(2560, 1377)]:
 		_resize(size)
-		for step in [-1, 0, 1]:
+		for step in [-1, 0, 1, 2]:
 			_set_size(step)
 			var map := _in_window(s._sail.get_global_rect())
 			var ashore := _in_window(s._ashore.get_global_rect())
@@ -96,7 +98,7 @@ func test_the_boat_buttons_hang_from_the_window_corners_at_every_size() -> void:
 func test_the_guide_points_at_the_map_at_every_size() -> void:
 	var before := Windowing.get_window().size
 	var s := _coast()
-	for step in [-1, 0, 1]:
+	for step in [-1, 0, 1, 2]:
 		_resize(Vector2i(2560, 1377))
 		_set_size(step)
 		check(s.guide_target("map") == s._sail.get_global_rect(), "at %d the map's place is where its picture is drawn" % step)
@@ -112,7 +114,7 @@ func test_old_rufus_stands_clear_of_the_top_corners_at_every_size() -> void:
 	var tiles: Control = s.hud.find_child("Logbook", true, false).get_parent()
 	for size in [Vector2i(1440, 810), Vector2i(1920, 1080), Vector2i(2560, 1377)]:
 		_resize(size)
-		for step in [-1, 0, 1]:
+		for step in [-1, 0, 1, 2]:
 			_set_size(step)
 			var note := GuideNote.find()
 			note.refresh()
@@ -137,7 +139,7 @@ func test_the_town_bar_fits_across_every_size() -> void:
 	s.enter({})
 	for size in [Vector2i(1440, 810), Vector2i(1920, 1080)]:
 		_resize(size)
-		for step in [-1, 0, 1]:
+		for step in [-1, 0, 1, 2]:
 			_set_size(step)
 			var bar: Control = s._top.get_parent()
 			check(bar.get_global_rect().end.x <= Nav.ui_view().x - 4.0, "%s at %d: the town's bar fits across, %s in %s" % [size, step, bar.get_global_rect(), Nav.ui_view()])
@@ -153,7 +155,7 @@ func test_the_town_guide_and_speech_follow_the_street_at_every_size() -> void:
 	var s: Node = load(Nav.SCREENS["town"]).new()
 	Nav.port.add_child(s)
 	s.enter({})
-	for step in [-1, 0, 1]:
+	for step in [-1, 0, 1, 2]:
 		_resize(Vector2i(2560, 1377))
 		_set_size(step)
 		var r: Rect2 = s.guide_target("market")
@@ -175,7 +177,7 @@ func test_the_town_guide_and_speech_follow_the_street_at_every_size() -> void:
 func test_the_tackle_hangs_over_the_line_at_every_size() -> void:
 	var before := Windowing.get_window().size
 	var s := _coast()
-	for step in [-1, 0, 1]:
+	for step in [-1, 0, 1, 2]:
 		_resize(Vector2i(1920, 1080))
 		_set_size(step)
 		var line: Button = s.hud.method_buttons["line"]
@@ -195,7 +197,7 @@ func test_a_window_too_big_for_a_larger_interface_is_drawn_smaller_to_fit() -> v
 	_clear()
 	Game.new_game("Test", "mutt")
 	_resize(Vector2i(1920, 1080))
-	_set_size(1)
+	_set_size(2)
 	LogbookPanel.open()
 	var win: Control = Nav.ui.get_node("Window")
 	win.get_parent().propagate_notification(Control.NOTIFICATION_RESIZED)
@@ -213,7 +215,7 @@ func test_the_strip_makes_room_for_its_controls_at_every_size() -> void:
 	var before := Windowing.get_window().size
 	_clear()
 	Game.new_game("Test", "mutt")
-	for step in [-1, 0, 1]:
+	for step in [-1, 0, 1, 2]:
 		_set_size(step)
 		Windowing.strip = true
 		Windowing._fit()
@@ -233,19 +235,19 @@ func test_the_settings_choose_the_interface_size() -> void:
 	_clear()
 	_resize(Vector2i(2560, 1377))
 	var zoom := Nav.zoom
-	SettingsPanel.open()
-	var win: Control = Nav.ui.get_node("Window")
-	var largest: Button = win.find_child("Largest", true, false)
-	var larger: Button = win.find_child("Larger", true, false)
-	var normal: Button = win.find_child("Normal", true, false)
-	check(largest != null and larger != null and normal != null and normal.button_pressed and not larger.button_pressed, "the settings offer the sizes, Normal chosen")
-	check(win.find_child("Smaller", true, false) == null, "with nothing smaller than Normal")
-	larger.pressed.emit()
-	check(Settings.interface_size == 0 and Nav.ui_zoom == zoom, "choosing Larger draws the interface at the game's size at once")
-	largest.pressed.emit()
-	check(Settings.interface_size == 1 and Nav.ui_zoom == zoom + 1, "and Largest a step larger still")
-	normal.pressed.emit()
-	check(Settings.interface_size == -1 and Nav.ui_zoom == zoom - 1, "and Normal a step under the game's size")
+	Settings.ui_scale_step = 0
+	Windowing._fit()
+	var seen := []
+	for k in 5:
+		SettingsPanel.open()
+		var row: Control = Nav.ui.get_node("Window").find_child("InterfaceSize", true, false)
+		var b: Button = row.find_children("*", "Button", true, false)[0]
+		seen.append([b.text, Nav.ui_zoom])
+		b.pressed.emit()
+	check(seen == [["Normal", zoom - 1], ["Larger", zoom], ["Largest", zoom + 1], ["Smaller", zoom - 2], ["Normal", zoom - 1]],
+		"the setting steps Normal, Larger, Largest, Smaller and back, each drawn at once: %s" % [seen])
+	Settings.ui_scale_step = 0
+	Windowing._fit()
 	Ui.close_window()
 	_clear()
 	_restore(before)
@@ -254,7 +256,7 @@ func test_the_settings_choose_the_interface_size() -> void:
 func test_a_tip_is_drawn_at_the_interface_size() -> void:
 	var before := Windowing.get_window().size
 	_resize(Vector2i(2560, 1377))
-	for step in [-1, 0, 1]:
+	for step in [-1, 0, 1, 2]:
 		_set_size(step)
 		var owner := Ui.button(Nav.ui, "Tip", func(): pass)
 		owner.position = Vector2(40, 30)
@@ -282,7 +284,7 @@ func test_a_corner_button_tip_stays_by_the_pointer_wherever_it_rests_on_the_butt
 	var s := _coast()
 	for size in [Vector2i(1440, 810), Vector2i(1920, 1080), Vector2i(2560, 1377)]:
 		_resize(size)
-		for step in [-1, 0, 1]:
+		for step in [-1, 0, 1, 2]:
 			_set_size(step)
 			var settings: Control = s.hud.find_child("Settings", true, false)
 			var r := _in_window(settings.get_global_rect())
@@ -311,10 +313,18 @@ func test_a_corner_button_tip_stays_by_the_pointer_wherever_it_rests_on_the_butt
 
 func test_normal_is_the_default_and_a_saved_size_keeps_its_meaning() -> void:
 	var fresh: Node = load("res://scripts/autoload/settings.gd").new()
-	check(fresh.interface_size == -1, "a new player starts at Normal, a step under the game's size")
-	for step in [-1, 0, 1]:
+	check(fresh.ui_scale_step == 0, "a new player starts at Normal, a step under the game's size")
+	for old in [[-1, 0], [0, 1], [1, 2]]:
 		var cfg := ConfigFile.new()
-		cfg.set_value("display", "interface_size", step)
+		cfg.set_value("display", "interface_size", old[0])
 		fresh.read_from(cfg)
-		check(fresh.interface_size == step, "a saved %d still draws the same size" % step)
+		check(fresh.ui_scale_step == old[1], "an old saved %d becomes %d and draws the same size" % old)
+	for step in [-1, 0, 1, 2]:
+		var cfg := ConfigFile.new()
+		cfg.set_value("display", "ui_scale_step", step)
+		fresh.read_from(cfg)
+		check(fresh.ui_scale_step == step, "a saved %d keeps its size" % step)
+	var out := ConfigFile.new()
+	fresh.write_to(out)
+	check(out.has_section_key("display", "ui_scale_step") and not out.has_section_key("display", "interface_size"), "and it is kept as ui_scale_step")
 	fresh.free()

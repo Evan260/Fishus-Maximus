@@ -60,7 +60,7 @@ func _ready() -> void:
 	get_window().size_changed.connect(_fit)
 	get_viewport().transparent_bg = false
 	Settings.changed.connect(_apply_volume)
-	Settings.changed.connect(func(): if Settings.interface_size != _fitted_ui: _fit())
+	Settings.changed.connect(func(): if Settings.ui_scale_step != _fitted_ui: _fit())
 	Nav.screen_changed.connect(_on_screen_changed)
 	_fit.call_deferred()
 	for key in [["toggle_strip", KEY_F10], ["reset_strip", KEY_F9]]:
@@ -128,7 +128,7 @@ func _process(delta: float) -> void:
 ## of any shape is filled to its edges with no bars. The strip's view is its own width by its few rows.
 func _fit() -> void:
 	_fitted = get_window().size
-	_fitted_ui = Settings.interface_size
+	_fitted_ui = Settings.ui_scale_step
 	if strip:
 		Nav.fit(Vector2i(strip_view(), STRIP.y), scale)
 		view_changed.emit()

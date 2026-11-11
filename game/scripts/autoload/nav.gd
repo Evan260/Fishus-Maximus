@@ -28,7 +28,7 @@ var world: Node2D
 var ui_layer: CanvasLayer
 ## Window pixels per game pixel.
 var zoom := 1
-## Window pixels per interface pixel: the game's zoom, or a step either side of it as the settings choose.
+## Window pixels per interface pixel: a step under the game's zoom at Normal, more or less as the settings choose.
 var ui_zoom := 1
 var _frame: SubViewportContainer
 var ui: Control
@@ -167,7 +167,7 @@ func _fit_ui() -> void:
 ## never under one, and a larger interface only while it keeps the room its bars need.
 func ui_zoom_for(shown: Vector2, scale: int) -> int:
 	var least := STRIP_UI_LEAST if Windowing.strip else UI_LEAST
-	var z := maxi(1, scale + Settings.interface_size)
+	var z := maxi(1, scale - 1 + Settings.ui_scale_step)
 	while z > scale and (shown.x / z < least.x or shown.y / z < least.y):
 		z -= 1
 	return z
