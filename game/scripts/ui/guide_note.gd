@@ -124,8 +124,11 @@ func refresh() -> void:
 	var was := visible
 	# What he was told to put away is kept with the game, so it stays away on every screen until he has news.
 	visible = say != "" and id != str(Game.state.get("_guide_dismissed", "")) and not away
-	if _text.text != say:
+	var big := Settings.message_scale()
+	if _text.text != say or _text.custom_minimum_size.x != WIDTH * big:
 		_text.text = say
+		_text.custom_minimum_size.x = WIDTH * big
+		_text.add_theme_font_size_override("font_size", UiTheme.TEXT * big)
 		reset_size()
 	Ui.hang(self, "top_right", Vector2(4, _top()))
 	_arrow.visible = visible and target_rect().has_area()
