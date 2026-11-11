@@ -36,7 +36,7 @@ A cozy Roman fishing game in Godot 4.7 (GDScript, 2D, GL Compatibility), set on 
 - Every screen in one go: `--path game -- --flow=DIR --no-save` saves a screenshot of each.
 - Pacing: `--headless --path game -- --pacing --no-save` prints when each chapter, boat and legend arrives for three keen players over 40 hours. Targets: chapter 2 in 1 to 2 hours, 3 in 4 to 6, 4 in 9 to 13, 5 in 16 to 22, every legend within 40.
 - After painting a place: `python tools/art/check_edges.py` must print `no visible cut edges`.
-- Build: `--headless --path game --export-release "Windows" "../builds/windows/Fishus Maximus.exe"`, with the trimmed engine copied from Mosaicus Maximus (`tools/engine/`, git-ignored; no 3D, physics, navigation, regex or noise). Copy `CREDITS.md` beside it as `Credits and licences.txt`, and `tools/Fishus Maximus - everything unlocked.bat` beside it as it is.
+- Build: `--headless --path game --export-release "Windows" "../builds/windows/Fishus Maximus.exe"`, with the trimmed engine copied from Mosaicus Maximus (`tools/engine/`, git-ignored; no 3D, physics, navigation, regex or noise). Write `Credits and licences.txt` beside it with `--headless --path game --script res://tools/write_credits.gd -- --out="../builds/windows/Credits and licences.txt"` (the credits in `game/data/credits.json`, then Godot's licence and its libraries'), and copy `tools/Fishus Maximus - everything unlocked.bat` beside it as it is.
 
 ## Conventions
 
