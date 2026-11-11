@@ -255,7 +255,7 @@ func _draw() -> void:
 				draw_rect(Rect2(Vector2(x - 1, surface), Vector2(2, 1)), RIPPLE)
 				draw_rect(Rect2(Vector2(x - 1 + side * 2.0, surface - 1 - (1 if fmod(t, 0.3) < 0.15 else 0)), Vector2(1, 1)), RIPPLE)
 			if state == "bite":
-				draw_string(UiTheme.title_font(), Vector2(bob.x - 1, surface - 6), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
+				draw_string(UiTheme.name_font(), Vector2(bob.x - 1, surface - 6), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
 	if hook_shown and not (fish_on_line() != "" and _fish.visible):
 		draw_rect(Rect2(at, Vector2(1, 3)), HOOK)
 		if bait_shown():

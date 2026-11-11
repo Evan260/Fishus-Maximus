@@ -26,7 +26,7 @@ static func say(text: String) -> void:
 	l.add_theme_constant_override("outline_size", 2)
 	# The pixel font stays sharp only at whole multiples of its size, so larger text is twice as big.
 	if Settings.large_text:
-		l.add_theme_font_size_override("font_size", UiTheme.TEXT * 2)
+		l.add_theme_font_size_override("font_size", UiTheme.text_size() * 2)
 		l.add_theme_constant_override("outline_size", 4)
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_box.add_child(l)

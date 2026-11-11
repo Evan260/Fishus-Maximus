@@ -180,7 +180,7 @@ func _refresh_ui() -> void:
 		Clock.season(day), ch["name"], int(Game.state["reputation"]), Game.state["hold"].size(),
 		int(Data.boats[Game.state["boat"]]["hold"])]
 	# A larger interface can leave too little room across for one line, so the chapter and the hold then go on a second.
-	if UiTheme.body_font().get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.TEXT).x + 24.0 > Nav.ui_view().x:
+	if UiTheme.body_font().get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.text_size()).x + 24.0 > Nav.ui_view().x:
 		line = line.replace("   %s:" % ch["name"], "\n%s:" % ch["name"])
 	_top.text = line
 	_top.get_parent().reset_size()
@@ -316,7 +316,7 @@ func _draw_over() -> void:
 		var bob := roundf(sin(Time.get_ticks_msec() / 300.0) * 1.5)
 		var at := Vector2(c["x"] - 2.0, STREET_Y - 46.0 + bob)
 		_painter.draw_rect(Rect2(at + Vector2(-3, -9), Vector2(10, 11)), Color(UiTheme.INK, 0.8))
-		_painter.draw_string(UiTheme.title_font(), at + Vector2(0, 0), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
+		_painter.draw_string(UiTheme.name_font(), at + Vector2(0, 0), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
 
 
 func _unhandled_input(e: InputEvent) -> void:

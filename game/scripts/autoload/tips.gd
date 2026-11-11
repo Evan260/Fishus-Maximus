@@ -71,7 +71,7 @@ func _tip_owner(c: Control) -> Control:
 ## Shows `owner`'s tip beside a pointer at `at`, in interface pixels.
 func show_for(owner: Control, at: Vector2) -> void:
 	var lines := wrap_text(tr(str(owner.get_meta("tip"))))
-	_label.add_theme_font_size_override("font_size", UiTheme.TEXT * Settings.message_scale())
+	_label.add_theme_font_size_override("font_size", UiTheme.text_size() * Settings.message_scale())
 	if _label.text != lines or not _panel.visible:
 		_label.text = lines
 		_panel.visible = true
@@ -90,7 +90,7 @@ func panel() -> PanelContainer:
 ## Breaks a tip into lines no wider than `WRAP`, between letters where a language leaves no spaces between words.
 func wrap_text(text: String) -> String:
 	var font := UiTheme.body_font()
-	var size := UiTheme.TEXT * Settings.message_scale()
+	var size := UiTheme.text_size() * Settings.message_scale()
 	var width := WRAP * Settings.message_scale()
 	var out := PackedStringArray()
 	for para in text.split("\n"):

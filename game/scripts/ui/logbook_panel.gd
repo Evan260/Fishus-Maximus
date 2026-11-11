@@ -397,7 +397,7 @@ static func _two_lines(text: String, width: float) -> Array:
 	var i := 0
 	while i < words.size():
 		var next := (first + " " + words[i]).strip_edges()
-		if first != "" and font.get_string_size(next, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.TEXT).x > width:
+		if first != "" and font.get_string_size(next, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.text_size()).x > width:
 			break
 		first = next
 		i += 1

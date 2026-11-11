@@ -38,5 +38,5 @@ func test_the_tips_name_the_fish_each_suits() -> void:
 func test_a_long_tip_is_broken_into_short_lines() -> void:
 	var tip: String = Tips.wrap_text("Loved by gilt-head bream, white sea bream and squid. Also taken by red porgy and mullet.")
 	var font := UiTheme.body_font()
-	check(tip.contains("\n") and Array(tip.split("\n")).all(func(l): return font.get_string_size(l, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.TEXT).x <= Tips.WRAP),
+	check(tip.contains("\n") and Array(tip.split("\n")).all(func(l): return font.get_string_size(l, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.text_size()).x <= Tips.WRAP),
 		"no line of the tip runs past the tips' width")

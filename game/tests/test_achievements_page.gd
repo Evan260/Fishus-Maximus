@@ -62,10 +62,10 @@ func test_each_achievement_fits_its_row() -> void:
 	LogbookPanel.open_achievements()
 	var font := UiTheme.body_font()
 	for a in Data.achievements:
-		var name_width := font.get_string_size(str(a["name"]), HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.TEXT).x
+		var name_width := font.get_string_size(str(a["name"]), HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.text_size()).x
 		check(name_width <= LogbookPanel.HONOUR.x - 24, "%s's name fits on one line" % a["id"])
 		var parts: Array = LogbookPanel._two_lines(str(a["text"]), LogbookPanel.HONOUR.x - 24)
-		check(font.get_string_size(parts[1], HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.TEXT).x <= LogbookPanel.HONOUR.x - 24, "and what it asks in two, %s" % a["id"])
+		check(font.get_string_size(parts[1], HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.text_size()).x <= LogbookPanel.HONOUR.x - 24, "and what it asks in two, %s" % a["id"])
 	_clear()
 
 

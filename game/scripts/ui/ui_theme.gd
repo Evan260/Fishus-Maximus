@@ -11,34 +11,99 @@ const SEA := Color8(52, 104, 118)
 const RED := Color8(168, 52, 44)
 const PARCHMENT := Color8(232, 214, 176)
 const WOOD := Color8(108, 70, 44)
-const TEXT := 10
-const HEADING := 8
-const TITLE := 16
+## Languages Silkscreen has every letter for; the rest draw their headings in the body font.
+const SILKSCREEN := ["en", "fr", "de", "es", "it", "pt"]
+## Languages drawn in Fusion Pixel's 8-pixel Chinese, Japanese and Korean fonts, whose Latin letters match them.
+const HAN := {"ja": "ja", "ko": "ko", "zh_CN": "zh_hans", "zh_TW": "zh_tw"}
+const FONTS := "res://assets/fonts/"
 
 static var _theme: Theme
-static var _body: FontFile
-static var _title: FontFile
+## Each language's fonts, made once and kept, since text drawn with a font that is then thrown away shows as blocks.
+static var _bodies := {}
+static var _titles := {}
+static var _name_font: FontFile
 
 
-static func body_font() -> FontFile:
-	if _body == null:
-		_body = _crisp(load("res://assets/fonts/fusion-pixel-10px-proportional-latin.ttf.woff2"))
-	return _body
+## The font for running text in the current language, or in the language given.
+static func body_font(locale: String = "") -> FontFile:
+	var loc := _locale(locale)
+	if not _bodies.has(loc):
+		var ten := _crisp(load(FONTS + "fusion-pixel-10px-proportional-latin.ttf.woff2"))
+		if HAN.has(loc):
+			var han := _crisp(load(FONTS + "fusion-pixel-8px-proportional-%s.ttf.woff2" % HAN[loc]))
+			han.fallbacks = [ten]
+			_bodies[loc] = han
+		else:
+			_bodies[loc] = ten
+	return _bodies[loc]
 
 
-## Silkscreen, the blocky capitals used for headings, at 8 or 16 pixels.
-static func title_font() -> FontFile:
-	if _title == null:
-		_title = _crisp(load("res://assets/fonts/Silkscreen-Regular.ttf"))
-	return _title
+## Silkscreen, the blocky capitals used for headings, where it has the language's letters; otherwise the body font.
+static func title_font(locale: String = "") -> FontFile:
+	var loc := _locale(locale)
+	if not silkscreen(loc):
+		return body_font(loc)
+	if not _titles.has(loc):
+		var f := _crisp(load(FONTS + "Silkscreen-Regular.ttf"))
+		f.fallbacks = [body_font(loc)]
+		_titles[loc] = f
+	return _titles[loc]
+
+
+## Silkscreen in every language, for the game's own name.
+static func name_font() -> FontFile:
+	if _name_font == null:
+		_name_font = _crisp(load(FONTS + "Silkscreen-Regular.ttf"))
+	return _name_font
+
+
+## Whether headings in this language are drawn in Silkscreen.
+static func silkscreen(locale: String = "") -> bool:
+	return _locale(locale).get_slice("_", 0) in SILKSCREEN
+
+
+## The pixel size running text is drawn at, which is the size its pixel font is drawn for.
+static func text_size(locale: String = "") -> int:
+	return 8 if HAN.has(_locale(locale)) else 10
+
+
+## A heading's pixel size, or twice that for a title: Silkscreen is drawn at 8, other fonts at their own size.
+static func heading_size(big: bool = false) -> int:
+	var n := 8 if silkscreen() else text_size()
+	return n * 2 if big else n
+
+
+## The language showing now, as the game names its translations: "zh_CN" for any simplified Chinese.
+static func language() -> String:
+	return _locale("")
+
+
+static func _locale(locale: String) -> String:
+	var loc := locale if locale != "" else TranslationServer.get_locale()
+	if loc.begins_with("zh"):
+		return "zh_TW" if loc.contains("TW") or loc.contains("Hant") or loc.contains("HK") else "zh_CN"
+	return loc
+
+
+## Switches the shared theme to the current language's fonts; every control drawn with it follows.
+static func use_language() -> void:
+	if _theme:
+		_set_fonts(_theme)
+
+
+static func _set_fonts(t: Theme) -> void:
+	t.default_font = body_font()
+	t.default_font_size = text_size()
+	for variant in [["Heading", false], ["Title", true], ["LightHeading", false]]:
+		t.set_font("font", variant[0], title_font())
+		t.set_font_size("font_size", variant[0], heading_size(variant[1]))
 
 
 static func build() -> Theme:
 	if _theme:
 		return _theme
 	var t := Theme.new()
-	t.default_font = body_font()
-	t.default_font_size = TEXT
+	_set_fonts(t)
 	t.set_color("font_color", "Label", INK)
 	t.set_constant("line_spacing", "Label", 0)
 	for state in [["normal", "button", WOOD], ["hover", "button_hover", WOOD.lightened(0.15)], ["pressed", "button_pressed", WOOD.darkened(0.2)],
@@ -57,11 +122,9 @@ static func build() -> Theme:
 	t.set_stylebox("panel", "PanelContainer", _art_or_box("panel", 8, 8, PARCHMENT, WOOD))
 	t.set_stylebox("panel", "TooltipPanel", _art_or_box("tooltip", 4, 4, CREAM, WOOD))
 	t.set_color("font_color", "TooltipLabel", INK)
-	for variant in [["Heading", HEADING, INK], ["Title", TITLE, GOLD], ["LightHeading", HEADING, GOLD]]:
+	for variant in [["Heading", INK], ["Title", GOLD], ["LightHeading", GOLD]]:
 		t.set_type_variation(variant[0], "Label")
-		t.set_font("font", variant[0], title_font())
-		t.set_font_size("font_size", variant[0], variant[1])
-		t.set_color("font_color", variant[0], variant[2])
+		t.set_color("font_color", variant[0], variant[1])
 	t.set_type_variation("LightLabel", "Label")
 	t.set_color("font_color", "LightLabel", CREAM)
 	t.set_type_variation("MutedLabel", "Label")

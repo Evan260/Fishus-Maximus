@@ -341,7 +341,7 @@ static func tile(parent: Node, picture: Texture2D, caption: String, tip: String,
 static func price_tile(parent: Node, picture: Texture2D, price: int, tip: String, action: Callable, enabled := true,
 		size := Vector2(40, 40)) -> Button:
 	var t := tile(parent, picture, str(price), tip, action, enabled, false, size)
-	var words := UiTheme.title_font().get_string_size(str(price), HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.HEADING).x
+	var words := UiTheme.title_font().get_string_size(str(price), HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.heading_size()).x
 	var coin := TextureRect.new()
 	coin.texture = COIN
 	coin.mouse_filter = Control.MOUSE_FILTER_IGNORE

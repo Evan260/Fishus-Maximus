@@ -179,4 +179,4 @@ func _draw() -> void:
 	var rows := clampf(cut - top.y, 0.0, tex.get_height())
 	draw_texture_rect_region(tex, Rect2(top, Vector2(tex.get_width(), rows)), Rect2(0, 0, tex.get_width(), rows))
 	if _bark_left > 0.0:
-		draw_string(UiTheme.title_font(), Vector2(-2, -44), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
+		draw_string(UiTheme.name_font(), Vector2(-2, -44), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)

@@ -128,7 +128,7 @@ func refresh() -> void:
 	if _text.text != say or _text.custom_minimum_size.x != WIDTH * big:
 		_text.text = say
 		_text.custom_minimum_size.x = WIDTH * big
-		_text.add_theme_font_size_override("font_size", UiTheme.TEXT * big)
+		_text.add_theme_font_size_override("font_size", UiTheme.text_size() * big)
 		reset_size()
 	Ui.hang(self, "top_right", Vector2(4, _top()))
 	_arrow.visible = visible and target_rect().has_area()

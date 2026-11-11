@@ -38,7 +38,7 @@ static func show_earned(id: String) -> void:
 	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if Settings.large_text:
 		card.custom_minimum_size.x = WIDTH * 1.5
-		name.add_theme_font_size_override("font_size", UiTheme.TEXT * 2)
+		name.add_theme_font_size_override("font_size", UiTheme.text_size() * 2)
 	card.reset_size()
 	var view := Nav.ui_view()
 	var rest := Vector2(view.x - 4.0 - card.size.x, view.y - ABOVE - card.size.y).round()

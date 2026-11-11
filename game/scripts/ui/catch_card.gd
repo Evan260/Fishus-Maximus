@@ -174,7 +174,7 @@ static func _unfurl(card: Control, hang: Control) -> void:
 
 ## The fish's name on one line, or on two split at the space nearest the middle when one would be too wide.
 static func _title(name: String) -> String:
-	var across := UiTheme.title_font().get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.TITLE).x
+	var across := UiTheme.title_font().get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.heading_size(true)).x
 	if across <= INSIDE.size.x or not " " in name:
 		return name
 	var best := -1
