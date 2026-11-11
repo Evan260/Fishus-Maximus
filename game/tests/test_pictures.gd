@@ -44,7 +44,7 @@ func test_the_ways_of_fishing_are_pictures_with_tips() -> void:
 	for m in CoastMethods.METHODS:
 		var b: Button = s.hud.method_buttons[m]
 		check(b in _tiles(s.hud), "%s is shown as a picture" % m)
-		check(b.tooltip_text.length() > 30, "with a tip saying how to fish that way: %s" % b.tooltip_text)
+		check(str(b.get_meta("tip", "")).length() > 30, "with a tip saying how to fish that way: %s" % str(b.get_meta("tip", "")))
 	check(s.hud.method_buttons["line"].get_meta("chosen"), "the way he is fishing now is ringed")
 	_clear_ui()
 	s.free()
@@ -60,7 +60,7 @@ func test_the_map_logbook_settings_and_menu_are_pictures_with_tips() -> void:
 		var b: Button = buttons[id]
 		check(b != null and b in tiles, "%s is a picture" % id)
 		if b:
-			check(b.tooltip_text.begins_with(id), "with a tip naming it: %s" % b.tooltip_text)
+			check(str(b.get_meta("tip", "")).begins_with(id), "with a tip naming it: %s" % str(b.get_meta("tip", "")))
 			check(b.size == Hud.TILE, "as big as the ways of fishing, not %s" % b.size)
 	for id in ["bay_map", "logbook", "settings", "menu"]:
 		var pic: Texture2D = ItemArt.of(id)
@@ -98,7 +98,7 @@ func test_the_tackle_is_pictures() -> void:
 	Shop.buy(Game.state, "ash_rod")
 	Game.state["bait"]["shrimp"] = 5
 	TacklePanel.open()
-	var tips := " ".join(_tiles(Nav.ui).map(func(b): return b.tooltip_text)).to_lower()
+	var tips := " ".join(_tiles(Nav.ui).map(func(b): return str(b.get_meta("tip", "")))).to_lower()
 	for name in ["worm", "shrimp", "cane rod", "ash rod"]:
 		check(name in tips, "the tackle shows the %s as a picture with its tip" % name)
 	_clear_ui()
@@ -121,7 +121,7 @@ func test_the_shops_are_pictures() -> void:
 	_clear_ui()
 	ShopPanel.market()
 	var tiles := _tiles(Nav.ui)
-	check(tiles.any(func(b): return "mullet" in b.tooltip_text.to_lower()), "the market shows the fish in the hold as pictures")
+	check(tiles.any(func(b): return "mullet" in str(b.get_meta("tip", "")).to_lower()), "the market shows the fish in the hold as pictures")
 	var help := Helpers.HELP.values().filter(func(h): return int(h["chapter"]) <= int(Game.state["chapter"])).size()
 	check(help > 0 and tiles.size() == 1 + help, "and the help for hire this chapter too")
 	_clear_ui()

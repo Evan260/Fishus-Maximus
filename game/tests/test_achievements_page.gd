@@ -76,6 +76,6 @@ func test_the_logbook_tip_names_the_achievements() -> void:
 	Nav.port.add_child(s)
 	s.enter({"place": "harbour"})
 	var tile: Button = s.hud.find_child("Logbook", true, false)
-	check("achievements" in tile.tooltip_text, "the logbook's tip says the achievements are in it")
+	check("achievements" in str(tile.get_meta("tip", "")), "the logbook's tip says the achievements are in it")
 	_clear()
 	s.free()

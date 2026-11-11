@@ -126,7 +126,7 @@ func _outlined(parent: Node) -> Label:
 func _icon_button(icon: String, tip: String, action: Callable) -> Button:
 	var b := Button.new()
 	b.icon = _texture(icon)
-	b.tooltip_text = tip
+	Ui.tip_on(b, tip)
 	b.focus_mode = Control.FOCUS_NONE
 	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	b.custom_minimum_size = Vector2(16, 16)

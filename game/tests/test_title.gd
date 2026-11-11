@@ -138,7 +138,7 @@ func test_a_full_set_of_slots_is_never_written_over() -> void:
 	Game.state = {}
 	var s := _title()
 	var fresh: Button = _all(Nav.ui).filter(func(k): return k is Button and k.text == "New game")[0]
-	check(fresh.disabled and "Delete one" in fresh.tooltip_text, "with every slot taken, New game is off and says to delete one first")
+	check(fresh.disabled and "Delete one" in str(fresh.get_meta("tip", "")), "with every slot taken, New game is off and says to delete one first")
 	s._new_game()
 	check(not Ui.window_open(), "and no new game window opens")
 	check(FileAccess.get_file_as_string(Saves.path_for(1)) == first, "and slot 1 is left as it was")

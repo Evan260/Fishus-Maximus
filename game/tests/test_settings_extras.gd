@@ -44,7 +44,7 @@ func test_the_settings_open_the_music_folder() -> void:
 	check(row != null, "the settings have a row for your own music")
 	var b: Button = row.find_children("*", "Button", true, false)[0] if row else null
 	check(b != null and b.text == "Open folder", "with a button to open its folder")
-	check(row != null and row.get_child(0).text == "Your own music" and "(.ogg, .mp3 or .wav)" in b.tooltip_text, "named as in the other games, its tip naming the kinds of file")
+	check(row != null and row.get_child(0).text == "Your own music" and "(.ogg, .mp3 or .wav)" in str(b.get_meta("tip", "")), "named as in the other games, its tip naming the kinds of file")
 	check(Audio.PLAYER_MUSIC.begins_with("user://"), "which is kept beside the saves")
 	_clear()
 
@@ -74,13 +74,16 @@ func test_the_tips_can_be_turned_off_and_on() -> void:
 	_clear()
 	for on in [false, true]:
 		Settings.tooltips = on
-		var owner := Ui.button(Nav.ui, "Tip", func(): pass)
-		var tip := PopupPanel.new()
-		tip.theme_type_variation = "TooltipPanel"
-		owner.add_child(tip)
-		tip.size = Vector2i(40, 20)
-		tip.show()
-		Nav.fit_tip(tip)
-		check(tip.visible == on, "a tip shows only while tips are on (%s)" % on)
+		var owner := Ui.tip_on(Ui.button(Nav.ui, "Tip", func(): pass), "A tip")
+		Tips.show_for(owner, Vector2(20, 20))
+		Tips._process(0.0)
+		check(Tips.shown() == false, "a tip goes as soon as nothing with a tip is under the pointer (%s)" % on)
+		Tips.show_for(owner, Vector2(20, 20))
+		Tips._owner = owner
+		Tips._wait = 1.0
+		check(Tips._tip_owner(owner) == owner, "a button with a tip is found under the pointer")
 		owner.free()
+	Settings.tooltips = false
+	check(Tips._tip_owner(Ui.label(Nav.ui, "")) == null, "and a plain label has none")
+	_clear()
 	Settings.tooltips = was

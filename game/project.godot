@@ -21,6 +21,7 @@ Settings="*res://scripts/autoload/settings.gd"
 Game="*res://scripts/autoload/game_state.gd"
 Saves="*res://scripts/autoload/saves.gd"
 Nav="*res://scripts/autoload/nav.gd"
+Tips="*res://scripts/autoload/tips.gd"
 Windowing="*res://scripts/autoload/windowing.gd"
 Audio="*res://scripts/autoload/audio.gd"
 

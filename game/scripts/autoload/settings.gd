@@ -76,6 +76,11 @@ func apply() -> void:
 	changed.emit()
 
 
+## How many times the usual size a message's text is drawn: the toasts, old Rufus's notes, the cards and the tips.
+func message_scale() -> int:
+	return 2 if large_text else 1
+
+
 func set_value(key: String, value) -> void:
 	set(key, value)
 	apply()

@@ -36,8 +36,6 @@ var current: Node
 var current_name := ""
 var _fade: ColorRect
 var _busy := false
-## Where the pointer last was, in window pixels.
-var pointer := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -79,13 +77,10 @@ func _ready() -> void:
 	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	top.add_child(_fade)
-	get_tree().node_added.connect(_on_node_added)
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventMouse:
-		pointer = event.position
-	elif event.is_action_pressed("close_panel") and not SettingsPanel.waiting_for_key():
+	if event.is_action_pressed("close_panel") and not SettingsPanel.waiting_for_key():
 		if back_out():
 			get_viewport().set_input_as_handled()
 
@@ -97,32 +92,10 @@ func back_out() -> bool:
 	return Ui.close_top() or (current != null and current.has_method("go_back") and current.go_back())
 
 
-## Godot draws a tip at the game's zoom, so each one is drawn again at the interface's once it has been placed, before
-## it is first drawn; with tips turned off in the settings it is hidden then instead.
-func _on_node_added(n: Node) -> void:
-	if n is PopupPanel and n.theme_type_variation == "TooltipPanel":
-		fit_tip.call_deferred(n)
-
-
-## Draws a tip at `ui_zoom` window pixels per pixel, below and right of the pointer, or above or left of it where the
-## window ends.
-func fit_tip(shown) -> void:
-	if not is_instance_valid(shown) or not shown.visible:
-		return
-	var tip: PopupPanel = shown
-	if not Settings.tooltips:
-		tip.hide()
-		return
-	var size := (Vector2(tip.size) / tip.content_scale_factor * ui_zoom).ceil()
-	tip.content_scale_factor = ui_zoom
-	tip.size = Vector2i(size)
-	tip.position = Vector2i(tip_at(pointer, size, Rect2(Vector2.ZERO, Vector2(get_window().size))))
-
-
-## Where a tip of `size` goes for a pointer at `at`, both in window pixels, kept inside `room`: the tooltip
-## gap in interface pixels below and right of the pointer, or above or left of it where it would run out of the room.
+## Where a tip of `size` goes for a pointer at `at`, both in interface pixels, kept inside `room`: the tooltip
+## gap below and right of the pointer, or above or left of it where it would run out of the room.
 func tip_at(at: Vector2, size: Vector2, room: Rect2) -> Vector2:
-	var gap := Vector2(ProjectSettings.get_setting("display/mouse_cursor/tooltip_position_offset", Vector2(10, 10))) * ui_zoom
+	var gap := Vector2(ProjectSettings.get_setting("display/mouse_cursor/tooltip_position_offset", Vector2(10, 10)))
 	var to := at + gap
 	if to.x + size.x > room.end.x:
 		to.x = at.x - gap.x - size.x
@@ -181,6 +154,11 @@ func ui_view() -> Vector2:
 ## A point in view pixels, where the world is drawn on the screen, in interface pixels.
 func to_ui(p: Vector2) -> Vector2:
 	return ui_layer.transform.affine_inverse() * p
+
+
+## A point in window pixels in interface pixels.
+func window_to_ui(p: Vector2) -> Vector2:
+	return to_ui((p - _frame.position) / float(zoom))
 
 
 ## A rect in interface pixels in view pixels.

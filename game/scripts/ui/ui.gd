@@ -191,9 +191,11 @@ static func close_top() -> bool:
 	return true
 
 
-## Gives a control a tip shown when the pointer rests on it.
+## Gives a control a tip shown when the pointer rests on it, drawn by the Tips autoload at the interface's size.
 static func tip_on(c: Control, text: String) -> Control:
-	c.tooltip_text = text
+	c.set_meta("tip", text)
+	if c.mouse_filter == Control.MOUSE_FILTER_IGNORE:
+		c.mouse_filter = Control.MOUSE_FILTER_PASS
 	return c
 
 
@@ -290,7 +292,7 @@ static func tile(parent: Node, picture: Texture2D, caption: String, tip: String,
 	var b := Button.new()
 	b.focus_mode = Control.FOCUS_NONE
 	b.custom_minimum_size = size
-	b.tooltip_text = wrapped(tip, 46)
+	tip_on(b, tip)
 	b.disabled = not enabled
 	b.pressed.connect(Audio.play.bind("click", -6.0))
 	b.pressed.connect(action)
@@ -354,21 +356,6 @@ static func price_tile(parent: Node, picture: Texture2D, price: int, tip: String
 static func choose(t: Button, on: bool) -> void:
 	t.set_meta("chosen", on)
 	t.get_node("Ring").visible = on
-
-
-## Breaks a tip into lines of at most `width` letters, since Godot's tooltips never wrap.
-static func wrapped(text: String, width: int) -> String:
-	var lines := []
-	for para in text.split("\n"):
-		var line := ""
-		for word in para.split(" "):
-			if line != "" and line.length() + 1 + word.length() > width:
-				lines.append(line)
-				line = word
-			else:
-				line = word if line == "" else line + " " + word
-		lines.append(line)
-	return "\n".join(lines)
 
 
 ## A speech bubble over someone's head, as in Farmus Maximus: a small parchment note with a tail pointing down at them
