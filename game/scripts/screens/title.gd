@@ -182,7 +182,10 @@ func _show_menu() -> void:
 	if last > 0:
 		Ui.button(_menu, "Load", _load)
 	Ui.button(_menu, "Settings", func(): SettingsPanel.open())
-	Ui.button(_menu, "Quit", func(): get_tree().quit())
+	# The close notification goes out first, so the window's size and the settings are kept as when closing the window.
+	Ui.button(_menu, "Quit", func():
+		get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
+		get_tree().quit())
 	_place()
 
 
