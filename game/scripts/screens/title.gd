@@ -300,6 +300,7 @@ func _load() -> void:
 ## A game cannot be brought back, so deleting one asks for the word typed out, which no stray click can do.
 func _confirm_delete(slot: int, info: Dictionary) -> void:
 	var list := Ui.window("Delete a game", 260, 140)
+	Ui.closes_with(_load)
 	var word := tr("delete")
 	var fish := int(info.get("fish", 0))
 	var gone_text := tr("%s's game, on day %d with %d kinds of fish caught, will be gone for good. Type \"%s\" to delete it.") % [info["name"], int(info["day"]), fish, word]

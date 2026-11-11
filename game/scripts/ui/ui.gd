@@ -102,7 +102,7 @@ static func frame(title: String, width := 300.0, height := 200.0) -> VBoxContain
 	back.gui_input.connect(func(e: InputEvent):
 		if e is InputEventMouseButton and e.pressed and e.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
 			back.accept_event()
-			close_window())
+			close_top())
 	Nav.ui.add_child(back)
 	back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var p := PanelContainer.new()
@@ -125,7 +125,7 @@ static func frame(title: String, width := 300.0, height := 200.0) -> VBoxContain
 	col.add_child(top)
 	var head := label(top, TranslationServer.translate(title).to_upper(), "Heading")
 	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var close := button(top, "", close_window)
+	var close := button(top, "", func(): close_top())
 	close.custom_minimum_size = Vector2(BUTTON_MIN_WIDTH, BUTTON_MIN_WIDTH)
 	close.icon = _close_texture()
 	close.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -167,6 +167,24 @@ static func close_window() -> void:
 		var w := Nav.ui.get_node("Window")
 		w.name = "Closing"
 		w.queue_free()
+
+
+## Has the open window's X, Escape and a click beside it run `action`, such as stepping back to its list.
+static func closes_with(action: Callable) -> void:
+	if window_open():
+		Nav.ui.get_node("Window").set_meta("close", action)
+
+
+## Closes the open window, its own way when it has one; false when no window is open.
+static func close_top() -> bool:
+	if not window_open():
+		return false
+	var w := Nav.ui.get_node("Window")
+	if w.has_meta("close"):
+		(w.get_meta("close") as Callable).call()
+	else:
+		close_window()
+	return true
 
 
 ## Gives a control a tip shown when the pointer rests on it.

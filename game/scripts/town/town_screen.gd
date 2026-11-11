@@ -43,6 +43,12 @@ var _clock := 0.0
 var margin := Vector2.ZERO
 
 
+## Escape and the pad's B go back to the boat, as Back to the boat does.
+func go_back() -> bool:
+	Nav.go("coast", {"place": "harbour", "boat_x": 110.0})
+	return true
+
+
 func enter(args: Dictionary) -> void:
 	Controls.ensure()
 	if Game.state.is_empty():
@@ -110,7 +116,7 @@ func _build_ui() -> void:
 	bar.position = Vector2(4, 4)
 	Nav.ui.add_child(bar)
 	_top = Ui.label(bar, "")
-	var back := Ui.button(Nav.ui, "Back to the boat", func(): Nav.go("coast", {"place": "harbour", "boat_x": 110.0}))
+	var back := Ui.button(Nav.ui, "Back to the boat", go_back)
 	Ui.hang(back, "bottom_right", Vector2(4, 4), Vector2(108, 18))
 	var ponds := Ui.button(Nav.ui, tr("To the pond"), func(): Nav.go("shore"))
 	Ui.hang(ponds, "bottom_right", Vector2(116, 4), Vector2(88, 18))

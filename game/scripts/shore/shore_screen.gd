@@ -69,6 +69,12 @@ var pond_cam := Vector2.ZERO
 var _mouse := Vector2(-100, -100)
 
 
+## Escape and the pad's B go back to town, as Back to town does.
+func go_back() -> bool:
+	Nav.go("town")
+	return true
+
+
 func enter(_args: Dictionary) -> void:
 	Controls.ensure()
 	if Game.state.is_empty():
@@ -86,7 +92,7 @@ func enter(_args: Dictionary) -> void:
 	_names = Control.new()
 	_names.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	Nav.ui.add_child(_names)
-	var back := Ui.button(Nav.ui, tr("Back to town"), func(): Nav.go("town"))
+	var back := Ui.button(Nav.ui, tr("Back to town"), go_back)
 	Ui.hang(back, "bottom_right", Vector2(4, 4), Vector2(90, 18))
 	Windowing.view_changed.connect(_relayout)
 	Game.changed.connect(_refresh)

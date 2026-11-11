@@ -48,6 +48,12 @@ static func locked_reason(state: Dictionary, place: String) -> String:
 	return ""
 
 
+## Escape and the pad's B leave the map for the coast, as Stay here does.
+func go_back() -> bool:
+	Nav.go("coast")
+	return true
+
+
 func enter(_args: Dictionary) -> void:
 	Controls.ensure()
 	if Game.state.is_empty():
@@ -62,7 +68,7 @@ func enter(_args: Dictionary) -> void:
 	_stage.add_child(_painter)
 	Windowing.view_changed.connect(_place)
 	_place()
-	var stay := Ui.button(Nav.ui, "Stay here", func(): Nav.go("coast"))
+	var stay := Ui.button(Nav.ui, "Stay here", go_back)
 	Ui.hang(stay, "bottom_right", Vector2(4, 4), Vector2(70, 18))
 	var day := Clock.day_of(float(Game.state["time"]))
 	var note := PanelContainer.new()

@@ -85,6 +85,16 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouse:
 		pointer = event.position
+	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		if back_out():
+			get_viewport().set_input_as_handled()
+
+
+## Escape and the pad's B close the open window, or else step back out of the screen, never out of the game.
+func back_out() -> bool:
+	if _busy:
+		return false
+	return Ui.close_top() or (current != null and current.has_method("go_back") and current.go_back())
 
 
 ## Godot draws a tip at the game's zoom, so each one is drawn again at the interface's once it has been placed, before

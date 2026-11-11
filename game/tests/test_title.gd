@@ -151,3 +151,46 @@ func test_a_full_set_of_slots_is_never_written_over() -> void:
 		Saves.delete(n)
 	Saves.slot = slot
 	Game.state = kept
+
+
+func _escape() -> void:
+	var e := InputEventKey.new()
+	e.keycode = KEY_ESCAPE
+	e.physical_keycode = KEY_ESCAPE
+	e.pressed = true
+	Nav.get_viewport().push_input(e)
+	var up := e.duplicate()
+	up.pressed = false
+	Nav.get_viewport().push_input(up)
+
+
+func test_escape_closes_the_window_and_steps_back() -> void:
+	var kept := Game.state
+	var slot := Saves.slot
+	Game.new_game("Escaper", "hound")
+	Saves.save(1)
+	Game.state = {}
+	var s := _title()
+	Nav.current = s
+	s._load()
+	s._confirm_delete(1, Saves.slot_info(1))
+	await Nav.get_tree().process_frame
+	_escape()
+	await Nav.get_tree().process_frame
+	check(Ui.window_open() and str(Nav.ui.get_node("Window").get_child(0).get_child(0).get_child(0).text) == "LOAD A GAME",
+		"Escape, even while typing the word, steps back from deleting to the list of games")
+	_escape()
+	await Nav.get_tree().process_frame
+	check(not Ui.window_open(), "and again closes the list")
+	check(not Nav.back_out(), "and on the title's menu it never quits the game")
+	s._load()
+	Ui.close_top()
+	check(not Ui.window_open(), "the X closes a window as Escape does")
+	for screen in ["town", "shore", "map"]:
+		var methods: Array = (load(Nav.SCREENS[screen]) as Script).get_script_method_list()
+		check(methods.any(func(m): return m["name"] == "go_back"), "Escape steps back out of the %s" % screen)
+	Nav.current = null
+	_close(s)
+	Saves.delete(1)
+	Saves.slot = slot
+	Game.state = kept
