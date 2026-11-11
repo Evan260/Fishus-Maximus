@@ -60,6 +60,8 @@ func from_dict(d: Dictionary) -> void:
 ## tank of garum and a hold of fish.
 func demo_state() -> void:
 	new_game("Marcus", "mutt")
+	# A game made up for checks and pictures never sends its achievements to Steam.
+	state["_unlocked"] = true
 	state["guide"]["finished"] = true
 	state["chapter"] = 3
 	state["reputation"] = 90
@@ -149,6 +151,7 @@ func _process(delta: float) -> void:
 		return
 	_check_left = 2.0
 	for id in Achievements.check(state):
+		Awards.unlock(id)
 		AchievementCard.show_earned(id)
 	if int(state.get("_chapter_seen", state["chapter"])) < int(state["chapter"]):
 		var c: Dictionary = Data.chapters[int(state["chapter"]) - 1]

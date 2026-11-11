@@ -42,3 +42,13 @@ func test_its_achievements_are_earned_quietly() -> void:
 	check(s["_unlocked"], "and none goes to Steam")
 	Catches.record(s, "mullet", 1.0)
 	check(Achievements.check(s) == ["first_fish"], "one earned later in the game is still told of")
+
+
+func test_no_made_up_game_sends_achievements_to_steam() -> void:
+	Game.max_state()
+	check(not Awards.may_send(), "a game with everything unlocked sends nothing to Steam")
+	Game.demo_state()
+	check(not Awards.may_send(), "nor one started some way in")
+	Game.new_game("Real", "mutt")
+	check(not Awards.may_send(), "and nothing is sent while the tests run")
+	check(not "Steam" in FileAccess.get_file_as_string("res://scripts/rules/achievements.gd"), "the rules leave Steam to Awards")

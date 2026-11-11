@@ -1,6 +1,5 @@
 class_name Achievements
-## The achievements, each with one condition read from data/achievements.json, and sent on to Steam when the game
-## runs under it.
+## The achievements, each with one condition read from data/achievements.json; `Awards` hands them on to the store.
 
 const CONDITIONS := ["logbook", "chapter", "legend", "legends", "logbook_full", "prize_all", "pond", "tanks", "stat",
 	"moray_earrings", "boat", "denarii", "client"]
@@ -53,16 +52,11 @@ static func _ordinary() -> Array:
 	return Data.fish.keys().filter(func(f): return not Data.fish[f]["legend"])
 
 
-## Earns every achievement newly met and says which; each is earned once, and a game with everything unlocked never
-## sends one to Steam.
+## Earns every achievement newly met and says which; each is earned once.
 static func check(state: Dictionary) -> Array:
 	var got := []
 	for a in Data.achievements:
 		if not a["id"] in state["achievements"] and met(a["id"], state):
 			state["achievements"].append(a["id"])
 			got.append(a["id"])
-			if Engine.has_singleton("Steam") and not state.get("_unlocked", false):
-				var steam := Engine.get_singleton("Steam")
-				steam.call("setAchievement", a["id"])
-				steam.call("storeStats")
 	return got

@@ -23,6 +23,7 @@ Saves="*res://scripts/autoload/saves.gd"
 Nav="*res://scripts/autoload/nav.gd"
 Tips="*res://scripts/autoload/tips.gd"
 Pad="*res://scripts/autoload/pad.gd"
+Awards="*res://scripts/autoload/awards.gd"
 Windowing="*res://scripts/autoload/windowing.gd"
 Audio="*res://scripts/autoload/audio.gd"
 
