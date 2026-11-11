@@ -75,7 +75,8 @@ func _take_shot(path: String, last: bool) -> void:
 		get_tree().quit()
 
 
-## Opens a window by name: logbook, achievements, settings or settings:TAB, and on the title new_game, load, or delete,
+## Opens a window by name: logbook, logbook:FISH (its page), achievements, settings or settings:TAB, board, client,
+## garum, pond (on the shore), hold (the full-hold choice), and on the title new_game, load, or delete,
 ## which leaves slot 1 waiting for the word typed, deleting nothing.
 func open_panel(window: String) -> void:
 	if window == "logbook":
@@ -84,8 +85,24 @@ func open_panel(window: String) -> void:
 		if args.has("turn-at"):
 			get_tree().create_timer(float(args["turn-at"])).timeout.connect(func():
 				LogbookPanel._bookmark_turn(LogbookPanel.section + (-1 if args.has("turn-back") else 1)))
+	elif window.begins_with("logbook:"):
+		var fish := window.get_slice(":", 1)
+		var f: Dictionary = Data.fish[fish]
+		LogbookPanel.open(LogbookPanel._sections().find("legends" if f["legend"] else str(f["places"][0])))
+		LogbookPanel.selected = fish
+		LogbookPanel.open(LogbookPanel.section)
 	elif window == "achievements":
 		LogbookPanel.open_achievements()
+	elif window == "board":
+		BoardPanel.open()
+	elif window == "client":
+		ClientVisit.open(str(Data.clients.keys()[0]))
+	elif window == "garum":
+		GarumPanel.open()
+	elif window == "pond" and Nav.current and "pond" in Nav.current:
+		PondPanel.open(Nav.current.pond)
+	elif window == "hold":
+		HoldChoice.ask({"fish": "bream", "pounds": 2.4})
 	elif window.begins_with("settings"):
 		if window.contains(":"):
 			SettingsPanel.tab = window.get_slice(":", 1)

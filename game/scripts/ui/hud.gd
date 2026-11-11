@@ -90,14 +90,16 @@ func refresh() -> void:
 	var t := float(s["time"])
 	var day := Clock.day_of(t)
 	var boat: Dictionary = Data.boats[s["boat"]]
-	var well := ("  Well %d/%d" % [s["live_well"].size(), int(boat["well"])]) if int(boat["well"]) > 0 else ""
+	var well: String = ("  " + tr("Well %d/%d") % [s["live_well"].size(), int(boat["well"])]) if int(boat["well"]) > 0 else ""
 	# No clock ticks by here: the sky tells the hour, and a player should never feel he is watching time pass.
-	_info.text = "%s   Day %d, %s, %s" % [Ui.coins_text(int(s["denarii"])), day + 1, Clock.season(day), s.get("weather", "clear")]
+	_info.text = "%s   %s" % [Ui.coins_text(int(s["denarii"])), tr("Day %d, %s, %s") % [day + 1, tr(Clock.season(day)), tr(str(s.get("weather", "clear")))]]
 	var bait: String = screen.bait()
 	var method: String = screen.methods.method
-	_method.text = "Hold %d/%d%s   %s%s" % [s["hold"].size(), int(boat["hold"]), well, {"line": "Line", "trap": "Pots", "net": "Cast net", "trident": "Trident"}[method],
-		(", %s x%d" % [str(Data.bait[bait]["name"]).to_lower(), int(s["bait"][bait])]) if method == "line" and bait != "" else (", no bait" if method == "line" else "")]
-	_idle.text = "At the rod" if screen.methods.idle else "Fish on his own"
+	var way: String = tr({"line": "Line", "trap": "Pots", "net": "Cast net", "trident": "Trident"}[method])
+	if method == "line":
+		way = tr("%s, %s x%d") % [way, Data.lower_of(Data.bait[bait]), int(s["bait"][bait])] if bait != "" else tr("%s, no bait") % way
+	_method.text = "%s%s   %s" % [tr("Hold %d/%d") % [s["hold"].size(), int(boat["hold"])], well, way]
+	_idle.text = tr("At the rod") if screen.methods.idle else tr("Fish on his own")
 	for m in method_buttons:
 		Ui.choose(method_buttons[m], m == method)
 	var usable := {"net": str(s["gear"].get("net", "")) != "", "trident": Trident.can_use(screen.hour, str(s["gear"].get("lamp", "")))}

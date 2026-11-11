@@ -22,20 +22,22 @@ static func open(client: String) -> void:
 	if step.is_empty():
 		Ui.label(words, "Nothing more today, thank you.").autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		return
-	Ui.label(words, "\"%s\"" % Units.fill(step["text"], float(step.get("min_pounds", 0.0)))).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	Ui.label(list, "Pays %s and +%d name." % [Ui.coins_text(int(step["reward"])), int(step["reputation"])], "MutedLabel")
+	var asks := TranslationServer.translate("\"%s\"") % Units.fill(TranslationServer.translate(step["text"]), float(step.get("min_pounds", 0.0)))
+	Ui.label(words, asks).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	Ui.label(list, TranslationServer.translate("Pays %s and +%d name.") % [Ui.coins_text(int(step["reward"])), int(step["reputation"])], "MutedLabel")
 	var at := Supply.find(Game.state, step)
-	var what := ("Give the %s%s" % [str(Data.fish[step["fish"]]["name"]).to_lower(), " from your pond" if at.get("where", "") == "pond" else ""]) \
+	var from_pond: bool = at.get("where", "") == "pond"
+	var what: String = (TranslationServer.translate("Give: %s, from your pond") if from_pond else TranslationServer.translate("Give: %s")) % Data.fish_lower(step["fish"]) \
 		if not at.is_empty() else "You have nothing that suits yet."
 	Ui.row(list, what, "Give", func():
 		var thanks: String = step["thanks"]
 		if Story.deliver_from(Game.state, client, at):
 			Game.changed.emit()
 			Ui.close_window()
-			Toast.say("%s: \"%s\"" % [c["name"], thanks]), not at.is_empty())
+			Toast.say(TranslationServer.translate("%s: \"%s\"") % [Data.name_of(c), TranslationServer.translate(thanks)]), not at.is_empty())
 
 
 ## A client's title as shown over the request, its first letter raised when it starts with "the".
 static func title_of(c: Dictionary) -> String:
-	var t := str(c["title"])
-	return t[0].to_upper() + t.substr(1) if t.begins_with("the") else t
+	var t := String(TranslationServer.translate(str(c["title"])))
+	return t[0].to_upper() + t.substr(1) if str(c["title"]).begins_with("the") and t != "" else t

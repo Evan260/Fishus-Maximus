@@ -7,8 +7,9 @@ static func ask(fish: Dictionary) -> void:
 		return
 	# A window, so play waits behind it and a second full-hold catch replaces it rather than stacking another.
 	var col := Ui.window("The hold is full", 260, 200)
-	var name: String = Data.fish[fish["fish"]]["name"]
-	Ui.label(col, "Keep the %s (%s)?" % [name.to_lower(), Units.weight(float(fish["pounds"]))])
+	var ask := Ui.label(col, TranslationServer.translate("Keep the new catch: %s, %s?") % [Data.fish_lower(fish["fish"]), Units.weight(float(fish["pounds"]))])
+	ask.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	ask.custom_minimum_size.x = 240
 	Ui.button(col, "Let the new one go", Ui.close_window)
 	var live: bool = fish.get("live", false)
 	var list: Array = Game.state["live_well"] if live and Hold.well_room(Game.state) <= 0 and not Game.state["live_well"].is_empty() else Game.state["hold"]
@@ -19,7 +20,7 @@ static func ask(fish: Dictionary) -> void:
 			break
 		var held: Dictionary = list[i]
 
-		Ui.button(col, "Let go a %s (%s)" % [Data.fish[held["fish"]]["name"].to_lower(), Units.weight(float(held["pounds"]))], func():
+		Ui.button(col, TranslationServer.translate("Let go: %s, %s") % [Data.fish_lower(held["fish"]), Units.weight(float(held["pounds"]))], func():
 			if Hold.release_fish(Game.state, held):
 				Hold.add(Game.state, fish)
 			Ui.close_window())

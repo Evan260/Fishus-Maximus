@@ -23,8 +23,71 @@ static func _coin() -> ImageTexture:
 	return ImageTexture.create_from_image(img)
 
 
+## An amount of money in words, in the Roman silver coin: one denarius, two denarii.
 static func coins_text(n: int) -> String:
-	return "1 denarius" if n == 1 else "%d denarii" % n
+	return text(coins(n))
+
+
+## An amount of money kept as words to be read later, in whatever language is chosen by then.
+static func coins(n: int) -> Dictionary:
+	return say("%d denarius" if n == 1 else "%d denarii", [n])
+
+
+## Words kept to show later in whatever language is chosen then: an English format and the parts that fill it.
+static func say(format: String, args: Variant = []) -> Dictionary:
+	return {"say": format, "args": args}
+
+
+## Words in the player's language: a string translated whole, a say() translated and filled in, or a list of sentences.
+static func text(v: Variant) -> String:
+	if v is Dictionary and (v as Dictionary).has("say"):
+		var format := String(TranslationServer.translate(str(v["say"])))
+		var args: Variant = v.get("args", [])
+		if args is Dictionary:
+			var named := {}
+			for k in args:
+				named[k] = _part(args[k])
+			return format.format(named)
+		return format % (args as Array).map(func(a: Variant) -> Variant: return _part(a))
+	if v is Array:
+		var out := PackedStringArray()
+		for part in v:
+			var t := text(part)
+			if t != "":
+				out.append(t)
+		return sentence_gap().join(out)
+	return String(TranslationServer.translate(str(v))) if str(v) != "" else ""
+
+
+static func _part(a: Variant) -> Variant:
+	return text(a) if (a is String or a is StringName or a is Dictionary or a is Array) else a
+
+
+## What goes between two sentences: a space, or nothing in Chinese and Japanese, which leave none.
+static func sentence_gap() -> String:
+	var loc := TranslationServer.get_locale()
+	return "" if loc.begins_with("zh") or loc.begins_with("ja") else " "
+
+
+## Things in a row as words, already in the player's language: "a", "a and b", "a, b and c".
+static func list(items: Array) -> String:
+	var names := items.map(func(i: Variant) -> String: return str(i))
+	if names.size() <= 1:
+		return "" if names.is_empty() else names[0]
+	return String(TranslationServer.translate(", ")).join(names.slice(0, names.size() - 1)) + TranslationServer.translate(" and ") + names[-1]
+
+
+## Things one after another, already in the player's language: "a, b, c", or "a、b、c" in Chinese and Japanese.
+static func series(items: Array) -> String:
+	return String(TranslationServer.translate(", ")).join(PackedStringArray(items.map(func(i: Variant) -> String: return str(i))))
+
+
+## A heading in capitals, translated first; Turkish keeps the dot on its capital i.
+static func upper(s: String) -> String:
+	var t := String(TranslationServer.translate(s))
+	if TranslationServer.get_locale().begins_with("tr"):
+		t = t.replace("i", "İ")
+	return t.to_upper()
 
 
 static func label(parent: Node, text: String, variation := "") -> Label:
@@ -78,7 +141,7 @@ static func panel(parent: Node, title: String) -> VBoxContainer:
 	col.add_theme_constant_override("separation", 4)
 	p.add_child(col)
 	if title != "":
-		label(col, title.to_upper(), "Heading")
+		label(col, upper(title), "Heading")
 	return col
 
 
@@ -127,7 +190,7 @@ static func frame(title: String, width := 300.0, height := 200.0) -> VBoxContain
 	p.add_child(col)
 	var top := HBoxContainer.new()
 	col.add_child(top)
-	var head := label(top, TranslationServer.translate(title).to_upper(), "Heading")
+	var head := label(top, upper(title), "Heading")
 	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var close := button(top, "", func(): close_top())
 	close.custom_minimum_size = Vector2(BUTTON_MIN_WIDTH, BUTTON_MIN_WIDTH)
@@ -138,6 +201,8 @@ static func frame(title: String, width := 300.0, height := 200.0) -> VBoxContain
 	p.resized.connect(fit)
 	Nav.ui.resized.connect(fit)
 	p.tree_exiting.connect(func(): Nav.ui.resized.disconnect(fit))
+	# A window whose contents never grow it past the size it opened at is fitted once they are in.
+	p.call_deferred("emit_signal", "resized")
 	return col
 
 
@@ -191,6 +256,23 @@ static func close_top() -> bool:
 	return true
 
 
+## How wide a name drawn by `draw_tag` is, in the pixels it is drawn in.
+static func tag_width(text: String) -> float:
+	return UiTheme.title_font().get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, _tag_size()).x
+
+
+## A name drawn over the scene in cream on a dark strip, its baseline starting at `at`, as the town, the pond and the
+## bay map name what the pointer is on.
+static func draw_tag(canvas: CanvasItem, at: Vector2, text: String) -> void:
+	var size := _tag_size()
+	canvas.draw_rect(Rect2(at + Vector2(-3, -size), Vector2(tag_width(text) + 6, size + 3)), Color(UiTheme.INK, 0.85))
+	canvas.draw_string(UiTheme.title_font(), at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, size, UiTheme.CREAM)
+
+
+static func _tag_size() -> int:
+	return UiTheme.heading_size()
+
+
 ## Gives a control a tip shown when the pointer rests on it, drawn by the Tips autoload at the interface's size.
 static func tip_on(c: Control, text: String) -> Control:
 	c.set_meta("tip", text)
@@ -235,7 +317,7 @@ static func setting(parent: Node, text: String, value: String, action: Callable,
 
 ## A setting that is on or off, shown as a button reading On or Off.
 static func on_off(parent: Node, text: String, on: bool, action: Callable, width := 270.0) -> Button:
-	return setting(parent, text, "On" if on else "Off", action, width)
+	return setting(parent, text, TranslationServer.translate("On") if on else TranslationServer.translate("Off"), action, width)
 
 
 ## A row of paper tabs over a page, with a rule along its foot that the open tab stands on.
@@ -406,11 +488,10 @@ static func speech(at: Vector2, text: String, follow := Callable()) -> PanelCont
 
 
 static func fish_text(f: Dictionary) -> String:
-	var t := "%s, %s" % [Data.fish[f["fish"]]["name"], Units.weight(float(f["pounds"]))]
+	var name := Data.fish_name(f["fish"])
+	var lb := Units.weight(float(f["pounds"]))
 	if f.get("salted", false):
-		t += ", salted"
-	elif f.get("live", false):
-		t += ", alive"
-	else:
-		t += ", %d%% fresh" % int(roundf(float(f.get("fresh", 1.0)) * 100.0))
-	return t
+		return TranslationServer.translate("%s, %s, salted") % [name, lb]
+	if f.get("live", false):
+		return TranslationServer.translate("%s, %s, alive") % [name, lb]
+	return TranslationServer.translate("%s, %s, %d%% fresh") % [name, lb, int(roundf(float(f.get("fresh", 1.0)) * 100.0))]

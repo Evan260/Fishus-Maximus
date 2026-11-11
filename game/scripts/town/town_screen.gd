@@ -116,12 +116,16 @@ func _build_ui() -> void:
 	bar.position = Vector2(4, 4)
 	Nav.ui.add_child(bar)
 	_top = Ui.label(bar, "")
+	# Each button is as wide as its words need, and the next one stands to its left.
+	var right := 4.0
 	var back := Ui.button(Nav.ui, "Back to the boat", go_back)
-	Ui.hang(back, "bottom_right", Vector2(4, 4), Vector2(108, 18))
-	var ponds := Ui.button(Nav.ui, tr("To the pond"), func(): Nav.go("shore"))
-	Ui.hang(ponds, "bottom_right", Vector2(116, 4), Vector2(88, 18))
+	Ui.hang(back, "bottom_right", Vector2(right, 4), Vector2(108, 18))
+	right += maxf(108.0, back.get_combined_minimum_size().x) + 4.0
+	var ponds := Ui.button(Nav.ui, "To the pond", func(): Nav.go("shore"))
+	Ui.hang(ponds, "bottom_right", Vector2(right, 4), Vector2(88, 18))
+	right += maxf(88.0, ponds.get_combined_minimum_size().x) + 4.0
 	_sleep = Ui.button(Nav.ui, "Sleep till dawn", _sleep_now)
-	Ui.hang(_sleep, "bottom_right", Vector2(208, 4), Vector2(88, 18))
+	Ui.hang(_sleep, "bottom_right", Vector2(right, 4), Vector2(88, 18))
 	if not Dev.has("no-hud"):
 		GuideNote.add(self, "town")
 	_refresh_ui()
@@ -176,12 +180,13 @@ func _refresh_ui() -> void:
 	var day := Clock.day_of(float(Game.state["time"]))
 	_sleep.visible = Clock.hour(float(Game.state["time"])) >= 16.0 or Clock.is_night(float(Game.state["time"]))
 	var ch: Dictionary = Data.chapters[int(Game.state["chapter"]) - 1]
-	var line := "%s   Day %d, %s   %s: name %d   Hold %d/%d" % [Ui.coins_text(int(Game.state["denarii"])), day + 1,
-		Clock.season(day), ch["name"], int(Game.state["reputation"]), Game.state["hold"].size(),
-		int(Data.boats[Game.state["boat"]]["hold"])]
+	var first := "%s   %s" % [Ui.coins_text(int(Game.state["denarii"])), tr("Day %d, %s") % [day + 1, tr(Clock.season(day))]]
+	var second := "%s   %s" % [tr("%s: name %d") % [tr(ch["name"]), int(Game.state["reputation"])],
+		tr("Hold %d/%d") % [Game.state["hold"].size(), int(Data.boats[Game.state["boat"]]["hold"])]]
+	var line := first + "   " + second
 	# A larger interface can leave too little room across for one line, so the chapter and the hold then go on a second.
 	if UiTheme.body_font().get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.text_size()).x + 24.0 > Nav.ui_view().x:
-		line = line.replace("   %s:" % ch["name"], "\n%s:" % ch["name"])
+		line = first + "\n" + second
 	_top.text = line
 	_top.get_parent().reset_size()
 
@@ -303,14 +308,12 @@ func _draw_over() -> void:
 	if hovered != "":
 		for p in _outlines[hovered]:
 			_painter.draw_rect(Rect2(p, Vector2.ONE), UiTheme.GOLD)
-		var name: String = BUILDINGS[hovered]
-		var font := UiTheme.title_font()
-		var w := font.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
+		var name := tr(BUILDINGS[hovered])
+		var w := Ui.tag_width(name)
 		var at := _pointer() + Vector2(-w / 2.0, -10)
 		# Kept inside the scene, which every window shows whole, so the name of the board at its edge is not cut off.
 		at.x = clampf(at.x, 3.0, Nav.SIZE.x - w - 3.0)
-		_painter.draw_rect(Rect2(at + Vector2(-3, -8), Vector2(w + 6, 11)), Color(UiTheme.INK, 0.85))
-		_painter.draw_string(font, at, name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.CREAM)
+		Ui.draw_tag(_painter, at, name)
 	# A gold mark bobs over each client who has something to ask.
 	for c in _clients.filter(func(c): return c["id"] in marked_clients()):
 		var bob := roundf(sin(Time.get_ticks_msec() / 300.0) * 1.5)
@@ -379,4 +382,4 @@ func _gossip(f: Dictionary) -> void:
 		line = str(legends[_rng.randi() % legends.size()]["clue"])
 	elif roll < 0.6:
 		line = Gossip.habit(Game.state, _rng)
-	Ui.speech(head_on_screen(f), line, func(): return head_on_screen(f))
+	Ui.speech(head_on_screen(f), tr(line), func(): return head_on_screen(f))

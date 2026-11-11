@@ -11,7 +11,7 @@ static func metric() -> bool:
 ## A fish's weight: two decimals under one of the unit, one above, as "1.4 kg" or "3.1 lb".
 static func weight(lb: float) -> String:
 	var v := _amount(lb)
-	return (("%.2f" % v) if v < 1.0 else ("%.1f" % v)) + _unit()
+	return _unit() % (("%.2f" % v) if v < 1.0 else ("%.1f" % v))
 
 
 ## A weight asked for or suited, rounded so it reads as a person would say it: two decimals under a tenth, one under
@@ -19,10 +19,10 @@ static func weight(lb: float) -> String:
 static func need(lb: float) -> String:
 	var v := _amount(lb)
 	if v < 0.1:
-		return ("%.2f" % snappedf(v, 0.01)).trim_suffix("0") + _unit()
+		return _unit() % ("%.2f" % snappedf(v, 0.01)).trim_suffix("0")
 	v = snappedf(v, 0.1) if v < 10.0 else roundf(v)
 	var text := "%.1f" % v
-	return (text.trim_suffix(".0")) + _unit()
+	return _unit() % text.trim_suffix(".0")
 
 
 ## Text with each {weight} in it written as need(lb), so a request in the data reads in the chosen unit.
@@ -34,5 +34,6 @@ static func _amount(lb: float) -> float:
 	return lb * KG_PER_LB if metric() else lb
 
 
+## The amount with its unit, as "%s kg", in the player's language.
 static func _unit() -> String:
-	return " kg" if metric() else " lb"
+	return TranslationServer.translate("%s kg") if metric() else TranslationServer.translate("%s lb")

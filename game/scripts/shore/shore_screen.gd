@@ -230,7 +230,7 @@ func _refresh() -> void:
 	if not is_instance_valid(_top):
 		return
 	var p := Ponds.of(Game.state)
-	var room := (tr("Pond room %d of %d") % [Ponds.room_used(p), Ponds.room(p)]) if Ponds.dug(Game.state) else tr("No pond yet")
+	var room: String = (tr("Pond room %d of %d") % [Ponds.room_used(p), Ponds.room(p)]) if Ponds.dug(Game.state) else tr("No pond yet")
 	_top.text = "%s   %s   %s" % [Ui.coins_text(int(Game.state["denarii"])), room, tr("Salt %d") % int(Game.state.get("salt", 0))]
 	if is_instance_valid(pond):
 		_dress_pond()
@@ -382,11 +382,9 @@ func _pointer() -> Vector2:
 
 
 func _tip(at: Vector2, text: String) -> void:
-	var font := UiTheme.title_font()
-	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
+	var w := Ui.tag_width(text)
 	var x := clampf(at.x - w / 2.0, 3.0, Nav.view().x - w - 3.0)
-	_painter.draw_rect(Rect2(Vector2(x - 3, at.y - 8), Vector2(w + 6, 11)), Color(UiTheme.INK, 0.85))
-	_painter.draw_string(font, Vector2(x, at.y), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.CREAM)
+	Ui.draw_tag(_painter, Vector2(x, at.y), text)
 
 
 ## The names over the named fish while the bell rings, in the interface so they stay crisp.
@@ -396,6 +394,8 @@ func _place_names() -> void:
 	var shown := pond.shown_names()
 	while _names.get_child_count() < shown.size():
 		var l := Ui.label(_names, "", "LightLabel")
+		# A fish's name is the player's own, never looked up as words to translate.
+		l.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		l.add_theme_color_override("font_outline_color", UiTheme.INK)
 		l.add_theme_constant_override("outline_size", 3)
 	for i in _names.get_child_count():

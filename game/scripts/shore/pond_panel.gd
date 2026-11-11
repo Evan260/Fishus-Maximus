@@ -40,13 +40,13 @@ static func open(view: PondView) -> void:
 	for i in p["fish"].size():
 		var f: Dictionary = p["fish"][i]
 		var fi: int = i
-		var who := (view.tr("%s the %s") % [f["name"], str(Data.fish[f["fish"]]["name"]).to_lower()]) if f["name"] != "" else str(Data.fish[f["fish"]]["name"])
+		var who: String = (view.tr("%s the %s") % [f["name"], Data.fish_lower(f["fish"])]) if f["name"] != "" else Data.fish_name(f["fish"])
 		var mood := int(roundf(Ponds.happiness(p, f) * 100.0))
 		var line := view.tr("%s, %s, %d%% happy") % [who, Units.weight(float(f["pounds"])), mood]
 		if f.get("fed", false):
-			line += view.tr(", fed")
+			line = view.tr("%s, fed") % line
 		if f.get("finery", "") != "":
-			line += view.tr(", wearing %s") % str(Data.gear[f["finery"]]["name"]).to_lower()
+			line = view.tr("%s, wearing %s") % [line, Data.lower_of(Data.gear[f["finery"]])]
 		var r := Ui.row(list, line)
 		if f["name"] == "":
 			var entry := LineEdit.new()
@@ -72,17 +72,17 @@ static func open(view: PondView) -> void:
 		var f: Dictionary = Game.state["live_well"][i]
 		var wi: int = i
 		if Data.fish[f["fish"]].has("pond"):
-			Ui.row(list, view.tr("From the well: ") + Ui.fish_text(f), view.tr("Put in"), func():
+			Ui.row(list, view.tr("From the well: %s") % Ui.fish_text(f), view.tr("Put in"), func():
 				Ponds.stock(Game.state, wi)
 				view.sync()
 				open(view))
-	Ui.label(list, view.tr("FEATURES"), "Heading")
+	Ui.label(list, Ui.upper("Features"), "Heading")
 	for feature in Data.ponds["features"]:
 		var id: String = feature["id"]
 		if id in p["features"]:
-			Ui.row(list, view.tr("%s: built") % feature["name"])
+			Ui.row(list, view.tr("%s: built") % view.tr(feature["name"]))
 		elif not feature.has("needs") or feature["needs"] in p["features"]:
-			Ui.row(list, "%s, %s. %s" % [feature["name"], Ui.coins_text(int(feature["price"])), feature["text"]], view.tr("Build"), func():
+			Ui.row(list, Ui.text([view.tr("%s, %s.") % [view.tr(feature["name"]), Ui.coins_text(int(feature["price"]))], str(feature["text"])]), view.tr("Build"), func():
 				if Ponds.add_feature(Game.state, id):
 					Game.changed.emit()
 					view.sync()

@@ -155,20 +155,20 @@ func _process(delta: float) -> void:
 		AchievementCard.show_earned(id)
 	if int(state.get("_chapter_seen", state["chapter"])) < int(state["chapter"]):
 		var c: Dictionary = Data.chapters[int(state["chapter"]) - 1]
-		Toast.say("Chapter %d: %s. %s" % [int(c["chapter"]), c["name"], c["text"]])
+		Toast.say(tr("Chapter %d: %s. %s") % [int(c["chapter"]), tr(c["name"]), tr(c["text"])])
 		Audio.play("market_bell")
 	state["_chapter_seen"] = int(state["chapter"])
 	if state.has("_contest"):
 		var c: Dictionary = state["_contest"]
 		if c["won"]:
-			Toast.say("You won the Neptunalia with a %s %s! +%s" % [Units.weight(float(c["pounds"])), str(Data.fish[c["fish"]]["name"]).to_lower(), Ui.coins_text(int(c["prize"]))])
+			Toast.say(tr("You won the Neptunalia with %s of %s! +%s") % [Units.weight(float(c["pounds"])), Data.fish_lower(c["fish"]), Ui.coins_text(int(c["prize"]))])
 		else:
-			Toast.say("The Neptunalia went to old Rufus with a %s fish." % Units.weight(float(c["pounds"])))
+			Toast.say(tr("The Neptunalia went to old Rufus with a fish of %s.") % Units.weight(float(c["pounds"])))
 		state.erase("_contest")
 	if state.has("_rescued"):
-		Toast.say("Old Rufus: \"Out of bait and coin? Here are %d worms from my garden. And your pots need no bait at all.\"" % int(state["_rescued"]))
+		Toast.say(tr("Old Rufus: \"Out of bait and coin? Here are %d worms from my garden. And your pots need no bait at all.\"") % int(state["_rescued"]))
 		Audio.play("coins")
 		state.erase("_rescued")
 	if state.has("_lost"):
-		Toast.say("%d fish in the live well died overnight; the hold had no room for them." % int(state["_lost"]))
+		Toast.say(tr("%d fish in the live well died overnight; the hold had no room for them.") % int(state["_lost"]))
 		state.erase("_lost")

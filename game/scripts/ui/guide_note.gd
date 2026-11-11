@@ -61,6 +61,7 @@ func _ready() -> void:
 	col.add_theme_constant_override("separation", 2)
 	row.add_child(col)
 	_text = Ui.label(col, "")
+	_text.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_text.custom_minimum_size = Vector2(WIDTH, 0)
 	var buttons := HBoxContainer.new()
@@ -109,13 +110,13 @@ func refresh() -> void:
 				_praise_left = PRAISE_SECONDS
 			_last = now
 		if _praise_left > 0.0:
-			say = _praise
+			say = tr(_praise)
 			id = "praise " + _praise
 		elif not step.is_empty() and step["screen"] == screen_name:
-			say = str(step["text"])
+			say = Controls.fill(tr(step["text"]))
 			id = now
 		elif Guide.farewell_due(Game.state):
-			say = str(Data.guide.get("farewell", ""))
+			say = tr(str(Data.guide.get("farewell", "")))
 			id = "farewell"
 			if _farewell_left < 0.0:
 				_farewell_left = FAREWELL_SECONDS

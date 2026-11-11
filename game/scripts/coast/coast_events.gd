@@ -89,7 +89,7 @@ func _on_caught(fish: String, pounds: float) -> void:
 	if hour >= CONTEST_HOURS[0] and hour < CONTEST_HOURS[1] and pounds > float(Game.state["contest"]["best"]):
 		Game.state["contest"]["best"] = pounds
 		Game.state["contest"]["fish"] = fish
-		Toast.say("Your best in the contest: %s." % Units.weight(pounds))
+		Toast.say(tr("Your best in the contest: %s.") % Units.weight(pounds))
 
 
 
@@ -114,7 +114,7 @@ func _open_haul() -> void:
 		Ui.close_window()
 		if is_instance_valid(_haul_button):
 			_haul_button.queue_free()
-		Toast.say("Your share of the haul: %d tuna." % kept if kept > 0 else "Your hold had no room for tuna."))
+		Toast.say(tr("Your share of the haul: %d tuna.") % kept if kept > 0 else "Your hold had no room for tuna."))
 
 
 class HaulBar extends Control:

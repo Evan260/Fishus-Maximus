@@ -12,13 +12,13 @@ static func open() -> void:
 	for i in Game.state["orders"].size():
 		var o: Dictionary = Game.state["orders"][i]
 		var due := int(o["due"])
-		var when := "today" if due <= today else ("tomorrow" if due == today + 1 else "in %d days" % (due - today))
-		var size := "any size" if float(o["min_pounds"]) < 0.05 else Units.need(float(o["min_pounds"])) + " or more"
-		var text := "%s, %s%s: %s, +%d name, due %s" % [Data.fish[o["fish"]]["name"], size,
-			", alive" if o["alive"] else "", Ui.coins_text(int(o["reward"])), int(o["reputation"]), when]
+		var when: String = TranslationServer.translate("due today") if due <= today else (TranslationServer.translate("due tomorrow") if due == today + 1 else TranslationServer.translate("due in %d days") % (due - today))
+		var size: String = TranslationServer.translate("any size") if float(o["min_pounds"]) < 0.05 else TranslationServer.translate("%s or more") % Units.need(float(o["min_pounds"]))
+		var want: String = TranslationServer.translate("%s, %s, alive") % [Data.fish_name(o["fish"]), size] if o["alive"] else TranslationServer.translate("%s, %s") % [Data.fish_name(o["fish"]), size]
+		var text := TranslationServer.translate("%s: %s, +%d name, %s") % [want, Ui.coins_text(int(o["reward"])), int(o["reputation"]), when]
 		var at := Supply.find(Game.state, o)
 		var oi: int = i
-		Ui.row(list, text, "Fill", func():
+		Ui.row(list, text, "Deliver", func():
 			if Orders.fill_from(Game.state, oi, at):
 				Toast.say("Order filled.")
 				Game.changed.emit()

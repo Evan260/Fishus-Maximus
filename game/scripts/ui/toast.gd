@@ -18,7 +18,9 @@ static func say(text: String) -> void:
 	while _box.get_child_count() >= (2 if Windowing.strip else 4):
 		_box.get_child(0).free()
 	var l := Label.new()
-	l.text = text
+	# A plain English line is translated here; one built from a translated format comes through as it is.
+	l.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	l.text = TranslationServer.translate(text)
 	l.theme_type_variation = "LightLabel"
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

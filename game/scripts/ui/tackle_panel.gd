@@ -10,7 +10,7 @@ const TILE := Vector2(36, 36)
 static func open(under: Control = null) -> void:
 	var list := Ui.window("Tackle", 220, 150)
 	var place := str(Game.state.get("place", "harbour"))
-	Ui.label(list, "BAIT ON THE HOOK", "Heading")
+	Ui.label(list, Ui.upper("Bait on the hook"), "Heading")
 	var baits := _grid(list)
 	for id in Data.bait:
 		var count := int(Game.state["bait"].get(id, 0))
@@ -18,15 +18,15 @@ static func open(under: Control = null) -> void:
 			continue
 		var bait_id: String = id
 		var on: bool = str(Game.state.get("current_bait", "")) == id
-		Ui.tile(baits, ItemArt.of(id), "x%d" % count, "%s, %d left. %s" % [Data.bait[id]["name"], count, bait_tip(id, place)], func():
+		Ui.tile(baits, ItemArt.of(id), "x%d" % count, Ui.text([TranslationServer.translate("%s, %d left.") % [Data.name_of(Data.bait[id]), count], bait_tip(id, place)]), func():
 			use_bait(bait_id)
 			open(under), true, on, TILE)
-	Ui.label(list, "ROD", "Heading")
+	Ui.label(list, Ui.upper("Rod"), "Heading")
 	var rods := _grid(list)
 	for id in rods_owned(Game.state):
 		var rod_id: String = id
 		var held: bool = str(Game.state["gear"].get("rod", "")) == id
-		Ui.tile(rods, ItemArt.of(id), "", "%s. %s" % [Data.gear[id]["name"], rod_tip(id, place)], func():
+		Ui.tile(rods, ItemArt.of(id), "", Ui.text([TranslationServer.translate("%s.") % Data.name_of(Data.gear[id]), rod_tip(id, place)]), func():
 			use_rod(rod_id)
 			open(under), true, held, TILE)
 	var hint := Ui.label(list, "Hold the pointer over one to see which fish it suits.", "MutedLabel")
@@ -94,19 +94,19 @@ static func bait_tip(id: String, place: String) -> String:
 	for f in _line_fish(place):
 		var baits: Array = Data.fish[f]["baits"]
 		var habits := Catalog.habits(f)
-		var named := str(Data.fish[f]["name"]).to_lower() + ((" (%s)" % ", ".join(habits)) if not habits.is_empty() else "")
+		var named := Data.fish_lower(f) if habits.is_empty() else TranslationServer.translate("%s (%s)") % [Data.fish_lower(f), Ui.series(habits)]
 		if baits.find(id) == 0:
 			loved.append(named)
 		elif id in baits:
 			taken.append(named)
 	if loved.is_empty() and taken.is_empty():
-		return "Nothing here takes %s." % str(Data.bait[id]["name"]).to_lower()
+		return TranslationServer.translate("Nothing here takes %s.") % Data.lower_of(Data.bait[id])
 	var parts := []
 	if not loved.is_empty():
-		parts.append("Loved by " + _and(loved) + ".")
+		parts.append(TranslationServer.translate("Loved by %s.") % Ui.list(loved))
 	if not taken.is_empty():
-		parts.append(("Also taken by " if not loved.is_empty() else "Taken by ") + _and(taken) + ".")
-	return " ".join(parts)
+		parts.append((TranslationServer.translate("Also taken by %s.") if not loved.is_empty() else TranslationServer.translate("Taken by %s.")) % Ui.list(taken))
+	return Ui.text(parts)
 
 
 ## The sizes of fish a rod suits and some of them here.
@@ -114,17 +114,17 @@ static func rod_tip(id: String, place: String) -> String:
 	var best: Array = Data.gear[id].get("best", [0, 1000])
 	var lo := float(best[0])
 	var hi := float(best[1])
-	var kind := "small fish" if hi <= 3.0 else ("middling fish" if hi <= 8.0 else ("big fish" if hi <= 30.0 else "the biggest fish"))
+	var kind: String = TranslationServer.translate("small fish" if hi <= 3.0 else ("middling fish" if hi <= 8.0 else ("big fish" if hi <= 30.0 else "the biggest fish")))
 	var suits := []
 	for f in _line_fish(place):
 		var size: Array = Data.fish[f]["pounds"]
 		var typical := (float(size[0]) + float(size[1])) / 2.0
 		if typical >= lo and typical <= hi:
-			suits.append(str(Data.fish[f]["name"]).to_lower())
-	var range_text := ("up to %s" % Units.need(hi)) if lo <= 0.0 else ("%s and over" % Units.need(lo) if hi >= 1000.0 else "%s to %s" % [Units.need(lo), Units.need(hi)])
-	var text := "Best for %s, %s" % [kind, range_text]
-	text += (", such as %s." % _and(suits.slice(0, 4))) if not suits.is_empty() else "."
-	return text + " Smaller fish are shy of a rod too heavy for them, and bigger ones fight harder."
+			suits.append(Data.fish_lower(f))
+	var range_text: String = (TranslationServer.translate("up to %s") % Units.need(hi)) if lo <= 0.0 else (TranslationServer.translate("%s and over") % Units.need(lo) if hi >= 1000.0 else TranslationServer.translate("%s to %s") % [Units.need(lo), Units.need(hi)])
+	var text := TranslationServer.translate("Best for %s, %s, such as %s.") % [kind, range_text, Ui.list(suits.slice(0, 4))] if not suits.is_empty() \
+		else TranslationServer.translate("Best for %s, %s.") % [kind, range_text]
+	return Ui.text([text, "Smaller fish are shy of a rod too heavy for them, and bigger ones fight harder."])
 
 
 static func _line_fish(place: String) -> Array:
@@ -134,8 +134,3 @@ static func _line_fish(place: String) -> Array:
 			out.append(f)
 	return out
 
-
-static func _and(names: Array) -> String:
-	if names.size() <= 1:
-		return "".join(names)
-	return ", ".join(names.slice(0, names.size() - 1)) + " and " + str(names[-1])

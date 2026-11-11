@@ -36,15 +36,15 @@ static func sail(state: Dictionary, place: String) -> bool:
 static func locked_reason(state: Dictionary, place: String) -> String:
 	# Only a boat built for the open sea puts out in a storm, which is when the swordfish rises off the cape.
 	if state.get("weather", "clear") == "storm" and place != "harbour" and place != state["place"] 			and not Data.boats.get(str(state["boat"]), {}).get("storm", false):
-		return "The storm keeps the smaller boats in harbour"
+		return TranslationServer.translate("The storm keeps the smaller boats in harbour")
 	var open: Array = Story.unlocks(int(state["chapter"]))["places"]
 	if not place in open:
 		for c in Data.chapters:
 			if place in c["places"]:
-				return "Opens in chapter %d" % int(c["chapter"])
+				return TranslationServer.translate("Opens in chapter %d") % int(c["chapter"])
 	var boat: String = Data.places[place]["boat"]
 	if Story.boat_rank(boat) > Story.boat_rank(str(state["boat"])):
-		return "Needs " + str(Data.boats[boat]["name"]).to_lower()
+		return TranslationServer.translate("Needs %s") % Data.lower_of(Data.boats[boat])
 	return ""
 
 
@@ -74,10 +74,10 @@ func enter(_args: Dictionary) -> void:
 	var note := PanelContainer.new()
 	note.position = Vector2(4, 4)
 	Nav.ui.add_child(note)
-	var events := Events.on(day).map(func(e): return {"tuna_run": "the tuna are running", "neptunalia": "the Neptunalia contest in the harbour",
-		"saturnalia": "the Saturnalia feasts", "pond_show": "the pond show", "dolphins": "dolphins in the bay"}[e])
-	Ui.label(note, "Day %d, %s, %s%s" % [day + 1, Clock.season(day), Weather.for_day(int(Game.state["seed"]), day),
-		(". Today: " + ", ".join(events)) if not events.is_empty() else ""])
+	var events := Events.on(day).map(func(e): return tr({"tuna_run": "the tuna are running", "neptunalia": "the Neptunalia contest in the harbour",
+		"saturnalia": "the Saturnalia feasts", "pond_show": "the pond show", "dolphins": "dolphins in the bay"}[e]))
+	var when := tr("Day %d, %s, %s") % [day + 1, tr(Clock.season(day)), tr(Weather.for_day(int(Game.state["seed"]), day))]
+	Ui.label(note, tr("%s. Today: %s") % [when, Ui.series(events)] if not events.is_empty() else when)
 
 
 func _place() -> void:
@@ -114,13 +114,11 @@ func _draw_pins() -> void:
 			_painter.draw_rect(Rect2(at + Vector2(-2, -1), Vector2(4, 3)), UiTheme.INK)
 	if _hover != "":
 		var reason := locked_reason(Game.state, _hover)
-		var text: String = Data.places[_hover]["name"] + ((": " + reason) if reason != "" else "")
-		var font := UiTheme.title_font()
-		var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
+		var text: String = tr("%s: %s") % [Data.name_of(Data.places[_hover]), reason] if reason != "" else Data.name_of(Data.places[_hover])
+		var w := Ui.tag_width(text)
 		var at := _pin(_hover) + Vector2(-w / 2.0, -10)
 		at.x = clampf(at.x, 4.0, 476.0 - w)
-		_painter.draw_rect(Rect2(at + Vector2(-3, -8), Vector2(w + 6, 11)), Color(UiTheme.INK, 0.85))
-		_painter.draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.CREAM)
+		Ui.draw_tag(_painter, at, text)
 
 
 func _unhandled_input(e: InputEvent) -> void:

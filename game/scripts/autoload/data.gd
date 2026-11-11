@@ -71,3 +71,30 @@ func _by_id(list) -> Dictionary:
 		for item in list:
 			out[str(item["id"])] = item
 	return out
+
+
+## A thing's name in the player's language: a fish, bait, gear, boat, place or anything else with a "name".
+func name_of(entry: Dictionary) -> String:
+	return tr(str(entry.get("name", "")))
+
+
+## A thing's name as it reads inside a sentence, in the player's language: "red mullet", "the rocky shore", and
+## "John Dory" as it is, from its "lower" field where lower-casing the first letter would be wrong.
+func lower_of(entry: Dictionary) -> String:
+	return tr(lower_key(entry))
+
+
+## The English row for a name inside a sentence, as the strings sheet keeps it.
+static func lower_key(entry: Dictionary) -> String:
+	if entry.has("lower"):
+		return str(entry["lower"])
+	var n := str(entry.get("name", ""))
+	return n.substr(0, 1).to_lower() + n.substr(1)
+
+
+func fish_name(id: String) -> String:
+	return name_of(fish.get(id, {"name": id}))
+
+
+func fish_lower(id: String) -> String:
+	return lower_of(fish.get(id, {"name": id}))

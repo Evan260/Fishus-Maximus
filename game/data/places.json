@@ -1,5 +1,5 @@
 [
-	{"id": "harbour", "name": "The harbour", "boat": "skiff", "width": 1440, "depth": 300, "travel_minutes": 60, "order": 1, "text": "The town's quay and the shallow sand and seagrass beyond it.", "spots": {"quay": 60}, "floor": {"file": "places/harbour/floor.png", "surface": 6}, "ground_below": 40, "map": [300, 74],
+	{"id": "harbour", "name": "The harbour", "where": "in the harbour", "boat": "skiff", "width": 1440, "depth": 300, "travel_minutes": 60, "order": 1, "text": "The town's quay and the shallow sand and seagrass beyond it.", "spots": {"quay": 60}, "floor": {"file": "places/harbour/floor.png", "surface": 6}, "ground_below": 40, "map": [300, 74],
 		"seabed": [[0, 60], [200, 68], [360, 96], [600, 128], [850, 168], [1050, 214], [1250, 262], [1440, 294]],
 		"layers": [
 			{"band": "#8fa0a8", "at": [0, 106], "factor": [0.12, 0.12], "z": -19},
@@ -29,7 +29,7 @@
 			{"file": "front/palm.png", "front": "bottom", "x": 1330, "factor": [1.6, 1.3], "z": 5}
 		]
 	},
-	{"id": "rocky_shore", "name": "The rocky shore", "boat": "skiff", "width": 1920, "depth": 420, "travel_minutes": 60, "order": 2, "text": "Cliffs and reefs north of the town, full of caves.", "spots": {"wreck": 1380}, "floor": {"file": "places/rocky_shore/floor.png", "surface": 6}, "ground_below": 40, "map": [282, 192],
+	{"id": "rocky_shore", "name": "The rocky shore", "where": "along the rocky shore", "boat": "skiff", "width": 1920, "depth": 420, "travel_minutes": 60, "order": 2, "text": "Cliffs and reefs north of the town, full of caves.", "spots": {"wreck": 1380}, "floor": {"file": "places/rocky_shore/floor.png", "surface": 6}, "ground_below": 40, "map": [282, 192],
 		"seabed": [[0, 56], [220, 92], [480, 150], [760, 220], [1040, 288], [1380, 350], [1640, 396], [1920, 416]],
 		"layers": [
 			{"band": "#8fa0a8", "at": [0, 106], "factor": [0.12, 0.12], "z": -19},
@@ -56,7 +56,7 @@
 			{"file": "front/pine_branch.png", "front": "top", "x": 1680, "factor": [1.6, 1.3], "z": 5, "mirror": true}
 		]
 	},
-	{"id": "lucrine", "name": "The Lucrine Lake", "boat": "fishing_boat", "width": 1440, "depth": 260, "travel_minutes": 60, "order": 3, "text": "The brackish lake by Baiae where Sergius Orata laid the first oyster beds.", "spots": {"oyster_beds": 700}, "floor": {"file": "places/lucrine/floor.png", "surface": 6}, "ground_below": 40, "map": [196, 100],
+	{"id": "lucrine", "name": "The Lucrine Lake", "where": "in the Lucrine Lake", "boat": "fishing_boat", "width": 1440, "depth": 260, "travel_minutes": 60, "order": 3, "text": "The brackish lake by Baiae where Sergius Orata laid the first oyster beds.", "spots": {"oyster_beds": 700}, "floor": {"file": "places/lucrine/floor.png", "surface": 6}, "ground_below": 40, "map": [196, 100],
 		"seabed": [[0, 40], [260, 78], [520, 118], [700, 138], [900, 168], [1160, 212], [1440, 254]],
 		"layers": [
 			{"band": "#93a4a8", "at": [0, 106], "factor": [0.12, 0.12], "z": -19},
@@ -81,7 +81,7 @@
 			{"file": "front/fig_leaves.png", "front": "top", "x": 1300, "factor": [1.6, 1.3], "z": 5, "mirror": true}
 		]
 	},
-	{"id": "open_bay", "name": "The open bay", "boat": "fishing_boat", "width": 2400, "depth": 560, "travel_minutes": 60, "order": 4, "text": "Open water, the tuna run in spring, and the dolphins.", "spots": {}, "floor": {"file": "places/open_bay/floor.png", "surface": 6}, "ground_below": 40, "map": [344, 168],
+	{"id": "open_bay", "name": "The open bay", "where": "out in the open bay", "boat": "fishing_boat", "width": 2400, "depth": 560, "travel_minutes": 60, "order": 4, "text": "Open water, the tuna run in spring, and the dolphins.", "spots": {}, "floor": {"file": "places/open_bay/floor.png", "surface": 6}, "ground_below": 40, "map": [344, 168],
 		"seabed": [[0, 140], [400, 220], [800, 300], [1200, 378], [1600, 450], [2000, 520], [2400, 556]],
 		"layers": [
 			{"band": "#8fa6b0", "at": [0, 106], "factor": [0.12, 0.12], "z": -19},
@@ -104,7 +104,7 @@
 			{"file": "front/pine_branch.png", "front": "top", "x": 2050, "factor": [1.7, 1.3], "z": 5, "mirror": true}
 		]
 	},
-	{"id": "capri", "name": "The sea caves of Capri", "boat": "sailing_boat", "width": 1920, "depth": 520, "travel_minutes": 60, "order": 5, "text": "Blue caves under the island's cliffs.", "spots": {"deep_cave": 1500}, "floor": {"file": "places/capri/floor.png", "surface": 6}, "ground_below": 40, "map": [150, 236],
+	{"id": "capri", "name": "The sea caves of Capri", "where": "in the sea caves of Capri", "boat": "sailing_boat", "width": 1920, "depth": 520, "travel_minutes": 60, "order": 5, "text": "Blue caves under the island's cliffs.", "spots": {"deep_cave": 1500}, "floor": {"file": "places/capri/floor.png", "surface": 6}, "ground_below": 40, "map": [150, 236],
 		"seabed": [[0, 110], [300, 168], [640, 248], [1000, 330], [1300, 398], [1500, 446], [1720, 488], [1920, 516]],
 		"layers": [
 			{"band": "#90a8b4", "at": [0, 106], "factor": [0.12, 0.12], "z": -19},
@@ -126,7 +126,7 @@
 			{"file": "front/olive_branch.png", "front": "top", "x": 1700, "factor": [1.5, 1.3], "z": 5}
 		]
 	},
-	{"id": "misenum", "name": "Off Cape Misenum", "boat": "big_boat", "width": 2400, "depth": 800, "travel_minutes": 60, "order": 6, "text": "Deep water off the fleet's headland, where the legends live.", "spots": {}, "floor": {"file": "places/misenum/floor.png", "surface": 6}, "ground_below": 40, "map": [34, 142],
+	{"id": "misenum", "name": "Off Cape Misenum", "where": "off Cape Misenum", "boat": "big_boat", "width": 2400, "depth": 800, "travel_minutes": 60, "order": 6, "text": "Deep water off the fleet's headland, where the legends live.", "spots": {}, "floor": {"file": "places/misenum/floor.png", "surface": 6}, "ground_below": 40, "map": [34, 142],
 		"seabed": [[0, 160], [400, 280], [800, 400], [1200, 520], [1600, 640], [2000, 740], [2400, 796]],
 		"layers": [
 			{"band": "#8fa4ae", "at": [0, 106], "factor": [0.12, 0.12], "z": -19},

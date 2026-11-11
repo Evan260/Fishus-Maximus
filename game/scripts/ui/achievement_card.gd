@@ -22,7 +22,7 @@ static func show_earned(id: String) -> void:
 	# The desktop strip is too short for the card, which would cover the boat, so it gets one line instead.
 	if Windowing.strip:
 		Audio.play("pond_bell", -6.0)
-		Toast.say("Achievement: " + str(a.get("name", id)))
+		Toast.say(TranslationServer.translate("Achievement: %s") % TranslationServer.translate(str(a.get("name", id))))
 		return
 	Settings.alert()
 	var card := PanelContainer.new()
@@ -33,7 +33,7 @@ static func show_earned(id: String) -> void:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 0)
 	card.add_child(col)
-	Ui.label(col, "ACHIEVEMENT", "Heading")
+	Ui.label(col, Ui.upper("Achievement"), "Heading")
 	var name := Ui.label(col, a.get("name", id))
 	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if Settings.large_text:

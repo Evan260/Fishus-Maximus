@@ -97,7 +97,7 @@ func _refresh() -> void:
 	var s: Dictionary = Game.state
 	if not s.is_empty():
 		var boat: Dictionary = Data.boats.get(str(s.get("boat", "skiff")), {})
-		_purse.text = "%s   Hold %d/%d" % [Ui.coins_text(int(s.get("denarii", 0))), s.get("hold", []).size(), int(boat.get("hold", 0))]
+		_purse.text = "%s   %s" % [Ui.coins_text(int(s.get("denarii", 0))), tr("Hold %d/%d") % [s.get("hold", []).size(), int(boat.get("hold", 0))]]
 	_scale_label.text = "%dx" % Windowing.scale
 	_dock_button.icon = _texture("to_bottom" if Windowing.dock == "top" else "to_top")
 	_sky_button.icon = _texture("no_sky" if Windowing.transparent else "sky")

@@ -3,7 +3,7 @@
 		{
 			"id": "row",
 			"screen": "coast",
-			"text": "Salve! I'm Rufus, I mended your uncle's nets. Row with the Left and Right arrow keys, or A and D, to look for fish.",
+			"text": "Salve! I'm Rufus, I mended your uncle's nets. Row with {row_left} and {row_right}, or the arrow keys, to look for fish.",
 			"done": {
 				"stat": "rowed"
 			}
@@ -11,7 +11,7 @@
 		{
 			"id": "cast",
 			"screen": "coast",
-			"text": "Good. Now hold Space or the mouse over the water, then let go to cast your line. Then the Up and Down arrows, or W and S, raise and lower the bait.",
+			"text": "Good. Now hold {cast} or the mouse over the water, then let go to cast your line. Then {reel_up} and {let_out}, or the Up and Down arrows, raise and lower the bait.",
 			"done": {
 				"stat": "casts"
 			}
@@ -72,7 +72,7 @@
 		{
 			"id": "pots",
 			"screen": "coast",
-			"text": "Pots fish while you do. Pick the pot down below, then press Space to sink one. Row over it later to lift it.",
+			"text": "Pots fish while you do. Pick the pot down below, then press {cast} to sink one. Row over it later to lift it.",
 			"done": {
 				"stat": "pots_set"
 			},

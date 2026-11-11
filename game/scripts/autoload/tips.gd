@@ -93,9 +93,11 @@ func wrap_text(text: String) -> String:
 	var size := UiTheme.text_size() * Settings.message_scale()
 	var width := WRAP * Settings.message_scale()
 	var out := PackedStringArray()
+	var spaced := Ui.sentence_gap() != ""
 	for para in text.split("\n"):
 		var line := ""
-		for word in para.split(" "):
+		# Chinese and Japanese break anywhere between letters, so a space in them is no better place to break.
+		for word in (para.split(" ") if spaced else PackedStringArray([para])):
 			var next := word if line == "" else line + " " + word
 			if font.get_string_size(next, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x <= width:
 				line = next

@@ -55,6 +55,14 @@ static func key_name(action: String) -> String:
 	return OS.get_keycode_string(key_for(action))
 
 
+## Text with each {action} in it, such as {cast}, written as that action's key now, so advice names the keys chosen.
+static func fill(text: String) -> String:
+	var keys := {}
+	for action in ACTIONS:
+		keys[action] = key_name(action)
+	return text.format(keys)
+
+
 ## Gives an action a new key and keeps it; the keys that always work beside it stay.
 static func rebind(action: String, keycode: int) -> void:
 	if keycode == int(ACTIONS[action]["key"]):

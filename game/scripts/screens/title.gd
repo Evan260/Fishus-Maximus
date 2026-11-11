@@ -162,6 +162,9 @@ func _show_menu() -> void:
 	for c in Nav.ui.get_children():
 		c.queue_free()
 	_heading = Ui.label(Nav.ui, "FISHUS MAXIMUS", "Title")
+	# The game's name is Silkscreen in every language.
+	_heading.add_theme_font_override("font", UiTheme.name_font())
+	_heading.add_theme_font_size_override("font_size", 16)
 	_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_heading.add_theme_color_override("font_outline_color", UiTheme.INK)
 	_heading.add_theme_constant_override("outline_size", 4)
@@ -302,9 +305,9 @@ func _load() -> void:
 		var info := Saves.slot_info(n)
 		var slot: int = n
 		if info.is_empty():
-			Ui.row(list, "Slot %d: empty" % n)
+			Ui.row(list, tr("Slot %d: empty") % n)
 			continue
-		var r := Ui.row(list, "Slot %d: %s, day %d, chapter %d" % [n, info["name"], int(info["day"]), int(info["chapter"])], "Play", func(): _play(slot))
+		var r := Ui.row(list, tr("Slot %d: %s, day %d, chapter %d") % [n, info["name"], int(info["day"]), int(info["chapter"])], "Play", func(): _play(slot))
 		Ui.button(r, "Delete", func(): _confirm_delete(slot, info))
 
 

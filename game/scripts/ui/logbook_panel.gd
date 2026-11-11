@@ -67,7 +67,7 @@ static func open(at := -1) -> void:
 		top.add_child(turn)
 		top.move_child(turn, 1)
 		Ui.button(turn, "<", func(): _turn(spread - 1)).disabled = spread == 0
-		Ui.label(turn, "%d / %d" % [spread + 1, spreads], "LightLabel")
+		Ui.label(turn, "%d / %d" % [spread + 1, spreads], "LightLabel").auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		Ui.button(turn, ">", func(): _turn(spread + 1)).disabled = spread == spreads - 1
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 3)
@@ -222,7 +222,7 @@ static func _prepare() -> void:
 static func _bookmark(parent: Node, i: int, id: String) -> void:
 	var open_now := i == section
 	var b := Button.new()
-	b.text = SHORT.get(id, str(Data.places.get(id, {}).get("name", id)))
+	b.text = TranslationServer.translate(SHORT.get(id, str(Data.places.get(id, {}).get("name", id))))
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.focus_mode = Control.FOCUS_NONE
 	for state in ["normal", "hover", "pressed", "hover_pressed"]:
@@ -256,7 +256,7 @@ static func _header(page: VBoxContainer, here: String, all: Array) -> void:
 	head.custom_minimum_size = Vector2(0, 15)
 	page.add_child(head)
 	var title: String = {"legends": "Legends of the bay", "achievements": "Achievements"}.get(here, str(Data.places.get(here, {}).get("name", here)))
-	Ui.label(head, title.to_upper(), "Heading").size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	Ui.label(head, Ui.upper(title), "Heading").size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var have := all.filter(func(id): return _earned(id) if here == "achievements" else not _caught(id).is_empty())
 	var count := Ui.label(head, "%d / %d" % [have.size(), all.size()], "Heading")
 	count.add_theme_color_override("font_color", UiTheme.MUTED)
@@ -303,9 +303,9 @@ static func _honour(page: VBoxContainer, id: String) -> void:
 	words.add_theme_constant_override("separation", -1)
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	line.add_child(words)
-	var name := _line(words, str(a.get("name", id)), "" if earned else "MutedLabel")
+	var name := _line(words, TranslationServer.translate(str(a.get("name", id))), "" if earned else "MutedLabel")
 	name.name = "Name"
-	var asks := _two_lines(str(a.get("text", "")), HONOUR.x - 24)
+	var asks := _two_lines(TranslationServer.translate(str(a.get("text", ""))), HONOUR.x - 24)
 	for part in asks:
 		if part != "":
 			_line(words, part, "MutedLabel").modulate.a = 1.0 if earned else 0.75
@@ -318,7 +318,7 @@ static func _overall(page: VBoxContainer) -> void:
 	head.alignment = BoxContainer.ALIGNMENT_END
 	page.add_child(head)
 	var kinds: int = Data.fish.size()
-	var l := Ui.label(head, "%d of %d kinds caught" % [Game.state["logbook"].size(), kinds], "MutedLabel")
+	var l := Ui.label(head, TranslationServer.translate("%d of %d kinds caught") % [Game.state["logbook"].size(), kinds], "MutedLabel")
 	l.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 
 
@@ -361,30 +361,27 @@ static func _entry(page: VBoxContainer, id: String) -> void:
 	var width := ROW.x - PICTURE.x - 4
 	if not got.is_empty():
 		_line(words, _short_name(f), "")
-		_line(words, "x%d, best %s" % [int(got["count"]), Units.weight(float(got["best"]))], "MutedLabel")
+		_line(words, TranslationServer.translate("x%d, best %s") % [int(got["count"]), Units.weight(float(got["best"]))], "MutedLabel")
 	elif f["legend"]:
-		var clue := _two_lines("\"%s\"" % Legends.clue(id), width)
+		var clue := _two_lines(TranslationServer.translate("\"%s\"") % TranslationServer.translate(Legends.clue(id)), width)
 		_line(words, clue[0], "MutedLabel")
 		_line(words, clue[1], "MutedLabel")
 	else:
-		_line(words, f["name"], "MutedLabel")
+		_line(words, Data.fish_name(id), "MutedLabel")
 		var not_yet := _line(words, "Not yet caught", "MutedLabel")
 		not_yet.modulate.a = 0.7
 
 
-## A legend's name without its "The", so the longest still fits beside its picture.
+## A legend's name without its "The" (its "short" name), so the longest still fits beside its picture.
 static func _short_name(f: Dictionary) -> String:
-	var n := str(f["name"])
-	if not n.begins_with("The "):
-		return n
-	return n.substr(4, 1).to_upper() + n.substr(5)
+	return TranslationServer.translate(str(f.get("short", f["name"])))
 
 
 static func _line(parent: Node, text: String, variation: String) -> Label:
 	var l := Label.new()
 	l.text = text
 	l.theme_type_variation = variation
-	l.text_overrun_behavior = TextServer.OVERRUN_TRIM_WORD_ELLIPSIS
+	l.text_overrun_behavior = TextServer.OVERRUN_TRIM_WORD_ELLIPSIS if Ui.sentence_gap() != "" else TextServer.OVERRUN_TRIM_ELLIPSIS
 	parent.add_child(l)
 	return l
 
@@ -392,16 +389,18 @@ static func _line(parent: Node, text: String, variation: String) -> Label:
 ## The first two lines of a long text at this width; the second is cut short by its label when it runs on.
 static func _two_lines(text: String, width: float) -> Array:
 	var font := UiTheme.body_font()
+	var gap := Ui.sentence_gap()
 	var first := ""
-	var words := text.split(" ")
+	# Chinese and Japanese leave no spaces between words, so their lines break between letters.
+	var words: Array = Array(text.split(" ")) if gap != "" else Array(text.split(""))
 	var i := 0
 	while i < words.size():
-		var next := (first + " " + words[i]).strip_edges()
+		var next: String = (first + gap + str(words[i])).strip_edges() if first != "" else str(words[i])
 		if first != "" and font.get_string_size(next, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.text_size()).x > width:
 			break
 		first = next
 		i += 1
-	return [first, " ".join(words.slice(i))]
+	return [first, gap.join(PackedStringArray(words.slice(i)))]
 
 
 ## A fish's picture, or its dark shape, in a box of this size: at its own size when it fits, doubled for the record
@@ -452,7 +451,7 @@ static func _detail(page: VBoxContainer, id: String) -> void:
 	var secret: bool = got.is_empty() and f["legend"]
 	var head := HBoxContainer.new()
 	page.add_child(head)
-	var title := _para(head, ("A legend" if secret else str(f["name"])).to_upper(), "Heading")
+	var title := _para(head, Ui.upper("A legend" if secret else str(f["name"])), "Heading")
 	title.custom_minimum_size.x = 0
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -471,28 +470,27 @@ static func _detail(page: VBoxContainer, id: String) -> void:
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	page.add_child(frame)
 	frame.add_child(_picture(id, Vector2(ROW.x - 4, 66), true, got.is_empty()))
-	var waters := "Waters: %s." % ", ".join(f["places"].map(func(p): return _lower_first(str(Data.places[p]["name"]))))
+	var waters := TranslationServer.translate("Waters: %s.") % Ui.series(f["places"].map(func(p): return Data.lower_of(Data.places[p])))
 	if secret:
-		_para(page, "\"%s\"" % Legends.clue(id), "MutedLabel")
+		_para(page, TranslationServer.translate("\"%s\"") % TranslationServer.translate(Legends.clue(id)), "MutedLabel")
 	elif got.is_empty():
 		_para(page, "Not yet caught.", "")
 		_para(page, waters, "MutedLabel")
 		_habits(page, id)
 	else:
-		_para(page, "Caught %d. Best %s, %s." % [int(got["count"]), Units.weight(float(got["best"])), Catalog.grade(id, float(got["best"]))], "")
+		_para(page, TranslationServer.translate("Caught %d. Best %s, %s.") % [int(got["count"]), Units.weight(float(got["best"])), TranslationServer.translate(Catalog.grade(id, float(got["best"])))], "")
 		if f["legend"]:
 			_para(page, "A legend of the bay.", "")
 		_para(page, waters, "MutedLabel")
 		_habits(page, id)
-		_para(page, "Baits: %s." % ", ".join(f["baits"].map(func(b): return str(Data.bait[b]["name"]).to_lower())), "MutedLabel")
+		_para(page, TranslationServer.translate("Baits: %s.") % Ui.series(f["baits"].map(func(b): return Data.lower_of(Data.bait[b]))), "MutedLabel")
 
 
 ## When and where an ordinary fish is found, if it keeps to a time of day or a depth.
 static func _habits(page: VBoxContainer, id: String) -> void:
 	var habits := Catalog.habits(id)
 	if not habits.is_empty():
-		var said := ", ".join(habits)
-		_para(page, Nav.tr("Found %s.") % said, "MutedLabel")
+		_para(page, TranslationServer.translate("Found %s.") % Ui.series(habits), "MutedLabel")
 
 
 ## A paragraph wrapped at the page's width, which it is given before it goes in so it is measured at that width.
@@ -505,10 +503,6 @@ static func _para(page: Container, text: String, variation: String) -> Label:
 	l.size.x = ROW.x
 	page.add_child(l)
 	return l
-
-
-static func _lower_first(s: String) -> String:
-	return s.substr(0, 1).to_lower() + s.substr(1)
 
 
 ## Two pages of paper with the edges of the pages under them showing at the sides and bottom, and a shadow running

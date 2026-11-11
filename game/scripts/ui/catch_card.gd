@@ -53,8 +53,9 @@ static func show_catch(fish: String, pounds: float, is_new: bool) -> void:
 	var legend: bool = Data.fish[fish]["legend"]
 	# The desktop strip is too short for the banner, so the catch gets one line instead.
 	if Windowing.strip:
-		var also := " A legend of the bay!" if legend else (" New in your logbook!" if is_new else "")
-		Toast.say("%s, %s, %s.%s" % [Data.fish[fish]["name"], Units.weight(pounds), Catalog.grade(fish, pounds), also])
+		var line := TranslationServer.translate("%s, %s, %s.") % [Data.fish_name(fish), Units.weight(pounds), TranslationServer.translate(Catalog.grade(fish, pounds))]
+		var also := "A legend of the bay!" if legend else ("New in your logbook!" if is_new else "")
+		Toast.say(Ui.text([line, also]))
 		return
 	var card := Control.new()
 	card.name = "CatchCard"
@@ -85,7 +86,7 @@ static func show_catch(fish: String, pounds: float, is_new: bool) -> void:
 	if is_new or legend:
 		for at in STAR_AT:
 			_picture(hang, STAR, at).name = "Star"
-	var note := "A LEGEND OF THE BAY!" if legend else ("NEW IN YOUR LOGBOOK" if is_new else "")
+	var note := Ui.upper("A legend of the bay!") if legend else (Ui.upper("New in your logbook") if is_new else "")
 	_lay_out(hang, fish, pounds, note)
 	var roll := _picture(card, ROLL, HANG)
 	roll.name = "Roll"
@@ -104,26 +105,43 @@ static func picture_of(fish: String) -> Texture2D:
 
 ## The name, the fish, the weight and grade, and the note, one under another in the middle of the cloth.
 static func _lay_out(hang: Control, fish: String, pounds: float, note: String) -> void:
-	var name := _title(str(Data.fish[fish]["name"]).to_upper())
-	var lines := name.count("\n") + 1
 	var tex := picture_of(fish)
 	var fish_tall := tex.get_height() if tex else 0
-	var tall := NAME_CAPS.y * lines + NAME_GAP * (lines - 1) + GAP + fish_tall + GAP + LINE_CAPS.y
-	if note != "":
-		tall += GAP + NOTE_CAPS.y
+	var latin := UiTheme.silkscreen()
+	var line_caps := LINE_CAPS if not UiTheme.HAN.has(UiTheme.language()) else _caps(UiTheme.body_font(), UiTheme.text_size())
+	var note_caps := NOTE_CAPS if latin else _caps(UiTheme.title_font(), UiTheme.heading_size())
+	var below := GAP + fish_tall + GAP + line_caps.y + (GAP + note_caps.y if note != "" else 0.0)
+	# A name too long for the cloth in the large letters, as some languages' are, is painted in the heading's size.
+	var size := UiTheme.heading_size(true)
+	var name := _title(Ui.upper(str(Data.fish[fish]["name"])), size)
+	var name_caps := NAME_CAPS if latin else _caps(UiTheme.title_font(), size)
+	var lines := name.count("\n") + 1
+	if (_widest(name, size) > INSIDE.size.x or name_caps.y * lines + NAME_GAP * (lines - 1) + below > INSIDE.size.y):
+		size = UiTheme.heading_size()
+		name = _title(Ui.upper(str(Data.fish[fish]["name"])), size)
+		name_caps = NOTE_CAPS if latin else _caps(UiTheme.title_font(), size)
+		lines = name.count("\n") + 1
+	var tall := name_caps.y * lines + NAME_GAP * (lines - 1) + below
 	var y := INSIDE.position.y + floorf((INSIDE.size.y - tall) / 2.0)
-	var title := _words(hang, name, "Title", y - NAME_CAPS.x, NAME_INK)
-	title.add_theme_constant_override("line_spacing", int(NAME_CAPS.y + NAME_GAP) - _line_height(title))
-	y += NAME_CAPS.y * lines + NAME_GAP * (lines - 1) + GAP
+	var title := _words(hang, name, "Title", y - name_caps.x, NAME_INK)
+	title.add_theme_font_size_override("font_size", size)
+	title.add_theme_constant_override("line_spacing", int(name_caps.y + NAME_GAP) - _line_height(title))
+	y += name_caps.y * lines + NAME_GAP * (lines - 1) + GAP
 	if tex:
 		var at := Vector2(roundf(INSIDE.get_center().x - tex.get_width() / 2.0), y)
 		_picture(hang, tex, at + Vector2.ONE).modulate = FISH_SHADOW
 		_picture(hang, tex, at).name = "Fish"
 	y += fish_tall + GAP
-	_words(hang, "%s, %s" % [Units.weight(pounds), Catalog.grade(fish, pounds)], "LightLabel", y - LINE_CAPS.x, LINE_INK)
-	y += LINE_CAPS.y + GAP
+	_words(hang, TranslationServer.translate("%s, %s") % [Units.weight(pounds), TranslationServer.translate(Catalog.grade(fish, pounds))], "LightLabel", y - line_caps.x, LINE_INK)
+	y += line_caps.y + GAP
 	if note != "":
-		_words(hang, note, "LightHeading", y - NOTE_CAPS.x, NOTE_INK)
+		_words(hang, note, "LightHeading", y - note_caps.x, NOTE_INK)
+
+
+## Where a line's letters start below its top and how tall they are, for a font other than the ones measured above.
+static func _caps(font: Font, size: int) -> Vector2:
+	var top := maxf(0.0, floorf(font.get_ascent(size) - size * 0.8))
+	return Vector2(top, ceilf(font.get_ascent(size) + font.get_descent(size) * 0.5 - top))
 
 
 static func _line_height(l: Label) -> int:
@@ -172,16 +190,38 @@ static func _unfurl(card: Control, hang: Control) -> void:
 	tw.tween_callback(card.queue_free)
 
 
-## The fish's name on one line, or on two split at the space nearest the middle when one would be too wide.
-static func _title(name: String) -> String:
-	var across := UiTheme.title_font().get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.heading_size(true)).x
-	if across <= INSIDE.size.x or not " " in name:
+## The fish's name on one line, or on two split at the space or hyphen nearest the middle when one would be too wide.
+static func _title(name: String, size: int) -> String:
+	if _widest(name, size) <= INSIDE.size.x:
 		return name
 	var best := -1
 	for i in name.length():
-		if name[i] == " " and (best < 0 or absi(i - name.length() / 2) < absi(best - name.length() / 2)):
+		if name[i] in [" ", "-"] and (best < 0 or absi(i - name.length() / 2) < absi(best - name.length() / 2)):
 			best = i
-	return name.substr(0, best) + "\n" + name.substr(best + 1)
+	if best < 0:
+		return name
+	var two := name.substr(0, best + (1 if name[best] == "-" else 0)) + "\n" + name.substr(best + 1)
+	if _widest(two, size) <= INSIDE.size.x:
+		return two
+	# A longer name, as some languages give, takes as many lines as it needs, each filled as far as it goes.
+	var lines := PackedStringArray()
+	var line := ""
+	for word in name.split(" "):
+		var next := word if line == "" else line + " " + word
+		if line != "" and _widest(next, size) > INSIDE.size.x:
+			lines.append(line)
+			next = word
+		line = next
+	lines.append(line)
+	return "\n".join(lines)
+
+
+## How wide the widest line of a name is, in the heading font at this size.
+static func _widest(name: String, size: int) -> float:
+	var most := 0.0
+	for line in name.split("\n"):
+		most = maxf(most, UiTheme.title_font().get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x)
+	return most
 
 
 ## A line of words painted across the cloth, centred inside the stripe, its top at `top`.

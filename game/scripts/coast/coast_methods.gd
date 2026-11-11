@@ -157,7 +157,7 @@ func _idle_step(minutes: float) -> void:
 ## Tells of the fish he has brought in on his own, and stops him once the hold is full.
 func _announce() -> void:
 	for id in _landing:
-		Toast.say("+ " + Data.fish[id]["name"])
+		Toast.say("+ " + Data.fish_name(id))
 	_landing.clear()
 	if idle and Hold.room(Game.state) <= 0:
 		set_idle(false)
@@ -172,7 +172,7 @@ func _pull_traps_under_boat() -> void:
 			var got := Traps.empty_into(Game.state, t)
 			var say := []
 			if not got.is_empty():
-				say.append("You rowed over your pot and hauled it up: " + _names(got) + ".")
+				say.append(tr("You rowed over your pot and hauled it up: %s.") % _names(got))
 			if not t["catch"].is_empty():
 				say.append("The hold is full; the rest stay in the pot.")
 				t["_told"] = 1.0
@@ -180,7 +180,7 @@ func _pull_traps_under_boat() -> void:
 
 
 func _names(got: Array) -> String:
-	return ", ".join(got.map(func(c): return Data.fish[c["fish"]]["name"].to_lower()))
+	return Ui.series(got.map(func(c): return Data.fish_lower(c["fish"])))
 
 
 ## Hauls a pot up to tell what came out of it once it is in the boat; a pot nothing came out of stays down.
@@ -208,17 +208,16 @@ func _set_or_lift_trap() -> void:
 	for t in traps_here():
 		if absf(float(t["x"]) - mid) < PULL_REACH:
 			var got := Traps.empty_into(Game.state, t)
-			var said := ": " + _names(got) + "." if not got.is_empty() else "."
 			if not t["catch"].is_empty():
-				var say := ["Hauled the pot up" + said] if not got.is_empty() else []
+				var say: Array = [tr("Hauled the pot up: %s.") % _names(got)] if not got.is_empty() else []
 				_haul(t, got, say + ["Make room in the hold before lifting this pot."], true)
 				return
 			Game.state["traps"].erase(t)
-			_haul(t, got, ["Lifted the pot" + said], false)
+			_haul(t, got, [tr("Lifted the pot: %s.") % _names(got) if not got.is_empty() else "Lifted the pot."], false)
 			return
 	var allowed := int(Game.state["gear"].get("traps", 2))
 	if Game.state["traps"].size() >= allowed:
-		Toast.say("All %d pots are set." % allowed)
+		Toast.say(tr("All %d pots are set.") % allowed)
 		return
 	var bait: String = screen.bait()
 	if bait != "":
@@ -232,7 +231,7 @@ func _set_or_lift_trap() -> void:
 	if int(Game.state["stats"].get("pots_set", 0)) <= 1:
 		Toast.say("Your pot sinks to the seabed and fills with crabs, lobsters and octopus. Row over it later to haul it up.")
 	else:
-		Toast.say("Pot set on the seabed%s." % ((", baited with " + str(Data.bait[bait]["name"]).to_lower()) if bait != "" else ""))
+		Toast.say(tr("Pot set on the seabed, baited with %s.") % Data.lower_of(Data.bait[bait]) if bait != "" else "Pot set on the seabed.")
 
 
 func _dev_pot(how: String) -> void:
@@ -272,7 +271,7 @@ func _throw_net() -> void:
 			HoldChoice.ask(r["fish"])
 			break
 	if n > 0:
-		Toast.say("%d %s in the net." % [n, Data.fish[shoal[0]["id"]]["name"].to_lower()])
+		Toast.say(tr("In the net: %s x%d.") % [Data.fish_lower(shoal[0]["id"]), n])
 
 
 ## The fish of the netable shoal closest to a point, near enough for the ring to reach.
