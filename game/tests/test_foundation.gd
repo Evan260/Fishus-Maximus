@@ -16,6 +16,7 @@ func test_time_away_is_capped() -> void:
 
 
 func test_a_save_round_trips_and_survives_corruption() -> void:
+	Saves.delete(1)
 	Game.new_game("Test", "mutt")
 	Game.state["denarii"] = 321
 	Game.state["hold"] = [{"fish": "mullet", "pounds": 1.5, "fresh": 1.0}]
@@ -44,3 +45,40 @@ func test_a_new_game_starts_poor_in_the_harbour() -> void:
 	check(Game.state["place"] == "harbour" and Game.state["boat"] == "skiff" and Game.state["chapter"] == 1, "in the skiff at the harbour")
 	check(Game.state["denarii"] == int(Data.num("start.denarii")), "with the starting purse")
 	check(Ui.coins_text(1) == "1 denarius" and Ui.coins_text(12) == "12 denarii", "money is written out")
+
+
+func test_a_save_is_written_safely_and_keeps_backups() -> void:
+	Saves.delete(1)
+	Game.new_game("Safe", "mutt")
+	Game.state["denarii"] = 1
+	check(Saves.save(1), "the first save is written")
+	check(not FileAccess.file_exists(Saves.path_for(1) + ".tmp"), "through a temporary file that is moved into place")
+	Game.state["denarii"] = 2
+	Saves.save(1)
+	check(FileAccess.file_exists(Saves.path_for(1) + ".bak1"), "the save before it becomes the newest backup")
+	Game.state["denarii"] = 3
+	Saves.save(1)
+	check(not FileAccess.file_exists(Saves.path_for(1) + ".bak2"), "and the backups move along only once the newest has aged")
+	check(Saves.load_slot(1) and Game.state["denarii"] == 3, "the newest save is the one loaded")
+	var tmp := Saves.path_for(1) + ".tmp"
+	var later := Game.to_dict()
+	later["denarii"] = 4
+	later["saved_at"] = Time.get_unix_time_from_system() + 60.0
+	var f := FileAccess.open(tmp, FileAccess.WRITE)
+	f.store_string(JSON.stringify(later))
+	f.close()
+	check(Saves.load_slot(1) and Game.state["denarii"] == 4, "a save cut off before its temporary file was moved is still found")
+	f = FileAccess.open(tmp, FileAccess.WRITE)
+	f.store_string("{\"version\"")
+	f.close()
+	check(Saves.load_slot(1) and Game.state["denarii"] == 3, "but a half-written temporary file never wins")
+	var old := FileAccess.open(Saves.path_for(1) + ".bak", FileAccess.WRITE)
+	old.store_string(JSON.stringify(later))
+	old.close()
+	Saves.delete(1)
+	check(Saves.slot_info(1).is_empty() and not FileAccess.file_exists(Saves.path_for(1) + ".bak"), "deleting takes every file, the old single backup too")
+	var older := FileAccess.open(Saves.path_for(1) + ".bak", FileAccess.WRITE)
+	older.store_string(JSON.stringify(later))
+	older.close()
+	check(Saves.load_slot(1) and Game.state["denarii"] == 4, "an older game's single backup is still read")
+	Saves.delete(1)

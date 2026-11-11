@@ -1,7 +1,11 @@
 extends Node
-## Three save slots. Each save first moves the previous file aside as a backup, so a bad write never loses a boat.
+## Three save slots, saved every minute and as the window closes, as Farmus Maximus saves: each save is written to a
+## temporary file and read back before it replaces anything, and the last few saves are kept as rolling backups.
 
 const SLOTS := 3
+const BACKUPS := 3
+## Seconds the newest backup must have aged before the backups move along, so each really is an older copy.
+const BACKUP_EVERY := 300.0
 
 var dir := "user://"
 var slot := 0
@@ -15,7 +19,6 @@ func _ready() -> void:
 		enabled = false
 
 
-## Saves the game in play every minute, and as the window closes.
 func _process(delta: float) -> void:
 	_autosave -= delta
 	if _autosave <= 0.0:
@@ -39,21 +42,23 @@ func save(n: int = -1) -> bool:
 	if n < 1 or n > SLOTS or not enabled:
 		return false
 	var path := path_for(n)
-	if FileAccess.file_exists(path):
-		DirAccess.copy_absolute(ProjectSettings.globalize_path(path), ProjectSettings.globalize_path(path + ".bak"))
-	var f := FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return false
 	Game.state["last_real_time"] = Time.get_unix_time_from_system()
-	f.store_string(JSON.stringify(Game.to_dict(), "\t"))
-	f.close()
+	var data := Game.to_dict()
+	data["saved_at"] = Time.get_unix_time_from_system()
+	# Writing to a temporary file first means a crash mid-write never leaves a half-written save.
+	var tmp := path + ".tmp"
+	if not _write(tmp, JSON.stringify(data, "\t")) or not _set_aside_unreadable(n):
+		return false
+	_rotate_backups(path)
+	if not _move(tmp, path):
+		return false
 	slot = n
 	return true
 
 
-## Loads a slot, falling back to its backup when the main file is missing or unreadable. False if neither works.
+## Loads a slot from its save, or the newest backup that can be read when it cannot. False if none can.
 func load_slot(n: int) -> bool:
-	for path in [path_for(n), path_for(n) + ".bak"]:
+	for path in _load_order(n):
 		var d := _read(path)
 		if not d.is_empty():
 			Game.from_dict(d)
@@ -71,20 +76,19 @@ func free_slot() -> int:
 
 
 func delete(n: int) -> void:
-	for path in [path_for(n), path_for(n) + ".bak"]:
+	for path in _candidates(n) + [path_for(n) + ".tmp"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 ## What the title shows for a slot: its name, day, chapter, dog and kinds of fish caught, or an empty dictionary for a free slot.
 func slot_info(n: int) -> Dictionary:
-	var d := _read(path_for(n))
-	if d.is_empty():
-		d = _read(path_for(n) + ".bak")
-	if d.is_empty():
-		return {}
-	return {"name": d.get("name", ""), "day": int(Clock.day_of(float(d.get("time", 0.0)))) + 1, "chapter": d.get("chapter", 1), "dog": d.get("dog", ""),
-		"fish": (d.get("logbook", {}) as Dictionary).size() if d.get("logbook", {}) is Dictionary else 0}
+	for path in _load_order(n):
+		var d := _read(path)
+		if not d.is_empty():
+			return {"name": d.get("name", ""), "day": int(Clock.day_of(float(d.get("time", 0.0)))) + 1, "chapter": d.get("chapter", 1),
+				"dog": d.get("dog", ""), "fish": (d["logbook"] as Dictionary).size() if d.get("logbook") is Dictionary else 0}
+	return {}
 
 
 func _read(path: String) -> Dictionary:
@@ -94,3 +98,76 @@ func _read(path: String) -> Dictionary:
 	if json.parse(FileAccess.get_file_as_string(path)) != OK:
 		return {}
 	return json.data if json.data is Dictionary and json.data.has("version") else {}
+
+
+## Writes a file and reads it back, so a full disk or a failed write is caught before it can replace anything.
+func _write(path: String, text: String) -> bool:
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		push_error("Could not write %s: %s" % [path, error_string(FileAccess.get_open_error())])
+		return false
+	var stored := f.store_string(text)
+	f.close()
+	if not stored or FileAccess.get_file_as_string(path) != text:
+		push_error("Could not write %s" % path)
+		return false
+	return true
+
+
+func _move(from: String, to: String) -> bool:
+	var err := DirAccess.rename_absolute(ProjectSettings.globalize_path(from), ProjectSettings.globalize_path(to))
+	if err != OK:
+		push_error("Could not move %s to %s: %s" % [from, to, error_string(err)])
+	return err == OK
+
+
+## The save and its backups, newest first; the single `.bak` older games kept is read last.
+func _candidates(n: int) -> Array:
+	var list := [path_for(n)]
+	for i in range(1, BACKUPS + 1):
+		list.append("%s.bak%d" % [path_for(n), i])
+	list.append(path_for(n) + ".bak")
+	return list
+
+
+## The files a game is read from, best first: a save cut off before its .tmp replaced the save leaves the newest there.
+func _load_order(n: int) -> Array:
+	var list := _candidates(n)
+	var tmp := path_for(n) + ".tmp"
+	if _saved_at(tmp) > _saved_at(path_for(n)):
+		list.push_front(tmp)
+	return list
+
+
+## When a save was made, or -1 for a file that is missing or not whole, so a half-written .tmp never wins.
+func _saved_at(path: String) -> float:
+	var d := _read(path)
+	return float(d.get("saved_at", 0.0)) if not d.is_empty() else -1.0
+
+
+## A game none of whose files can be read is moved aside under a plain name rather than saved over, so it can be rescued.
+func _set_aside_unreadable(n: int) -> bool:
+	var found := _candidates(n).filter(func(path): return FileAccess.file_exists(path))
+	if found.is_empty() or found.any(func(path): return not _read(path).is_empty()):
+		return true
+	var stamp := int(Time.get_unix_time_from_system())
+	for path in found:
+		if not _move(path, "%s.unreadable-%d" % [path, stamp]):
+			return false
+	push_error("Save %d could not be read, so its files were kept beside it as .unreadable copies" % n)
+	return true
+
+
+## Moves each backup one along, the save itself becoming the newest, once the newest backup has aged.
+func _rotate_backups(path: String) -> void:
+	var newest := path + ".bak1"
+	if FileAccess.file_exists(newest) and Time.get_unix_time_from_system() - FileAccess.get_modified_time(newest) < BACKUP_EVERY:
+		return
+	if _read(path).is_empty():
+		return
+	# Renaming rather than copying leaves each older copy's contents untouched on the disk.
+	for i in range(BACKUPS - 1, 0, -1):
+		var older := "%s.bak%d" % [path, i]
+		if FileAccess.file_exists(older) and not _move(older, "%s.bak%d" % [path, i + 1]):
+			return
+	_move(path, newest)
