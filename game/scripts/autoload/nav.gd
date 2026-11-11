@@ -156,6 +156,11 @@ func to_ui(p: Vector2) -> Vector2:
 	return ui_layer.transform.affine_inverse() * p
 
 
+## A point in interface pixels in window pixels.
+func ui_to_window(p: Vector2) -> Vector2:
+	return _frame.position + (ui_layer.transform * p) * float(zoom)
+
+
 ## A point in window pixels in interface pixels.
 func window_to_ui(p: Vector2) -> Vector2:
 	return to_ui((p - _frame.position) / float(zoom))

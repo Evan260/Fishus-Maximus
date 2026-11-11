@@ -19,9 +19,10 @@ func _process(_delta: float) -> void:
 		_steam.call("run_callbacks")
 
 
-## A game that is saved and was never given its achievements, such as one started with --max-state or --demo-state.
+## Only a real, saved game sends achievements, never one made up for checks such as --max-state or --demo-state.
 func may_send() -> bool:
-	return Saves.enabled and not Dev.has("run-tests") and not Dev.has("achievement") and not Game.state.get("_unlocked", false)
+	return Saves.enabled and not Dev.made_up() and not Dev.has("run-tests") and not Dev.has("achievement") and not Dev.has("panel") \
+		and not Game.state.get("_unlocked", false)
 
 
 func unlock(id: String) -> void:

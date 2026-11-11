@@ -15,8 +15,11 @@ var _autosave := 60.0
 
 
 func _ready() -> void:
-	if Dev.has("no-save") or Dev.has("demo") or Dev.has("max-state"):
+	if Dev.has("no-save") or Dev.made_up():
 		enabled = false
+	# --save-dir=NAME reads the slots from user://NAME instead, for checking the title with saves that are not the player's.
+	if Dev.has("save-dir"):
+		dir = "user://".path_join(Dev.get_arg("save-dir"))
 
 
 func _process(delta: float) -> void:

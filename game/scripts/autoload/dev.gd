@@ -1,8 +1,9 @@
 extends Node
 ## Command-line options for checking the game without a hand on the mouse: screenshots, bursts of frames, window size.
 ## --shot=PATH [--shot-at=SECONDS] saves one screenshot; --burst=PREFIX [--burst-start, --burst-gap, --burst-count]
-## saves several; --quit closes the game after the last one; --window=WxH sets the window size; --no-save keeps every
-## save slot untouched.
+## saves several as PREFIX_00.png and on; --quit closes the game after the last one; --window=WxH sets the window size;
+## --hover=X,Y and --click=X,Y point and click in interface pixels; --panel=NAME opens a window; --achievement[=ID]
+## slides in an achievement's card; --ui-size=N sets the interface size for the run; --no-save writes nothing anywhere.
 
 var args := {}
 var time := 0.0
@@ -24,28 +25,32 @@ func _ready() -> void:
 		for k in int(args.get("burst-count", "8")):
 			_shots.append([start + k * gap, "%s_%02d.png" % [args["burst"], k]])
 	_shots.sort_custom(func(a, b) -> bool: return a[0] < b[0])
-	# --click=X,Y (window pixels, at --click-at seconds) clicks for screenshots.
+	# --hover=X,Y and --click=X,Y (interface pixels, at --hover-at and --click-at seconds) point and click for screenshots.
+	if args.has("hover"):
+		get_tree().create_timer(float(args.get("hover-at", "1.5"))).timeout.connect(func(): _point(_at("hover")))
 	if args.has("click"):
-		var xy: PackedStringArray = args["click"].split(",")
-		get_tree().create_timer(float(args.get("click-at", "1.5"))).timeout.connect(_click.bind(Vector2(float(xy[0]), float(xy[1]))))
-	# --point=X,Y (window pixels, at --point-at seconds) rests the pointer there, as for showing a tip.
-	if args.has("point"):
-		var xy: PackedStringArray = args["point"].split(",")
-		get_tree().create_timer(float(args.get("point-at", "1.5"))).timeout.connect(_point.bind(Vector2(float(xy[0]), float(xy[1]))))
+		get_tree().create_timer(float(args.get("click-at", "1.5"))).timeout.connect(func(): _click(_at("click")))
 	# --catch=ID (at --catch-at seconds) hangs out the banner for that fish, as if it had just been landed for the first time.
 	if args.has("catch"):
 		get_tree().create_timer(float(args.get("catch-at", "1.0"))).timeout.connect(func():
 			var lb: Array = Data.fish[args["catch"]]["pounds"]
 			CatchCard.show_catch(args["catch"], (float(lb[0]) + float(lb[1])) / 2.0, true))
-	# --open=logbook, achievements or settings (at --open-at seconds) opens that window, for screenshots.
-	if args.has("open"):
-		get_tree().create_timer(float(args.get("open-at", "1.0"))).timeout.connect(_open_window.bind(args["open"]))
+	# --panel=NAME (at --panel-at seconds) opens that window, for screenshots.
+	if args.has("panel"):
+		get_tree().create_timer(float(args.get("panel-at", "1.0"))).timeout.connect(open_panel.bind(args["panel"]))
+	if args.has("achievement"):
+		get_tree().create_timer(float(args.get("achievement-at", "1.0"))).timeout.connect(_show_achievement)
 	if args.has("quit") and _shots.is_empty():
 		get_tree().create_timer(float(args.get("quit-at", "3.0"))).timeout.connect(get_tree().quit)
 
 
 func has(key: String) -> bool:
 	return args.has(key)
+
+
+## Whether this run made up its game, which is then never saved or sent to Steam.
+func made_up() -> bool:
+	return has("demo-state") or has("max-state")
 
 
 func get_arg(key: String, fallback: String = "") -> String:
@@ -70,7 +75,9 @@ func _take_shot(path: String, last: bool) -> void:
 		get_tree().quit()
 
 
-func _open_window(window: String) -> void:
+## Opens a window by name: logbook, achievements, settings or settings:TAB, and on the title new_game, load, or delete,
+## which leaves slot 1 waiting for the word typed, deleting nothing.
+func open_panel(window: String) -> void:
 	if window == "logbook":
 		LogbookPanel.open()
 		# --turn-at=S turns to the next section S seconds after the logbook opens (--turn-back the other way), for checks.
@@ -79,12 +86,35 @@ func _open_window(window: String) -> void:
 				LogbookPanel._bookmark_turn(LogbookPanel.section + (-1 if args.has("turn-back") else 1)))
 	elif window == "achievements":
 		LogbookPanel.open_achievements()
-	elif window == "settings":
-		# --settings-tab=Display opens the settings at that tab.
-		SettingsPanel.tab = get_arg("settings-tab", SettingsPanel.tab)
+	elif window.begins_with("settings"):
+		if window.contains(":"):
+			SettingsPanel.tab = window.get_slice(":", 1)
 		SettingsPanel.open()
-	elif window in ["new_game", "load"] and Nav.current and Nav.current.has_method("_load"):
-		Nav.current.call("_new_game" if window == "new_game" else "_load")
+	elif Nav.current and Nav.current.has_method("_load"):
+		match window:
+			"new_game":
+				Nav.current.call("_new_game")
+			"load":
+				Nav.current.call("_load")
+			"delete":
+				var info := Saves.slot_info(1)
+				if not info.is_empty():
+					Nav.current.call("_confirm_delete", 1, info)
+
+
+## Slides in the card for the achievement named by --achievement=ID, or the first one, without earning it.
+func _show_achievement() -> void:
+	var id := get_arg("achievement")
+	for a in Data.achievements:
+		if id == "" or a["id"] == id:
+			AchievementCard.show_earned(str(a["id"]))
+			return
+
+
+## A point given in interface pixels, in window pixels.
+func _at(key: String) -> Vector2:
+	var xy: PackedStringArray = args[key].split(",")
+	return Nav.ui_to_window(Vector2(float(xy[0]), float(xy[1])))
 
 
 func _point(at: Vector2) -> void:
@@ -97,6 +127,7 @@ func _point(at: Vector2) -> void:
 
 
 func _click(at: Vector2) -> void:
+	_point(at)
 	for pressed in [true, false]:
 		var b := InputEventMouseButton.new()
 		b.button_index = MOUSE_BUTTON_LEFT

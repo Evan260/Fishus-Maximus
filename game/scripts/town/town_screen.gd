@@ -282,10 +282,10 @@ func _process(delta: float) -> void:
 	_painter.queue_redraw()
 
 
-## Where the mouse is on the street; --hover=ID holds it over that building, and --hover=none off them all, for screenshots.
+## Where the mouse is on the street; --outline=ID holds it over that building, and --outline=none off them all, for screenshots.
 func _pointer() -> Vector2:
-	if Dev.has("hover"):
-		var id := Dev.get_arg("hover")
+	if Dev.has("outline"):
+		var id := Dev.get_arg("outline")
 		return _masks[id]["rect"].get_center() if _masks.has(id) else Vector2(-100, -100)
 	return _stage.get_local_mouse_position()
 
