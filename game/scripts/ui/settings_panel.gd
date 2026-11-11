@@ -31,8 +31,8 @@ static func open() -> void:
 	list.add_child(sizes)
 	Ui.label(sizes, "Interface").custom_minimum_size = Vector2(53, 0)
 	var group := ButtonGroup.new()
-	for choice in [[-1, "Smaller", "A step smaller, for more room on the screen."], [0, "Normal", "The game's own size."],
-			[1, "Larger", "A step larger, while the window has room for it."]]:
+	for choice in [[-1, "Normal", "The usual size."], [0, "Larger", "A step larger, the size of the scene's own pixels."],
+			[1, "Largest", "Larger still, while the window has room for it."]]:
 		var step: int = choice[0]
 		var b := Ui.button(sizes, choice[1], func(): Settings.set_value("interface_size", step))
 		b.name = choice[1]

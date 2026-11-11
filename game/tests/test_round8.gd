@@ -121,7 +121,7 @@ func test_every_window_shows_the_whole_town_with_no_mirrored_edge() -> void:
 		check(shown.grow(0.01).encloses(view), "%s: the painted street reaches every edge, %s against %s" % [size, shown, view])
 		check(not s._stage.get_children().any(func(n): return n is Backdrop), "%s: with no mirrored copies" % size)
 		for id in s.BUILDINGS:
-			var r: Rect2 = s.guide_target(id)
+			var r: Rect2 = Nav.from_ui(s.guide_target(id))
 			check(view.grow(1.5).encloses(r), "%s: the %s is on screen at %s" % [size, id, r])
 			var middle: Vector2 = s._stage.transform.affine_inverse() * r.get_center()
 			check(s._building_at(middle) == id or s._building_at(middle) == "", "%s: and the guide's arrow points at it" % size)

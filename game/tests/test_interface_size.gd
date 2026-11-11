@@ -1,5 +1,5 @@
 extends "res://tests/test_case.gd"
-## The interface size setting: Smaller, Normal and Larger draw each interface pixel a whole number of window pixels,
+## The interface size setting: Normal, Larger and Largest draw each interface pixel a whole number of window pixels,
 ## and everything hung on the interface still lines up with what it belongs to.
 
 const SIZES := [Vector2i(1440, 810), Vector2i(1918, 1007), Vector2i(1920, 1080), Vector2i(1280, 800), Vector2i(2560, 1377), Vector2i(3840, 2066)]
@@ -37,7 +37,7 @@ func _in_window(r: Rect2) -> Rect2:
 
 
 func _restore(before: Vector2i) -> void:
-	_set_size(0)
+	_set_size(-1)
 	_resize(before)
 
 
@@ -60,14 +60,16 @@ func test_each_interface_size_draws_its_pixels_whole() -> void:
 	_restore(before)
 
 
-func test_smaller_and_larger_differ_from_normal_where_there_is_room() -> void:
+func test_normal_larger_and_largest_differ_where_there_is_room() -> void:
 	var before := Windowing.get_window().size
 	_resize(Vector2i(2560, 1377))
 	var zoom := Nav.zoom
 	_set_size(-1)
-	check(Nav.ui_zoom == zoom - 1, "Smaller draws the interface a step smaller than the game")
+	check(Nav.ui_zoom == zoom - 1, "Normal draws the interface a step smaller than the game")
+	_set_size(0)
+	check(Nav.ui_zoom == zoom, "Larger at the game's own size")
 	_set_size(1)
-	check(Nav.ui_zoom == zoom + 1, "Larger a step larger, while it has room")
+	check(Nav.ui_zoom == zoom + 1, "Largest a step larger still, while it has room")
 	_resize(Vector2i(480, 270))
 	_set_size(-1)
 	check(Nav.ui_zoom == 1, "never smaller than one window pixel")
@@ -233,13 +235,17 @@ func test_the_settings_choose_the_interface_size() -> void:
 	var zoom := Nav.zoom
 	SettingsPanel.open()
 	var win: Control = Nav.ui.get_node("Window")
+	var largest: Button = win.find_child("Largest", true, false)
 	var larger: Button = win.find_child("Larger", true, false)
 	var normal: Button = win.find_child("Normal", true, false)
-	check(larger != null and normal != null and normal.button_pressed and not larger.button_pressed, "the settings offer the sizes, Normal chosen")
+	check(largest != null and larger != null and normal != null and normal.button_pressed and not larger.button_pressed, "the settings offer the sizes, Normal chosen")
+	check(win.find_child("Smaller", true, false) == null, "with nothing smaller than Normal")
 	larger.pressed.emit()
-	check(Settings.interface_size == 1 and Nav.ui_zoom == zoom + 1, "choosing Larger draws the interface a step larger at once")
-	win.find_child("Smaller", true, false).pressed.emit()
-	check(Settings.interface_size == -1 and Nav.ui_zoom == zoom - 1, "and Smaller a step smaller")
+	check(Settings.interface_size == 0 and Nav.ui_zoom == zoom, "choosing Larger draws the interface at the game's size at once")
+	largest.pressed.emit()
+	check(Settings.interface_size == 1 and Nav.ui_zoom == zoom + 1, "and Largest a step larger still")
+	normal.pressed.emit()
+	check(Settings.interface_size == -1 and Nav.ui_zoom == zoom - 1, "and Normal a step under the game's size")
 	Ui.close_window()
 	_clear()
 	_restore(before)
@@ -301,3 +307,14 @@ func test_a_corner_button_tip_stays_by_the_pointer_wherever_it_rests_on_the_butt
 	_clear()
 	s.free()
 	_restore(before)
+
+
+func test_normal_is_the_default_and_a_saved_size_keeps_its_meaning() -> void:
+	var fresh: Node = load("res://scripts/autoload/settings.gd").new()
+	check(fresh.interface_size == -1, "a new player starts at Normal, a step under the game's size")
+	for step in [-1, 0, 1]:
+		var cfg := ConfigFile.new()
+		cfg.set_value("display", "interface_size", step)
+		fresh.read_from(cfg)
+		check(fresh.interface_size == step, "a saved %d still draws the same size" % step)
+	fresh.free()

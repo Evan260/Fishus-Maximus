@@ -16,8 +16,9 @@ var maximized := false
 ## Gentle fishing never snaps a line or lets a hook slip.
 var gentle := false
 var large_text := false
-## How large the interface is drawn: -1 a step smaller than the game, 0 the game's own size, 1 a step larger.
-var interface_size := 0
+## How large the interface is drawn, as a step from the game's own size: -1 Normal, a step smaller than the game,
+## 0 Larger, the game's own size, and 1 Largest, a step larger still.
+var interface_size := -1
 ## The units weights are shown in: "metric" for kilograms or "imperial" for pounds.
 var units := "metric"
 ## Old Rufus's lessons for a new player.
@@ -29,9 +30,9 @@ func _ready() -> void:
 	var cfg := ConfigFile.new()
 	if not Dev.has("no-save") and not Dev.has("run-tests") and cfg.load(PATH) == OK:
 		read_from(cfg)
-	# --ui-size=-1, 0 or 1 tries an interface size without saving it, for screenshots.
+	# --ui-size=-1 (Normal), 0 (Larger) or 1 (Largest) tries an interface size without saving it, for screenshots.
 	if Dev.has("ui-size"):
-		interface_size = clampi(int(Dev.num("ui-size", 0)), -1, 1)
+		interface_size = clampi(int(Dev.num("ui-size", -1)), -1, 1)
 	apply()
 	_restore_window.call_deferred()
 

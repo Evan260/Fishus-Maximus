@@ -138,7 +138,7 @@ func test_the_banner_is_drawn_in_the_game_s_own_pixels() -> void:
 			var px := card.get_global_transform().get_scale() * Nav.ui_layer.transform.get_scale()
 			check(px.is_equal_approx(Vector2.ONE), "%s at %d: a banner pixel is one game pixel, not %s" % [size, step, px])
 			card.free()
-	Settings.interface_size = 0
+	Settings.interface_size = -1
 	Windowing._fit()
 	Windowing.get_window().size = before
 	Windowing._process(0.0)
@@ -194,7 +194,7 @@ func test_the_banner_fits_every_interface_size() -> void:
 				tw.custom_step(0.9)
 				check(Rect2(Vector2.ZERO, Nav.ui_view()).encloses(card.get_global_rect()), "%s at %d, %s: the banner is all on screen, %s in %s" % [size, step, id, card.get_global_rect(), Nav.ui_view()])
 				card.free()
-	Settings.interface_size = 0
+	Settings.interface_size = -1
 	Windowing._fit()
 	Windowing.get_window().size = before
 	Windowing._process(0.0)
