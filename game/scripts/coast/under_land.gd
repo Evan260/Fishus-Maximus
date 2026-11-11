@@ -32,15 +32,31 @@ const SPARE := 1600
 var _tops: Array[PackedFloat32Array] = [PackedFloat32Array(), PackedFloat32Array()]
 var _factor: Array[float] = [0.55, NEAR_FACTOR]
 var cam := Vector2(0, CoastCamera.HOME_Y)
+## Each place's slopes and their textures, by place.
+static var _built := {}
 
 
 func _init(place: Dictionary) -> void:
-	_build_far(place)
-	_build_near(place)
+	# The slopes come from reading the land's pictures back, so they are worked out once for each place and kept.
+	var key := str(place.get("id", ""))
+	if key == "" or not _built.has(key):
+		_build_far(place)
+		_build_near(place)
+		var made := [_tops.duplicate(), _factor.duplicate(), _texture(_tops[FAR]), _texture(_tops[NEAR])]
+		if key == "":
+			_use(made)
+			return
+		_built[key] = made
+	_use(_built[key])
+
+
+func _use(built: Array) -> void:
+	_tops.assign(built[0])
+	_factor.assign(built[1])
 	material = ShaderMaterial.new()
 	material.shader = SHADER
-	material.set_shader_parameter("far_tops", _texture(_tops[FAR]))
-	material.set_shader_parameter("near_tops", _texture(_tops[NEAR]))
+	material.set_shader_parameter("far_tops", built[2])
+	material.set_shader_parameter("near_tops", built[3])
 	material.set_shader_parameter("far_factor", _factor[FAR])
 	material.set_shader_parameter("near_factor", _factor[NEAR])
 	material.set_shader_parameter("far_shade", FAR_SHADE)

@@ -38,6 +38,8 @@ const PIECES := {
 	"sand": [["places/harbour/tuft.png", 250], ["places/harbour/tuft.png", 520]],
 }
 
+## The garum works' mask and its outline, traced once.
+static var _garum_traced := []
 var views: Array = []
 var pond: PondView
 var _rng: RandomNumberGenerator
@@ -176,8 +178,12 @@ func _build() -> void:
 	_painter.z_index = 20
 	_painter.draw.connect(_draw_over)
 	add_child(_painter)
-	_garum = (load(ESTATE + "garum_mask.png") as Texture2D).get_image()
-	_garum_outline = _outline(_garum)
+	# The garum works' pixels are read back and its outline traced once, and kept for the next visit.
+	if _garum_traced.is_empty():
+		var img := (load(ESTATE + "garum_mask.png") as Texture2D).get_image()
+		_garum_traced = [img, _outline(img)]
+	_garum = _garum_traced[0]
+	_garum_outline = _garum_traced[1]
 	_dress_pond()
 	pond.sync()
 
@@ -202,7 +208,7 @@ func _dress_pond() -> void:
 			var s := Sprite2D.new()
 			s.texture = tex
 			s.centered = false
-			var used := tex.get_image().get_used_rect()
+			var used := ParallaxLayers.used_rect(tex)
 			s.position = Vector2(float(piece[1]) - used.size.x / 2.0 - used.position.x, DEPTH + 3.0 - used.end.y)
 			var layer := {"sway": feature == "weed"}
 			s.self_modulate = Murk.shade_for(layer)

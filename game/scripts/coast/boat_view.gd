@@ -15,6 +15,8 @@ const FILL_SECONDS := 0.8
 ## How many texels the flag's free end rises and falls at rest, and under way.
 const FLUTTER := [0.6, 1.0]
 const TINT := Color(0.5, 0.78, 0.84, 0.85)
+## What each boat's picture gives: its deck, its rails and the near side drawn over the dog, by boat and picture.
+static var _shapes := {}
 ## How deep the hull sits in the water, unless the boat names its own `draft` in boats.json.
 const DRAFT := 8.0
 const ROD_LENGTH := 26.0
@@ -147,25 +149,39 @@ func set_boat(id: String) -> void:
 	var h := float(tex.get_height())
 	var spec: Dictionary = Data.boats.get(id, {})
 	ride = h - float(spec.get("draft", DRAFT)) if _painted else 44.0
-	deck = _deck_row(tex.get_image()) if _painted else 30.0
-	_rails = _rail_rows(tex.get_image())
-	# A boat with a tall sail or high sides names its seat in boats.json, since the outline alone cannot find it.
-	var at: Array = spec.get("seat", [])
-	seat = Vector2(float(at[0]), float(at[1])) if at.size() == 2 else Vector2(0.62, deck)
-	# The dog sits down inside the boat, so the hull hides its legs.
-	var dog_at: Array = spec.get("dog", [])
-	dog_spot = Vector2(float(dog_at[0]), float(dog_at[1])) if dog_at.size() == 2 else Vector2(0.24, deck + 8.0)
-	var img := tex.get_image()
-	if img.is_compressed():
-		img.decompress()
-	near_rail = _near_rail_rows(spec.get("rail", []), img.get_width(), seat.y)
-	front.texture = _near_side(img, near_rail)
-	dog_rail = near_rail[clampi(int(dog_spot.x * img.get_width()), 0, img.get_width() - 1)]
+	# The picture's pixels are read back once for each boat, and what is worked out from them kept for the next visit.
+	var key := "%s|%s" % [id, tex.resource_path]
+	if not _shapes.has(key):
+		var img := tex.get_image()
+		if img.is_compressed():
+			img.decompress()
+		deck = _deck_row(img) if _painted else 30.0
+		_rails = _rail_rows(img)
+		_place_seat(spec)
+		near_rail = _near_rail_rows(spec.get("rail", []), img.get_width(), seat.y)
+		_shapes[key] = {"deck": deck, "rails": _rails, "near_rail": near_rail, "front": _near_side(img, near_rail)}
+	var shape: Dictionary = _shapes[key]
+	deck = shape["deck"]
+	_rails = shape["rails"]
+	_place_seat(spec)
+	near_rail = shape["near_rail"]
+	front.texture = shape["front"]
+	var w := tex.get_width()
+	dog_rail = near_rail[clampi(int(dog_spot.x * w), 0, w - 1)]
 	var flame: Array = spec.get("lantern", [])
 	lantern = Vector2(float(flame[0]), float(flame[1])) if flame.size() == 2 else Vector2(-1, -1)
 	oars = bool(spec.get("oars", false))
 	boat.material = _sail_material(spec)
 	person.visible = _painted and _frames.has("sit") and not (_frames["sit"] as Array).is_empty()
+
+
+## A boat with a tall sail or high sides names its seat in boats.json, since the outline alone cannot find it, and the
+## dog sits down inside the boat, so the hull hides its legs.
+func _place_seat(spec: Dictionary) -> void:
+	var at: Array = spec.get("seat", [])
+	seat = Vector2(float(at[0]), float(at[1])) if at.size() == 2 else Vector2(0.62, deck)
+	var dog_at: Array = spec.get("dog", [])
+	dog_spot = Vector2(float(dog_at[0]), float(dog_at[1])) if dog_at.size() == 2 else Vector2(0.24, deck + 8.0)
 
 
 ## The material that moves a boat's sail and flag, from `sail`, `mast` and `flag` in boats.json, or none.

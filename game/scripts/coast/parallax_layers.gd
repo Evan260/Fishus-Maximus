@@ -50,6 +50,8 @@ const NOWHERE := Vector2(-10000, -10000)
 
 ## Each picture's waterlines, found once.
 static var _waterlines := {}
+## Each picture's visible part, found once.
+static var _used := {}
 
 var _nodes: Array = []
 ## Every node drawing sea: the bands and the land standing in them.
@@ -182,6 +184,16 @@ func _reflect(land: Sprite2D, at: Vector2, factor: Vector2, sea: Dictionary, top
 	land.region_rect = Rect2(0, 0, w, maxf(h, next - at.y))
 	_waters.append(land)
 	_reflections.append(land)
+
+
+## The part of a picture with anything in it, read back from the picture once and kept by its path.
+static func used_rect(texture: Texture2D) -> Rect2i:
+	var key := texture.resource_path
+	if key == "":
+		return texture.get_image().get_used_rect()
+	if not _used.has(key):
+		_used[key] = texture.get_image().get_used_rect()
+	return _used[key]
 
 
 func _line_image(rows: PackedFloat32Array) -> Image:
@@ -321,7 +333,7 @@ static func _painted_sea(img: Image, x: int, sea: PackedByteArray) -> int:
 
 ## Sways a plant on the sea floor, out of step with the others along the coast.
 func _sway(s: Sprite2D, x: float) -> void:
-	var used := s.texture.get_image().get_used_rect()
+	var used := used_rect(s.texture)
 	var m := ShaderMaterial.new()
 	m.shader = SWAY
 	m.set_shader_parameter("top", float(used.position.y))
@@ -349,7 +361,7 @@ func _front(l: Dictionary) -> void:
 	m.set_shader_parameter("progress", 0.0)
 	s.material = m
 	add_child(s)
-	var used := s.texture.get_image().get_used_rect()
+	var used := used_rect(s.texture)
 	if s.flip_h:
 		used.position.x = s.texture.get_width() - used.end.x
 	_fronts.append({"node": s, "x": float(l["x"]), "factor": Vector2(l["factor"][0], l["factor"][1]),

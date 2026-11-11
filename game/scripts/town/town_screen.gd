@@ -93,10 +93,15 @@ func enter(args: Dictionary) -> void:
 		b.centered = false
 		b.position = Vector2(spots[id][0], spots[id][1])
 		_lit.add_child(b)
-		var img: Image = b.texture.get_image()
-		var used := img.get_used_rect()
-		_masks[id] = {"image": img, "at": b.position, "rect": Rect2(b.position + Vector2(used.position), used.size)}
-		_outlines[id] = _outline(img, b.position)
+		# Each building's pixels are read back and its outline traced once, and kept for the next visit.
+		var key := "%s|%s" % [path, b.position]
+		if not _traced.has(key):
+			var img: Image = b.texture.get_image()
+			_traced[key] = [img, img.get_used_rect(), _outline(img, b.position)]
+		var traced: Array = _traced[key]
+		var used: Rect2i = traced[1]
+		_masks[id] = {"image": traced[0], "at": b.position, "rect": Rect2(b.position + Vector2(used.position), used.size)}
+		_outlines[id] = traced[2]
 	_painter = Node2D.new()
 	_painter.draw.connect(_draw_over)
 	_painter.z_index = 2
@@ -353,22 +358,26 @@ func _unhandled_input(e: InputEvent) -> void:
 ## Where a picture of a person stands: the middle of their head and body, which a stride does not move, and the row
 ## under their feet.
 static var _feet := {}
+## Each building's picture, its visible part and its outline, by picture and place.
+static var _traced := {}
 
 
 static func _foot(tex: Texture2D, flipped: bool) -> Vector2:
-	if not _feet.has(tex):
+	# Keyed by path where the picture has one, so a picture let go and loaded again is found again.
+	var key: Variant = tex.resource_path if tex.resource_path != "" else tex
+	if not _feet.has(key):
 		var img := tex.get_image()
 		var used := img.get_used_rect()
 		var upper := img.get_region(Rect2i(used.position, Vector2i(used.size.x, used.size.y / 2))).get_used_rect()
-		_feet[tex] = [used.position.x + upper.position.x + (upper.size.x - 1) / 2.0, float(used.end.y), float(used.position.y), float(tex.get_width())]
-	var f: Array = _feet[tex]
+		_feet[key] = [used.position.x + upper.position.x + (upper.size.x - 1) / 2.0, float(used.end.y), float(used.position.y), float(tex.get_width())]
+	var f: Array = _feet[key]
 	return Vector2(f[3] - 1.0 - f[0] if flipped else f[0], f[1])
 
 
 ## The top of a townsperson's head on the screen, for the bubble they speak in.
 func head_on_screen(f: Dictionary) -> Vector2:
 	var s: Sprite2D = f["sprite"]
-	var top := Vector2(_foot(s.texture, s.flip_h).x, _feet[s.texture][2])
+	var top := Vector2(_foot(s.texture, s.flip_h).x, _feet[s.texture.resource_path if s.texture.resource_path != "" else s.texture][2])
 	return s.get_global_transform_with_canvas() * top
 
 
