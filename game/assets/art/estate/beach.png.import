@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cc6aw2tbgv7eg"
-path="res://.godot/imported/wall.png-5f00205b84d67396e48f22535728e5d1.ctex"
+uid="uid://dh2qqq1g31b34"
+path="res://.godot/imported/beach.png-533444af3388f6c5fddc631fd0ea0fc8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/shore/wall.png"
-dest_files=["res://.godot/imported/wall.png-5f00205b84d67396e48f22535728e5d1.ctex"]
+source_file="res://assets/art/estate/beach.png"
+dest_files=["res://.godot/imported/beach.png-533444af3388f6c5fddc631fd0ea0fc8.ctex"]
 
 [params]
 

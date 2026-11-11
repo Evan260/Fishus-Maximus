@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://pa81gavej85q"
-path="res://.godot/imported/shore.png-5ac8c8e8df667d6a43c5232157d1f0a7.ctex"
+uid="uid://c80jtipvv63sv"
+path="res://.godot/imported/pond_rocks.png-e4d6a2f01e9ce38afd7ed4f2cef46448.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/shore/shore.png"
-dest_files=["res://.godot/imported/shore.png-5ac8c8e8df667d6a43c5232157d1f0a7.ctex"]
+source_file="res://assets/art/estate/pond_rocks.png"
+dest_files=["res://.godot/imported/pond_rocks.png-e4d6a2f01e9ce38afd7ed4f2cef46448.ctex"]
 
 [params]
 

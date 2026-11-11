@@ -670,3 +670,12 @@ time,kind,name,cost_usd,cost_generations,usd_left
 2026-11-11T13:59:32,proflash,tools\art\fish_banner_raw\tiberius_mullet_2.png,0.0326,0,4.1156
 2026-11-11T14:00:10,proflash,tools\art\fish_banner_raw\red_scorpionfish_2.png,0.0291,0,4.0865
 2026-11-11T14:00:47,proflash,tools\art\fish_banner_raw\carteia_octopus_3.png,0.0321,0,4.0543
+2026-11-11T11:53:35,proflash,tools/art/estate_parts/villa_raw.png,0.0322,0,8.7896
+2026-11-11T11:53:35,proflash,tools/art/estate_parts/rise_raw.png,0.0322,0,8.7896
+2026-11-11T11:53:43,proflash,tools/art/estate_parts/coping_raw.png,0.0322,0,8.7569
+2026-11-11T11:54:01,proflash,tools/art/estate_parts/garum_raw.png,0.0321,0,8.7242
+2026-11-11T11:55:10,proflash,tools/art/estate_parts/coping2_raw.png,0.0732,0,8.6104
+2026-11-11T11:57:46,inpaint,tools\art\estate_parts\wall.png,0.0314,0,8.4977
+2026-11-11T11:58:42,inpaint,tools/art/estate_parts/wall.png,0.0619,0,8.4359
+2026-11-11T12:06:36,proflash,tools/art/estate_parts/pond_rocks_raw.png,0.0419,0,7.9913
+2026-11-11T12:06:44,proflash,tools/art/estate_parts/pond_cave_raw.png,0.0419,0,7.9624

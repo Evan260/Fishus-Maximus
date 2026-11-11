@@ -3,7 +3,7 @@ a mirrored or stretched copy. The picture is set in a canvas `margin` pixels lar
 carried out as a hint, and the frame round it is painted with PixelLab a corner at a time, each part running a few
 pixels into the old picture and painted in a full 256 pixel tile, so it sees plenty of the picture it carries on. A
 canvas up to 512 by 512 is four tiles. Progress is kept beside the work picture, so a run that stops picks up where it
-left off. Used by make_town.py and make_shore.py."""
+left off. Used by make_town.py."""
 import json
 import subprocess
 import sys
