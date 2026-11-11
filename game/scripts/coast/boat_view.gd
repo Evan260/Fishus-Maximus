@@ -8,6 +8,12 @@ extends Node2D
 const ART := "res://assets/art/props/"
 const MAN := "res://assets/art/fisherman/"
 const FALLBACK := "res://assets/art/props/boat_fallback.png"
+const SAIL_SHADER := preload("res://scripts/coast/sail.gdshader")
+## How many texels the sail bellies out under way, and how fast the wind fills it and spills from it.
+const BELLY := 2.0
+const FILL_SECONDS := 0.8
+## How many texels the flag's free end rises and falls at rest, and under way.
+const FLUTTER := [0.6, 1.0]
 const TINT := Color(0.5, 0.78, 0.84, 0.85)
 ## How deep the hull sits in the water.
 const DRAFT := 8.0
@@ -89,6 +95,9 @@ var _swept := 0.0
 var _sweep := 0.0
 ## For each column of the boat's picture, the top of its hull: the first solid row from the deck down.
 var _rails := PackedFloat32Array()
+## How full of wind the sail is, from 0 at rest to 1 under way.
+var wind := 0.0
+var _clock := 0.0
 
 
 func _init() -> void:
@@ -155,7 +164,27 @@ func set_boat(id: String) -> void:
 	var flame: Array = spec.get("lantern", [])
 	lantern = Vector2(float(flame[0]), float(flame[1])) if flame.size() == 2 else Vector2(-1, -1)
 	oars = bool(spec.get("oars", false))
+	boat.material = _sail_material(spec)
 	person.visible = _painted and _frames.has("sit") and not (_frames["sit"] as Array).is_empty()
+
+
+## The material that moves a boat's sail and flag, from `sail`, `mast` and `flag` in boats.json, or none.
+static func _sail_material(spec: Dictionary) -> ShaderMaterial:
+	if not spec.has("sail") and not spec.has("flag"):
+		return null
+	var m := ShaderMaterial.new()
+	m.shader = SAIL_SHADER
+	var corners: Array = spec.get("sail", [])
+	if corners.size() == 4:
+		for k in 4:
+			m.set_shader_parameter(["sail_tl", "sail_tr", "sail_br", "sail_bl"][k], Vector2(float(corners[k][0]), float(corners[k][1])))
+	var mast: Array = spec.get("mast", [])
+	if mast.size() == 2:
+		m.set_shader_parameter("mast", Vector2(float(mast[0]), float(mast[1])))
+	var flag: Array = spec.get("flag", [])
+	if flag.size() == 4:
+		m.set_shader_parameter("flag", Vector4(float(flag[0]), float(flag[1]), float(flag[2]), float(flag[3])))
+	return m
 
 
 ## The near rail's row in every column, along the line through the points [column, row] given, kept level past its
@@ -319,6 +348,13 @@ func dog_seat() -> Vector2:
 
 
 func _process(delta: float) -> void:
+	_clock += delta
+	wind = move_toward(wind, 1.0 if rowing > 0.0 and not oars else 0.0, delta / FILL_SECONDS)
+	var sail := boat.material as ShaderMaterial if boat else null
+	if sail:
+		sail.set_shader_parameter("clock", _clock)
+		sail.set_shader_parameter("belly", BELLY * wind * (0.75 + 0.25 * sin(_clock * 2.3)))
+		sail.set_shader_parameter("flutter", lerpf(FLUTTER[0], FLUTTER[1], wind))
 	rowing = maxf(0.0, rowing - delta)
 	if rowing > 0.0:
 		_row_t += delta

@@ -1,6 +1,7 @@
 extends "res://tests/test_case.gd"
 ## The boat round of feedback: the dog sitting inside the hull, between its far and near sides, and the rod laid down
-## while the boat sails, and the bait hidden in the mouth of a fish that has taken it.
+## while the boat sails, the bait hidden in the mouth of a fish that has taken it, and the sail filling and the flag
+## waving.
 
 
 func _coast(boat: String) -> Node:
@@ -101,3 +102,33 @@ func test_the_bait_is_hidden_once_a_fish_takes_it() -> void:
 	s.strike()
 	check(s.line_state() == "fighting" and not line.bait_shown(), "nor while it fights on the line")
 	_done(s)
+
+
+func test_the_sail_fills_and_the_flag_waves() -> void:
+	for id in ["sailing_boat", "big_boat"]:
+		var s := _coast(id)
+		var b: BoatView = s._boat
+		var sail := b.boat.material as ShaderMaterial
+		check(sail != null and sail.shader.resource_path.ends_with("sail.gdshader"), "%s: its sail and flag are moved by the sail shader" % id)
+		var flag: Vector4 = sail.get_shader_parameter("flag")
+		check(flag.w > flag.z, "%s: and it names where its flag is" % id)
+		b._process(0.1)
+		check(float(sail.get_shader_parameter("belly")) == 0.0, "%s: at rest the sail hangs as painted" % id)
+		var clock: float = sail.get_shader_parameter("clock")
+		b._process(0.1)
+		check(float(sail.get_shader_parameter("clock")) > clock and float(sail.get_shader_parameter("flutter")) > 0.0, "%s: but the flag still waves a little" % id)
+		var still: float = sail.get_shader_parameter("flutter")
+		for i in 20:
+			s.row(1.0, 0.05)
+			b._process(0.05)
+		check(b.wind > 0.9 and float(sail.get_shader_parameter("belly")) >= 1.0, "%s: under way the wind fills the sail, bellying it out %.1f texels" % [id, float(sail.get_shader_parameter("belly"))])
+		check(float(sail.get_shader_parameter("flutter")) > still, "%s: and the flag waves harder" % id)
+		for i in 30:
+			b._process(0.05)
+		check(b.wind == 0.0 and float(sail.get_shader_parameter("belly")) == 0.0, "%s: and once the boat stops the sail falls slack again" % id)
+		_done(s)
+	for id in ["skiff", "fishing_boat"]:
+		var b := BoatView.new()
+		b.set_boat(id)
+		check(b.boat.material == null, "%s: a rowing boat has no sail to fill" % id)
+		b.free()
