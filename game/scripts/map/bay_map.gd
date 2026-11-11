@@ -4,11 +4,14 @@ extends Node2D
 ## that reaches it. Sailing to a place takes an hour of the day.
 
 const ART := "res://assets/art/map/bay.png"
+## The deep sea round the map's edges, which the view carries on past them.
+const DEEP := Color8(105, 86, 88)
 
 var _hover := ""
 var _sailing := false
 var _painter: Node2D
 var _stage: Node2D
+var _backdrop: Backdrop
 
 
 ## How long the sail to a place takes in minutes of the clock: an hour in the rowing skiff, less in a faster boat.
@@ -52,7 +55,8 @@ func enter(_args: Dictionary) -> void:
 	_stage = Node2D.new()
 	add_child(_stage)
 	if ResourceLoader.exists(ART):
-		_stage.add_child(Backdrop.new(load(ART)))
+		_backdrop = Backdrop.new(load(ART), DEEP)
+		_stage.add_child(_backdrop)
 	_painter = Node2D.new()
 	_painter.draw.connect(_draw_pins)
 	_stage.add_child(_painter)
@@ -73,6 +77,8 @@ func enter(_args: Dictionary) -> void:
 func _place() -> void:
 	if is_instance_valid(_stage):
 		_stage.position = Nav.offset()
+		if _backdrop:
+			_backdrop.fit(Rect2(-Nav.offset(), Nav.view()))
 
 
 func _pin(place: String) -> Vector2:

@@ -146,3 +146,20 @@ func test_every_window_shows_all_six_ponds() -> void:
 			check(s.views[site].get_parent() == s._lit and s.views[site].position == r.position, "%s: and its water lies in its basin" % size)
 		await _close(s)
 	_resize(before)
+
+
+func test_the_bay_map_fades_into_the_deep_past_its_edges_with_no_mirrored_copies() -> void:
+	var before := Windowing.get_window().size
+	for size in [Vector2i(1920, 1080), Vector2i(2560, 1080), Vector2i(3440, 1440), Vector2i(1280, 1024)]:
+		_resize(size)
+		var s := _open("map")
+		var flipped: Array = s.find_children("*", "Sprite2D", true, false).filter(func(n): return n.flip_h or n.flip_v)
+		check(flipped.is_empty(), "%s: no picture on the map is turned over" % size)
+		var backdrop: Backdrop = s._backdrop
+		var view := Rect2(Vector2.ZERO, Nav.view())
+		check(Rect2(s._stage.position + backdrop._view.position, backdrop._view.size).is_equal_approx(view), "%s: the plain deep fills the whole view" % size)
+		var fade: Vector4 = backdrop._picture.material.get_shader_parameter("fade")
+		var room := view.size - Vector2(480, 270)
+		check((fade.x > 0.0) == (room.x > 0.5) and (fade.y > 0.0) == (room.y > 0.5), "%s: an edge fades only where the view reaches past it, %s" % [size, fade])
+		await _close(s)
+	_resize(before)
