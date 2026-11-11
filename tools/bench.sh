@@ -27,6 +27,6 @@ for scene in "${SCENES[@]}"; do
 		minimised|unfocused) flags="--screen=coast --place=harbour --hour=10 --weather=clear" ;;
 		*) echo "unknown scene $scene"; continue ;;
 	esac
-	timeout $((SECONDS_EACH + 90)) "$GODOT" --path . -- --max-state --seed=7 --no-save --window=1440x810 $flags \
+	timeout $((SECONDS_EACH + 120)) "$GODOT" --path . -- --max-state --seed=7 --no-save --window=1440x810 $flags \
 		--bench="$scene" --bench-seconds="$SECONDS_EACH" --bench-out="$OUT" 2>&1 | grep -E "^bench|ERROR|SCRIPT" | cut -c1-400 | head -20
 done
