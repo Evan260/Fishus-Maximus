@@ -1,6 +1,7 @@
-"""Rounds each boat's hull underneath, deepest amidships and curving up towards the bow and the stern, as a real hull
-does, where the painted boats had a flat bottom. Each column's lower rows are squeezed into the curve, so the planks bend
-along it and the dark keel stays at the edge. Writes the boats in place; a second run leaves them as they are.
+"""Rounds each boat's hull underneath: level along most of its length, so it sits in the water from bow to stern, and
+curving up only towards the ends, as a real hull does. A column deeper than the curve has its lower rows squeezed into
+it, and one shallower has the plank rows just above its keel repeated down to it, so the planks run on and the dark
+keel stays at the edge. Writes the boats in place; a second run leaves them as they are.
 Usage: python tools/art/round_keels.py"""
 from pathlib import Path
 
@@ -12,6 +13,10 @@ PROPS = Path(__file__).resolve().parents[2] / "game" / "assets" / "art" / "props
 RISE = {"sailing_boat": 13, "big_boat": 15}
 ABOVE = 4
 SHAPE = 2.0
+# How much of the hull either side of amidships runs level before the keel starts to rise, and how many rows of keel
+# are moved down when a column is deepened.
+FLAT = {"sailing_boat": 0.7, "big_boat": 0.8}
+KEEL = 2
 
 
 def bottoms(solid: np.ndarray) -> np.ndarray:
@@ -31,10 +36,15 @@ def round_keel(path: Path, rise: int) -> None:
     start = lowest - rise - ABOVE
     out = im.copy()
     for x in span:
-        t = min(1.0, abs(x - mid) / half)
+        t = max(0.0, (min(1.0, abs(x - mid) / half) - FLAT[path.stem]) / (1.0 - FLAT[path.stem]))
         target = lowest - int(round(rise * t ** SHAPE))
         b = int(low[x])
-        if b <= target:
+        if b < target:
+            gap = target - b
+            for y in range(b - KEEL + 1, target + 1):
+                out[y, x] = im[y - gap, x]
+            continue
+        if b == target:
             continue
         for y in range(start, b + 1):
             out[y, x] = 0

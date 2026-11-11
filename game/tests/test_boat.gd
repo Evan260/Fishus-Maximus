@@ -1,7 +1,7 @@
 extends "res://tests/test_case.gd"
 ## The boat round of feedback: the dog sitting inside the hull, between its far and near sides, and the rod laid down
 ## while the boat sails, the bait hidden in the mouth of a fish that has taken it, and the sail filling and the flag
-## waving.
+## waving, and every hull sitting in the water along its length.
 
 
 func _coast(boat: String) -> Node:
@@ -131,4 +131,35 @@ func test_the_sail_fills_and_the_flag_waves() -> void:
 		var b := BoatView.new()
 		b.set_boat(id)
 		check(b.boat.material == null, "%s: a rowing boat has no sail to fill" % id)
+		b.free()
+
+
+func test_every_boat_sits_in_the_water_along_its_length() -> void:
+	for id in Data.boats:
+		var b := BoatView.new()
+		b.set_boat(id)
+		var img: Image = b.boat.texture.get_image()
+		if img.is_compressed():
+			img.decompress()
+		# The waterline's row in the picture when the boat bobs highest, the least of it in the water.
+		var water := b.ride + 1.0
+		var first := -1
+		var last := -1
+		var wet := []
+		for x in img.get_width():
+			var bottom := -1
+			for y in img.get_height():
+				if img.get_pixel(x, y).a > 0.5:
+					bottom = y
+			if bottom < 0:
+				continue
+			if first < 0:
+				first = x
+			last = x
+			if bottom > water:
+				wet.append(x)
+		var length := last - first + 1
+		check(not wet.is_empty() and float(wet.size()) / length >= 0.8, "%s: %d of its %d columns reach into the water" % [id, wet.size(), length])
+		var ends := length * 0.11
+		check(wet[0] - first <= ends and last - wet[wet.size() - 1] <= ends, "%s: only the stern's last %d columns and the bow's last %d ride clear of it" % [id, wet[0] - first, last - wet[wet.size() - 1]])
 		b.free()
