@@ -5,6 +5,8 @@ extends Node
 ## --hover=X,Y and --click=X,Y point and click in interface pixels; --panel=NAME opens a window; --achievement[=ID]
 ## slides in an achievement's card; --ui-size=N sets the interface size for the run; --no-save writes nothing anywhere.
 
+const BENCH := "res://tools/bench.gd"
+
 var args := {}
 var time := 0.0
 var _shots: Array = []
@@ -42,6 +44,8 @@ func _ready() -> void:
 		get_tree().create_timer(float(args.get("achievement-at", "1.0"))).timeout.connect(_show_achievement)
 	if args.has("quit") and _shots.is_empty():
 		get_tree().create_timer(float(args.get("quit-at", "3.0"))).timeout.connect(get_tree().quit)
+	if args.has("bench") and ResourceLoader.exists(BENCH):
+		add_child(load(BENCH).new())
 
 
 func has(key: String) -> bool:

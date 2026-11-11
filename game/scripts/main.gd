@@ -20,6 +20,9 @@ func _ready() -> void:
 		Game.demo_state()
 	if Dev.has("max-state"):
 		Game.max_state()
+	# --seed=N fixes a made-up game's seed, so two runs lay out the same fish and weather for comparing screenshots.
+	if Dev.has("seed") and not Game.state.is_empty():
+		Game.state["seed"] = int(Dev.get_arg("seed"))
 	if Dev.has("boat"):
 		Game.state["boat"] = Dev.get_arg("boat")
 	if Dev.has("dog"):
