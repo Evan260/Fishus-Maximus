@@ -33,7 +33,8 @@ static func set_swim(node: CanvasItem, phase: float, wave := -1.0) -> void:
 ## A picture shrunk to a share of its size at its own pixels, as the game showed it when it was drawn at 480 by 270.
 static func shrunk(tex: Texture2D, share: float) -> Texture2D:
 	var size := (tex.get_size() * share).round().max(Vector2.ONE)
-	var key := [tex.get_rid(), size]
+	# Keyed by path, since a picture loaded again after it was let go comes back with a new RID.
+	var key := [tex.resource_path if tex.resource_path != "" else str(tex.get_rid()), size]
 	if not _shrunk.has(key):
 		var img := tex.get_image()
 		if img.is_compressed():

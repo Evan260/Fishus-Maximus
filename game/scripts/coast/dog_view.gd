@@ -126,15 +126,17 @@ func _process(delta: float) -> void:
 
 ## The lowest row of a frame with any of the dog in it.
 static func _lowest_row(tex: Texture2D) -> int:
-	if not _lowest.has(tex):
+	# Keyed by path where the picture has one, so a picture let go and loaded again is found again.
+	var key: Variant = tex.resource_path if tex.resource_path != "" else tex
+	if not _lowest.has(key):
 		var img := tex.get_image()
 		if img.is_compressed():
 			img.decompress()
 		var y := img.get_height() - 1
 		while y > 0 and not range(img.get_width()).any(func(x): return img.get_pixel(x, y).a > 0.5):
 			y -= 1
-		_lowest[tex] = y
-	return _lowest[tex]
+		_lowest[key] = y
+	return _lowest[key]
 
 
 ## The row, from the dog's seat, below which the boat's near side hides it.
