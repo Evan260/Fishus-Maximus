@@ -15,8 +15,8 @@ func test_achievements_are_earned_as_you_play() -> void:
 	var got := Achievements.check(Game.state)
 	check("first_fish" in got and "first_fish" in Game.state["achievements"], "earned once")
 	check(not "first_fish" in Achievements.check(Game.state), "and not again")
-	Game.state["ponds"] = [{"site": 0, "size": "small", "water": "sea", "features": ["caves"], "fish": [
-		{"fish": "moray", "pounds": 4.0, "name": "Hortensia", "finery": "earrings", "age_days": 9, "fed": false}]}]
+	Game.state["pond"] = {"stage": 1, "features": ["caves"], "fish": [
+		{"fish": "moray", "pounds": 4.0, "name": "Hortensia", "finery": "earrings", "age_days": 9, "fed": false}]}
 	check(Achievements.met("moray_earrings", Game.state), "a named moray in earrings")
 
 

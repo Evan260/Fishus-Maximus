@@ -1,44 +1,28 @@
 {
-	"sizes": {
-		"small": {
-			"room": 6,
+	"stages": [
+		{
+			"room": 8,
 			"price": 80
 		},
-		"large": {
-			"room": 14,
-			"price": 220
-		}
-	},
-	"sites": [
 		{
-			"site": 0,
-			"name": "The first pond",
-			"water": "sea"
+			"room": 16,
+			"price": 160
 		},
 		{
-			"site": 1,
-			"name": "The rock pool",
-			"water": "sea"
+			"room": 28,
+			"price": 240
 		},
 		{
-			"site": 2,
-			"name": "The ledge pond",
-			"water": "sea"
+			"room": 42,
+			"price": 320
 		},
 		{
-			"site": 3,
-			"name": "The deep pond",
-			"water": "sea"
+			"room": 60,
+			"price": 400
 		},
 		{
-			"site": 4,
-			"name": "The cave pond",
-			"water": "sea"
-		},
-		{
-			"site": 5,
-			"name": "The Lucrine pond",
-			"water": "brackish"
+			"room": 84,
+			"price": 500
 		}
 	],
 	"features": [
@@ -65,6 +49,12 @@
 			"name": "Sand",
 			"price": 15,
 			"text": "Flatfish and bream like a sandy floor."
+		},
+		{
+			"id": "spring",
+			"name": "A freshwater spring",
+			"price": 60,
+			"text": "Brackish water at the pond's far end, for grey mullet and eels."
 		},
 		{
 			"id": "shade",

@@ -37,9 +37,9 @@ func test_a_feeder_feeds_the_ponds_each_morning() -> void:
 	Game.state["denarii"] = 1000
 	Game.state["chapter"] = 2
 	check(Helpers.hire(Game.state, "feeder"), "a pond feeder is hired")
-	Game.state["ponds"] = [{"site": 0, "size": "small", "water": "sea", "features": ["sand"], "fish": [{"fish": "mullet", "pounds": 1.0, "name": "", "finery": "", "age_days": 9, "fed": false}]}]
+	Game.state["pond"] = {"stage": 1, "features": ["sand"], "fish": [{"fish": "mullet", "pounds": 1.0, "name": "", "finery": "", "age_days": 9, "fed": false}]}
 	Helpers.morning(Game.state)
-	check(Game.state["ponds"][0]["fish"][0]["fed"], "the fish are fed without you")
+	check(Game.state["pond"]["fish"][0]["fed"], "the fish are fed without you")
 
 
 func test_sleeping_until_morning() -> void:
@@ -82,12 +82,12 @@ func test_each_garum_grade_keeps_its_own_quality() -> void:
 
 func test_the_pond_show_sees_whether_the_fish_were_fed() -> void:
 	Game.new_game("Test", "mutt")
-	var fed := {"site": 0, "size": "large", "water": "sea", "features": ["rocks", "sand"], "fish": [{"fish": "bream", "pounds": 5.0, "name": "", "finery": "", "age_days": 9, "fed": true}]}
-	Game.state["ponds"] = [fed]
+	var fed := {"stage": 2, "features": ["rocks", "sand"], "fish": [{"fish": "bream", "pounds": 5.0, "name": "", "finery": "", "age_days": 9, "fed": true}]}
+	Game.state["pond"] = fed
 	var with_food := Ponds.show_score(Game.state)
 	fed["fish"][0]["fed"] = false
 	check(Ponds.show_score(Game.state) < with_food, "fed fish score more")
-	Game.state["ponds"][0]["fish"][0]["fed"] = true
+	Game.state["pond"]["fish"][0]["fed"] = true
 	Game.state["time"] = Clock.minutes_per_day() * 19.5
 	World.advance(Game.state, Clock.minutes_per_day(), Seeds.rng(1, "w"))
 	check(Game.state.has("_show") and float(Game.state["_show"]["score"]) >= with_food - 0.01, "and the show is judged before the morning's hunger")

@@ -1,7 +1,7 @@
 class_name World
 ## Time passing for everything at once: the pots fill, the hold's fish go off, and each new morning the market
-## recovers, the board fills, whatever is still in the live well dies into the hold, the ponds and tanks have their
-## day, and on the year's show day the ponds are judged.
+## recovers, the board fills, whatever is still in the live well dies into the hold, the pond and tanks have their
+## day, and on the year's show day the pond is judged.
 
 
 static func advance(state: Dictionary, minutes: float, rng: RandomNumberGenerator) -> void:
@@ -47,8 +47,8 @@ static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
 		state["_lost"] = died
 	var day := Clock.day_of(float(state["time"]))
 	state["weather"] = Weather.for_day(int(state["seed"]), day)
-	# The show judges the ponds as they stood last evening, before the night makes the fish hungry again.
-	if "pond_show" in Events.on(day) and not state["ponds"].is_empty():
+	# The show judges the pond as it stood last evening, before the night makes the fish hungry again.
+	if "pond_show" in Events.on(day) and Ponds.dug(state):
 		state["_show"] = Ponds.show(state)
 	Orders.new_day(state, rng)
 	Ponds.day(state, rng)

@@ -4,7 +4,7 @@ extends Node
 
 signal changed
 
-const VERSION := 1
+const VERSION := 2
 
 var state := {}
 var _check_left := 2.0
@@ -27,7 +27,7 @@ func defaults() -> Dictionary:
 		"place": "harbour", "boat": "skiff", "boat_x": 150.0,
 		"gear": {"rod": "cane_rod", "line": "flax_line", "hook": "bronze_hook", "net": "", "traps": 2, "lamp": "", "bait_box": 1},
 		"bait": {"worm": 20}, "current_bait": "worm", "method": "line",
-		"hold": [], "live_well": [], "traps": [], "ponds": [], "tanks": [], "orders": [], "clients": {}, "logbook": {},
+		"hold": [], "live_well": [], "traps": [], "pond": {}, "tanks": [], "orders": [], "clients": {}, "logbook": {},
 		"legends": {}, "market": {}, "achievements": [], "dog": "", "dog_coat": "golden", "dog_name": Dogs.DEFAULT_NAME, "helpers": [], "stats": {}, "finery": [], "salt": 6, "garum": {}, "guide": {"done": [], "finished": false},
 		"last_real_time": Time.get_unix_time_from_system()}
 
@@ -45,14 +45,19 @@ func from_dict(d: Dictionary) -> void:
 	for k in d:
 		if k != "version":
 			state[k] = d[k]
+	# A save from before the one pond kept six pond sites, which become the one pond with all their fish.
+	if d.has("ponds"):
+		if not d.has("pond"):
+			state["pond"] = Ponds.from_sites(d["ponds"])
+		state.erase("ponds")
 	# A save from before the guide that has fish in its logbook belongs to someone who already knows how to fish.
 	if not d.has("guide"):
 		state["guide"]["finished"] = not state["logbook"].is_empty()
 	changed.emit()
 
 
-## A game some way in, for screenshots and checks: the third chapter, two ponds with fish, a tank of garum and a
-## hold of fish.
+## A game some way in, for screenshots and checks: the third chapter, the pond dug to its third stage with fish, a
+## tank of garum and a hold of fish.
 func demo_state() -> void:
 	new_game("Marcus", "mutt")
 	state["guide"]["finished"] = true
@@ -63,13 +68,12 @@ func demo_state() -> void:
 	state["gear"]["net"] = "cast_net"
 	state["bait"] = {"worm": 30, "shrimp": 15, "bread": 20}
 	state["finery"] = ["earrings"]
-	state["ponds"] = [
-		{"site": 0, "size": "large", "water": "sea", "features": ["rocks", "sand", "weed"], "fish": [
-			{"fish": "bream", "pounds": 4.2, "name": "Aurata", "finery": "gold_ring", "age_days": 30, "fed": true},
-			{"fish": "bream", "pounds": 3.1, "name": "", "finery": "", "age_days": 30, "fed": true},
-			{"fish": "mullet", "pounds": 1.8, "name": "", "finery": "", "age_days": 12, "fed": false}]},
-		{"site": 1, "size": "small", "water": "sea", "features": ["caves", "rocks"], "fish": [
-			{"fish": "moray", "pounds": 12.5, "name": "Hortensia", "finery": "earrings", "age_days": 60, "fed": true}]}]
+	state["pond"] = {"stage": 3, "features": ["rocks", "sand", "weed", "caves"], "breeding": {}, "fish": [
+		{"fish": "bream", "pounds": 4.2, "name": "Aurata", "finery": "gold_ring", "age_days": 30, "fed": true},
+		{"fish": "bream", "pounds": 3.1, "name": "", "finery": "", "age_days": 30, "fed": true},
+		{"fish": "mullet", "pounds": 1.8, "name": "", "finery": "", "age_days": 12, "fed": false},
+		{"fish": "white_bream", "pounds": 1.4, "name": "", "finery": "", "age_days": 20, "fed": true},
+		{"fish": "moray", "pounds": 12.5, "name": "Hortensia", "finery": "earrings", "age_days": 60, "fed": true}]}
 	state["tanks"][0] = {"restored": true, "fish": {"sardine": 12.0}, "pounds": 12.0, "days": 6, "quality": 0.6, "stirred": false}
 	for f in [["mullet", 1.2], ["bream", 2.4], ["sardine", 0.15], ["octopus", 3.5]]:
 		Catches.record(state, f[0], f[1])
@@ -81,8 +85,8 @@ func demo_state() -> void:
 
 
 ## A game with every chapter open and the best of everything: the biggest boat, the best gear of every kind, a full
-## bait box, all the help, every pond dug large and every garum tank restored, money to spare, and the achievements
-## all that has met already earned.
+## bait box, all the help, the pond dug as wide as it goes and every garum tank restored, money to spare, and the
+## achievements all that has met already earned.
 func max_state() -> void:
 	new_game("Marcus", "mutt")
 	state["guide"]["finished"] = true
@@ -108,9 +112,7 @@ func max_state() -> void:
 		state["bait"][id] = Shop.bait_capacity(state) / Data.bait.size()
 	state["helpers"] = Helpers.HELP.keys()
 	state["finery"] = Data.gear.keys().filter(func(id): return Data.gear[id]["kind"] == "finery")
-	state["ponds"] = []
-	for site in Ponds.allowed(state):
-		state["ponds"].append({"site": site, "size": "large", "water": Data.ponds["sites"][site]["water"], "features": [], "fish": []})
+	state["pond"] = {"stage": Ponds.allowed(state), "features": [], "fish": [], "breeding": {}}
 	for t in state["tanks"]:
 		t["restored"] = true
 	# What this game has already met is earned quietly, so no card slides in for each and nothing goes to Steam.

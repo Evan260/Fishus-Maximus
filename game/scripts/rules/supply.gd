@@ -1,9 +1,9 @@
 class_name Supply
-## Finding a fish to hand over for an order or a client's request: for a live one the live well first, then a pond's
+## Finding a fish to hand over for an order or a client's request: for a live one the live well first, then the pond's
 ## plainest fish before a named or dressed one; for a dead one the hold first, then the well.
 
 
-## Where a suitable fish is, as {"where": "well"|"pond"|"hold", "index", "pond"}, or an empty dictionary.
+## Where a suitable fish is, as {"where": "well"|"pond"|"hold", "index"}, or an empty dictionary.
 static func find(state: Dictionary, want: Dictionary) -> Dictionary:
 	var alive: bool = want.get("alive", false)
 	if not alive:
@@ -16,14 +16,13 @@ static func find(state: Dictionary, want: Dictionary) -> Dictionary:
 	if not alive:
 		return {}
 	var pet := {}
-	for p in state["ponds"].size():
-		var fish: Array = state["ponds"][p]["fish"]
-		for i in fish.size():
-			if Orders.suits(want, fish[i], true):
-				if str(fish[i].get("name", "")) == "" and str(fish[i].get("finery", "")) == "":
-					return {"where": "pond", "pond": p, "index": i}
-				if pet.is_empty():
-					pet = {"where": "pond", "pond": p, "index": i}
+	var fish: Array = Ponds.of(state).get("fish", [])
+	for i in fish.size():
+		if Orders.suits(want, fish[i], true):
+			if str(fish[i].get("name", "")) == "" and str(fish[i].get("finery", "")) == "":
+				return {"where": "pond", "index": i}
+			if pet.is_empty():
+				pet = {"where": "pond", "index": i}
 	return pet
 
 
@@ -36,9 +35,9 @@ static func take(state: Dictionary, at: Dictionary) -> Dictionary:
 		"hold":
 			list = state["hold"]
 		"pond":
-			if int(at["pond"]) >= state["ponds"].size():
+			if not Ponds.dug(state):
 				return {}
-			list = state["ponds"][int(at["pond"])]["fish"]
+			list = Ponds.of(state)["fish"]
 		_:
 			return {}
 	var i := int(at["index"])

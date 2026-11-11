@@ -275,15 +275,15 @@ func test_orders_for_the_smallest_fish_ask_a_fair_weight() -> void:
 func test_the_helpers_morning_work_shows_all_day() -> void:
 	Game.new_game("Test", "mutt")
 	Game.state["helpers"] = ["boy", "feeder"]
-	Game.state["ponds"] = [{"site": 0, "size": "large", "water": "sea", "features": ["rocks"], "fish": [
-		{"fish": "bream", "pounds": 2.0, "name": "", "finery": "", "age_days": 9, "fed": false}]}]
+	Game.state["pond"] = {"stage": 2, "features": ["rocks"], "fish": [
+		{"fish": "bream", "pounds": 2.0, "name": "", "finery": "", "age_days": 9, "fed": false}]}
 	Game.state["tanks"][0] = {"restored": true, "fish": {"sardine": 6.0}, "pounds": 6.0, "days": 1, "quality": 0.5, "stirred": false}
 	World.new_day(Game.state, Seeds.rng(1, "morning"))
-	check(Game.state["ponds"][0]["fish"][0]["fed"], "the fish Lucilla fed this morning count as fed all day")
+	check(Game.state["pond"]["fish"][0]["fed"], "the fish Lucilla fed this morning count as fed all day")
 	check(Game.state["tanks"][0]["stirred"], "and the tank Tertius stirred counts as stirred")
-	var before := float(Game.state["ponds"][0]["fish"][0]["pounds"])
+	var before := float(Game.state["pond"]["fish"][0]["pounds"])
 	World.new_day(Game.state, Seeds.rng(2, "morning"))
-	check(float(Game.state["ponds"][0]["fish"][0]["pounds"]) > before, "and the fed fish grows overnight")
+	check(float(Game.state["pond"]["fish"][0]["pounds"]) > before, "and the fed fish grows overnight")
 
 
 func _pot_legend(place: String, depth: float, bait: String, season_day: int, sleep: bool, seed: int) -> bool:
@@ -410,24 +410,24 @@ func test_the_title_menu_forgets_a_deleted_save() -> void:
 
 
 func test_sailing_on_the_bay_map_is_not_being_ashore() -> void:
-	check(Nav.ashore_on("town") and Nav.ashore_on("shore"), "in town and at the ponds you are ashore, while the second fisherman fills the hold")
+	check(Nav.ashore_on("town") and Nav.ashore_on("shore"), "in town and at the pond you are ashore, while the second fisherman fills the hold")
 	check(not Nav.ashore_on("coast") and not Nav.ashore_on("map"), "but not at sea, nor sailing across the bay on the map")
 
 
-func test_the_ponds_on_the_shore_show_a_new_day() -> void:
+func test_the_pond_on_the_shore_shows_a_new_day() -> void:
 	for c in Nav.ui.get_children():
 		c.free()
 	Game.new_game("Test", "mutt")
-	Game.state["ponds"] = [{"site": 0, "size": "large", "water": "sea", "features": ["rocks"], "fish": [
-		{"fish": "bream", "pounds": 2.0, "name": "", "finery": "", "age_days": 9, "fed": true}]}]
+	Game.state["pond"] = {"stage": 2, "features": ["rocks"], "fish": [
+		{"fish": "bream", "pounds": 2.0, "name": "", "finery": "", "age_days": 9, "fed": true}]}
 	Game.state["time"] = Clock.minutes_per_day() * 2.0 - 0.2
 	var s: Node = load("res://scripts/shore/shore_screen.gd").new()
 	Nav.port.add_child(s)
 	s.enter({})
-	Game.state["ponds"][0]["fish"].append({"fish": "bream", "pounds": 0.3, "name": "", "finery": "", "age_days": 0, "fed": false})
+	Game.state["pond"]["fish"].append({"fish": "bream", "pounds": 0.3, "name": "", "finery": "", "age_days": 0, "fed": false})
 	for i in 60:
 		s._process(0.5)
-	check(s.views[0]._fish.size() == 2, "the young born overnight swim in the pond's picture without leaving and coming back, %d shown" % s.views[0]._fish.size())
+	check(s.pond.fish().size() == 2, "the young born overnight swim in the pond without leaving and coming back, %d shown" % s.pond.fish().size())
 	_done(s)
 
 
@@ -438,11 +438,11 @@ func test_filling_an_order_takes_the_fish_you_would_give() -> void:
 	check(Supply.find(Game.state, {"fish": "bream", "min_pounds": 1.0, "alive": false})["where"] == "hold",
 		"an order for a dead bream takes the one in the hold, keeping the live one in the well")
 	Game.state["live_well"] = []
-	Game.state["ponds"] = [{"site": 0, "size": "large", "water": "sea", "features": [], "fish": [
+	Game.state["pond"] = {"stage": 2, "features": [], "fish": [
 		{"fish": "bream", "pounds": 4.2, "name": "Aurata", "finery": "gold_ring", "age_days": 30, "fed": true},
-		{"fish": "bream", "pounds": 3.1, "name": "", "finery": "", "age_days": 30, "fed": true}]}]
+		{"fish": "bream", "pounds": 3.1, "name": "", "finery": "", "age_days": 30, "fed": true}]}
 	var at := Supply.find(Game.state, {"fish": "bream", "min_pounds": 1.0, "alive": true})
-	check(at["where"] == "pond" and int(at["index"]) == 1, "and a live order from the ponds takes the unnamed bream, not Aurata in her gold ring")
+	check(at["where"] == "pond" and int(at["index"]) == 1, "and a live order from the pond takes the unnamed bream, not Aurata in her gold ring")
 
 
 func test_the_neptunalia_is_judged_wherever_you_are() -> void:

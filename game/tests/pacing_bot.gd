@@ -1,7 +1,7 @@
 class_name PacingBot
 extends RefCounted
 ## A keen player run on the game's own rules, minute by minute of game time: it fishes where the day's orders and
-## clients' fish live, sells when the hold is full, fills orders, buys bait, gear and the next boat, builds ponds and
+## clients' fish live, sells when the hold is full, fills orders, buys bait, gear and the next boat, digs the pond and
 ## hunts the legends whose time has come. It notes when each chapter, boat and legend arrives, in hours of play.
 
 ## Seconds each cast by hand takes before a fish is on: the cast, the sink, the wait for a bite and its nibbles.
@@ -151,10 +151,8 @@ func _go_to_town() -> void:
 			if at[0] >= 0:
 				Story.deliver(state, c, at[0], at[1])
 	for i in state["live_well"].size():
-		if state["ponds"].size() > 0:
-			Ponds.stock(state, 0, 0)
-	for p in state["ponds"].size():
-		Ponds.feed(state, p)
+		Ponds.stock(state, 0)
+	Ponds.feed(state)
 	while not state["hold"].is_empty():
 		Market.sell(state, 0)
 	_shop()
@@ -170,7 +168,7 @@ func _find(want: Dictionary) -> Array:
 	return [-1, false]
 
 
-## Buys the next boat first, then gear that helps, then a pond and its features.
+## Buys the next boat first, then gear that helps, then the pond, its widening and its features.
 func _shop() -> void:
 	for boat in ["fishing_boat", "sailing_boat", "big_boat"]:
 		if Shop.buy(state, boat):
@@ -182,9 +180,8 @@ func _shop() -> void:
 	for id in ["ash_rod", "horsehair_line", "barbed_hook", "yew_rod", "twisted_line", "iron_hook", "masters_rod", "fine_line", "cast_net"]:
 		if int(state["denarii"]) > Shop.price(id) + 150:
 			Shop.buy(state, id)
-	if state["ponds"].size() < Ponds.allowed(state) and int(state["denarii"]) > 400:
-		Ponds.build(state, state["ponds"].size(), "large")
-	for p in state["ponds"].size():
-		for f in ["rocks", "sand", "weed", "caves"]:
-			if int(state["denarii"]) > 300:
-				Ponds.add_feature(state, p, f)
+	if Ponds.stage(state) < Ponds.allowed(state) and int(state["denarii"]) > Ponds.next_price(state) + 300:
+		Ponds.widen(state)
+	for f in ["rocks", "sand", "weed", "caves"]:
+		if int(state["denarii"]) > 300:
+			Ponds.add_feature(state, f)

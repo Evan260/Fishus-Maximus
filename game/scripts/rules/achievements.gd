@@ -2,7 +2,7 @@ class_name Achievements
 ## The achievements, each with one condition read from data/achievements.json, and sent on to Steam when the game
 ## runs under it.
 
-const CONDITIONS := ["logbook", "chapter", "legend", "legends", "logbook_full", "prize_all", "ponds", "tanks", "stat",
+const CONDITIONS := ["logbook", "chapter", "legend", "legends", "logbook_full", "prize_all", "pond", "tanks", "stat",
 	"moray_earrings", "boat", "denarii", "client"]
 
 
@@ -31,14 +31,14 @@ static func met(id: String, state: Dictionary) -> bool:
 		return _ordinary().all(func(f): return state["logbook"].has(f))
 	if a.has("prize_all"):
 		return _ordinary().all(func(f): return state["logbook"].has(f) and Catalog.grade(f, float(state["logbook"][f]["best"])) == "prize")
-	if a.has("ponds"):
-		return state["ponds"].size() >= int(a["ponds"])
+	if a.has("pond"):
+		return Ponds.stage(state) >= int(a["pond"])
 	if a.has("tanks"):
 		return state["tanks"].filter(func(t): return t["restored"]).size() >= int(a["tanks"])
 	if a.has("stat"):
 		return int(state["stats"].get(a["stat"], 0)) >= int(a["at_least"])
 	if a.has("moray_earrings"):
-		return state["ponds"].any(func(p): return p["fish"].any(func(f): return f["fish"] == "moray" and f.get("name", "") != "" and f.get("finery", "") == "earrings"))
+		return Ponds.of(state).get("fish", []).any(func(f): return f["fish"] == "moray" and f.get("name", "") != "" and f.get("finery", "") == "earrings")
 	if a.has("boat"):
 		return Story.boat_rank(str(state["boat"])) >= Story.boat_rank(a["boat"])
 	if a.has("denarii"):

@@ -121,15 +121,16 @@ Each legend has a clue told in town, and turns up only under its own conditions:
 11. **The sleeping sunfish**, which lies flat on the surface on calm summer afternoons.
 12. **Neptune's lobster**, in the deepest cave at Capri.
 
-## The ponds
+## The pond
 
 The heart of the game: a living collection you build, breed and show off.
 
-- **Building.** Up to six ponds are cut into the rocks along the shore, each small or large. Seawater ponds come first; the Lucrine pond is brackish.
-- **Features** a pond can be given:
+- **Building.** One large fish pond is cut into the rock by the shore on the estate, its far wall along the beach the sea washes up. It is dug first, then widened in six stages as the chapters open, each stage giving room for more fish. It holds sea water; a freshwater spring led in at its far end gives the brackish water grey mullet and eels need.
+- **Features** the pond can be given:
   - rocks;
   - caves for morays;
   - weed and sand;
+  - a freshwater spring, for the brackish water some fish need;
   - a shade roof;
   - a channel for fresh sea water, the last of which is a tunnel cut through the rock as Lucullus did for his.
 - **Fish needs.** Each kind needs its water, its features, room and food. A pond that suits a fish keeps it happy, and a happy fish grows and breeds.
@@ -139,7 +140,7 @@ The heart of the game: a living collection you build, breed and show off.
 - **Pets.** Any pond fish can be named:
   - **Calling:** ring the pond's bell and named fish swim to the front.
   - **Dressing up:** they can be decked out with finery from the goldsmith, earrings included, as Antonia's moray was.
-- **Visitors.** Villa owners and townsfolk come to see the ponds, and fine ponds raise your name in town.
+- **Visitors.** Villa owners and townsfolk come to see the pond, and a fine pond raises your name in town.
 - **The pond show.** Once a year the town's pond keepers show their best fish for prizes.
 - **Selling live.** Pond fish fill live orders and sell to the villas at Baiae.
 
@@ -185,9 +186,9 @@ The townsfolk are named people with their own trades. Their talk carries the clu
 
 Your name in town rises with orders, the pond show and legends caught. Five chapters open the game up:
 
-1. **The harbour:** the skiff, the line, the market and the first pond.
+1. **The harbour:** the skiff, the line, the market and the pond.
 2. **The rocky shore:** traps, morays and the first restored garum tanks.
-3. **The lake and the bay:** the fishing boat, nets, the tuna run and more ponds.
+3. **The lake and the bay:** the fishing boat, nets, the tuna run and a wider pond.
 4. **Capri:** the sailing boat, the trident and night fishing.
 5. **The deep:** the big boat, Cape Misenum and the hunt for the legends.
 
@@ -199,7 +200,7 @@ Your name in town rises with orders, the pond show and legends caught. Five chap
   - **The sailing boat:** faster sailing, a hold of 30, a well of 4.
   - **The big boat:** a hold of 40, a well of 6 and a lamp post.
 - **Gear:** four rods, four lines, three hooks, three nets, traps from 2 to 6, two lamps and a bigger bait box.
-- **On shore:** six ponds and their features, eight garum tanks, a salt store and an amphora store.
+- **On shore:** the pond, widened stage by stage, and its features, eight garum tanks, a salt store and an amphora store.
 - **Helpers:**
   - a boy who pulls the traps and stirs the tanks;
   - later, a second fisherman, who fishes on his own while you do something else.
@@ -226,8 +227,8 @@ Your name in town rises with orders, the pond show and legends caught. Five chap
 ## Collection and goals
 
 - The logbook, its records and the twelve legends.
-- The ponds, and the named fish in them.
-- About 40 Steam achievements: every chapter, every legend, a full logbook, a prize fish of every kind, every pond built and every tank restored, a win at the pond show and at the Neptunalia, and a named moray in earrings.
+- The pond, and the named fish in it.
+- About 40 Steam achievements: every chapter, every legend, a full logbook, a prize fish of every kind, the pond widened fully and every tank restored, a win at the pond show and at the Neptunalia, and a named moray in earrings.
 
 ## The look
 
@@ -250,7 +251,7 @@ Your name in town rises with orders, the pond show and legends caught. Five chap
 ## Interface
 
 - **On screen:** denarii, the day, the season and the weather, how full the hold and the live well are, the bait and the fishing method. No clock ticks on screen: the sky tells the hour.
-- **Panels:** the shops, the logbook, the bay map, the ponds and the garum works.
+- **Panels:** the shops, the logbook, the bay map, the pond and the garum works.
 
 ## Platform, controls and saving
 
@@ -267,7 +268,7 @@ Your name in town rises with orders, the pond show and legends caught. Five chap
 - About sixty kinds of fish, twelve of them legends.
 - Four ways to fish and four boats.
 - About 25 pieces of gear.
-- Six ponds with their features, and eight garum tanks.
+- The pond with its features, and eight garum tanks.
 - Six named clients and about fifteen townsfolk.
 - Five chapters.
 - About 40 achievements.

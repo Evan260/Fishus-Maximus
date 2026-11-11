@@ -1,17 +1,45 @@
 class_name Ponds
-## The fish ponds cut into the rocks along the shore. A fish is happy when its pond has its water, every feature it
-## needs, room and a meal today; happy fed fish grow, past any size caught wild, and happy pairs have young.
+## The estate's one fish pond, cut into the rock by the shore and widened stage by stage as the chapters open the
+## estate up. A fish is happy when the pond has its water, every feature it needs, room and a meal today; happy fed
+## fish grow, past any size caught wild, and happy pairs have young.
+
+## Room in each of the six pond sites of old saves, by the size they were dug.
+const OLD_ROOM := {"small": 6, "large": 14}
+
+
+## The pond as kept in the game, or an empty dictionary before it is dug.
+static func of(state: Dictionary) -> Dictionary:
+	return state.get("pond", {})
+
+
+static func dug(state: Dictionary) -> bool:
+	return not of(state).is_empty()
+
+
+## How far the pond is dug: 0 before it is dug, then 1 up to the number of stages in ponds.json.
+static func stage(state: Dictionary) -> int:
+	return int(of(state).get("stage", 0))
+
+
+static func stages() -> int:
+	return Data.ponds["stages"].size()
 
 
 static func room(pond: Dictionary) -> int:
-	return int(Data.ponds["sizes"][pond["size"]]["room"])
+	var at := clampi(int(pond.get("stage", 1)), 1, stages())
+	return int(Data.ponds["stages"][at - 1]["room"])
 
 
 static func room_used(pond: Dictionary) -> int:
 	var used := 0
-	for f in pond["fish"]:
+	for f in pond.get("fish", []):
 		used += int(Data.fish[f["fish"]].get("pond", {}).get("room", 2))
 	return used
+
+
+## Whether the pond has the water a kind needs: sea water everywhere, and brackish water by the spring once it is led in.
+static func has_water(pond: Dictionary, water: String) -> bool:
+	return water == "sea" or (water == "brackish" and "spring" in pond.get("features", []))
 
 
 ## From 0 to 1: one share each for the right water, every feature the kind needs, room to swim and being fed today.
@@ -19,7 +47,7 @@ static func happiness(pond: Dictionary, fish: Dictionary) -> float:
 	var needs: Dictionary = Data.fish[fish["fish"]].get("pond", {"water": "sea", "features": [], "room": 2})
 	var shares: int = 3 + needs["features"].size()
 	var met := 0
-	if needs["water"] == pond["water"]:
+	if has_water(pond, needs["water"]):
 		met += 1
 	for feature in needs["features"]:
 		if feature in pond["features"]:
@@ -31,26 +59,28 @@ static func happiness(pond: Dictionary, fish: Dictionary) -> float:
 	return float(met) / shares
 
 
-## A day in every pond: fed fish grow, happy pairs breed, and everyone is hungry again by morning.
+## A day in the pond: fed fish grow, happy pairs breed, and everyone is hungry again by morning.
 static func day(state: Dictionary, rng: RandomNumberGenerator) -> void:
-	for pond in state["ponds"]:
-		var bonus := 0.0
-		for feature in pond["features"]:
-			bonus += float(Data.ponds["growth_bonus"].get(feature, 0.0))
-		for f in pond["fish"]:
-			var kind: Dictionary = Data.fish[f["fish"]]
-			var lo := float(kind["pounds"][0])
-			var hi := float(kind["pounds"][1])
-			if f.get("fed", false):
-				var grow := Data.num("ponds.growth", 0.04) * (hi - lo) * happiness(pond, f) * (1.0 + bonus)
-				f["pounds"] = snappedf(minf(hi * Data.num("ponds.max_size", 1.3), float(f["pounds"]) + grow), 0.01)
-			f["age_days"] = int(f.get("age_days", 0)) + 1
-		_breed(pond, rng)
-		for f in pond["fish"]:
-			f["fed"] = false
+	var pond := of(state)
+	if pond.is_empty():
+		return
+	var bonus := 0.0
+	for feature in pond["features"]:
+		bonus += float(Data.ponds["growth_bonus"].get(feature, 0.0))
+	for f in pond["fish"]:
+		var kind: Dictionary = Data.fish[f["fish"]]
+		var lo := float(kind["pounds"][0])
+		var hi := float(kind["pounds"][1])
+		if f.get("fed", false):
+			var grow := Data.num("ponds.growth", 0.04) * (hi - lo) * happiness(pond, f) * (1.0 + bonus)
+			f["pounds"] = snappedf(minf(hi * Data.num("ponds.max_size", 1.3), float(f["pounds"]) + grow), 0.01)
+		f["age_days"] = int(f.get("age_days", 0)) + 1
+	_breed(pond, rng)
+	for f in pond["fish"]:
+		f["fed"] = false
 
 
-static func _breed(pond: Dictionary, rng: RandomNumberGenerator) -> void:
+static func _breed(pond: Dictionary, _rng: RandomNumberGenerator) -> void:
 	var breeding: Dictionary = pond.get("breeding", {})
 	var kinds := {}
 	for f in pond["fish"]:
@@ -71,24 +101,26 @@ static func _breed(pond: Dictionary, rng: RandomNumberGenerator) -> void:
 	pond["breeding"] = breeding
 
 
-## How many ponds may be cut by now, as the chapters open the shore up.
+## The furthest stage the pond may be dug to by now, as the chapters open the estate up.
 static func allowed(state: Dictionary) -> int:
-	return int(Story.unlocks(int(state["chapter"]))["ponds"])
+	return mini(stages(), int(Story.unlocks(int(state["chapter"]))["pond"]))
 
 
-static func site_of(state: Dictionary, site: int) -> int:
-	for i in state["ponds"].size():
-		if int(state["ponds"][i]["site"]) == site:
-			return i
-	return -1
+## What digging the pond, or widening it to its next stage, costs; -1 once it is as wide as it goes.
+static func next_price(state: Dictionary) -> int:
+	var at := stage(state)
+	return int(Data.ponds["stages"][at]["price"]) if at < stages() else -1
 
 
-static func build(state: Dictionary, site: int, size: String) -> bool:
-	var price := int(Data.ponds["sizes"][size]["price"])
-	if site_of(state, site) >= 0 or state["ponds"].size() >= allowed(state) or int(state["denarii"]) < price:
+## Digs the pond, or widens it by a stage, while the chapter allows and the money is there.
+static func widen(state: Dictionary) -> bool:
+	var price := next_price(state)
+	if price < 0 or stage(state) >= allowed(state) or int(state["denarii"]) < price:
 		return false
 	state["denarii"] = int(state["denarii"]) - price
-	state["ponds"].append({"site": site, "size": size, "water": Data.ponds["sites"][site]["water"], "features": [], "fish": []})
+	if not dug(state):
+		state["pond"] = {"stage": 0, "features": [], "fish": [], "breeding": {}}
+	state["pond"]["stage"] = stage(state) + 1
 	return true
 
 
@@ -99,10 +131,10 @@ static func feature(id: String) -> Dictionary:
 	return {}
 
 
-static func add_feature(state: Dictionary, index: int, id: String) -> bool:
-	var pond: Dictionary = state["ponds"][index]
+static func add_feature(state: Dictionary, id: String) -> bool:
+	var pond := of(state)
 	var f := feature(id)
-	if f.is_empty() or id in pond["features"] or int(state["denarii"]) < int(f["price"]):
+	if pond.is_empty() or f.is_empty() or id in pond["features"] or int(state["denarii"]) < int(f["price"]):
 		return false
 	if f.has("needs") and not f["needs"] in pond["features"]:
 		return false
@@ -111,32 +143,32 @@ static func add_feature(state: Dictionary, index: int, id: String) -> bool:
 	return true
 
 
-## Moves a live fish from the boat's well into a pond.
-static func stock(state: Dictionary, index: int, well_index: int) -> bool:
-	if well_index < 0 or well_index >= state["live_well"].size():
+## Moves a live fish from the boat's well into the pond.
+static func stock(state: Dictionary, well_index: int) -> bool:
+	if not dug(state) or well_index < 0 or well_index >= state["live_well"].size():
 		return false
 	var f: Dictionary = state["live_well"][well_index]
 	if not Data.fish[f["fish"]].has("pond"):
 		return false
 	state["live_well"].remove_at(well_index)
-	state["ponds"][index]["fish"].append({"fish": f["fish"], "pounds": float(f["pounds"]), "name": "", "finery": "",
+	of(state)["fish"].append({"fish": f["fish"], "pounds": float(f["pounds"]), "name": "", "finery": "",
 		"age_days": 5, "fed": false})
 	return true
 
 
-static func feed(state: Dictionary, index: int) -> void:
-	for f in state["ponds"][index]["fish"]:
+static func feed(state: Dictionary) -> void:
+	for f in of(state).get("fish", []):
 		f["fed"] = true
 
 
-static func name_fish(state: Dictionary, index: int, fish_index: int, name: String) -> void:
-	state["ponds"][index]["fish"][fish_index]["name"] = name.strip_edges().left(16)
+static func name_fish(state: Dictionary, fish_index: int, name: String) -> void:
+	of(state)["fish"][fish_index]["name"] = name.strip_edges().left(16)
 
 
-static func dress(state: Dictionary, index: int, fish_index: int, finery: String) -> bool:
+static func dress(state: Dictionary, fish_index: int, finery: String) -> bool:
 	if not finery in state.get("finery", []):
 		return false
-	var f: Dictionary = state["ponds"][index]["fish"][fish_index]
+	var f: Dictionary = of(state)["fish"][fish_index]
 	if f.get("finery", "") != "":
 		state["finery"].append(f["finery"])
 	state["finery"].erase(finery)
@@ -145,24 +177,25 @@ static func dress(state: Dictionary, index: int, fish_index: int, finery: String
 
 
 ## Sells a pond fish live to the villas at Baiae, for half again its worth fresh from the sea.
-static func sell_live(state: Dictionary, index: int, fish_index: int) -> int:
-	var f: Dictionary = state["ponds"][index]["fish"][fish_index]
+static func sell_live(state: Dictionary, fish_index: int) -> int:
+	var fish: Array = of(state)["fish"]
+	var f: Dictionary = fish[fish_index]
 	var paid := int(Catalog.value(f["fish"], float(f["pounds"]), 1.0) * 1.5)
 	state["denarii"] = int(state["denarii"]) + paid
 	if f.get("finery", "") != "":
 		state["finery"].append(f["finery"])
-	state["ponds"][index]["fish"].remove_at(fish_index)
+	fish.remove_at(fish_index)
 	return paid
 
 
 ## The pond show's judging: each pond fish counts for its size and happiness, more when named and dressed.
 static func show_score(state: Dictionary) -> float:
+	var pond := of(state)
 	var score := 0.0
-	for pond in state["ponds"]:
-		for f in pond["fish"]:
-			var s := Catalog.share(f["fish"], float(f["pounds"]))
-			score += (2.0 + 10.0 * s) * (0.5 + happiness(pond, f)) * (1.3 if f.get("name", "") != "" else 1.0) \
-				* (1.3 if f.get("finery", "") != "" else 1.0)
+	for f in pond.get("fish", []):
+		var s := Catalog.share(f["fish"], float(f["pounds"]))
+		score += (2.0 + 10.0 * s) * (0.5 + happiness(pond, f)) * (1.3 if f.get("name", "") != "" else 1.0) \
+			* (1.3 if f.get("finery", "") != "" else 1.0)
 	return snappedf(score, 0.1)
 
 
@@ -179,3 +212,26 @@ static func show(state: Dictionary) -> Dictionary:
 		Story.add_reputation(state, int(Data.ponds["show"]["reputation"]))
 		state["stats"]["shows_won"] = int(state["stats"].get("shows_won", 0)) + 1
 	return {"score": score, "bar": bar, "won": won, "prize": prize}
+
+
+## The one pond an old save's six pond sites become: every fish, every feature, the brackish site's water as the
+## spring, and dug as wide as the stage whose room holds all the old ponds' room together.
+static func from_sites(sites: Array) -> Dictionary:
+	if sites.is_empty():
+		return {}
+	var pond := {"stage": 1, "features": [], "fish": [], "breeding": {}}
+	var old_room := 0
+	for p in sites:
+		old_room += int(OLD_ROOM.get(str(p.get("size", "small")), 6))
+		for id in p.get("features", []):
+			if not id in pond["features"]:
+				pond["features"].append(id)
+		if str(p.get("water", "sea")) == "brackish" and not "spring" in pond["features"]:
+			pond["features"].append("spring")
+		pond["fish"].append_array(p.get("fish", []))
+		var breeding: Dictionary = p.get("breeding", {})
+		for kind in breeding:
+			pond["breeding"][kind] = maxi(int(pond["breeding"].get(kind, 0)), int(breeding[kind]))
+	while pond["stage"] < stages() and room(pond) < old_room:
+		pond["stage"] += 1
+	return pond

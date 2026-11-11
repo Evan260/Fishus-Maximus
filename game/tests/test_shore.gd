@@ -3,10 +3,10 @@ extends "res://tests/test_case.gd"
 
 func test_a_happy_pond_grows_and_breeds() -> void:
 	Game.new_game("Test", "mutt")
-	var pond := {"site": 0, "size": "large", "water": "sea", "features": ["rocks", "caves", "weed"], "fish": [
+	var pond := {"stage": 2, "features": ["rocks", "caves", "weed"], "fish": [
 		{"fish": "bream", "pounds": 2.0, "name": "", "finery": "", "age_days": 10, "fed": true},
 		{"fish": "bream", "pounds": 2.1, "name": "", "finery": "", "age_days": 10, "fed": true}]}
-	Game.state["ponds"] = [pond]
+	Game.state["pond"] = pond
 	for d in 6:
 		for f in pond["fish"]:
 			f["fed"] = true
@@ -17,36 +17,151 @@ func test_a_happy_pond_grows_and_breeds() -> void:
 
 func test_a_hungry_pond_does_not_grow() -> void:
 	Game.new_game("Test", "mutt")
-	var pond := {"site": 0, "size": "small", "water": "sea", "features": [], "fish": [{"fish": "moray", "pounds": 4.0, "name": "Hortensia", "finery": "earrings", "age_days": 40, "fed": false}]}
-	Game.state["ponds"] = [pond]
+	var pond := {"stage": 1, "features": [], "fish": [{"fish": "moray", "pounds": 4.0, "name": "Hortensia", "finery": "earrings", "age_days": 40, "fed": false}]}
+	Game.state["pond"] = pond
 	Ponds.day(Game.state, Seeds.rng(1, "p"))
 	check(pond["fish"][0]["pounds"] == 4.0 and Ponds.happiness(pond, pond["fish"][0]) < 0.5, "a hungry moray without a cave does not grow")
 
 
 func test_pond_fish_grow_past_any_caught_wild() -> void:
 	Game.new_game("Test", "mutt")
-	var pond := {"site": 0, "size": "large", "water": "sea", "features": ["rocks", "sand"], "fish": [{"fish": "bream", "pounds": 6.9, "name": "", "finery": "", "age_days": 10, "fed": true}]}
-	Game.state["ponds"] = [pond]
+	var pond := {"stage": 2, "features": ["rocks", "sand"], "fish": [{"fish": "bream", "pounds": 6.9, "name": "", "finery": "", "age_days": 10, "fed": true}]}
+	Game.state["pond"] = pond
 	for d in 200:
 		pond["fish"][0]["fed"] = true
 		Ponds.day(Game.state, Seeds.rng(d, "p"))
 	check(pond["fish"][0]["pounds"] > 7.0 and pond["fish"][0]["pounds"] <= 7.0 * 1.3 + 0.001, "up to 1.3 times the wild maximum")
 
 
-func test_ponds_are_built_stocked_named_and_dressed() -> void:
+func test_the_pond_is_dug_stocked_named_and_dressed() -> void:
 	Game.new_game("Test", "mutt")
 	Game.state["denarii"] = 1000
-	check(Ponds.build(Game.state, 0, "small") and Game.state["ponds"].size() == 1, "a pond cut into the rock")
-	check(not Ponds.build(Game.state, 1, "small"), "only one pond in the first chapter")
-	check(Ponds.add_feature(Game.state, 0, "rocks") and "rocks" in Game.state["ponds"][0]["features"], "rocks put in")
+	check(not Ponds.dug(Game.state) and Ponds.stage(Game.state) == 0, "a new game has no pond yet")
+	check(Ponds.widen(Game.state) and Ponds.stage(Game.state) == 1, "the pond is dug into the rock")
+	check(Game.state["denarii"] == 1000 - int(Data.ponds["stages"][0]["price"]), "for the first stage's price")
+	check(not Ponds.widen(Game.state), "and the first chapter allows it no wider")
+	check(Ponds.add_feature(Game.state, "rocks") and "rocks" in Ponds.of(Game.state)["features"], "rocks put in")
 	Game.state["boat"] = "fishing_boat"
 	Hold.add(Game.state, {"fish": "bream", "pounds": 2.0, "fresh": 1.0, "live": true})
-	check(Ponds.stock(Game.state, 0, 0) and Game.state["live_well"].is_empty() and Game.state["ponds"][0]["fish"].size() == 1, "a live bream goes from the well to the pond")
-	Ponds.name_fish(Game.state, 0, 0, "Aurata")
+	check(Ponds.stock(Game.state, 0) and Game.state["live_well"].is_empty() and Ponds.of(Game.state)["fish"].size() == 1, "a live bream goes from the well to the pond")
+	Ponds.name_fish(Game.state, 0, "Aurata")
 	Game.state["finery"] = ["earrings"]
-	check(Ponds.dress(Game.state, 0, 0, "earrings") and Game.state["ponds"][0]["fish"][0]["finery"] == "earrings" and Game.state["finery"].is_empty(), "named and dressed")
-	Ponds.feed(Game.state, 0)
-	check(Game.state["ponds"][0]["fish"][0]["fed"], "fed by hand")
+	check(Ponds.dress(Game.state, 0, "earrings") and Ponds.of(Game.state)["fish"][0]["finery"] == "earrings" and Game.state["finery"].is_empty(), "named and dressed")
+	Ponds.feed(Game.state)
+	check(Ponds.of(Game.state)["fish"][0]["fed"], "fed by hand")
+
+
+func test_there_is_one_pond_widened_as_the_chapters_open() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["denarii"] = 100000
+	var rooms := []
+	for chapter in range(1, Data.chapters.size() + 1):
+		Game.state["chapter"] = chapter
+		while Ponds.widen(Game.state):
+			pass
+		check(Ponds.stage(Game.state) == Ponds.allowed(Game.state), "chapter %d: widened as far as it allows, stage %d" % [chapter, Ponds.stage(Game.state)])
+		rooms.append(Ponds.room(Ponds.of(Game.state)))
+	check(Ponds.stage(Game.state) == Ponds.stages() and Ponds.next_price(Game.state) == -1, "the last chapter allows it its full width, and no wider")
+	var sorted := rooms.duplicate()
+	sorted.sort()
+	check(rooms == sorted and rooms[-1] > rooms[0], "each widening gives more room: %s" % [rooms])
+	check(Game.state.get("pond") is Dictionary and not Game.state.has("ponds"), "and the game keeps one pond, not a list of them")
+	check(Achievements.met("first_pond", Game.state) and Achievements.met("all_ponds", Game.state), "digging it and widening it fully are each an achievement")
+
+
+func test_brackish_fish_need_the_spring() -> void:
+	Game.new_game("Test", "mutt")
+	var eel := {"fish": "eel", "pounds": 2.0, "name": "", "finery": "", "age_days": 10, "fed": true}
+	var pond := {"stage": 2, "features": ["caves", "weed"], "fish": [eel]}
+	var without := Ponds.happiness(pond, eel)
+	pond["features"].append("spring")
+	check(Ponds.happiness(pond, eel) > without and Ponds.happiness(pond, eel) == 1.0, "an eel is happy once the spring brings brackish water")
+	var bream := {"fish": "bream", "pounds": 2.0, "name": "", "finery": "", "age_days": 10, "fed": true}
+	pond["features"].append_array(["rocks", "sand"])
+	check(Ponds.happiness(pond, bream) == 1.0, "and the sea fish stay happy beside it")
+
+
+func test_an_old_save_with_six_ponds_keeps_every_fish_in_the_one_pond() -> void:
+	var old := Game.defaults()
+	old.erase("pond")
+	old["version"] = 1
+	old["chapter"] = 5
+	old["ponds"] = [
+		{"site": 0, "size": "large", "water": "sea", "features": ["rocks", "sand"], "breeding": {"bream": 3}, "fish": [
+			{"fish": "bream", "pounds": 4.2, "name": "Aurata", "finery": "gold_ring", "age_days": 30, "fed": true},
+			{"fish": "bream", "pounds": 3.1, "name": "", "finery": "", "age_days": 30, "fed": true}]},
+		{"site": 1, "size": "small", "water": "sea", "features": ["caves", "rocks"], "fish": [
+			{"fish": "moray", "pounds": 12.5, "name": "Hortensia", "finery": "earrings", "age_days": 60, "fed": false}]},
+		{"site": 5, "size": "large", "water": "brackish", "features": ["weed"], "fish": [
+			{"fish": "eel", "pounds": 2.0, "name": "", "finery": "", "age_days": 9, "fed": false}]}]
+	# A save goes through JSON on its way to disk and back, so the old one is read the same way.
+	Game.from_dict(JSON.parse_string(JSON.stringify(old)))
+	var pond := Ponds.of(Game.state)
+	check(not Game.state.has("ponds"), "the six sites are gone from the game")
+	check(pond["fish"].size() == 4, "every fish is in the one pond, %d" % pond["fish"].size())
+	var names: Array = pond["fish"].map(func(f): return str(f["name"]))
+	check("Aurata" in names and "Hortensia" in names, "named fish keep their names")
+	check(pond["fish"].any(func(f): return f["name"] == "Hortensia" and f["finery"] == "earrings" and is_equal_approx(float(f["pounds"]), 12.5)),
+		"and their finery and weight")
+	for feature in ["rocks", "sand", "caves", "weed", "spring"]:
+		check(feature in pond["features"], "the pond has the %s one of the old ponds had" % feature)
+	check(Ponds.room(pond) >= 14 + 6 + 14, "it is dug wide enough for all the old ponds' room, stage %d, room %d" % [Ponds.stage(Game.state), Ponds.room(pond)])
+	check(int(pond["breeding"].get("bream", 0)) == 3, "and the bream's breeding carries on")
+	var eel: Dictionary = pond["fish"].filter(func(f): return f["fish"] == "eel")[0]
+	check(Ponds.happiness(pond, eel) > 0.5, "the eel from the brackish pond has brackish water still")
+	var saved := Game.to_dict()
+	check(int(saved["version"]) == Game.VERSION and saved.has("pond") and not saved.has("ponds"), "and it saves as one pond")
+	Game.from_dict(JSON.parse_string(JSON.stringify(saved)))
+	check(Ponds.of(Game.state)["fish"].size() == 4, "which loads again unchanged")
+
+
+func test_an_old_save_with_no_ponds_has_no_pond_yet() -> void:
+	var old := Game.defaults()
+	old.erase("pond")
+	old["ponds"] = []
+	Game.from_dict(old)
+	check(not Ponds.dug(Game.state) and not Game.state.has("ponds"), "a save that never dug a pond has none yet")
+
+
+func test_the_wave_washes_up_the_beach_and_draws_back() -> void:
+	check(is_equal_approx(ShoreWash.run_up(0.0), 0.0), "a wave starts at the still line")
+	check(is_equal_approx(ShoreWash.run_up(ShoreWash.SURGE), 1.0), "it reaches its highest at the end of its surge")
+	var steps := 400
+	var last := ShoreWash.run_up(0.0)
+	var low := last
+	var biggest_step := 0.0
+	var turns := 0
+	var rising := true
+	for i in range(1, steps):
+		var now := ShoreWash.run_up(float(i) / steps)
+		biggest_step = maxf(biggest_step, absf(now - last))
+		if rising and now < last:
+			rising = false
+			turns += 1
+		elif not rising and now > last + 0.0001:
+			turns += 1
+		low = minf(low, now)
+		last = now
+	check(biggest_step < 0.02, "it moves smoothly, never more than %.3f of its reach in a step" % biggest_step)
+	check(turns == 1, "it runs up once and draws back once each wave")
+	check(low < 0.0 and low >= -ShoreWash.BACKWASH - 0.001, "the backwash sinks a little past the still line, to %.2f" % low)
+	var surge_speed := ShoreWash.run_up(0.05) - ShoreWash.run_up(0.0)
+	var back_speed := ShoreWash.run_up(0.5) - ShoreWash.run_up(0.55)
+	check(surge_speed > back_speed * 2.0, "it surges up faster than it draws back")
+	check(ShoreWash.run_up(0.999) < 0.0 and is_equal_approx(ShoreWash.run_up(1.0), 0.0), "and the next wave comes in as the backwash ends")
+	check(ShoreWash.PERIOD >= 6.0 and ShoreWash.PERIOD <= 12.0, "a wave every %s seconds, a slow sea" % ShoreWash.PERIOD)
+
+
+func test_the_beach_is_drawn_with_the_waves_rhythm() -> void:
+	Game.new_game("Test", "mutt")
+	var s := _open()
+	var m: ShaderMaterial = s._beach.material
+	check(m.get_shader_parameter("period") == ShoreWash.PERIOD and m.get_shader_parameter("reach") == ShoreWash.REACH, "the beach's shader keeps the waves' rhythm")
+	var t: float = m.get_shader_parameter("wash_time")
+	s._process(0.5)
+	check(float(m.get_shader_parameter("wash_time")) > t, "and its waves move on with time")
+	check(m.get_shader_parameter("zenith") == s._layers.bands()[1].material.get_shader_parameter("zenith"), "its water mirrors the same sky as the sea behind it")
+	_close(s)
 
 
 func test_garum_grades_by_days_and_fish() -> void:
@@ -81,14 +196,38 @@ func test_stirring_makes_better_garum() -> void:
 	check(Garum.price("garum", 1.0, false) < Garum.price("garum", 1.0, true), "the export ship pays more")
 
 
-func test_the_shore_opens_with_its_six_pond_sites() -> void:
+func test_the_shore_opens_on_one_large_pond() -> void:
 	Game.new_game("Test", "mutt")
 	Game.state["denarii"] = 500
-	Ponds.build(Game.state, 0, "small")
+	Ponds.widen(Game.state)
+	Game.state["pond"]["fish"].append({"fish": "bream", "pounds": 2.0, "name": "Aurata", "finery": "", "age_days": 9, "fed": true})
+	Game.state["pond"]["fish"].append({"fish": "mullet", "pounds": 1.0, "name": "", "finery": "", "age_days": 9, "fed": true})
+	var s := _open()
+	check(s.views.size() == 1 and s.views[0] == s.pond, "one pond")
+	check(s.pond.right - s.pond.left >= Nav.view().x, "as wide as the view, %s" % (s.pond.right - s.pond.left))
+	check(s.pond.fish().size() == 2, "with its fish swimming in it")
+	check(s.pond.fish().all(func(f): return f["sprite"].scale.y == 1.0), "each one texel to a pixel")
+	check(s._thing_at(Vector2(Nav.view().x / 2.0, s.WATER + Nav.offset().y + 20.0)) == "pond", "the water is the pond to click")
+	var g: Rect2i = s._garum.get_used_rect()
+	check(s._thing_at(s._bank_at() + Vector2(g.get_center())) == "garum", "and the garum works stand on its bank")
+	s.pond.ring()
+	for i in 40:
+		s._process(0.1)
+	check(s.pond.shown_names().size() == 1, "ringing the bell shows the named fish")
+	_close(s)
+
+
+func _open() -> Node:
+	for c in Nav.ui.get_children():
+		c.free()
 	var s: Node = load("res://scripts/shore/shore_screen.gd").new()
 	Nav.port.add_child(s)
 	s.enter({})
-	check(s.views.size() == 6 and s.views[0].pond().size() > 0 and s.views[1].pond().is_empty(), "six sites, the first one cut")
+	s._process(0.1)
+	return s
+
+
+func _close(s: Node) -> void:
 	for c in Nav.ui.get_children():
 		c.free()
 	s.free()

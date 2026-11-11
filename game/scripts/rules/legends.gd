@@ -28,7 +28,7 @@ static func clue(legend: String) -> String:
 	return str(Data.fish.get(legend, {}).get("clue", ""))
 
 
-## Whether a client's story still has to have a legend caught before, while none is kept in the hold, the well or a pond.
+## Whether a client's story still has to have a legend caught before, while none is kept in the hold, the well or the pond.
 static func still_wanted(state: Dictionary, legend: String) -> bool:
 	var wanted := Data.clients.keys().any(func(c):
 		var steps: Array = Data.clients[c]["steps"]
@@ -36,8 +36,7 @@ static func still_wanted(state: Dictionary, legend: String) -> bool:
 	if not wanted:
 		return false
 	var kept: Array = state["hold"] + state["live_well"]
-	for pond in state["ponds"]:
-		kept += pond["fish"]
+	kept += Ponds.of(state).get("fish", [])
 	return not kept.any(func(f): return f["fish"] == legend)
 
 

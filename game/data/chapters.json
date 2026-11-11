@@ -22,12 +22,12 @@
 			"bait_box_2"
 		],
 		"boats": [],
-		"ponds": 1,
+		"pond": 1,
 		"tanks": 1,
 		"methods": [
 			"line"
 		],
-		"text": "Your uncle's skiff, a line, the market and the first pond."
+		"text": "Your uncle's skiff, a line, the market and the pond."
 	},
 	{
 		"chapter": 2,
@@ -50,7 +50,7 @@
 			"yew_rod"
 		],
 		"boats": [],
-		"ponds": 2,
+		"pond": 2,
 		"tanks": 3,
 		"methods": [
 			"line",
@@ -83,14 +83,14 @@
 		"boats": [
 			"fishing_boat"
 		],
-		"ponds": 4,
+		"pond": 4,
 		"tanks": 5,
 		"methods": [
 			"line",
 			"trap",
 			"net"
 		],
-		"text": "The fishing boat, the cast net, the tuna run and more ponds."
+		"text": "The fishing boat, the cast net, the tuna run and a wider pond."
 	},
 	{
 		"chapter": 4,
@@ -115,7 +115,7 @@
 		"boats": [
 			"sailing_boat"
 		],
-		"ponds": 5,
+		"pond": 5,
 		"tanks": 7,
 		"methods": [
 			"line",
@@ -142,7 +142,7 @@
 		"boats": [
 			"big_boat"
 		],
-		"ponds": 6,
+		"pond": 6,
 		"tanks": 8,
 		"methods": [
 			"line",

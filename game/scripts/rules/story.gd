@@ -12,7 +12,7 @@ static func chapter_for(reputation: int) -> int:
 
 ## Everything open by this chapter: its places, clients, shop stock, boats and methods, with every earlier chapter's.
 static func unlocks(chapter: int) -> Dictionary:
-	var out := {"places": [], "clients": [], "bait": [], "gear": [], "boats": ["skiff"], "methods": [], "ponds": 1, "tanks": 1}
+	var out := {"places": [], "clients": [], "bait": [], "gear": [], "boats": ["skiff"], "methods": [], "pond": 1, "tanks": 1}
 	for c in Data.chapters:
 		if int(c["chapter"]) > chapter:
 			continue
@@ -20,7 +20,7 @@ static func unlocks(chapter: int) -> Dictionary:
 			for v in c[key]:
 				if not v in out[key]:
 					out[key].append(v)
-		out["ponds"] = int(c["ponds"])
+		out["pond"] = int(c["pond"])
 		out["tanks"] = int(c["tanks"])
 	return out
 

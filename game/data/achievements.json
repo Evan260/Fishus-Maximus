@@ -134,14 +134,14 @@
 	{
 		"id": "first_pond",
 		"name": "A pond of your own",
-		"text": "Cut your first pond.",
-		"ponds": 1
+		"text": "Dig the estate's fish pond.",
+		"pond": 1
 	},
 	{
 		"id": "all_ponds",
-		"name": "Six ponds",
-		"text": "Cut all six ponds.",
-		"ponds": 6
+		"name": "The great pond",
+		"text": "Widen the pond as far as it goes.",
+		"pond": 6
 	},
 	{
 		"id": "all_tanks",

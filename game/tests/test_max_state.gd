@@ -30,8 +30,7 @@ func test_the_best_of_everything_is_owned() -> void:
 func test_every_pond_and_tank_is_open() -> void:
 	Game.max_state()
 	var s := Game.state
-	check(s["ponds"].size() == Ponds.allowed(s), "every pond the last chapter allows is dug, %d" % s["ponds"].size())
-	check(s["ponds"].all(func(p): return p["size"] == "large" and p["water"] == Data.ponds["sites"][int(p["site"])]["water"]), "each one large")
+	check(Ponds.stage(s) == Ponds.allowed(s) and Ponds.stage(s) == Ponds.stages(), "the pond is dug as wide as it goes, stage %d" % Ponds.stage(s))
 	check(s["tanks"].all(func(t): return t["restored"]), "and every garum tank restored")
 
 

@@ -65,7 +65,7 @@ func _announce() -> void:
 	if Game.state.has("_show"):
 		var show: Dictionary = Game.state["_show"]
 		Game.state.erase("_show")
-		Toast.say(("Your ponds won the pond show! +%s" % Ui.coins_text(int(show["prize"]))) if show["won"] else "The widow's ponds won the pond show this year.")
+		Toast.say((tr("Your pond won the pond show! +%s") % Ui.coins_text(int(show["prize"]))) if show["won"] else tr("The widow's ponds won the pond show this year."))
 
 
 func _process(delta: float) -> void:

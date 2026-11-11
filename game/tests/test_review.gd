@@ -39,9 +39,9 @@ func test_every_waiting_client_comes_to_town_within_a_week() -> void:
 
 func test_time_away_runs_each_morning_on_its_own_day() -> void:
 	Game.new_game("Test", "mutt")
-	Game.state["ponds"] = [{"site": 0, "size": "large", "water": "sea", "features": ["rocks", "sand"], "fish": []}]
+	Game.state["pond"] = {"stage": 2, "features": ["rocks", "sand"], "fish": []}
 	for i in 10:
-		Game.state["ponds"][0]["fish"].append({"fish": "bream", "pounds": 7.0, "name": "B", "finery": "earrings", "age_days": 20, "fed": true})
+		Game.state["pond"]["fish"].append({"fish": "bream", "pounds": 7.0, "name": "B", "finery": "earrings", "age_days": 20, "fed": true})
 	var before: int = Game.state["denarii"]
 	World.advance(Game.state, Clock.minutes_per_day() * 25.0, Seeds.rng(1, "away"))
 	check(int(Game.state["stats"].get("shows_won", 0)) == 1, "the pond show is judged once, on its own day")
@@ -105,13 +105,13 @@ func test_the_second_fisherman_fishes_only_while_you_are_ashore() -> void:
 
 func test_pond_fish_fill_live_orders_and_requests() -> void:
 	Game.new_game("Test", "mutt")
-	Game.state["ponds"] = [{"site": 0, "size": "large", "water": "sea", "features": [], "fish": [
-		{"fish": "bream", "pounds": 8.0, "name": "Aurata", "finery": "", "age_days": 30, "fed": false}]}]
+	Game.state["pond"] = {"stage": 2, "features": [], "fish": [
+		{"fish": "bream", "pounds": 8.0, "name": "Aurata", "finery": "", "age_days": 30, "fed": false}]}
 	Game.state["orders"] = [{"fish": "bream", "min_pounds": 6.0, "alive": true, "reward": 90, "reputation": 5, "due": 3}]
 	var at := Supply.find(Game.state, Game.state["orders"][0])
 	check(at.get("where", "") == "pond", "the grown bream in the pond suits")
 	var before: int = Game.state["denarii"]
-	check(Orders.fill_from(Game.state, 0, at) and Game.state["denarii"] == before + 90 and Game.state["ponds"][0]["fish"].is_empty(), "and fills the order")
+	check(Orders.fill_from(Game.state, 0, at) and Game.state["denarii"] == before + 90 and Game.state["pond"]["fish"].is_empty(), "and fills the order")
 
 
 func test_fishing_on_his_own_carries_on_while_the_game_is_closed() -> void:
