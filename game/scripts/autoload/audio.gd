@@ -1,10 +1,14 @@
 extends Node
 ## Every sound in the game: effects found by file name in assets/audio/sfx, where name_1, name_2 are takes of one
-## sound picked at random; looping ambience for the scene and the hour; and calm music with long quiet gaps between.
+## sound picked at random; looping ambience for the scene and the hour; and calm music with long quiet gaps between,
+## the game's own tracks and any the player puts in their own music folder.
 
 const SFX := "res://assets/audio/sfx/"
 const AMBIENCE := "res://assets/audio/ambience/"
 const MUSIC := "res://assets/audio/music/"
+## The player's own music, beside the saves; the settings open it.
+const PLAYER_MUSIC := "user://music/"
+const MUSIC_TYPES := ["ogg", "mp3", "wav"]
 
 var _sounds := {}
 var _players: Array[AudioStreamPlayer] = []
@@ -89,8 +93,48 @@ func _process(delta: float) -> void:
 			p.play()
 		elif level <= 0.0 and p.playing and p.volume_db <= -59.0:
 			p.stop()
-	if not _music.playing and not _tracks.is_empty():
+	if not _music.playing:
 		_gap -= delta
 		if _gap <= 0.0:
-			_music.stream = _tracks[randi() % _tracks.size()]
-			_music.play()
+			var track := _pick_track()
+			if track:
+				_music.stream = track
+				_music.play()
+			else:
+				# Nothing to play yet; music the player adds to the folder is noticed on a later look.
+				_gap = 30.0
+
+
+## A track chosen at random from the game's music and the player's own folder, which is looked at afresh each time.
+func _pick_track() -> AudioStream:
+	var choices: Array = _tracks + player_tracks()
+	if choices.is_empty():
+		return null
+	var pick: Variant = choices[randi() % choices.size()]
+	return pick if pick is AudioStream else load_external(str(pick))
+
+
+## The music files in the player's own folder, or in `folder`, as full paths.
+static func player_tracks(folder := ProjectSettings.globalize_path(PLAYER_MUSIC)) -> Array:
+	if not DirAccess.dir_exists_absolute(folder):
+		return []
+	return Array(DirAccess.get_files_at(folder)).filter(func(f): return f.get_extension().to_lower() in MUSIC_TYPES).map(func(f): return folder.path_join(f))
+
+
+## Reads a music file from outside the game's own files; one it cannot read is skipped.
+static func load_external(path: String) -> AudioStream:
+	match path.get_extension().to_lower():
+		"ogg":
+			return AudioStreamOggVorbis.load_from_file(path)
+		"mp3":
+			return AudioStreamMP3.load_from_file(path)
+		"wav":
+			return AudioStreamWAV.load_from_file(path)
+	return null
+
+
+## Opens the player's music folder in the file explorer, making it first if need be.
+func open_music_folder() -> void:
+	var folder := ProjectSettings.globalize_path(PLAYER_MUSIC)
+	DirAccess.make_dir_recursive_absolute(folder)
+	OS.shell_open(folder)

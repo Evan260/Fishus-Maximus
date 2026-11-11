@@ -1,6 +1,6 @@
 extends Node
 ## The player's settings, kept apart from the save slots so they apply to every game: the volumes, the window, the
-## interface size, the units weights are shown in, gentle fishing, the text size and old Rufus's guide.
+## interface size, the units weights are shown in, gentle fishing, the text size, old Rufus's guide and the tips.
 
 signal changed
 
@@ -23,6 +23,8 @@ var interface_size := -1
 var units := "metric"
 ## Old Rufus's lessons for a new player.
 var guide := true
+## The tips shown when the pointer rests on a button.
+var tooltips := true
 var _before := DisplayServer.WINDOW_MODE_WINDOWED
 
 
@@ -49,6 +51,7 @@ func read_from(cfg: ConfigFile) -> void:
 	gentle = cfg.get_value("play", "gentle", gentle)
 	large_text = cfg.get_value("play", "large_text", large_text)
 	guide = cfg.get_value("play", "guide", guide)
+	tooltips = cfg.get_value("play", "tooltips", tooltips)
 	var u := str(cfg.get_value("display", "units", units))
 	units = u if u in ["metric", "imperial"] else "metric"
 
@@ -104,6 +107,7 @@ func write_to(cfg: ConfigFile) -> void:
 	cfg.set_value("play", "gentle", gentle)
 	cfg.set_value("play", "large_text", large_text)
 	cfg.set_value("play", "guide", guide)
+	cfg.set_value("play", "tooltips", tooltips)
 
 
 func toggle_fullscreen() -> void:

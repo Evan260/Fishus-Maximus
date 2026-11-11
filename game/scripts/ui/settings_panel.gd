@@ -1,10 +1,10 @@
 class_name SettingsPanel
-## The settings: the volumes, the interface size, kilograms or pounds, full screen, gentle fishing, larger messages, old
-## Rufus's guide and the desktop strip.
+## The settings: the volumes, the player's own music, the interface size, kilograms or pounds, full screen, gentle
+## fishing, larger messages, old Rufus's guide, the tips and the desktop strip.
 
 
 static func open() -> void:
-	var list := Ui.window("Settings", 280, 250)
+	var list := Ui.window("Settings", 280, 290)
 	for key in ["master", "music", "effects", "ambience"]:
 		var r := HBoxContainer.new()
 		r.add_theme_constant_override("separation", 6)
@@ -26,6 +26,13 @@ static func open() -> void:
 		slider.value_changed.connect(func(v):
 			amount.text = _percent(v)
 			Settings.set_value(k, v))
+	var own := HBoxContainer.new()
+	own.name = "OwnMusic"
+	own.add_theme_constant_override("separation", 3)
+	list.add_child(own)
+	Ui.label(own, "Your music").custom_minimum_size = Vector2(53, 0)
+	Ui.button(own, "Open folder", func(): Audio.open_music_folder()).tooltip_text = "Songs you put in this folder play between the game's own."
+	Ui.label(own, ".ogg, .mp3 or .wav", "MutedLabel").size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var sizes := HBoxContainer.new()
 	sizes.add_theme_constant_override("separation", 3)
 	list.add_child(sizes)
@@ -56,7 +63,7 @@ static func open() -> void:
 	var gap := Control.new()
 	gap.custom_minimum_size = Vector2(0, 3)
 	list.add_child(gap)
-	for key in [["fullscreen", "Full screen (F11)"], ["gentle", "Gentle fishing: lines never snap"], ["large_text", "Larger text for messages"], ["guide", "Old Rufus's advice for new players"]]:
+	for key in [["fullscreen", "Full screen (F11)"], ["gentle", "Gentle fishing: lines never snap"], ["large_text", "Larger text for messages"], ["guide", "Old Rufus's advice for new players"], ["tooltips", "Tips when you point at a button"]]:
 		var check := CheckBox.new()
 		check.text = key[1]
 		check.focus_mode = Control.FOCUS_NONE

@@ -87,7 +87,8 @@ func _input(event: InputEvent) -> void:
 		pointer = event.position
 
 
-## Godot draws a tip at the game's zoom, so each one is drawn again at the interface's once it has been placed.
+## Godot draws a tip at the game's zoom, so each one is drawn again at the interface's once it has been placed, before
+## it is first drawn; with tips turned off in the settings it is hidden then instead.
 func _on_node_added(n: Node) -> void:
 	if n is PopupPanel and n.theme_type_variation == "TooltipPanel":
 		fit_tip.call_deferred(n)
@@ -99,6 +100,9 @@ func fit_tip(shown) -> void:
 	if not is_instance_valid(shown) or not shown.visible:
 		return
 	var tip: PopupPanel = shown
+	if not Settings.tooltips:
+		tip.hide()
+		return
 	var size := (Vector2(tip.size) / tip.content_scale_factor * ui_zoom).ceil()
 	tip.content_scale_factor = ui_zoom
 	tip.size = Vector2i(size)
