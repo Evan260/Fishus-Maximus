@@ -129,6 +129,9 @@ var _flock: Node2D
 ## Shows the lights tonight whatever the night, for --aurora; `aurora_shape` "rising" or "across" picks their shape.
 var force_aurora := false
 var aurora_shape := ""
+var _rolled_for := []
+var _tonight := false
+var _rising := false
 
 
 func _ready() -> void:
@@ -504,14 +507,20 @@ func _show_aurora(delta: float) -> void:
 	var evening := Clock.day_of(float(state.get("time", 0.0)))
 	var seed := int(state.get("seed", 1))
 	var seen := int(state.get("stats", {}).get("auroras", 0)) > 0
-	var tonight := force_aurora or aurora_night(seed, evening, seen)
+	# The night's chances are rolled once an evening rather than every frame.
+	var key := [seed, evening, seen]
+	if key != _rolled_for:
+		_rolled_for = key
+		_tonight = aurora_night(seed, evening, seen)
+		_rising = Seeds.rng(seed, "aurora shape", evening).randf() < 0.5
+	var tonight := force_aurora or _tonight
 	var target := smoothstep(0.75, 1.0, SkyPalette.night_amount(hour)) if tonight and weather == "clear" else 0.0
 	_aurora_clock += delta
 	_aurora_amount = target if force_aurora else move_toward(_aurora_amount, target, delta / 20.0)
 	_aurora.visible = _aurora_amount > 0.01
 	if not _aurora.visible:
 		return
-	var rising := Seeds.rng(seed, "aurora shape", evening).randf() < 0.5 if aurora_shape == "" else aurora_shape == "rising"
+	var rising := _rising if aurora_shape == "" else aurora_shape == "rising"
 	_aurora.material.set_shader_parameter("amount", _aurora_amount)
 	_aurora.material.set_shader_parameter("clock", _aurora_clock)
 	_aurora.material.set_shader_parameter("rising", 1.0 if rising else 0.0)

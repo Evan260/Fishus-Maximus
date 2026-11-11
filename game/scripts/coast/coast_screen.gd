@@ -80,6 +80,9 @@ var _ashore: Button
 var _sail: Button
 ## How far the boat has been rowed since that last counted as a stretch of rowing.
 var _rowed := 0.0
+## Every button in the interface, which the plants in front keep clear of, found again once a node comes or goes.
+var _buttons: Array = []
+var _buttons_stale := true
 ## The quay is where the boat ties up to go into town, in the harbour only.
 const QUAY_REACH := 200.0
 ## How far below the seabed the ground turns to solid shadow, which hides the bottom edges of pieces in front of it.
@@ -166,6 +169,15 @@ func prepare_to_leave() -> void:
 func _exit_tree() -> void:
 	if is_instance_valid(_sky):
 		_sky.queue_free()
+
+
+func _ready() -> void:
+	get_tree().node_added.connect(_on_tree_changed)
+	get_tree().node_removed.connect(_on_tree_changed)
+
+
+func _on_tree_changed(_node: Node) -> void:
+	_buttons_stale = true
 
 
 func _build() -> void:
@@ -578,7 +590,13 @@ func _kept_clear() -> Array:
 	var cam := camera.cam
 	var out: Array = [Rect2(boat_x - cam.x, 0.0, _boat.width(), Nav.view().y), Rect2((flying() if flight > 0.0 else hook) - cam, Vector2.ZERO)]
 	if Nav.ui:
-		for b in Nav.ui.find_children("*", "Button", true, false):
+		# The interface's buttons are looked up again only when a node has come or gone, not every frame.
+		if _buttons_stale:
+			_buttons_stale = false
+			_buttons = Nav.ui.find_children("*", "Button", true, false)
+		for b in _buttons:
+			if not is_instance_valid(b):
+				continue
 			var r := Nav.from_ui(b.get_global_rect())
 			if b.is_visible_in_tree() and r.end.y > Nav.view().y - 40.0:
 				out.append(r)

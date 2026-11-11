@@ -455,19 +455,24 @@ func _mirror() -> void:
 	if is_nan(moon.x):
 		moon = NOWHERE
 	var moon_light := float(look.get("moon_light", 0.0)) * (1.0 - 0.8 * grey)
+	var glow_radius := float(look.get("glow_radius", SkyView.GLOW.y))
+	var sun_colour := Color(look.get("sun_colour", Color.WHITE), 1.0)
+	var sun_width := lerpf(34.0, 14.0, height)
 	for n in _waters:
 		var m: ShaderMaterial = n.material
-		for key in ["zenith", "middle", "low", "glow"]:
-			m.set_shader_parameter(key, look[key])
-		m.set_shader_parameter("glow_radius", float(look.get("glow_radius", SkyView.GLOW.y)))
-		m.set_shader_parameter("sun", sun)
-		m.set_shader_parameter("sun_colour", Color(look.get("sun_colour", Color.WHITE), 1.0))
-		m.set_shader_parameter("sun_light", sun_light)
-		m.set_shader_parameter("sun_width", lerpf(34.0, 14.0, height))
-		m.set_shader_parameter("moon", moon)
-		m.set_shader_parameter("moon_light", moon_light)
-		m.set_shader_parameter("to_sky", n.global_position.x - sky_x)
-		m.set_shader_parameter("time", time)
+		m.set_shader_parameter(&"zenith", look["zenith"])
+		m.set_shader_parameter(&"middle", look["middle"])
+		m.set_shader_parameter(&"low", look["low"])
+		m.set_shader_parameter(&"glow", look["glow"])
+		m.set_shader_parameter(&"glow_radius", glow_radius)
+		m.set_shader_parameter(&"sun", sun)
+		m.set_shader_parameter(&"sun_colour", sun_colour)
+		m.set_shader_parameter(&"sun_light", sun_light)
+		m.set_shader_parameter(&"sun_width", sun_width)
+		m.set_shader_parameter(&"moon", moon)
+		m.set_shader_parameter(&"moon_light", moon_light)
+		m.set_shader_parameter(&"to_sky", n.global_position.x - sky_x)
+		m.set_shader_parameter(&"time", time)
 
 
 ## The sea under a row of land, drawn by sea.gdshader from a few rows above its top edge down to the near waterline on
