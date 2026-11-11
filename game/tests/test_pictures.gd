@@ -60,7 +60,8 @@ func test_the_map_logbook_settings_and_menu_are_pictures_with_tips() -> void:
 		var b: Button = buttons[id]
 		check(b != null and b in tiles, "%s is a picture" % id)
 		if b:
-			check(str(b.get_meta("tip", "")).begins_with(id), "with a tip naming it: %s" % str(b.get_meta("tip", "")))
+			var named: String = "Save and go back to the title" if id == "Menu" else id
+			check(str(b.get_meta("tip", "")).begins_with(named), "with a tip naming it: %s" % str(b.get_meta("tip", "")))
 			check(b.size == Hud.TILE, "as big as the ways of fishing, not %s" % b.size)
 	for id in ["bay_map", "logbook", "settings", "menu"]:
 		var pic: Texture2D = ItemArt.of(id)
