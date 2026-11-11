@@ -20,9 +20,6 @@ const EDGE := Color8(140, 102, 71)
 const TAB := Color8(212, 181, 133)
 const LEATHER := Color8(92, 56, 36)
 const SHADOW := Color8(68, 49, 37)
-const FLIP_TIME := 0.78
-const FLIP_SLICES := 48
-const FLIP_ROWS := 24
 
 static var section := 0
 static var spread := 0
@@ -31,7 +28,9 @@ static var _paper := {}
 static var _shadows := {}
 static var _cover: StyleBoxTexture
 static var _book: Control
-static var _flipping := false
+static var _turning := false
+## A turn asked for while another is under way, as [section, spread], taken as soon as that one lands.
+static var _queued := []
 
 
 static func open(at := -1) -> void:
@@ -116,70 +115,63 @@ static func _bookmark_turn(to: int) -> void:
 	_flip_to(to, 0)
 
 
-## Animate either a spread turn or a bookmark change, with the new page revealed on the reverse of the leaf.
+## Turns the leaf to another spread or section: the pages as they are now are pictured, the new spread is laid out
+## underneath, and a PageTurn leaf carries the old page over with the new one on its back.
 static func _flip_to(to_section: int, to_spread: int) -> void:
-	if _flipping or (to_section == section and to_spread == spread) or not is_instance_valid(_book):
+	if to_section == section and to_spread == spread:
 		return
-	_flipping = true
+	if _turning:
+		_queued = [to_section, to_spread]
+		return
+	if not is_instance_valid(_book) or not _book.is_inside_tree():
+		return
+	_turning = true
+	var book := _book
 	var direction := 1 if (to_section > section if to_section != section else to_spread > spread) else -1
-	var turning_side := 1 if direction > 0 else 0
-	var front := await _capture_page_offscreen(_book, turning_side)
-	var fixed_side := 0 if direction > 0 else 1
-	var fixed := await _capture_page_offscreen(_book, fixed_side)
+	var shots := await PageTurn.capture(book, [_shot(book, 1 if direction > 0 else 0), _shot(book, 0 if direction > 0 else 1)], Nav.ui_zoom)
+	# The book may have been closed while its pages were pictured, and is then left closed.
+	if not is_instance_valid(book) or not book.is_inside_tree():
+		_turning = false
+		return
 	Audio.play("page_turn")
 	section = to_section
 	spread = to_spread
 	selected = ""
 	open(section)
-	if not is_instance_valid(_book):
-		_flipping = false
-		return
-	var reverse_side := 0 if direction > 0 else 1
-	var overlay := _flip_overlay(_book, direction, front, fixed, front)
-	var back := await _capture_page_offscreen(_book, reverse_side)
-	if is_instance_valid(overlay):
-		overlay.set_meta("back", back)
-		overlay.queue_redraw()
+	var turn := PageTurn.new()
+	turn.direction = direction
+	turn.left_page = Rect2(STACK, 0, PAGE_W, PAGE_H)
+	turn.right_page = Rect2(STACK + PAGE_W + SPINE, 0, PAGE_W, PAGE_H)
+	turn.front = shots[0]
+	turn.behind = shots[1]
+	turn.gutter = func(canvas: Control): _draw_spine(canvas)
+	turn.size = _book.size
+	turn.landed.connect(_landed)
+	turn.tree_exiting.connect(func(): _turning = false)
+	_book.add_child(turn)
+	var backs := await PageTurn.capture(_book, [_shot(_book, 0 if direction > 0 else 1)], Nav.ui_zoom)
+	if is_instance_valid(turn):
+		turn.back = backs[0]
+
+
+## A turn asked for while the last one was under way follows as soon as the leaf lands.
+static func _landed() -> void:
+	_turning = false
+	if not _queued.is_empty():
+		var next: Array = _queued
+		_queued = []
+		_flip_to(next[0], next[1])
+
+
+## A page of the book as it is laid out, to be pictured with its paper: 0 the left page, 1 the right.
+static func _shot(book: Control, side: int) -> Dictionary:
+	var pages := book.get_children().filter(func(c): return c is VBoxContainer)
+	return {"page": pages[side], "paper": _paper[side == 0], "at": Vector2(OUTER if side == 0 else INNER, TOP),
+		"size": Vector2(PAGE_W, PAGE_H), "theme": Nav.ui.theme}
 
 
 static func _caught(id: String) -> Dictionary:
 	return Game.state["logbook"].get(id, {})
-
-
-## Render an exact paper-and-print snapshot offscreen, preserving the same grain at every page edge.
-static func _capture_page_offscreen(book: Control, side: int) -> Texture2D:
-	if not is_instance_valid(book) or not book.is_inside_tree():
-		return _paper[side == 0]
-	var pages: Array[Control] = []
-	for child in book.get_children():
-		if child is VBoxContainer:
-			pages.append(child)
-	if side >= pages.size():
-		return _paper[side == 0]
-	var viewport := SubViewport.new()
-	viewport.size = Vector2i(PAGE_W, PAGE_H)
-	viewport.transparent_bg = false
-	viewport.canvas_item_default_texture_filter = Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
-	viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
-	book.add_child(viewport)
-	var root := Control.new()
-	root.size = Vector2(PAGE_W, PAGE_H)
-	root.theme = Nav.ui.theme
-	root.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	viewport.add_child(root)
-	var paper := TextureRect.new()
-	paper.texture = _paper[side == 0]
-	paper.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	paper.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	paper.size = Vector2(PAGE_W, PAGE_H)
-	root.add_child(paper)
-	var page := pages[side].duplicate() as Control
-	page.position = Vector2(OUTER if side == 0 else INNER, TOP)
-	root.add_child(page)
-	await RenderingServer.frame_post_draw
-	var texture := ImageTexture.create_from_image(viewport.get_texture().get_image())
-	viewport.queue_free()
-	return texture
 
 
 ## The leather cover and the two pages of paper, made before the book is drawn.
@@ -228,127 +220,6 @@ static func _page(book: Control, x: int) -> VBoxContainer:
 	book.add_child(col)
 	return col
 
-
-## Draw a temporary paper leaf above the next spread and curl it around the spine.
-static func _flip_overlay(book: Control, direction: int, front: Texture2D, fixed: Texture2D, back: Texture2D) -> Control:
-	var overlay := Control.new()
-	overlay.name = "LogbookPageTurn"
-	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	overlay.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	overlay.z_index = 20
-	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	overlay.set_meta("direction", direction)
-	overlay.set_meta("progress", 0.0)
-	overlay.set_meta("front", front)
-	overlay.set_meta("fixed", fixed)
-	overlay.set_meta("back", back)
-	overlay.draw.connect(func(): _draw_flip(overlay))
-	overlay.tree_exiting.connect(func(): _flipping = false)
-	book.add_child(overlay)
-	var tween := overlay.create_tween()
-	tween.tween_method(func(value: float):
-		overlay.set_meta("progress", value)
-		overlay.queue_redraw(), 0.0, 1.0, FLIP_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	tween.finished.connect(_finish_flip.bind(overlay))
-	return overlay
-
-
-## Hold the exact flat landing for a rendered frame before handing off to the book underneath.
-static func _finish_flip(overlay: Control) -> void:
-	if not is_instance_valid(overlay):
-		return
-	overlay.set_meta("progress", 1.0)
-	overlay.queue_redraw()
-	await RenderingServer.frame_post_draw
-	if is_instance_valid(overlay):
-		_flipping = false
-		overlay.queue_free()
-
-
-## Render a textured paper leaf as a mesh, with enough rows to bend its free edge into a real curl.
-static func _draw_flip(canvas: Control) -> void:
-	var progress: float = float(canvas.get_meta("progress"))
-	var direction: int = int(canvas.get_meta("direction"))
-	var reverse := progress >= 0.5
-	var texture: Texture2D = canvas.get_meta("back" if reverse else "front")
-	var angle := PI * progress if direction > 0 else PI * (1.0 + progress)
-	var hinge := STACK + PAGE_W + SPINE if direction > 0 else STACK + PAGE_W
-	# The fold travels across the gutter as the leaf lands on the opposite page.
-	hinge -= direction * SPINE * smoothstep(0.0, 1.0, progress)
-	var curl := sin(PI * progress)
-	var flip_uv := (direction < 0) != reverse
-	var fixed_x := STACK if direction > 0 else STACK + PAGE_W + SPINE
-	var fixed_alpha := 0.0 if progress >= 1.0 else 1.0
-	canvas.draw_texture_rect(canvas.get_meta("fixed"), Rect2(fixed_x, 0, PAGE_W, PAGE_H), false,
-		Color(1, 1, 1, fixed_alpha))
-	if progress >= 1.0:
-		var landing_x := STACK if direction > 0 else STACK + PAGE_W + SPINE
-		canvas.draw_texture_rect(texture, Rect2(landing_x, 0, PAGE_W, PAGE_H), false)
-		_draw_spine(canvas)
-		return
-	var mesh_points: Array[PackedVector2Array] = []
-	var mesh_uvs: Array[PackedVector2Array] = []
-	var mesh_colors: Array[PackedColorArray] = []
-	for i in FLIP_SLICES:
-		var u0 := float(i) / FLIP_SLICES
-		var u1 := float(i + 1) / FLIP_SLICES
-		var sx0 := 1.0 - u0 if flip_uv else u0
-		var sx1 := 1.0 - u1 if flip_uv else u1
-		for j in FLIP_ROWS:
-			var v0 := float(j) / FLIP_ROWS
-			var v1 := float(j + 1) / FLIP_ROWS
-			var y0 := v0 * PAGE_H
-			var y1 := v1 * PAGE_H
-			var p00 := _flip_point(u0, y0, progress, direction, angle, hinge)
-			var p10 := _flip_point(u1, y0, progress, direction, angle, hinge)
-			var p11 := _flip_point(u1, y1, progress, direction, angle, hinge)
-			var p01 := _flip_point(u0, y1, progress, direction, angle, hinge)
-			var points := PackedVector2Array([p00, p10, p11, p01])
-			var shadow_shift := Vector2(direction * 4.0 * curl, 2.0 * curl)
-			var shadow_color := Color(UiTheme.INK, 0.16 * curl)
-			var shadow_points := PackedVector2Array([
-				p00 + shadow_shift, p10 + shadow_shift, p11 + shadow_shift, p01 + shadow_shift])
-			var shadow_colors := PackedColorArray([shadow_color, shadow_color, shadow_color, shadow_color])
-			_draw_flip_triangle(canvas, shadow_points[0], shadow_points[1], shadow_points[2], shadow_colors[0], shadow_colors[1], shadow_colors[2])
-			_draw_flip_triangle(canvas, shadow_points[0], shadow_points[2], shadow_points[3], shadow_colors[0], shadow_colors[2], shadow_colors[3])
-			var uvs := PackedVector2Array([
-				Vector2(sx0, v0), Vector2(sx1, v0), Vector2(sx1, v1), Vector2(sx0, v1)])
-			var across := (u0 + u1) * 0.5
-			var bend_light := sin(PI * across) * curl
-			var light := clampf(0.92 - bend_light * 0.28 + 0.07 * absf(cos(angle)), 0.55, 1.0)
-			var color := Color(light, light, light, 1.0)
-			mesh_points.append(points)
-			mesh_uvs.append(uvs)
-			mesh_colors.append(PackedColorArray([color, color, color, color]))
-	for i in mesh_points.size():
-		_draw_flip_triangle(canvas, mesh_points[i][0], mesh_points[i][1], mesh_points[i][2],
-			mesh_colors[i][0], mesh_colors[i][1], mesh_colors[i][2],
-			mesh_uvs[i][0], mesh_uvs[i][1], mesh_uvs[i][2], texture)
-		_draw_flip_triangle(canvas, mesh_points[i][0], mesh_points[i][2], mesh_points[i][3],
-			mesh_colors[i][0], mesh_colors[i][2], mesh_colors[i][3],
-			mesh_uvs[i][0], mesh_uvs[i][2], mesh_uvs[i][3], texture)
-	_draw_spine(canvas)
-
-
-## Draw one indexed triangle directly; warped quads can self-intersect and defeat Godot's polygon triangulator.
-static func _draw_flip_triangle(canvas: Control, a: Vector2, b: Vector2, c: Vector2,
-		color_a: Color, color_b: Color, color_c: Color,
-		uv_a := Vector2.ZERO, uv_b := Vector2.ZERO, uv_c := Vector2.ZERO, texture: Texture2D = null) -> void:
-	if absf((b - a).cross(c - a)) < 0.001:
-		return
-	canvas.draw_polygon(PackedVector2Array([a, b, c]), PackedColorArray([color_a, color_b, color_c]),
-		PackedVector2Array([uv_a, uv_b, uv_c]), texture)
-
-
-## Bow the page edges and curl its middle away from the flat plane as it passes the spine.
-static func _flip_point(u: float, y: float, progress: float, direction: int, angle: float, hinge: float) -> Vector2:
-	var bend := sin(PI * u) * sin(PI * progress)
-	var roll := pow(u, 3.0) * sin(PI * progress)
-	# Rightward turns rasterize one logical pixel left of the settled page, so ease that side onto its exact landing.
-	var landing_shift := smoothstep(0.9, 1.0, progress) if direction < 0 else 0.0
-	var x := hinge + u * PAGE_W * cos(angle) - direction * bend * 11.0 - direction * roll * sin(PI * y / PAGE_H) * 48.0 + landing_shift
-	var edge_y := (y - PAGE_H * 0.5) / (PAGE_H * 0.5)
-	return Vector2(x, y + bend * edge_y * 4.0 + roll * edge_y * 20.0)
 
 static func _header(page: VBoxContainer, here: String, all: Array) -> void:
 	var head := HBoxContainer.new()
