@@ -11,7 +11,7 @@
 		{
 			"id": "cast",
 			"screen": "coast",
-			"text": "Good. Now hold Space or the mouse over the water, then let go to cast your line. Use the Up and Down arrow keys to move the bait.",
+			"text": "Good. Now hold Space or the mouse over the water, then let go to cast your line. Then the Up and Down arrows, or W and S, raise and lower the bait.",
 			"done": {
 				"stat": "casts"
 			}
