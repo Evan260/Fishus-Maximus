@@ -1,7 +1,7 @@
 extends "res://tests/test_case.gd"
 ## The boat round of feedback: the dog sitting inside the hull, between its far and near sides, and the rod laid down
 ## while the boat sails, the bait hidden in the mouth of a fish that has taken it, and the sail filling and the flag
-## waving, and every hull sitting in the water along its length.
+## waving, every hull sitting in the water along its length, and each fish drawn larger on the catch banner.
 
 
 func _coast(boat: String) -> Node:
@@ -163,3 +163,15 @@ func test_every_boat_sits_in_the_water_along_its_length() -> void:
 		var ends := length * 0.11
 		check(wet[0] - first <= ends and last - wet[wet.size() - 1] <= ends, "%s: only the stern's last %d columns and the bow's last %d ride clear of it" % [id, wet[0] - first, last - wet[wet.size() - 1]])
 		b.free()
+
+
+func test_the_banner_shows_each_fish_larger_and_the_logbook_keeps_the_small_one() -> void:
+	for id in Data.fish:
+		var small: Texture2D = load("res://assets/art/fish/%s.png" % id)
+		var big := CatchCard.picture_of(id)
+		check(big != null and big.resource_path.contains("fish_banner"), "%s: the banner has its own larger picture" % id)
+		if big == null:
+			continue
+		var k := minf(big.get_width() / float(small.get_width()), big.get_height() / float(small.get_height()))
+		check(k >= 1.3, "%s: drawn %.2f times as large as in the logbook, %s against %s" % [id, k, big.get_size(), small.get_size()])
+		check(ItemArt._fish(id) == small, "%s: the logbook and the shops keep the small picture the sea shows" % id)

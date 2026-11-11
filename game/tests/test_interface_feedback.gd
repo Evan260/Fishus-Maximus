@@ -91,7 +91,7 @@ func test_a_catch_is_hung_out_on_a_banner() -> void:
 		check(part in shown, "the linen banner is hung out whole: %s" % part.resource_path)
 	check(card.get_meta("mark", false) and CatchCard.STAR in shown, "a little painted star marks a new fish")
 	var pic: TextureRect = card.find_child("Fish", true, false)
-	check(pic != null and pic.texture == load("res://assets/art/fish/mullet.png"), "the fish's own picture is on it")
+	check(pic != null and pic.texture == load("res://assets/art/fish_banner/mullet.png"), "the fish's own picture, drawn larger, is on it")
 	_clear()
 	CatchCard.show_catch("mullet", 1.2, false)
 	card = CatchCard._open

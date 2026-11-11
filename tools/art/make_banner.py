@@ -15,16 +15,16 @@ from PIL import Image
 OUT = Path(__file__).resolve().parents[2] / "game" / "assets" / "art" / "ui"
 
 # The whole banner, and the cloth hanging under the pole from HANG; these match CatchCard in catch_card.gd.
-SIZE = (176, 135)
+SIZE = (184, 150)
 HANG = (7, 13)
-CLOTH = (162, 122)
+CLOTH = (170, 137)
 # The cloth's hem, its stripe's inset, top, width and foot, and the row where the weave ends and the fraying starts.
 HEM = 4
 STRIPE_IN, STRIPE_TOP, STRIPE_W = 3, 5, 3
-STRIPE_FOOT = 110
-WOVEN = 117
+STRIPE_FOOT = 125
+WOVEN = 132
 # Columns of the cloth where a rope tie holds it to the pole.
-TIES = (13, 57, 104, 148)
+TIES = (13, 61, 109, 156)
 # Rows of the top picture: the peg's top and the pole's top row; the pole is POLE rows thick.
 PEG_TOP, POLE_TOP, POLE = 0, 9, 5
 
@@ -222,7 +222,7 @@ def top():
         for k in range(n):
             t = rows[yy] + (-1 if dark else 1)
             img.putpixel((xx + k, POLE_TOP + yy), WOOD[max(0, min(4, t))] + (255,))
-    for kx in (31, 118):
+    for kx in (33, 124):
         for (dx, dy, t) in ((0, 1, 0), (1, 1, 1), (0, 2, 1), (1, 2, 0), (-1, 2, 3), (2, 1, 3)):
             img.putpixel((kx + dx, POLE_TOP + dy), WOOD[t] + (255,))
     for xx in (0, w - 1):

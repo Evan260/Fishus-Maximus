@@ -14,14 +14,14 @@ const INK := preload("res://scripts/ui/ink.gdshader")
 const SWAY := preload("res://scripts/ui/banner_sway.gdshader")
 
 ## The whole banner, and where the cloth hangs under the pole.
-const SIZE := Vector2(176, 135)
+const SIZE := Vector2(184, 150)
 const HANG := Vector2(7, 13)
 ## The cloth's rows from where its frayed foot starts swaying to its last thread.
-const FRINGE := Vector2(116, 121)
+const FRINGE := Vector2(131, 136)
 ## Where the starfish are painted, on the corners of the stripe at the cloth's foot.
-const STAR_AT := [Vector2(1, 108), Vector2(154, 108)]
+const STAR_AT := [Vector2(1, 123), Vector2(162, 123)]
 ## The cloth inside its painted stripe, where the words and the fish are laid out.
-const INSIDE := Rect2(8, 10, 146, 98)
+const INSIDE := Rect2(8, 10, 154, 113)
 ## The room between the parts laid out on the cloth, and between the two lines of a long name.
 const GAP := 4.0
 const NAME_GAP := 4.0
@@ -94,12 +94,19 @@ static func show_catch(fish: String, pounds: float, is_new: bool) -> void:
 	card.gui_input.connect(func(e): if e is InputEventMouseButton and e.pressed: card.queue_free())
 
 
+## The banner's larger picture of a fish, from tools/art/make_banner_fish.py, or its small one from the logbook.
+static func picture_of(fish: String) -> Texture2D:
+	for path in ["res://assets/art/fish_banner/%s.png" % fish, "res://assets/art/fish/%s.png" % fish]:
+		if ResourceLoader.exists(path):
+			return load(path)
+	return null
+
+
 ## The name, the fish, the weight and grade, and the note, one under another in the middle of the cloth.
 static func _lay_out(hang: Control, fish: String, pounds: float, note: String) -> void:
 	var name := _title(str(Data.fish[fish]["name"]).to_upper())
 	var lines := name.count("\n") + 1
-	var path := "res://assets/art/fish/%s.png" % fish
-	var tex: Texture2D = load(path) if ResourceLoader.exists(path) else null
+	var tex := picture_of(fish)
 	var fish_tall := tex.get_height() if tex else 0
 	var tall := NAME_CAPS.y * lines + NAME_GAP * (lines - 1) + GAP + fish_tall + GAP + LINE_CAPS.y
 	if note != "":
