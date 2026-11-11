@@ -194,3 +194,13 @@ func test_escape_closes_the_window_and_steps_back() -> void:
 	Saves.delete(1)
 	Saves.slot = slot
 	Game.state = kept
+
+
+func test_the_title_shows_the_version() -> void:
+	var kept := Game.state
+	Game.state = {}
+	var s := _title()
+	var v: Label = Nav.ui.find_child("Version", true, false)
+	check(v != null and v.text == "v" + str(ProjectSettings.get_setting("application/config/version")), "the title shows the game's version")
+	_close(s)
+	Game.state = kept

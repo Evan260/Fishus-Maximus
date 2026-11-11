@@ -33,6 +33,7 @@ var _dog_labels := {}
 var _dog_name: LineEdit
 var _heading: Label
 var _sub: Label
+var _version: Label
 
 
 func enter(_args: Dictionary) -> void:
@@ -109,6 +110,7 @@ func _place() -> void:
 		Ui.hang(_heading, "top", Vector2(0, heading), Vector2(0, 20))
 		Ui.hang(_sub, "top", Vector2(0, sub), Vector2(0, 14))
 		Ui.hang(_menu, "top", Vector2(0, menu), Vector2(100, 0))
+		Ui.hang(_version, "bottom_right", Vector2(4, 2))
 
 
 ## A row of the 480 by 270 scene in interface pixels.
@@ -167,6 +169,12 @@ func _show_menu() -> void:
 	_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_sub.add_theme_color_override("font_outline_color", UiTheme.INK)
 	_sub.add_theme_constant_override("outline_size", 2)
+	_version = Ui.label(Nav.ui, "v" + str(ProjectSettings.get_setting("application/config/version", "")), "LightLabel")
+	_version.name = "Version"
+	_version.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	_version.modulate.a = 0.7
+	_version.add_theme_color_override("font_outline_color", UiTheme.INK)
+	_version.add_theme_constant_override("outline_size", 2)
 	_menu = VBoxContainer.new()
 	_menu.custom_minimum_size = Vector2(100, 0)
 	_menu.add_theme_constant_override("separation", 4)
