@@ -34,6 +34,7 @@ var _frame: SubViewportContainer
 var ui: Control
 var current: Node
 var current_name := ""
+var _args := {}
 var _fade: ColorRect
 var _busy := false
 
@@ -218,6 +219,7 @@ func go(screen: String, args: Dictionary = {}) -> void:
 	port.add_child(s)
 	current = s
 	current_name = screen
+	_args = args
 	if not Game.state.is_empty():
 		Game.state["_ashore"] = ashore_on(screen)
 	if s.has_method("enter"):
@@ -227,6 +229,16 @@ func go(screen: String, args: Dictionary = {}) -> void:
 	back.tween_property(_fade, "color:a", 0.0, 0.2)
 	await back.finished
 	_busy = false
+
+
+## Builds the current screen again, as after a change of language, with the settings open where they were.
+func reopen() -> void:
+	var args := _args.duplicate()
+	# The screen is built again in place, so nothing that happens on arriving there happens twice.
+	for once in ["first", "slept"]:
+		args.erase(once)
+	await go(current_name, args)
+	SettingsPanel.open()
 
 
 ## Whether a screen is ashore, where the second fisherman fishes for you: not at sea and not sailing on the bay map.

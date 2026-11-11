@@ -4,6 +4,9 @@ class_name SettingsPanel
 
 const TABS := ["Sound", "Display", "Gameplay", "Keys"]
 const UI_SIZES := {-1: "Smaller", 0: "Normal", 1: "Larger", 2: "Largest"}
+## Each language's name in that language, for the language list.
+const NATIVE_NAMES := {"en": "English", "fr": "Français", "de": "Deutsch", "es": "Español", "it": "Italiano", "pt_BR": "Português (BR)",
+	"pl": "Polski", "tr": "Türkçe", "ru": "Русский", "uk": "Українська", "ja": "日本語", "ko": "한국어", "zh_CN": "简体中文", "zh_TW": "繁體中文"}
 ## The page's width, and its height, so changing tab never makes the window jump.
 const WIDTH := 270.0
 const PAGE := 168.0
@@ -86,7 +89,7 @@ static func _sound(page: VBoxContainer) -> void:
 		slider.value_changed.connect(func(v):
 			amount.text = _percent(v)
 			Settings.set_value(key, v))
-	var own := Ui.setting(page, "Your own music", "Open folder", func(): Audio.open_music_folder(), WIDTH)
+	var own := Ui.setting(page, TranslationServer.translate("Your own music"), TranslationServer.translate("Open folder"), func(): Audio.open_music_folder(), WIDTH)
 	own.get_parent().name = "OwnMusic"
 	Ui.tip_on(own, "Music you put in this folder (.ogg, .mp3 or .wav) plays between the game's own tracks.")
 	var quiet := {"full": "Full volume", "quieter": "Quieter", "muted": "Muted"}
@@ -111,12 +114,44 @@ static func _display(page: VBoxContainer) -> void:
 
 
 static func _gameplay(page: VBoxContainer) -> void:
+	_languages(page)
 	_toggle(page, "Old Rufus's advice for new players", "guide")
 	_toggle(page, "Tips when you point at a button", "tooltips")
 	_toggle(page, "Larger text for messages", "large_text")
 	_toggle(page, "Reduced motion", "reduced_motion")
 	_toggle(page, "Gentle fishing: lines never snap", "gentle")
 	_toggle(page, "Flash the taskbar when something needs you", "notifications")
+
+
+## Every translated language, named in its own words and letters, so a player can find theirs whatever is showing.
+static func _languages(page: VBoxContainer) -> void:
+	var locales := TranslationServer.get_loaded_locales()
+	if locales.size() < 2:
+		return
+	Ui.label(page, Ui.upper("Language"), "Heading")
+	var grid := GridContainer.new()
+	grid.name = "Languages"
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 3)
+	grid.add_theme_constant_override("v_separation", 3)
+	page.add_child(grid)
+	var now := UiTheme.language()
+	for loc in NATIVE_NAMES.keys().filter(func(l: String) -> bool: return l in locales):
+		var code: String = loc
+		var b := Ui.button(grid, NATIVE_NAMES[code], func():
+			if code != now:
+				Settings.set_language(code))
+		b.name = code
+		b.toggle_mode = true
+		b.set_pressed_no_signal(code == now)
+		b.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+		b.custom_minimum_size.x = 86
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.add_theme_font_override("font", UiTheme.body_font(code))
+		b.add_theme_font_size_override("font_size", UiTheme.text_size(code))
+	var gap := Control.new()
+	gap.custom_minimum_size = Vector2(0, 3)
+	page.add_child(gap)
 
 
 static func _toggle(page: VBoxContainer, text: String, key: String) -> void:

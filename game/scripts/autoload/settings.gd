@@ -1,6 +1,7 @@
 extends Node
 ## The player's settings, kept apart from the save slots so they apply to every game: the volumes, the window, the
-## interface size, the units weights are shown in, gentle fishing, the text size, old Rufus's guide and the tips.
+## interface size, the units weights are shown in, gentle fishing, the text size, old Rufus's guide, the tips and the
+## language.
 
 signal changed
 
@@ -35,6 +36,8 @@ var tooltips := true
 var keys := {}
 ## The desktop strip's size, width, place, dock, see-through sky and focus mode, which `Windowing` reads and sets.
 var strip := {}
+## A language code such as "fr" or "zh_CN"; empty until chosen, when the computer's own language is used if the game has it.
+var language := ""
 var _before := DisplayServer.WINDOW_MODE_WINDOWED
 
 
@@ -45,6 +48,12 @@ func _ready() -> void:
 	# --ui-size=-1 (Smaller), 0 (Normal), 1 (Larger) or 2 (Largest) tries an interface size without saving it.
 	if Dev.has("ui-size"):
 		ui_scale_step = clampi(int(Dev.num("ui-size", 0)), -1, 2)
+	_load_translations()
+	TranslationServer.set_locale(language if language in TranslationServer.get_loaded_locales() else system_language())
+	# --locale=xx shows the game in another language without keeping it.
+	if Dev.get_arg("locale") != "":
+		TranslationServer.set_locale(Dev.get_arg("locale"))
+	UiTheme.use_language()
 	Controls.ensure()
 	apply()
 	_restore_window.call_deferred()
@@ -71,6 +80,7 @@ func read_from(cfg: ConfigFile) -> void:
 	background_sound = quiet if quiet in ["full", "quieter", "muted"] else "full"
 	guide = cfg.get_value("play", "guide", guide)
 	tooltips = cfg.get_value("play", "tooltips", tooltips)
+	language = str(cfg.get_value("play", "language", language))
 	var u := str(cfg.get_value("display", "units", units))
 	units = u if u in ["metric", "imperial"] else "metric"
 	strip = {}
@@ -150,10 +160,47 @@ func write_to(cfg: ConfigFile) -> void:
 	cfg.set_value("sound", "background_sound", background_sound)
 	cfg.set_value("play", "guide", guide)
 	cfg.set_value("play", "tooltips", tooltips)
+	if language != "":
+		cfg.set_value("play", "language", language)
 	for action in keys:
 		cfg.set_value("keys", action, int(keys[action]))
 	for key in strip:
 		cfg.set_value("strip", key, strip[key])
+
+
+## Loads every translated column of the strings sheet; one without even the word "Language" is still waiting for Azure.
+func _load_translations() -> void:
+	for file in ResourceLoader.list_directory("res://translations/"):
+		if file.get_extension() == "translation":
+			var t: Translation = load("res://translations/" + file)
+			if t.locale == "en" or t.get_message("Language") != "":
+				TranslationServer.add_translation(t)
+
+
+## The computer's own language if the game has it, matching "fr_CA" to "fr" and "zh_Hans_CN" to "zh_CN"; otherwise English.
+func system_language() -> String:
+	var have := TranslationServer.get_loaded_locales()
+	var os := OS.get_locale()
+	if os in have:
+		return os
+	if os.begins_with("zh"):
+		var traditional := os.contains("Hant") or os.ends_with("TW") or os.ends_with("HK") or os.ends_with("MO")
+		var zh := "zh_TW" if traditional else "zh_CN"
+		return zh if zh in have else "en"
+	var lang := OS.get_locale_language()
+	for loc in have:
+		if loc.get_slice("_", 0) == lang:
+			return loc
+	return "en"
+
+
+## Shows the game in another language and keeps the choice: the fonts change with it, and the screen is built again.
+func set_language(code: String) -> void:
+	language = code
+	save()
+	TranslationServer.set_locale(code)
+	UiTheme.use_language()
+	Nav.reopen()
 
 
 ## The interface size after `step`: Normal, Larger, Largest, Smaller, then Normal again.

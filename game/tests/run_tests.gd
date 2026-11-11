@@ -12,6 +12,9 @@ func _run() -> void:
 	OS.add_logger(errors)
 	Saves.dir = "user://test_saves"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(Saves.dir))
+	# The checks read the game's English, whatever language the computer is in.
+	TranslationServer.set_locale("en")
+	UiTheme.use_language()
 	var passed := 0
 	var failures := 0
 	var only := Dev.get_arg("only", "")

@@ -27,7 +27,7 @@ func test_the_settings_are_four_tabs_of_rows() -> void:
 	_clear()
 	var kept: String = SettingsPanel.tab
 	SettingsPanel.open()
-	var tabs: Array = Nav.ui.get_node("Window").find_children("*", "Button", true, false).filter(func(b): return b.toggle_mode).map(func(b): return b.text)
+	var tabs: Array = Nav.ui.get_node("Window").find_children("*", "Button", true, false).filter(func(b): return b.toggle_mode and b.get_parent().name != "Languages").map(func(b): return b.text)
 	check(tabs == ["Sound", "Display", "Gameplay", "Keys"], "the settings have the tabs Sound, Display, Gameplay and Keys: %s" % [tabs])
 	check(_rows("Sound") == ["Everything", "Music", "Effects", "Ambience", "Your own music", "While you use other windows"], "Sound: the four volumes, your own music and the sound behind other windows: %s" % [_rows("Sound")])
 	var display := _rows("Display")
