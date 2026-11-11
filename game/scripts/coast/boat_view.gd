@@ -256,6 +256,11 @@ func pose() -> Array:
 	return ["sit", 0]
 
 
+## Whether the rod is laid down in the boat, as it is while he rows or the boat sails along.
+func rod_down() -> bool:
+	return rowing > 0.0 and _throw < 0.0 and charge < 0.0
+
+
 ## The rower faces the stern, so he is turned round from the way the boat goes.
 func _turned() -> bool:
 	return (pose()[0] == "row") == (facing > 0.0)
@@ -287,7 +292,7 @@ func rod_tip(x: float) -> Vector2:
 	if not person.visible:
 		return _hands_at(x)
 	var p: Array = pose()
-	if p[0] == "row":
+	if p[0] == "row" or rod_down():
 		return Vector2(x + _along(0.86), -ride + bob + deck + 3.0)
 	var angle := deg_to_rad(ROD_CAST[p[1]] if p[0] == "cast" else ROD_REST)
 	var hands := _hands_at(x)
@@ -442,7 +447,8 @@ func _draw_in_hands() -> void:
 		return
 	var hands := _hands_at(_x) - _cam
 	if pose()[0] != "row":
-		_rod(_overlay, hands, rod_tip(_x) - _cam)
+		if not rod_down():
+			_rod(_overlay, hands, rod_tip(_x) - _cam)
 		return
 	var line := oar_line()
 	var blade: Vector2 = line[1] - _cam

@@ -208,10 +208,10 @@ func _draw() -> void:
 	var at: Vector2 = screen.hook - cam
 	var surface := -cam.y
 	WaterView.draw_surface(self, cam, t)
-	# While he rows the rod lies in the boat with its line wound in, and while the float flies out no hook shows yet.
+	# While he rows or sails the rod lies in the boat with its line wound in, and while the float flies out no hook shows yet.
 	var hook_shown := true
 	if state == "reeled":
-		hook_shown = not screen.rowing()
+		hook_shown = not screen.rod_down()
 		at = tip + Vector2(0, 10)
 		if hook_shown:
 			Pixels.line(self, tip, at, LINE)

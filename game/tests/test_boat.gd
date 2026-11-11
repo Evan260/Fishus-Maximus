@@ -1,5 +1,6 @@
 extends "res://tests/test_case.gd"
-## The boat round of feedback: the dog sitting inside the hull, between its far and near sides.
+## The boat round of feedback: the dog sitting inside the hull, between its far and near sides, and the rod laid down
+## while the boat sails.
 
 
 func _coast(boat: String) -> Node:
@@ -66,3 +67,20 @@ func test_every_boat_names_its_near_rail() -> void:
 		check(rail.size() >= 2, "%s: names the row its near side starts in along the boat" % id)
 		check(b.dog_spot.y - b.dog_rail >= 8.0, "%s: the dog sits down inside the hull, its feet %d rows under the near rail" % [id, b.dog_spot.y - b.dog_rail])
 		b.free()
+
+
+func test_the_rod_is_laid_down_while_the_boat_sails() -> void:
+	for id in ["sailing_boat", "big_boat"]:
+		var s := _coast(id)
+		var b: BoatView = s._boat
+		check(not b.rod_down(), "%s: at rest he holds the rod" % id)
+		var held: Vector2 = b.rod_tip(s.boat_x)
+		s.row(1.0, 0.05)
+		b.place(s.boat_x, s.camera.cam, 0.0)
+		check(b.rod_down() and s.rod_down(), "%s: while the boat sails along the rod is laid down in the boat" % id)
+		check(b.pose()[0] == "sit", "%s: and he sits, with no oars to pull" % id)
+		var tip: Vector2 = b.rod_tip(s.boat_x)
+		check(tip.y > held.y + 10.0, "%s: so its tip lies down in the hull, row %.0f, not up in the air at %.0f" % [id, tip.y, held.y])
+		b._process(0.5)
+		check(not b.rod_down() and b.rod_tip(s.boat_x).y < tip.y, "%s: and once the boat stops he takes it up again" % id)
+		_done(s)

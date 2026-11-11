@@ -380,6 +380,11 @@ func rowing() -> bool:
 	return _boat.rowing > 0.0 and _boat.oars
 
 
+## Whether the rod lies in the boat with its line wound in, while he rows or the boat sails.
+func rod_down() -> bool:
+	return _boat.rod_down()
+
+
 ## Lets the hook sink, until it rests on the seabed or the line runs out; fishing on his own, he sets his float so the
 ## bait hangs in mid water.
 ## Lets the float drift on the water, the hook hanging straight under it, by a whole pixel at a time.
