@@ -126,3 +126,28 @@ func test_continue_and_load_find_the_saves() -> void:
 	Saves.delete(2)
 	Saves.slot = slot
 	Game.state = kept
+
+
+func test_a_full_set_of_slots_is_never_written_over() -> void:
+	var kept := Game.state
+	var slot := Saves.slot
+	for n in range(1, Saves.SLOTS + 1):
+		Game.new_game("Keeper %d" % n, "hound")
+		Saves.save(n)
+	var first := FileAccess.get_file_as_string(Saves.path_for(1))
+	Game.state = {}
+	var s := _title()
+	var fresh: Button = _all(Nav.ui).filter(func(k): return k is Button and k.text == "New game")[0]
+	check(fresh.disabled and "Delete one" in fresh.tooltip_text, "with every slot taken, New game is off and says to delete one first")
+	s._new_game()
+	check(not Ui.window_open(), "and no new game window opens")
+	check(FileAccess.get_file_as_string(Saves.path_for(1)) == first, "and slot 1 is left as it was")
+	s._confirm_delete(1, Saves.slot_info(1))
+	var ask: Array = _all(Nav.ui).filter(func(k): return k is Label and "Keeper 1" in k.text)
+	check(ask.size() == 1 and "day 1" in ask[0].text and "kinds of fish" in ask[0].text and "\"delete\"" in ask[0].text,
+		"deleting names the game, its day and its fish, and asks for the word")
+	_close(s)
+	for n in range(1, Saves.SLOTS + 1):
+		Saves.delete(n)
+	Saves.slot = slot
+	Game.state = kept

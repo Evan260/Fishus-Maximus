@@ -76,14 +76,15 @@ func delete(n: int) -> void:
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
-## What the title shows for a slot: its name, day, chapter and dog, or an empty dictionary for a free slot.
+## What the title shows for a slot: its name, day, chapter, dog and kinds of fish caught, or an empty dictionary for a free slot.
 func slot_info(n: int) -> Dictionary:
 	var d := _read(path_for(n))
 	if d.is_empty():
 		d = _read(path_for(n) + ".bak")
 	if d.is_empty():
 		return {}
-	return {"name": d.get("name", ""), "day": int(Clock.day_of(float(d.get("time", 0.0)))) + 1, "chapter": d.get("chapter", 1), "dog": d.get("dog", "")}
+	return {"name": d.get("name", ""), "day": int(Clock.day_of(float(d.get("time", 0.0)))) + 1, "chapter": d.get("chapter", 1), "dog": d.get("dog", ""),
+		"fish": (d.get("logbook", {}) as Dictionary).size() if d.get("logbook", {}) is Dictionary else 0}
 
 
 func _read(path: String) -> Dictionary:

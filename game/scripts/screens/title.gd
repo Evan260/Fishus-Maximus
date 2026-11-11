@@ -174,7 +174,11 @@ func _show_menu() -> void:
 	var last := _latest_slot()
 	if last > 0:
 		Ui.button(_menu, "Continue", func(): _play(last))
-	Ui.button(_menu, "New game", _new_game)
+	var fresh := Ui.button(_menu, "New game", _new_game)
+	# A game is never written over, so with every slot taken one has to be deleted first.
+	if Saves.free_slot() == 0:
+		fresh.disabled = true
+		Ui.tip_on(fresh, "You already keep three games. Delete one to start another.")
 	if last > 0:
 		Ui.button(_menu, "Load", _load)
 	Ui.button(_menu, "Settings", func(): SettingsPanel.open())
@@ -201,6 +205,9 @@ func _play(n: int) -> void:
 
 
 func _new_game() -> void:
+	var slot := Saves.free_slot()
+	if slot == 0:
+		return
 	var list := Ui.window("A new game", 300, 196)
 	Ui.label(list, "Your name", "MutedLabel")
 	var name := LineEdit.new()
@@ -228,10 +235,6 @@ func _new_game() -> void:
 	_dog_name.placeholder_text = "Its name"
 	col.add_child(_dog_name)
 	_show_dog()
-	var slot := Saves.free_slot()
-	if slot == 0:
-		Ui.label(list, "All three slots are used; this will replace slot 1.", "MutedLabel")
-		slot = 1
 	Ui.button(list, "Set out", func():
 		_begin(name.text, slot)
 		Nav.go("coast", {"place": "harbour", "first": true}))
@@ -296,18 +299,25 @@ func _load() -> void:
 
 ## A game cannot be brought back, so deleting one asks for the word typed out, which no stray click can do.
 func _confirm_delete(slot: int, info: Dictionary) -> void:
-	var list := Ui.window("Delete a game", 260, 120)
-	var ask := Ui.label(list, "Type \"delete\" to delete %s's game, day %d, for good." % [info["name"], int(info["day"])])
+	var list := Ui.window("Delete a game", 260, 140)
+	var word := tr("delete")
+	var fish := int(info.get("fish", 0))
+	var gone_text := tr("%s's game, on day %d with %d kinds of fish caught, will be gone for good. Type \"%s\" to delete it.") % [info["name"], int(info["day"]), fish, word]
+	if fish == 1:
+		gone_text = tr("%s's game, on day %d with 1 kind of fish caught, will be gone for good. Type \"%s\" to delete it.") % [info["name"], int(info["day"]), word]
+	var ask := Ui.label(list, gone_text)
 	ask.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var field := LineEdit.new()
-	field.placeholder_text = "delete"
+	field.placeholder_text = word
 	field.max_length = 20
 	list.add_child(field)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 4)
 	list.add_child(row)
+	# The English word works in every language too, for a player whose keyboard cannot easily type the translated one.
+	var typed := func(t: String) -> bool: return t.strip_edges().to_lower() in [word.to_lower(), "delete"]
 	var gone := func():
-		if field.text.strip_edges().to_lower() != "delete":
+		if not typed.call(field.text):
 			return
 		Saves.delete(slot)
 		if Saves.slot == slot:
@@ -318,7 +328,7 @@ func _confirm_delete(slot: int, info: Dictionary) -> void:
 			_load()
 	var delete := Ui.button(row, "Delete", gone)
 	delete.disabled = true
-	field.text_changed.connect(func(t: String): delete.disabled = t.strip_edges().to_lower() != "delete")
+	field.text_changed.connect(func(t: String): delete.disabled = not typed.call(t))
 	field.text_submitted.connect(func(_t): gone.call())
 	Ui.button(row, "Cancel", _load)
 	field.grab_focus.call_deferred()

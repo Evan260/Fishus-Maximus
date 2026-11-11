@@ -123,7 +123,7 @@ static func frame(title: String, width := 300.0, height := 200.0) -> VBoxContain
 	p.add_child(col)
 	var top := HBoxContainer.new()
 	col.add_child(top)
-	var head := label(top, title.to_upper(), "Heading")
+	var head := label(top, TranslationServer.translate(title).to_upper(), "Heading")
 	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var close := button(top, "", close_window)
 	close.custom_minimum_size = Vector2(BUTTON_MIN_WIDTH, BUTTON_MIN_WIDTH)
@@ -167,6 +167,12 @@ static func close_window() -> void:
 		var w := Nav.ui.get_node("Window")
 		w.name = "Closing"
 		w.queue_free()
+
+
+## Gives a control a tip shown when the pointer rests on it.
+static func tip_on(c: Control, text: String) -> Control:
+	c.tooltip_text = text
+	return c
 
 
 static func window_open() -> bool:
