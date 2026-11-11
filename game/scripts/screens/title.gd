@@ -278,8 +278,8 @@ func _step_coat(by: int) -> void:
 func _show_dog() -> void:
 	var frames := Dogs.frames(_dog_choice["breed"], "sit_east", _dog_choice["coat"])
 	_dog_picture.texture = frames[0] if not frames.is_empty() else null
-	_dog_labels["breed"].text = Dogs.NAMES[_dog_choice["breed"]]
-	_dog_labels["coat"].text = Dogs.coats(_dog_choice["breed"])[_dog_choice["coat"]]
+	_dog_labels["breed"].text = tr(Dogs.NAMES[_dog_choice["breed"]])
+	_dog_labels["coat"].text = tr(Dogs.coats(_dog_choice["breed"])[_dog_choice["coat"]])
 
 
 func _load() -> void:

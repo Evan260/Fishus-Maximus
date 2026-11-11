@@ -587,7 +587,11 @@ func test_the_dog_is_chosen_as_in_farmus() -> void:
 	_arrows(">")[1].pressed.emit()
 	check(coat.text == "Black" and t._dog_picture.texture != golden, "the coat arrow steps to the next colour, and the picture shows it")
 	_arrows(">")[0].pressed.emit()
-	check(breed.text == "Mastiff" and coat.text == "Natural coat", "the breed arrow steps to the next breed, which comes in its own colours")
+	check(breed.text == "Mastiff" and coat.text == "Brown", "the breed arrow steps to the next breed, which comes in its own colours")
+	var brown: Texture2D = t._dog_picture.texture
+	_arrows(">")[1].pressed.emit()
+	check(coat.text == "Fawn" and t._dog_picture.texture != brown, "and the mastiff has coats of its own to step through")
+	_arrows("<")[1].pressed.emit()
 	_arrows("<")[0].pressed.emit()
 	_arrows(">")[1].pressed.emit()
 	_arrows(">")[1].pressed.emit()
@@ -614,4 +618,19 @@ func test_the_dog_in_the_boat_wears_its_coat() -> void:
 			if img.get_pixel(x, y).a > 0.5 and img.get_pixel(x, y).v < 0.35:
 				dark += 1
 	check(dark > 40, "and are mostly dark fur, %d dark pixels" % dark)
-	check(Dogs.frames("molossian", "sit_east", "black")[0] == Dogs.frames("molossian", "sit_east")[0], "a breed with only its natural coat is never recoloured")
+	check(Dogs.frames("molossian", "sit_east", "natural")[0] == Dogs.frames("molossian", "sit_east")[0], "a breed saved in its natural coat is drawn as painted")
+
+
+func test_every_breed_comes_in_three_coats() -> void:
+	for breed in Dogs.breeds():
+		var coats := Dogs.coats(breed)
+		check(coats.size() >= 3, "the %s comes in at least three coats" % breed)
+		check(breed == "hound" or coats.keys()[0] == "natural", "a %s saved in its natural coat keeps that look" % breed)
+		var looks := {}
+		for coat in coats:
+			for move in ["sit_east", "sleep_east", "happy_east"]:
+				check(Dogs.frames(breed, move, coat).size() == 9, "the %s in its %s coat has every %s frame" % [breed, coat, move])
+			var img := Dogs.frames(breed, "sit_east", coat)[8].get_image()
+			img.convert(Image.FORMAT_RGBA8)
+			looks[img.get_data().hex_encode()] = coat
+		check(looks.size() == coats.size(), "each of the %s's coats looks different: %s" % [breed, looks.values()])
