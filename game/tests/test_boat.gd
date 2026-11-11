@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
 ## The boat round of feedback: the dog sitting inside the hull, between its far and near sides, and the rod laid down
-## while the boat sails.
+## while the boat sails, and the bait hidden in the mouth of a fish that has taken it.
 
 
 func _coast(boat: String) -> Node:
@@ -84,3 +84,20 @@ func test_the_rod_is_laid_down_while_the_boat_sails() -> void:
 		b._process(0.5)
 		check(not b.rod_down() and b.rod_tip(s.boat_x).y < tip.y, "%s: and once the boat stops he takes it up again" % id)
 		_done(s)
+
+
+func test_the_bait_is_hidden_once_a_fish_takes_it() -> void:
+	var s := _coast("skiff")
+	var line: LineView = s._line
+	s.cast(0.5)
+	s._state = "waiting"
+	check(line.bait_shown(), "the bait shows on the hook while he waits")
+	s._on_bite({"id": "mullet", "lb": 1.5, "state": "bit", "heading": 1.0})
+	check(s.line_state() == "nibble" and line.bait_shown(), "and while a fish only nibbles at it")
+	s._nibbles_left = 0
+	s._nibble_in = 0.0
+	s.bite_step(0.01)
+	check(s.line_state() == "bite" and not line.bait_shown(), "once the fish takes it the bait is in its mouth and shows no more")
+	s.strike()
+	check(s.line_state() == "fighting" and not line.bait_shown(), "nor while it fights on the line")
+	_done(s)

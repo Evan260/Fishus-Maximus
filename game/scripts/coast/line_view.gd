@@ -92,6 +92,11 @@ func fish_on_line() -> String:
 	return str(screen.landing) if screen.line_state() in ["taken", "landing"] else ""
 
 
+## Whether the bait shows on the hook: once a fish has taken it, it is inside the fish's mouth.
+func bait_shown() -> bool:
+	return screen.line_state() != "bite" and fish_on_line() == ""
+
+
 ## Whether the fish on the line is in the air, in the middle of a leap.
 func leaping() -> bool:
 	return _leap >= 0.0
@@ -251,15 +256,10 @@ func _draw() -> void:
 				draw_rect(Rect2(Vector2(x - 1 + side * 2.0, surface - 1 - (1 if fmod(t, 0.3) < 0.15 else 0)), Vector2(1, 1)), RIPPLE)
 			if state == "bite":
 				draw_string(UiTheme.title_font(), Vector2(bob.x - 1, surface - 6), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
-	if hook_shown:
-		var bait: String = screen.bait()
-		var hooked_fish := fish_on_line()
-		if hooked_fish != "" and _fish.visible:
-			# Keep the bait on the fish's mouth as it turns, darts and leaps on the line.
-			_draw_bait(_mouth_screen() - Swimmers.BAIT_MIDDLE, bait)
-		else:
-			draw_rect(Rect2(at, Vector2(1, 3)), HOOK)
-			_draw_bait(at, bait)
+	if hook_shown and not (fish_on_line() != "" and _fish.visible):
+		draw_rect(Rect2(at, Vector2(1, 3)), HOOK)
+		if bait_shown():
+			_draw_bait(at, screen.bait())
 	if screen.charge >= 0.0:
 		_bar(tip + Vector2(-14, -14), 28, screen.charge, CALM)
 	for r in screen.rain():
