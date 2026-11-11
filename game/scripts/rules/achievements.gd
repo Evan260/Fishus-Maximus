@@ -53,14 +53,15 @@ static func _ordinary() -> Array:
 	return Data.fish.keys().filter(func(f): return not Data.fish[f]["legend"])
 
 
-## Earns every achievement newly met and says which; each is earned once.
+## Earns every achievement newly met and says which; each is earned once, and a game with everything unlocked never
+## sends one to Steam.
 static func check(state: Dictionary) -> Array:
 	var got := []
 	for a in Data.achievements:
 		if not a["id"] in state["achievements"] and met(a["id"], state):
 			state["achievements"].append(a["id"])
 			got.append(a["id"])
-			if Engine.has_singleton("Steam"):
+			if Engine.has_singleton("Steam") and not state.get("_unlocked", false):
 				var steam := Engine.get_singleton("Steam")
 				steam.call("setAchievement", a["id"])
 				steam.call("storeStats")

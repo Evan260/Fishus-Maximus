@@ -33,3 +33,13 @@ func test_every_pond_and_tank_is_open() -> void:
 	check(s["ponds"].size() == Ponds.allowed(s), "every pond the last chapter allows is dug, %d" % s["ponds"].size())
 	check(s["ponds"].all(func(p): return p["size"] == "large" and p["water"] == Data.ponds["sites"][int(p["site"])]["water"]), "each one large")
 	check(s["tanks"].all(func(t): return t["restored"]), "and every garum tank restored")
+
+
+func test_its_achievements_are_earned_quietly() -> void:
+	Game.max_state()
+	var s := Game.state
+	check(s["achievements"].size() > 10, "what everything unlocked has met is earned, %d" % s["achievements"].size())
+	check(Achievements.check(s).is_empty(), "so no card slides in for any of them")
+	check(s["_unlocked"], "and none goes to Steam")
+	Catches.record(s, "mullet", 1.0)
+	check(Achievements.check(s) == ["first_fish"], "one earned later in the game is still told of")

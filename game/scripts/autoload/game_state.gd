@@ -81,7 +81,8 @@ func demo_state() -> void:
 
 
 ## A game with every chapter open and the best of everything: the biggest boat, the best gear of every kind, a full
-## bait box, all the help, every pond dug large and every garum tank restored, and money to spare.
+## bait box, all the help, every pond dug large and every garum tank restored, money to spare, and the achievements
+## all that has met already earned.
 func max_state() -> void:
 	new_game("Marcus", "mutt")
 	state["guide"]["finished"] = true
@@ -112,6 +113,9 @@ func max_state() -> void:
 		state["ponds"].append({"site": site, "size": "large", "water": Data.ponds["sites"][site]["water"], "features": [], "fish": []})
 	for t in state["tanks"]:
 		t["restored"] = true
+	# What this game has already met is earned quietly, so no card slides in for each and nothing goes to Steam.
+	state["achievements"] = Data.achievements.map(func(a): return a["id"]).filter(func(id): return Achievements.met(id, state))
+	state["_unlocked"] = true
 	changed.emit()
 
 
