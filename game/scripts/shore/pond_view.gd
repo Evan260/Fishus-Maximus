@@ -1,104 +1,175 @@
 class_name PondView
 extends Node2D
-## One pond seen in a cut through the ground: its water, its sandy floor and features, and its fish
-## swimming. Ringing the bell brings the named fish to the front with their names over them.
+## The pond's fish swimming under the waterline, each one texel to a pixel as the coast's fish are: they wander in
+## curves, change pace, pause and ease round to turn. Feeding brings them up to the food; ringing the bell brings the
+## named ones to the front with their names over them.
 
-const SIZE := Vector2(64, 92)
-const PROPS := {"rocks": ["res://assets/art/places/rocky_shore/rock.png", 0.35, 0.0], "caves": ["res://assets/art/places/capri/cave.png", 0.25, 1.0],
-	"weed": ["res://assets/art/places/harbour/seagrass.png", 0.45, 0.4], "sand": ["res://assets/art/places/harbour/tuft.png", 0.5, 0.7]}
+## Seconds the bell keeps the named fish at the front, and the food on the water.
+const BELL_SECONDS := 6.0
+const FOOD_SECONDS := 7.0
+const ACCEL := 9.0
+const TURN_NARROW := 0.3
 
-var site := 0
+## The water the fish swim in, in the pond's own pixels: its left and right walls and its floor below the waterline.
+var left := 8.0
+var right := 792.0
+var floor_y := 70.0
+## Where the camera is in the pond's pixels, so the fish are drawn where they swim.
+var cam := Vector2.ZERO
 var bell_left := 0.0
+var food_left := 0.0
 var _fish: Array = []
+var _rng := RandomNumberGenerator.new()
 var _time := 0.0
-var _floor: Texture2D = load("res://assets/art/places/harbour/floor.png") if ResourceLoader.exists("res://assets/art/places/harbour/floor.png") else null
-var _props := {}
+var _textures := {}
 
 
 func _ready() -> void:
-	clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
-	# Textures are loaded ahead of drawing; one first loaded inside a draw call shows as a blank square.
-	for feature in PROPS:
-		if ResourceLoader.exists(PROPS[feature][0]):
-			_props[feature] = Pixels.shrunk(load(PROPS[feature][0]), PROPS[feature][1])
+	_rng.randomize()
 
 
-func pond() -> Dictionary:
-	var i := Ponds.site_of(Game.state, site)
-	return Game.state["ponds"][i] if i >= 0 else {}
-
-
-## Matches the swimming sprites to the fish in the pond, keeping each one where it was.
+## Matches the swimming fish to the fish in the pond, keeping each one where it was.
 func sync() -> void:
-	var p := pond()
-	var wanted: Array = p.get("fish", [])
+	var wanted: Array = Ponds.of(Game.state).get("fish", [])
 	while _fish.size() > wanted.size():
 		_fish.pop_back()["sprite"].queue_free()
 	while _fish.size() < wanted.size():
-		var s := Sprite2D.new()
-		add_child(s)
-		_fish.append({"sprite": s, "pos": Vector2(randf_range(10, SIZE.x - 10), randf_range(16, SIZE.y - 24)), "dir": 1.0 if randf() < 0.5 else -1.0,
-			"phase": randf() * TAU})
+		_fish.append({"pos": Vector2(_rng.randf_range(left + 30.0, right - 30.0), _rng.randf_range(12.0, floor_y - 14.0)),
+			"heading": 1.0 if _rng.randf() < 0.5 else -1.0, "phase": _rng.randf() * TAU, "vel": Vector2.ZERO, "pace": 1.0,
+			"pace_left": _rng.randf_range(1.0, 3.0), "turn": _rng.randf_range(3.0, 9.0), "width": 1.0, "swim": _rng.randf() * TAU,
+			"drift": _rng.randf_range(0.2, 0.45), "goal_y": _rng.randf_range(12.0, floor_y - 14.0), "id": ""})
 	for i in wanted.size():
+		var one: Dictionary = _fish[i]
 		var f: Dictionary = wanted[i]
-		var s: Sprite2D = _fish[i]["sprite"]
-		var path := "res://assets/art/fish/%s.png" % f["fish"]
-		s.texture = load(path) if ResourceLoader.exists(path) else null
-		if s.texture:
-			s.material = Pixels.look(maxf(0.0, Swimmers.wave_for(f["fish"], s.texture) - 1.0))
-		s.scale = Vector2.ONE * (0.45 + 0.35 * Catalog.share(f["fish"], float(f["pounds"])))
-		_fish[i]["data"] = f
+		one["data"] = f
+		if one["id"] != f["fish"]:
+			if one.has("sprite"):
+				one["sprite"].queue_free()
+			var s := Swimmers.sprite_for(f["fish"], _texture(f["fish"]))
+			s.material.set_shader_parameter("keep", Murk.FISH_KEEP)
+			add_child(s)
+			one["sprite"] = s
+			one["id"] = f["fish"]
+			one["face"] = one["heading"]
+			one["speed"] = _rng.randf_range(5.0, 10.0) * (1.0 + float(Data.fish[f["fish"]]["strength"]) * 0.06)
+		_show(one, Vector2.ZERO, 0.0)
+
+
+func _texture(id: String) -> Texture2D:
+	if not _textures.has(id):
+		var path := "res://assets/art/fish/%s.png" % id
+		_textures[id] = load(path) if ResourceLoader.exists(path) else load("res://assets/art/coast/mullet.png")
+	return _textures[id]
+
+
+func ring() -> void:
+	bell_left = BELL_SECONDS
+
+
+func feed() -> void:
+	food_left = FOOD_SECONDS
+
+
+func fish() -> Array:
+	return _fish
+
+
+## The named fish being shown off by the bell, with where each is in the pond.
+func shown_names() -> Array:
+	if bell_left <= 0.0:
+		return []
+	return _fish.filter(func(one): return str(one["data"].get("name", "")) != "")
 
 
 func _process(delta: float) -> void:
 	_time += delta
 	bell_left = maxf(0.0, bell_left - delta)
-	for one in _fish:
-		var s: Sprite2D = one["sprite"]
-		var named: bool = one.has("data") and str(one["data"].get("name", "")) != ""
-		if bell_left > 0.0 and named:
-			one["pos"] = one["pos"].move_toward(Vector2(SIZE.x / 2.0, SIZE.y / 2.0 + 6.0), 30.0 * delta)
+	food_left = maxf(0.0, food_left - delta)
+	var named := shown_names()
+	var middle := (left + right) / 2.0
+	for i in _fish.size():
+		var one: Dictionary = _fish[i]
+		var was: Vector2 = one["pos"]
+		var size: Vector2 = (one["sprite"] as Sprite2D).texture.get_size()
+		if one in named:
+			# The named fish line up across the front of the pond, near the top, facing the bell.
+			var k := named.find(one)
+			var spot := Vector2(middle + (k - (named.size() - 1) / 2.0) * 56.0, 14.0 + size.y / 2.0)
+			one["heading"] = signf(spot.x - one["pos"].x) if absf(spot.x - one["pos"].x) > 3.0 else one["heading"]
+			one["pos"] = one["pos"].move_toward(spot, one["speed"] * 2.2 * delta)
+		elif food_left > 0.0:
+			var spot := Vector2(clampf(one["pos"].x, middle - 90.0, middle + 90.0), 6.0 + size.y / 2.0) + Vector2(sin(_time + one["phase"]) * 10.0, 0.0)
+			one["heading"] = signf(spot.x - one["pos"].x) if absf(spot.x - one["pos"].x) > 3.0 else one["heading"]
+			one["pos"] = one["pos"].move_toward(spot, one["speed"] * 1.6 * delta)
 		else:
-			one["pos"].x += one["dir"] * 6.0 * delta
-			if one["pos"].x < 8.0 or one["pos"].x > SIZE.x - 8.0:
-				one["dir"] = -one["dir"]
-			one["pos"].y += sin(_time * 1.2 + one["phase"]) * 0.05
-		s.flip_h = one["dir"] < 0.0
-		s.position = one["pos"]
-		one["swim"] = float(one.get("swim", one["phase"])) + delta * 6.0
-		Pixels.set_swim(s, one["swim"])
+			_wander(one, delta, size)
+		one["pos"] = Vector2(clampf(one["pos"].x, left + size.x / 2.0, right - size.x / 2.0),
+			clampf(one["pos"].y, 3.0 + size.y / 2.0, floor_y - 2.0 - size.y / 2.0))
+		_show(one, (one["pos"] - was) / delta if delta > 0.0 else Vector2.ZERO, delta)
 	queue_redraw()
 
 
+## A fish on its own: it changes its pace every few seconds and now and then stops, eases its speed round when it
+## turns, turns back from the walls, and rises and dips gently on its way to the depth it is making for.
+func _wander(one: Dictionary, delta: float, size: Vector2) -> void:
+	one["turn"] -= delta
+	if one["turn"] <= 0.0:
+		one["turn"] = _rng.randf_range(4.0, 11.0)
+		if _rng.randf() < 0.4:
+			one["heading"] = -one["heading"]
+		one["goal_y"] = _rng.randf_range(4.0 + size.y / 2.0, floor_y - 4.0 - size.y / 2.0)
+	one["pace_left"] -= delta
+	if one["pace_left"] <= 0.0:
+		var stop := _rng.randf() < 0.15
+		one["pace"] = 0.0 if stop else _rng.randf_range(0.45, 1.3)
+		one["pace_left"] = _rng.randf_range(1.0, 3.0) if stop else _rng.randf_range(1.5, 4.0)
+	if one["pos"].x < left + size.x / 2.0 + 6.0 or one["pos"].x > right - size.x / 2.0 - 6.0:
+		one["heading"] = signf((left + right) / 2.0 - one["pos"].x)
+		one["pace"] = maxf(one["pace"], 0.6)
+	var speed: float = one["speed"]
+	var vel: Vector2 = one["vel"]
+	vel.x = move_toward(vel.x, one["heading"] * speed * one["pace"], ACCEL * delta)
+	var curve: float = one["goal_y"] + sin(_time * one["drift"] + one["phase"]) * 4.0
+	var climb := clampf((curve - one["pos"].y) * 0.6, -speed * 0.4, speed * 0.4)
+	vel.y = move_toward(vel.y, climb * (0.3 if one["pace"] == 0.0 else 1.0), ACCEL * 0.5 * delta)
+	one["vel"] = vel
+	one["pos"] += vel * delta
+
+
+## Draws a fish where it is: turning, it narrows as it slows and faces the new way once it swims that way or has
+## stopped and narrowed fully; its tail beats faster the faster it goes.
+func _show(one: Dictionary, moved: Vector2, delta: float) -> void:
+	var turning: bool = one["face"] != one["heading"]
+	var still := absf(moved.x) < 0.4
+	if turning and ((signf(moved.x) == one["heading"] and not still) or (still and one["width"] <= TURN_NARROW + 0.01)):
+		one["face"] = one["heading"]
+		turning = false
+	var narrow := lerpf(TURN_NARROW, 1.0, clampf(absf(moved.x) / (one["speed"] * 0.6), 0.0, 1.0))
+	one["width"] = move_toward(one["width"], narrow if turning else 1.0, delta * 3.0)
+	one["swim"] = fmod(one["swim"] + delta * (3.0 + moved.length() * 0.5), TAU * 64.0)
+	var s: Sprite2D = one["sprite"]
+	s.flip_h = one["face"] < 0.0
+	s.scale = Vector2(one["width"], 1.0)
+	s.position = one["pos"] - cam
+	Pixels.set_swim(s, one["swim"])
+
+
 func _draw() -> void:
-	var p := pond()
-	if p.is_empty():
-		return
-	for y in range(0, int(SIZE.y), 2):
-		var k := y / SIZE.y
-		draw_rect(Rect2(0, y, SIZE.x, 2), WaterView.SURFACE.lerp(WaterView.MID_WATER, k * 1.2).lerp(WaterView.DEEP_WATER, maxf(0.0, k - 0.5)))
-	if _floor:
-		draw_texture_rect_region(_floor, Rect2(0, SIZE.y - 18, SIZE.x, 18), Rect2((site * 70) % 300, 4, SIZE.x, 18))
-	for feature in p["features"]:
-		if _props.has(feature):
-			var tex: Texture2D = _props[feature]
-			var size := tex.get_size()
-			var x: float = roundf(PROPS[feature][2] * (SIZE.x - size.x))
-			draw_texture(tex, Vector2(x, SIZE.y - 12 - size.y))
-	if "channel" in p["features"]:
-		for i in 5:
-			var bx := fposmod(_time * 14.0 + i * 13.0, SIZE.x)
-			draw_rect(Rect2(bx, 3 + (i % 2), 2, 1), Color(1, 1, 1, 0.5))
-	if "tunnel" in p["features"]:
-		Pixels.disc(self, Vector2(SIZE.x - 2, SIZE.y - 30), 9.0, Color(0.03, 0.08, 0.12, 0.9))
-	for i in 5:
-		var gx := fposmod(i * 17.0 + _time * 4.0, SIZE.x)
-		draw_rect(Rect2(gx, 1, 4, 1), Color(1.0, 0.95, 0.8, 0.5))
-	if bell_left > 0.0:
-		for one in _fish:
-			if one.has("data") and str(one["data"].get("name", "")) != "":
-				var at: Vector2 = one["pos"] + Vector2(-12, -10)
-				draw_string(UiTheme.body_font(), at, one["data"]["name"], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UiTheme.CREAM)
+	# A fish wearing finery shows a glint of gold at its throat.
 	for one in _fish:
-		if one.has("data") and str(one["data"].get("finery", "")) != "":
-			draw_rect(Rect2(one["pos"] + Vector2(-2, -1), Vector2(2, 2)), UiTheme.GOLD)
+		if str(one["data"].get("finery", "")) == "":
+			continue
+		var s: Sprite2D = one["sprite"]
+		var m := Swimmers.mouth_of(s.texture)
+		var at: Vector2 = s.position + Vector2(m.x * (-1.0 if s.flip_h else 1.0) * s.scale.x * 0.7, m.y + 3.0)
+		draw_rect(Rect2(at.floor(), Vector2(1, 2)), UiTheme.GOLD)
+	if food_left > 0.0:
+		var middle := (left + right) / 2.0 - cam.x
+		for i in 14:
+			var x := middle + (hash_of(i) - 0.5) * 170.0 + sin(_time * 0.8 + i) * 3.0
+			var sink := fposmod(_time * (2.0 + hash_of(i + 50) * 3.0) + i * 3.0, 18.0) * clampf(1.0 - (FOOD_SECONDS - food_left) / FOOD_SECONDS, 0.3, 1.0)
+			draw_rect(Rect2(Vector2(x, -cam.y + 1.0 + sink).floor(), Vector2.ONE), Color("#c9a46a"))
+
+
+static func hash_of(i: int) -> float:
+	return fposmod(sin(i * 12.9898) * 43758.5453, 1.0)

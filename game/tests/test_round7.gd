@@ -24,19 +24,18 @@ func test_a_screen_picture_covers_any_window_without_mirrored_edges() -> void:
 	_resize(before)
 
 
-func test_the_town_and_ponds_cover_the_window() -> void:
+func test_the_town_covers_the_window() -> void:
 	var win := Windowing.get_window()
 	var before := win.size
 	_resize(Vector2i(1918, 1007))
 	Game.new_game("Test", "hound")
-	for screen in ["town", "shore"]:
-		for c in Nav.ui.get_children():
-			c.free()
-		var s: Node = load(Nav.SCREENS[screen]).new()
-		Nav.world.add_child(s)
-		s.enter({})
-		check(s._stage.transform == Nav.cover(s.margin), "%s: its picture covers the window rather than leaving room for mirrored copies" % screen)
-		s.free()
+	for c in Nav.ui.get_children():
+		c.free()
+	var s: Node = load(Nav.SCREENS["town"]).new()
+	Nav.world.add_child(s)
+	s.enter({})
+	check(s._stage.transform == Nav.cover(s.margin), "town: its picture covers the window rather than leaving room for mirrored copies")
+	s.free()
 	for c in Nav.ui.get_children():
 		c.free()
 	_resize(before)

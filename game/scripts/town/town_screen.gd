@@ -112,7 +112,7 @@ func _build_ui() -> void:
 	_top = Ui.label(bar, "")
 	var back := Ui.button(Nav.ui, "Back to the boat", func(): Nav.go("coast", {"place": "harbour", "boat_x": 110.0}))
 	Ui.hang(back, "bottom_right", Vector2(4, 4), Vector2(108, 18))
-	var ponds := Ui.button(Nav.ui, "To the ponds", func(): Nav.go("shore"))
+	var ponds := Ui.button(Nav.ui, tr("To the pond"), func(): Nav.go("shore"))
 	Ui.hang(ponds, "bottom_right", Vector2(116, 4), Vector2(88, 18))
 	_sleep = Ui.button(Nav.ui, "Sleep till dawn", _sleep_now)
 	Ui.hang(_sleep, "bottom_right", Vector2(208, 4), Vector2(88, 18))
@@ -131,7 +131,7 @@ func _build_ui() -> void:
 			ShopPanel.goldsmith()
 
 
-## A night at the inn: the pots fill, the ponds and tanks have their morning, and the day starts fresh.
+## A night at the inn: the pots fill, the pond and tanks have their morning, and the day starts fresh.
 func _sleep_now() -> void:
 	World.sleep(Game.state, Seeds.rng(int(Game.state["seed"]), "sleep", Clock.day_of(float(Game.state["time"]))))
 	Audio.play("click", -6.0)
