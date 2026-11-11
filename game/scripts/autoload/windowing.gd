@@ -63,12 +63,6 @@ func _ready() -> void:
 	Settings.changed.connect(func(): if Settings.ui_scale_step != _fitted_ui: _fit())
 	Nav.screen_changed.connect(_on_screen_changed)
 	_fit.call_deferred()
-	for key in [["toggle_strip", KEY_F10], ["reset_strip", KEY_F9]]:
-		if not InputMap.has_action(key[0]):
-			InputMap.add_action(key[0])
-			var e := InputEventKey.new()
-			e.physical_keycode = key[1]
-			InputMap.action_add_event(key[0], e)
 	_update_fps()
 
 

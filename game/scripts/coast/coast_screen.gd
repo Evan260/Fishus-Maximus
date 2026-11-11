@@ -129,7 +129,7 @@ func enter(args: Dictionary) -> void:
 	if Nav.ui and not Dev.has("no-hud"):
 		GuideNote.add(self, "coast")
 	if args.get("first", false) and not Settings.guide:
-		Toast.say("Your uncle's skiff. Hold Space or the mouse to cast, A and D to row.")
+		Toast.say(tr("Your uncle's skiff. Hold %s or the mouse to cast, %s and %s to row.") % [Controls.key_name("cast"), Controls.key_name("row_left"), Controls.key_name("row_right")])
 	if Nav.ui and not Dev.has("no-hud"):
 		_sail = Ui.tile(Nav.ui, ItemArt.of("bay_map"), "", "Bay map: sail to another fishing place.", func():
 			if fight == null:

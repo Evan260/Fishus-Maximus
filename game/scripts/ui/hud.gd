@@ -6,12 +6,12 @@ extends Control
 ## and the rod.
 
 const TILE := Vector2(30, 30)
-## What each way of fishing does, for its tip.
+## What each way of fishing does, for its tip, with its key and the casting key filled in.
 const METHOD_TIPS := {
-	"line": "Line (key 1). Click to choose the bait and the rod. Hold Space or the mouse to cast, wait for the float to go under, then click to strike and hold to reel in.",
-	"trap": "Pots (key 2). Sink a pot to the seabed for crabs, lobsters and octopus, then row back over it later to haul it up.",
-	"net": "Cast net (key 3). Throw it over a shoal swimming near the surface. The netmaker in town sells them.",
-	"trident": "Trident (key 4). At night, with a lamp, spear the fish that come up to its light.",
+	"line": "Line (key %s). Click to choose the bait and the rod. Hold %s or the mouse to cast, wait for the float to go under, then click to strike and hold to reel in.",
+	"trap": "Pots (key %s). Sink a pot to the seabed for crabs, lobsters and octopus, then row back over it later to haul it up.",
+	"net": "Cast net (key %s). Throw it over a shoal swimming near the surface. The netmaker in town sells them.",
+	"trident": "Trident (key %s). At night, with a lamp, spear the fish that come up to its light.",
 }
 
 var screen: Node
@@ -41,7 +41,7 @@ func setup(s: Node) -> void:
 	add_child(bar)
 	for m in CoastMethods.METHODS:
 		var id: String = m
-		method_buttons[id] = Ui.tile(bar, ItemArt.of(id), "", METHOD_TIPS[id], func(): screen.methods.set_method(id), true, false, TILE)
+		method_buttons[id] = Ui.tile(bar, ItemArt.of(id), "", method_tip(id), func(): screen.methods.set_method(id), true, false, TILE)
 	var line: Button = method_buttons["line"]
 	line.pressed.connect(func():
 		if screen.methods.method == "line":
@@ -60,6 +60,13 @@ func setup(s: Node) -> void:
 	_corner_tile(right, "Menu", "Menu: saves the game and goes back to the title.", _to_title)
 	Ui.hang(right, "top_right", Vector2(4, 4))
 	refresh()
+
+
+static func method_tip(id: String) -> String:
+	var keys := [Controls.key_name("method_" + id)]
+	if id == "line":
+		keys.append(Controls.key_name("cast"))
+	return TranslationServer.translate(METHOD_TIPS[id]) % keys
 
 
 func _corner_tile(row: HBoxContainer, id: String, tip: String, action: Callable) -> void:

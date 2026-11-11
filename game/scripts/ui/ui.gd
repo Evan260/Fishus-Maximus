@@ -3,6 +3,10 @@ class_name Ui
 
 ## As wide as a button is tall, so a button of one letter comes out square.
 const BUTTON_MIN_WIDTH := 22.0
+## The paper of a window, the darker paper of a tab that is not open, and the line round tabs.
+const TAB_OPEN := Color8(245, 227, 185)
+const TAB_SHUT := Color8(222, 194, 150)
+const TAB_EDGE := Color8(122, 88, 62)
 
 ## A denarius, five pixels across, for prices under pictures.
 static var COIN: ImageTexture = _coin()
@@ -208,6 +212,75 @@ static func row(list: Control, text: String, action_text := "", action := Callab
 		var b := button(r, action_text, action)
 		b.disabled = not enabled
 	return r
+
+
+## A line of a window naming something on the left, wrapped if long, with a short button for it on the right: On or
+## Off, or the choice it is at, which a click steps on.
+static func setting(parent: Node, text: String, value: String, action: Callable, width := 270.0) -> Button:
+	var r := HBoxContainer.new()
+	r.add_theme_constant_override("separation", 6)
+	parent.add_child(r)
+	var l := label(r, text)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.custom_minimum_size.x = width - 76.0
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var b := button(r, value, action)
+	b.custom_minimum_size.x = 70
+	b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	return b
+
+
+## A setting that is on or off, shown as a button reading On or Off.
+static func on_off(parent: Node, text: String, on: bool, action: Callable, width := 270.0) -> Button:
+	return setting(parent, text, "On" if on else "Off", action, width)
+
+
+## A row of paper tabs over a page, with a rule along its foot that the open tab stands on.
+static func tab_row(parent: Node) -> HBoxContainer:
+	var r := HBoxContainer.new()
+	r.add_theme_constant_override("separation", 1)
+	r.draw.connect(func(): r.draw_rect(Rect2(0, r.size.y - 1, r.size.x, 1), TAB_EDGE))
+	parent.add_child(r)
+	var indent := Control.new()
+	indent.custom_minimum_size = Vector2(3, 0)
+	r.add_child(indent)
+	return r
+
+
+## A paper tab in a `tab_row`: the open one is taller and the colour of the page, the others shorter and darker.
+static func tab_button(parent: Node, text: String, open: bool, action: Callable) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.focus_mode = Control.FOCUS_NONE
+	b.toggle_mode = true
+	b.set_pressed_no_signal(open)
+	b.size_flags_vertical = Control.SIZE_SHRINK_END
+	for state in ["normal", "hover", "pressed", "hover_pressed"]:
+		var shown: bool = state.ends_with("pressed")
+		var box := StyleBoxFlat.new()
+		box.anti_aliasing = false
+		box.bg_color = TAB_OPEN if shown else (TAB_SHUT.lightened(0.12) if state == "hover" else TAB_SHUT)
+		box.border_color = TAB_EDGE
+		box.border_width_left = 1
+		box.border_width_right = 1
+		box.border_width_top = 1
+		box.border_width_bottom = 0 if shown else 1
+		box.corner_radius_top_left = 2
+		box.corner_radius_top_right = 2
+		box.content_margin_left = 7
+		box.content_margin_right = 7
+		box.content_margin_top = 4 if shown else 2
+		box.content_margin_bottom = 3 if shown else 2
+		b.add_theme_stylebox_override(state, box)
+	for c in ["font_color", "font_hover_color"]:
+		b.add_theme_color_override(c, UiTheme.MUTED)
+	for c in ["font_pressed_color", "font_hover_pressed_color"]:
+		b.add_theme_color_override(c, UiTheme.INK)
+	b.pressed.connect(Audio.play.bind("tab", -4.0))
+	b.pressed.connect(action)
+	parent.add_child(b)
+	return b
 
 
 ## A button showing a picture with a tip on hover, for the shops, the tackle and the boat's bar: `caption` (a price or

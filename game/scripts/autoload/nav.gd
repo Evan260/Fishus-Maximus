@@ -85,7 +85,7 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouse:
 		pointer = event.position
-	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+	elif event.is_action_pressed("close_panel") and not SettingsPanel.waiting_for_key():
 		if back_out():
 			get_viewport().set_input_as_handled()
 

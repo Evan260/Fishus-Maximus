@@ -76,9 +76,10 @@ func test_the_sounds_around_you_have_their_own_volume() -> void:
 	check(bus >= 0 and is_equal_approx(AudioServer.get_bus_volume_db(bus), linear_to_db(0.25)), "the sea, the gulls and the rain play at the ambience volume")
 	for c in Nav.ui.get_children():
 		c.free()
+	SettingsPanel.tab = "Sound"
 	SettingsPanel.open()
-	var names := Nav.ui.find_children("*", "Label", true, false).map(func(l): return l.text)
-	check("Ambience" in names, "and the settings have a slider for it")
+	var names := Nav.ui.get_node("Window").find_child("Sound", true, false).find_children("*", "Label", true, false).map(func(l): return l.text).filter(func(t): return not t.ends_with("%"))
+	check(names.slice(0, 4) == ["Everything", "Music", "Effects", "Ambience"], "and the settings have a slider for it, after Everything, Music and Effects: %s" % [names.slice(0, 4)])
 	for c in Nav.ui.get_children():
 		c.free()
 	Settings.ambience = was

@@ -108,18 +108,15 @@ func test_the_settings_offer_the_two_units() -> void:
 	_clear()
 	var was: String = Settings.units
 	Settings.units = "metric"
+	SettingsPanel.tab = "Display"
 	SettingsPanel.open()
-	var win: Control = Nav.ui.get_node("Window")
-	var kilos: Button = win.find_child("Kilograms", true, false)
-	var pounds: Button = win.find_child("Pounds", true, false)
-	check(kilos != null and pounds != null and kilos.button_pressed and not pounds.button_pressed, "the settings offer kilograms and pounds, kilograms chosen")
-	if pounds:
-		pounds.pressed.emit()
-	check(Settings.units == "imperial", "choosing Pounds shows weights in pounds")
+	var weights := func() -> Button: return Nav.ui.get_node("Window").find_child("Weights", true, false).find_children("*", "Button", true, false)[0]
+	check(weights.call().text == "Kilograms", "the settings offer kilograms and pounds, kilograms chosen")
+	weights.call().pressed.emit()
+	check(Settings.units == "imperial" and weights.call().text == "Pounds", "a click shows weights in pounds")
 	check(Units.weight(3.1) == "3.1 lb", "at once, with no restart")
-	if kilos:
-		kilos.pressed.emit()
-	check(Settings.units == "metric", "and Kilograms in kilograms again")
+	weights.call().pressed.emit()
+	check(Settings.units == "metric", "and another in kilograms again")
 	Settings.units = was
 	_clear()
 

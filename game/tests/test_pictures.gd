@@ -66,7 +66,7 @@ func test_the_map_logbook_settings_and_menu_are_pictures_with_tips() -> void:
 		var pic: Texture2D = ItemArt.of(id)
 		check(pic != null and pic.get_width() <= 24 and pic.get_height() <= 24, "%s is painted small enough for its tile" % id)
 	buttons["Settings"].pressed.emit()
-	check(Ui.window_open() and Nav.ui.get_node("Window").find_child("Larger", true, false) != null, "the settings picture opens the settings")
+	check(Ui.window_open() and Nav.ui.get_node("Window").has_meta("settings"), "the settings picture opens the settings")
 	Ui.close_window()
 	_clear_ui()
 	s.free()

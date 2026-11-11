@@ -25,6 +25,8 @@ var units := "metric"
 var guide := true
 ## The tips shown when the pointer rests on a button.
 var tooltips := true
+## The keys the player has chosen in place of an action's own, by action; see `Controls`.
+var keys := {}
 var _before := DisplayServer.WINDOW_MODE_WINDOWED
 
 
@@ -35,6 +37,7 @@ func _ready() -> void:
 	# --ui-size=-1 (Smaller), 0 (Normal), 1 (Larger) or 2 (Largest) tries an interface size without saving it.
 	if Dev.has("ui-size"):
 		ui_scale_step = clampi(int(Dev.num("ui-size", 0)), -1, 2)
+	Controls.ensure()
 	apply()
 	_restore_window.call_deferred()
 
@@ -58,6 +61,11 @@ func read_from(cfg: ConfigFile) -> void:
 	tooltips = cfg.get_value("play", "tooltips", tooltips)
 	var u := str(cfg.get_value("display", "units", units))
 	units = u if u in ["metric", "imperial"] else "metric"
+	keys = {}
+	if cfg.has_section("keys"):
+		for action in cfg.get_section_keys("keys"):
+			if Controls.ACTIONS.has(action):
+				keys[action] = int(cfg.get_value("keys", action))
 
 
 func apply() -> void:
@@ -112,6 +120,8 @@ func write_to(cfg: ConfigFile) -> void:
 	cfg.set_value("play", "large_text", large_text)
 	cfg.set_value("play", "guide", guide)
 	cfg.set_value("play", "tooltips", tooltips)
+	for action in keys:
+		cfg.set_value("keys", action, int(keys[action]))
 
 
 ## The interface size after `step`: Normal, Larger, Largest, Smaller, then Normal again.
@@ -128,6 +138,7 @@ func toggle_fullscreen() -> void:
 	else:
 		DisplayServer.window_set_mode(_before)
 	save()
+	SettingsPanel.refresh()
 
 
 func _unhandled_input(event: InputEvent) -> void:

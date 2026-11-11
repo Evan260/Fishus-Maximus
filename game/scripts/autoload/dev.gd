@@ -80,6 +80,8 @@ func _open_window(window: String) -> void:
 	elif window == "achievements":
 		LogbookPanel.open_achievements()
 	elif window == "settings":
+		# --settings-tab=Display opens the settings at that tab.
+		SettingsPanel.tab = get_arg("settings-tab", SettingsPanel.tab)
 		SettingsPanel.open()
 	elif window in ["new_game", "load"] and Nav.current and Nav.current.has_method("_load"):
 		Nav.current.call("_new_game" if window == "new_game" else "_load")

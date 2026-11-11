@@ -38,11 +38,13 @@ func test_music_put_in_the_folder_is_found_and_played() -> void:
 
 func test_the_settings_open_the_music_folder() -> void:
 	_clear()
+	SettingsPanel.tab = "Sound"
 	SettingsPanel.open()
 	var row: Node = Nav.ui.find_child("OwnMusic", true, false)
 	check(row != null, "the settings have a row for your own music")
 	var b: Button = row.find_children("*", "Button", true, false)[0] if row else null
 	check(b != null and b.text == "Open folder", "with a button to open its folder")
+	check(row != null and row.get_child(0).text == "Your own music" and "(.ogg, .mp3 or .wav)" in b.tooltip_text, "named as in the other games, its tip naming the kinds of file")
 	check(Audio.PLAYER_MUSIC.begins_with("user://"), "which is kept beside the saves")
 	_clear()
 
@@ -60,11 +62,15 @@ func test_the_tips_can_be_turned_off_and_on() -> void:
 	fresh.free()
 	again.free()
 	_clear()
+	SettingsPanel.tab = "Gameplay"
 	SettingsPanel.open()
-	var box: CheckBox = Nav.ui.find_children("*", "CheckBox", true, false).filter(func(c): return c.text.begins_with("Tips"))[0]
-	check(box.button_pressed == Settings.tooltips, "the settings show whether tips are on")
-	box.button_pressed = false
+	var box: Button = Nav.ui.find_child("tooltips", true, false).find_children("*", "Button", true, false)[0]
+	check(box.text == ("On" if Settings.tooltips else "Off"), "the settings show whether tips are on")
+	Settings.tooltips = true
+	SettingsPanel.open()
+	Nav.ui.get_node("Window").find_child("tooltips", true, false).find_children("*", "Button", true, false)[0].pressed.emit()
 	check(not Settings.tooltips, "and turn them off")
+	check(Nav.ui.get_node("Window").find_child("tooltips", true, false).find_children("*", "Button", true, false)[0].text == "Off", "and the row then reads Off")
 	_clear()
 	for on in [false, true]:
 		Settings.tooltips = on

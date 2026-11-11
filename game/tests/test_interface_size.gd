@@ -239,6 +239,7 @@ func test_the_settings_choose_the_interface_size() -> void:
 	Windowing._fit()
 	var seen := []
 	for k in 5:
+		SettingsPanel.tab = "Display"
 		SettingsPanel.open()
 		var row: Control = Nav.ui.get_node("Window").find_child("InterfaceSize", true, false)
 		var b: Button = row.find_children("*", "Button", true, false)[0]
