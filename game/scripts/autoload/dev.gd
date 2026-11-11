@@ -43,7 +43,7 @@ func _ready() -> void:
 	if args.has("achievement"):
 		get_tree().create_timer(float(args.get("achievement-at", "1.0"))).timeout.connect(_show_achievement)
 	if args.has("quit") and _shots.is_empty():
-		get_tree().create_timer(float(args.get("quit-at", "3.0"))).timeout.connect(get_tree().quit)
+		get_tree().create_timer(float(args.get("quit-at", "3.0"))).timeout.connect(func() -> void: Audio.quit())
 	if args.has("bench") and ResourceLoader.exists(BENCH):
 		add_child(load(BENCH).new())
 
@@ -76,7 +76,7 @@ func _take_shot(path: String, last: bool) -> void:
 	get_viewport().get_texture().get_image().save_png(path)
 	print("saved ", path)
 	if last and args.has("quit"):
-		get_tree().quit()
+		Audio.quit()
 
 
 ## Opens a window by name: logbook, logbook:FISH (its page), achievements, settings or settings:TAB, board, client,

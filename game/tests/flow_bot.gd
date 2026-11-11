@@ -44,7 +44,7 @@ func _walk() -> void:
 	LogbookPanel.open(0)
 	await _shot(dir, "13_logbook")
 	print("FLOW DONE ", dir)
-	get_tree().quit()
+	Audio.quit()
 
 
 func _go(screen: String, args: Dictionary, dir: String, name: String) -> void:

@@ -11,7 +11,7 @@ func _ready() -> void:
 			var log: Dictionary = load("res://tests/pacing_bot.gd").new().run(Dev.num("hours", 40.0), seed)
 			var missing := Data.fish.keys().filter(func(f): return Data.fish[f]["legend"] and not log["legends"].has(f))
 			print("PACING seed %d: chapters %s boats %s legends %d of 12 (missing %s), name %d" % [seed, log["chapters"], log["boats"], log["legends"].size(), missing, log["reputation"]])
-		get_tree().quit()
+		Audio.quit()
 		return
 	if Dev.has("flow"):
 		add_child(load("res://tests/flow_bot.gd").new())

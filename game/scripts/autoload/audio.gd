@@ -19,6 +19,9 @@ var _gap := 8.0
 var _next := 0
 ## The ambience each loop should be at, from 0 to 1, set by the scene showing.
 var wanted := {}
+## Headless runs have no sound device to mix sounds, and a stream never mixed is never let go of at exit.
+var _silent := DisplayServer.get_name() == "headless"
+var _quitting := false
 
 
 func _ready() -> void:
@@ -57,6 +60,28 @@ func _ready() -> void:
 	_music.bus = "Music"
 	_music.finished.connect(func(): _gap = randf_range(90.0, 240.0))
 	add_child(_music)
+	get_tree().auto_accept_quit = false
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		quit()
+
+
+## Stops every sound and quits once the audio server has let go of them, so nothing playing is left behind at exit.
+func quit(code: int = 0) -> void:
+	if _quitting:
+		return
+	_quitting = true
+	set_process(false)
+	_music.stop()
+	for p in _players:
+		p.stop()
+	for name in _loops:
+		_loops[name].stop()
+	await get_tree().create_timer(0.1, true, false, true).timeout
+	await get_tree().process_frame
+	get_tree().quit(code)
 
 
 func _list(dir: String) -> Array[String]:
@@ -68,7 +93,7 @@ func _list(dir: String) -> Array[String]:
 
 
 func play(name: String, volume_db := 0.0, pitch := 1.0) -> void:
-	if Dev.has("run-tests") or not _sounds.has(name):
+	if _silent or _quitting or Dev.has("run-tests") or not _sounds.has(name):
 		return
 	var p := _players[_next]
 	_next = (_next + 1) % _players.size()
@@ -89,11 +114,11 @@ func _process(delta: float) -> void:
 		var level: float = wanted.get(name, 0.0)
 		var target := linear_to_db(maxf(level, 0.001))
 		p.volume_db = move_toward(p.volume_db, target, delta * 20.0)
-		if level > 0.0 and not p.playing:
+		if level > 0.0 and not p.playing and not _silent:
 			p.play()
 		elif level <= 0.0 and p.playing and p.volume_db <= -59.0:
 			p.stop()
-	if not _music.playing:
+	if not _music.playing and not _silent:
 		_gap -= delta
 		if _gap <= 0.0:
 			var track := _pick_track()
