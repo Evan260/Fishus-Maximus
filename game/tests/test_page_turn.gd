@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
 ## The logbook's turning leaf: it starts flat on the page it turns, lands flat on the other, rises over the gutter
-## between, and never jumps from one frame to the next.
+## between, and never jumps from one frame to the next; turning the logbook's pages leaves nothing behind.
 
 
 func _leaf(direction: int) -> PageTurn:
@@ -40,3 +40,54 @@ func test_the_leaf_moves_smoothly() -> void:
 		last = now
 	check(worst < 20.0, "no point of the leaf jumps more than a little from one frame to the next, at most %.1f pixels" % worst)
 	turn.free()
+
+
+func test_turning_pages_leaves_nothing_behind() -> void:
+	var tree := Nav.get_tree()
+	var slot: int = Saves.slot
+	Saves.slot = 0
+	var motion := Settings.reduced_motion
+	Settings.reduced_motion = false
+	Game.max_state()
+	LogbookPanel.open(0)
+	# The first two rounds fill the caches every later round reuses: fonts, pictures and the pages' paper.
+	for k in 2:
+		await _turns(tree)
+	var objects := Performance.get_monitor(Performance.OBJECT_COUNT)
+	var nodes := Performance.get_monitor(Performance.OBJECT_NODE_COUNT)
+	var orphans := Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)
+	var resources := Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT)
+	for k in 2:
+		await _turns(tree)
+	check(Nav.ui.find_children("*", "SubViewport", true, false).is_empty(), "every page's picture is freed once its leaf lands or is cut short")
+	check(Performance.get_monitor(Performance.OBJECT_NODE_COUNT) <= nodes, "turning more pages leaves no extra nodes (%d before, %d after)" % [nodes, Performance.get_monitor(Performance.OBJECT_NODE_COUNT)])
+	check(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT) <= orphans, "and no nodes outside the tree (%d before, %d after)" % [orphans, Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)])
+	check(Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT) <= resources, "and no extra resources (%d before, %d after)" % [resources, Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT)])
+	check(Performance.get_monitor(Performance.OBJECT_COUNT) <= objects, "and no extra objects (%d before, %d after)" % [objects, Performance.get_monitor(Performance.OBJECT_COUNT)])
+	Ui.close_window()
+	await tree.process_frame
+	Settings.reduced_motion = motion
+	Saves.slot = slot
+
+
+## Three pages turned to the end, then two cut short by closing the book, one before its new page is pictured.
+func _turns(tree: SceneTree) -> void:
+	for to in [1, 2, 0]:
+		LogbookPanel._bookmark_turn(to)
+		await _landed(tree)
+	for wait in [0, 3]:
+		LogbookPanel._bookmark_turn(1 - LogbookPanel.section % 2)
+		for i in wait:
+			await tree.process_frame
+		Ui.close_window()
+		await _landed(tree)
+		check(not LogbookPanel._turning, "a book closed mid-turn can turn again")
+		LogbookPanel.open(LogbookPanel.section)
+		await tree.process_frame
+
+
+func _landed(tree: SceneTree) -> void:
+	while LogbookPanel._turning:
+		await tree.process_frame
+	for i in 3:
+		await tree.process_frame

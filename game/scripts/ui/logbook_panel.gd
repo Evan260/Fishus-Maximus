@@ -156,19 +156,14 @@ static func _flip_to(to_section: int, to_spread: int) -> void:
 		open(section)
 		return
 	_turning = true
-	var book := _book
 	var direction := 1 if (to_section > section if to_section != section else to_spread > spread) else -1
-	var shots := await PageTurn.capture(book, [_shot(book, 1 if direction > 0 else 0), _shot(book, 0 if direction > 0 else 1)], Nav.ui_zoom)
-	# The book may have been closed while its pages were pictured, and is then left closed.
-	if not is_instance_valid(book) or not book.is_inside_tree():
-		_turning = false
-		return
+	var turn := PageTurn.new()
+	var shots := turn.capture([_shot(_book, 1 if direction > 0 else 0), _shot(_book, 0 if direction > 0 else 1)], Nav.ui_zoom)
 	Audio.play("page_turn")
 	section = to_section
 	spread = to_spread
 	selected = ""
 	open(section)
-	var turn := PageTurn.new()
 	turn.direction = direction
 	turn.left_page = Rect2(STACK, 0, PAGE_W, PAGE_H)
 	turn.right_page = Rect2(STACK + PAGE_W + SPINE, 0, PAGE_W, PAGE_H)
@@ -177,11 +172,17 @@ static func _flip_to(to_section: int, to_spread: int) -> void:
 	turn.gutter = func(canvas: Control): _draw_spine(canvas)
 	turn.size = _book.size
 	turn.landed.connect(_landed)
-	turn.tree_exiting.connect(func(): _turning = false)
+	# A leaf that landed has already passed the turning on to the next one, so only a leaf cut short clears it.
+	turn.tree_exiting.connect(func():
+		if turn.progress < 1.0:
+			_turning = false)
 	_book.add_child(turn)
-	var backs := await PageTurn.capture(_book, [_shot(_book, 0 if direction > 0 else 1)], Nav.ui_zoom)
+	# The new page is pictured a frame later, long before the leaf shows its back, so no one frame does all the work.
+	await turn.get_tree().process_frame
 	if is_instance_valid(turn):
-		turn.back = backs[0]
+		var back := _shot(_book, 0 if direction > 0 else 1)
+		back["page"] = back["page"].duplicate()
+		turn.back = turn.capture([back], Nav.ui_zoom)[0]
 
 
 ## A turn asked for while the last one was under way follows as soon as the leaf lands.
