@@ -91,7 +91,9 @@ static func wave_for(id: String, tex: Texture2D) -> float:
 static func mouth_of(tex: Texture2D) -> Vector2:
 	if tex == null:
 		return Vector2.ZERO
-	if not _mouths.has(tex):
+	# Keyed by path and size, so a picture freed and replaced by another never hands its mouth on.
+	var key := "%s|%s|%d" % [tex.resource_path, tex.get_size(), tex.get_instance_id() if tex.resource_path == "" else 0]
+	if not _mouths.has(key):
 		var img := tex.get_image()
 		if img.is_compressed():
 			img.decompress()
@@ -106,8 +108,8 @@ static func mouth_of(tex: Texture2D) -> Vector2:
 			if rows.is_empty():
 				front -= 1
 		var mid := float(rows[rows.size() / 2]) if not rows.is_empty() else h / 2.0
-		_mouths[tex] = Vector2(front + 1.0 - w / 2.0, mid + 0.5 - h / 2.0)
-	return _mouths[tex]
+		_mouths[key] = Vector2(front + 1.0 - w / 2.0, mid + 0.5 - h / 2.0)
+	return _mouths[key]
 
 
 ## Where a fish's mouth is in the water.
