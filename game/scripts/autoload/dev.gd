@@ -37,7 +37,7 @@ func _ready() -> void:
 		get_tree().create_timer(float(args.get("catch-at", "1.0"))).timeout.connect(func():
 			var lb: Array = Data.fish[args["catch"]]["pounds"]
 			CatchCard.show_catch(args["catch"], (float(lb[0]) + float(lb[1])) / 2.0, true))
-	# --open=logbook or settings (at --open-at seconds) opens that window, for screenshots.
+	# --open=logbook, achievements or settings (at --open-at seconds) opens that window, for screenshots.
 	if args.has("open"):
 		get_tree().create_timer(float(args.get("open-at", "1.0"))).timeout.connect(_open_window.bind(args["open"]))
 	if args.has("quit") and _shots.is_empty():
@@ -77,6 +77,8 @@ func _open_window(window: String) -> void:
 		if args.has("turn-at"):
 			get_tree().create_timer(float(args["turn-at"])).timeout.connect(func():
 				LogbookPanel._bookmark_turn(LogbookPanel.section + (-1 if args.has("turn-back") else 1)))
+	elif window == "achievements":
+		LogbookPanel.open_achievements()
 	elif window == "settings":
 		SettingsPanel.open()
 	elif window in ["new_game", "load"] and Nav.current and Nav.current.has_method("_load"):

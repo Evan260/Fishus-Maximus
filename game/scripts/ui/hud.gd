@@ -55,7 +55,7 @@ func setup(s: Node) -> void:
 	var right := HBoxContainer.new()
 	right.add_theme_constant_override("separation", 2)
 	add_child(right)
-	_corner_tile(right, "Logbook", "Logbook: the fish you have caught, and those still to find.", func(): LogbookPanel.open())
+	_corner_tile(right, "Logbook", "Logbook: the fish you have caught, those still to find, and your achievements.", func(): LogbookPanel.open())
 	_corner_tile(right, "Settings", "Settings", func(): SettingsPanel.open())
 	_corner_tile(right, "Menu", "Menu: saves the game and goes back to the title.", _to_title)
 	Ui.hang(right, "top_right", Vector2(4, 4))

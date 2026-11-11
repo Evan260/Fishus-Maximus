@@ -38,7 +38,7 @@
 	{
 		"id": "legend_tiberius_mullet",
 		"name": "Tiberius's mullet",
-		"text": "Catch tiberius's mullet.",
+		"text": "Catch Tiberius's mullet.",
 		"legend": "tiberius_mullet"
 	},
 	{
@@ -56,13 +56,13 @@
 	{
 		"id": "legend_orata_bream",
 		"name": "Orata's golden bream",
-		"text": "Catch orata's golden bream.",
+		"text": "Catch Orata's golden bream.",
 		"legend": "orata_bream"
 	},
 	{
 		"id": "legend_claudius_parrotfish",
 		"name": "Claudius's parrotfish",
-		"text": "Catch claudius's parrotfish.",
+		"text": "Catch Claudius's parrotfish.",
 		"legend": "claudius_parrotfish"
 	},
 	{
@@ -98,7 +98,7 @@
 	{
 		"id": "legend_neptune_lobster",
 		"name": "Neptune's lobster",
-		"text": "Catch neptune's lobster.",
+		"text": "Catch Neptune's lobster.",
 		"legend": "neptune_lobster"
 	},
 	{

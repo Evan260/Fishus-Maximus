@@ -1,9 +1,10 @@
 class_name LogbookPanel
-## The logbook, drawn as an open book: bookmarks down the side choose a place or the legends, the two pages list its
-## fish, those not yet caught as dark shapes and a legend by its clue, and clicking one shows its record facing it.
+## The logbook, drawn as an open book: bookmarks down the side choose a place, the legends or the achievements, the two
+## pages list its fish, those not yet caught as dark shapes and a legend by its clue, and clicking one shows its record
+## facing it; the achievements' pages list each one earned or still to earn, with what it asks.
 
 const SHORT := {"harbour": "Harbour", "rocky_shore": "Rocky shore", "lucrine": "Lucrine", "open_bay": "Open bay", "capri": "Capri",
-	"misenum": "Misenum", "legends": "Legends"}
+	"misenum": "Misenum", "legends": "Legends", "achievements": "Achievements"}
 const PAGE_W := 186
 const PAGE_H := 210
 ## How many page edges show under each page, the fold between the pages, and the margins of the writing.
@@ -14,6 +15,10 @@ const OUTER := 7
 const INNER := 9
 const ROWS := 6
 const ROW := Vector2(PAGE_W - OUTER - INNER, 30)
+## An achievement takes three lines, its name and what it asks, so its pages hold fewer.
+const HONOUR_ROWS := 5
+const HONOUR := Vector2(PAGE_W - OUTER - INNER, 34)
+const STAR := "res://assets/art/ui/banner_star.png"
 const PICTURE := Vector2(62, 30)
 const PAPER := Color8(244, 229, 192)
 const EDGE := Color8(140, 102, 71)
@@ -45,9 +50,10 @@ static func open(at := -1) -> void:
 	section = posmod(section, sections.size())
 	var here: String = sections[section]
 	var all := _entries(here)
-	var spreads := maxi(1, ceili(all.size() / float(ROWS * 2)))
+	var rows := _rows(here)
+	var spreads := maxi(1, ceili(all.size() / float(rows * 2)))
 	spread = clampi(spread, 0, spreads - 1)
-	var shown := all.slice(spread * ROWS * 2, (spread + 1) * ROWS * 2)
+	var shown := all.slice(spread * rows * 2, (spread + 1) * rows * 2)
 	if not shown.has(selected):
 		selected = ""
 	_prepare()
@@ -79,7 +85,7 @@ static func open(at := -1) -> void:
 	book.draw.connect(_draw_book.bind(book))
 	row.add_child(book)
 	_book = book
-	var detail_side := 0 if shown.find(selected) >= ROWS else 1
+	var detail_side := 0 if shown.find(selected) >= rows else 1
 	var pages := [_page(book, STACK + OUTER), _page(book, STACK + PAGE_W + SPINE + INNER)]
 	for side in 2:
 		var page: VBoxContainer = pages[side]
@@ -88,18 +94,35 @@ static func open(at := -1) -> void:
 			continue
 		if side == 0:
 			_header(page, here, all)
+		elif here == "achievements":
+			page.add_child(_blank_head())
 		else:
 			_overall(page)
-		for id in shown.slice(side * ROWS, (side + 1) * ROWS):
-			_entry(page, id)
+		for id in shown.slice(side * rows, (side + 1) * rows):
+			if here == "achievements":
+				_honour(page, id)
+			else:
+				_entry(page, id)
+
+
+## Opens the logbook at the achievements.
+static func open_achievements() -> void:
+	open(_sections().find("achievements"))
 
 
 static func _sections() -> Array:
-	return Data.places.keys() + ["legends"]
+	return Data.places.keys() + ["legends", "achievements"]
 
 
-## The fish written under a place are the ordinary ones first found there; every legend has the legends' own pages.
+static func _rows(here: String) -> int:
+	return HONOUR_ROWS if here == "achievements" else ROWS
+
+
+## The fish written under a place are the ordinary ones first found there; every legend has the legends' own pages, and
+## the achievements theirs.
 static func _entries(here: String) -> Array:
+	if here == "achievements":
+		return Data.achievements.map(func(a): return str(a["id"]))
 	return Data.fish.keys().filter(func(id):
 		var f: Dictionary = Data.fish[id]
 		var places: Array = f["places"]
@@ -225,10 +248,60 @@ static func _header(page: VBoxContainer, here: String, all: Array) -> void:
 	var head := HBoxContainer.new()
 	head.custom_minimum_size = Vector2(0, 15)
 	page.add_child(head)
-	var title := "Legends of the bay" if here == "legends" else str(Data.places[here]["name"])
+	var title: String = {"legends": "Legends of the bay", "achievements": "Achievements"}.get(here, str(Data.places.get(here, {}).get("name", here)))
 	Ui.label(head, title.to_upper(), "Heading").size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var count := Ui.label(head, "%d / %d" % [all.filter(func(id): return not _caught(id).is_empty()).size(), all.size()], "Heading")
+	var have := all.filter(func(id): return _earned(id) if here == "achievements" else not _caught(id).is_empty())
+	var count := Ui.label(head, "%d / %d" % [have.size(), all.size()], "Heading")
 	count.add_theme_color_override("font_color", UiTheme.MUTED)
+
+
+## An empty head for the right-hand page, so its rows line up with the left's.
+static func _blank_head() -> Control:
+	var head := Control.new()
+	head.custom_minimum_size = Vector2(0, 15)
+	return head
+
+
+static func _earned(id: String) -> bool:
+	return id in Game.state.get("achievements", [])
+
+
+## One achievement on the page: a starfish, bright once it is earned and a dark shape until then, its name, and what it
+## asks.
+static func _honour(page: VBoxContainer, id: String) -> void:
+	var a := Achievements.find(id)
+	var earned := _earned(id)
+	var line := HBoxContainer.new()
+	line.name = "Honour_" + id
+	line.custom_minimum_size = HONOUR
+	line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	line.add_theme_constant_override("separation", 4)
+	page.add_child(line)
+	var holder := CenterContainer.new()
+	holder.custom_minimum_size = Vector2(20, HONOUR.y)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	line.add_child(holder)
+	var star := TextureRect.new()
+	star.name = "Star"
+	star.texture = load(STAR) if earned else _shadow("_star", load(STAR))
+	star.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	star.custom_minimum_size = star.texture.get_size() * 2.0
+	star.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if not earned:
+		star.modulate.a = 0.45
+	holder.add_child(star)
+	var words := VBoxContainer.new()
+	words.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	words.alignment = BoxContainer.ALIGNMENT_CENTER
+	words.add_theme_constant_override("separation", -1)
+	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	line.add_child(words)
+	var name := _line(words, str(a.get("name", id)), "" if earned else "MutedLabel")
+	name.name = "Name"
+	var asks := _two_lines(str(a.get("text", "")), HONOUR.x - 24)
+	for part in asks:
+		if part != "":
+			_line(words, part, "MutedLabel").modulate.a = 1.0 if earned else 0.75
 
 
 ## The logbook's total across the bay, at the head of the right-hand page.
