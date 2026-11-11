@@ -447,6 +447,8 @@ func _on_bite(f: Dictionary) -> void:
 		swimmers.release(f, false)
 		return
 	biter = f
+	if not methods.idle:
+		Settings.alert()
 	var count: Array = Data.value("fishing.nibbles", [1, 3])
 	_nibbles_left = _rng.randi_range(int(count[0]), int(count[1]))
 	_nibble_in = 0.0

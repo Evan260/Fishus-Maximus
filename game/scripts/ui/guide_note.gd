@@ -180,7 +180,7 @@ func _say_goodbye() -> void:
 func _place_arrow() -> void:
 	var r := target_rect()
 	var below := r.position.y < 24.0
-	var bob := roundf(sin(_t * 5.0) * 2.0)
+	var bob := 0.0 if Settings.reduced_motion else roundf(sin(_t * 5.0) * 2.0)
 	_arrow.size = Vector2(19, 13)
 	_arrow.position = Vector2(roundf(r.get_center().x - 9.0), r.end.y + 2.0 - bob if below else r.position.y - 15.0 + bob)
 	_arrow.set_meta("up", below)

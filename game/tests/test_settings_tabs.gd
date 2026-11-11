@@ -29,7 +29,7 @@ func test_the_settings_are_four_tabs_of_rows() -> void:
 	SettingsPanel.open()
 	var tabs: Array = Nav.ui.get_node("Window").find_children("*", "Button", true, false).filter(func(b): return b.toggle_mode).map(func(b): return b.text)
 	check(tabs == ["Sound", "Display", "Gameplay", "Keys"], "the settings have the tabs Sound, Display, Gameplay and Keys: %s" % [tabs])
-	check(_rows("Sound") == ["Everything", "Music", "Effects", "Ambience", "Your own music"], "Sound: the four volumes and your own music: %s" % [_rows("Sound")])
+	check(_rows("Sound") == ["Everything", "Music", "Effects", "Ambience", "Your own music", "While you use other windows"], "Sound: the four volumes, your own music and the sound behind other windows: %s" % [_rows("Sound")])
 	var display := _rows("Display")
 	check(display.slice(0, 3) == ["Interface size", "Full screen (F11)", "Weights"] and display[3].begins_with("Desktop strip (F10)"),
 		"Display: the interface size, full screen, then the weights and the strip: %s" % [display])
@@ -67,4 +67,55 @@ func test_a_key_can_be_changed() -> void:
 	check(int(cfg.get_value("keys", "row_left", 0)) == KEY_J, "and it is kept in the settings")
 	Controls.rebind("row_left", KEY_A)
 	check(not Settings.keys.has("row_left"), "a key put back to its own is no longer kept")
+	_clear()
+
+
+func test_reduced_motion_larger_text_and_the_sound_behind_other_windows() -> void:
+	_clear()
+	var play := _rows("Gameplay")
+	check(play.find("Reduced motion") == play.find("Larger text for messages") + 1, "Reduced motion follows Larger text: %s" % [play])
+	check("Flash the taskbar when something needs you" in play, "and the taskbar can be flashed")
+	var kept := [Settings.reduced_motion, Settings.background_sound, Settings.master]
+	Settings.master = 0.8
+	for quiet in [["full", 0.8], ["quieter", 0.2], ["muted", 0.0]]:
+		Settings.background_sound = quiet[0]
+		Windowing._focused = false
+		Windowing._apply_volume()
+		var db := AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Master"))
+		check(absf(db - linear_to_db(maxf(0.0001, quiet[1]))) < 0.1, "behind other windows at %s the game plays at %s" % quiet)
+	Windowing._focused = true
+	Windowing._apply_volume()
+	check(absf(AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Master")) - linear_to_db(0.8)) < 0.1, "and at full volume again in front")
+	Game.new_game("Still", "mutt")
+	Settings.reduced_motion = true
+	AchievementCard.show_earned("first_fish")
+	var card: Control = Nav.ui.get_children().filter(func(c): return c.has_meta("achievement"))[0]
+	check(card.position == card.get_meta("rest"), "with reduced motion a card appears where it rests, without sliding")
+	card.free()
+	CatchCard.show_catch("bream", 2.0, true)
+	var hang: Control = CatchCard._open.get_node("Hang")
+	check(hang.size.y == float(hang.get_meta("full")) and CatchCard._open.modulate.a == 1.0, "and the banner hangs at once, unfurled")
+	CatchCard._open.free()
+	Settings.reduced_motion = kept[0]
+	Settings.background_sound = kept[1]
+	Settings.master = kept[2]
+	Settings.apply()
+	_clear()
+
+
+func test_an_achievement_card_stays_five_seconds_or_till_clicked() -> void:
+	_clear()
+	Game.new_game("Card", "mutt")
+	check(AchievementCard.HOLD == 5.0, "a card stays five seconds")
+	AchievementCard.show_earned("first_fish")
+	var card: Control = Nav.ui.get_children().filter(func(c): return c.has_meta("achievement"))[0]
+	var tw: Tween = card.get_meta("tween")
+	tw.custom_step(4.0)
+	check(not card.is_queued_for_deletion(), "and is still there after four")
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	card.gui_input.emit(click)
+	(card.get_meta("tween") as Tween).custom_step(1.0)
+	check(card.is_queued_for_deletion(), "a click takes it away at once")
 	_clear()

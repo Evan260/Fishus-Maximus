@@ -16,6 +16,12 @@ var maximized := false
 ## Gentle fishing never snaps a line or lets a hook slip.
 var gentle := false
 var large_text := false
+## Keeps the screen still: the cards and the banner appear without sliding or unfurling, and pages turn at once.
+var reduced_motion := false
+## How loud the game stays while another window has the focus: "full", "quieter" or "muted".
+var background_sound := "full"
+## Flashes the taskbar when a fish bites or an achievement is earned while the player is in another window.
+var notifications := true
 ## How large the interface is drawn: -1 Smaller, 0 Normal (a step under the game's own size), 1 Larger (the game's
 ## own size) or 2 Largest.
 var ui_scale_step := 0
@@ -57,6 +63,10 @@ func read_from(cfg: ConfigFile) -> void:
 		ui_scale_step = clampi(int(cfg.get_value("display", "interface_size")) + 1, 0, 2)
 	gentle = cfg.get_value("play", "gentle", gentle)
 	large_text = cfg.get_value("play", "large_text", large_text)
+	reduced_motion = cfg.get_value("play", "reduced_motion", reduced_motion)
+	notifications = cfg.get_value("play", "notifications", notifications)
+	var quiet := str(cfg.get_value("sound", "background_sound", background_sound))
+	background_sound = quiet if quiet in ["full", "quieter", "muted"] else "full"
 	guide = cfg.get_value("play", "guide", guide)
 	tooltips = cfg.get_value("play", "tooltips", tooltips)
 	var u := str(cfg.get_value("display", "units", units))
@@ -79,6 +89,12 @@ func apply() -> void:
 ## How many times the usual size a message's text is drawn: the toasts, old Rufus's notes, the cards and the tips.
 func message_scale() -> int:
 	return 2 if large_text else 1
+
+
+## Flashes the taskbar for something that needs the player while another window has the focus.
+func alert() -> void:
+	if notifications and DisplayServer.get_name() != "headless" and not get_window().has_focus():
+		DisplayServer.window_request_attention()
 
 
 func set_value(key: String, value) -> void:
@@ -123,6 +139,9 @@ func write_to(cfg: ConfigFile) -> void:
 	cfg.set_value("display", "units", units)
 	cfg.set_value("play", "gentle", gentle)
 	cfg.set_value("play", "large_text", large_text)
+	cfg.set_value("play", "reduced_motion", reduced_motion)
+	cfg.set_value("play", "notifications", notifications)
+	cfg.set_value("sound", "background_sound", background_sound)
 	cfg.set_value("play", "guide", guide)
 	cfg.set_value("play", "tooltips", tooltips)
 	for action in keys:

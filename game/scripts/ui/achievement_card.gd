@@ -1,6 +1,9 @@
 class_name AchievementCard
-## A small card that slides in from the right, in the bottom right corner, when an achievement is earned. Several
-## earned at once take turns, and none slides in while a landed fish's banner is hung out, which it would cover.
+## A small card that slides in from the right, in the bottom right corner, when an achievement is earned, and stays
+## `HOLD` seconds unless clicked away. Several earned at once take turns, and none slides in while a landed fish's
+## banner is hung out, which it would cover.
+
+const HOLD := 5.0
 
 const WIDTH := 150.0
 ## How far above the bottom edge the card rests: clear of the buttons along the bottom of every screen.
@@ -21,9 +24,10 @@ static func show_earned(id: String) -> void:
 		Audio.play("pond_bell", -6.0)
 		Toast.say("Achievement: " + str(a.get("name", id)))
 		return
+	Settings.alert()
 	var card := PanelContainer.new()
 	card.set_meta("achievement", id)
-	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	card.custom_minimum_size = Vector2(WIDTH, 0)
 	Nav.ui.add_child(card)
 	var col := VBoxContainer.new()
@@ -32,6 +36,9 @@ static func show_earned(id: String) -> void:
 	Ui.label(col, "ACHIEVEMENT", "Heading")
 	var name := Ui.label(col, a.get("name", id))
 	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if Settings.large_text:
+		card.custom_minimum_size.x = WIDTH * 1.5
+		name.add_theme_font_size_override("font_size", UiTheme.TEXT * 2)
 	card.reset_size()
 	var view := Nav.ui_view()
 	var rest := Vector2(view.x - 4.0 - card.size.x, view.y - ABOVE - card.size.y).round()
@@ -57,9 +64,32 @@ static func _next() -> void:
 	card.set_meta("shown", true)
 	card.tree_exiting.connect(func(): _next(), CONNECT_ONE_SHOT)
 	var rest: Vector2 = card.get_meta("rest")
+	var away := card.position.x
 	Audio.play("pond_bell", -6.0)
 	var tw := card.create_tween()
-	tw.tween_property(card, "position:x", rest.x, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_interval(3.0)
-	tw.tween_property(card, "position:x", card.position.x, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	card.set_meta("tween", tw)
+	if Settings.reduced_motion:
+		card.position.x = rest.x
+	else:
+		tw.tween_property(card, "position:x", rest.x, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_interval(HOLD)
+	_leave(card, tw, away)
+	card.gui_input.connect(func(e: InputEvent):
+		if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
+			card.accept_event()
+			click_away(card))
+
+
+## Takes a card away at once, as a click on it does.
+static func click_away(card: Control) -> void:
+	(card.get_meta("tween") as Tween).kill()
+	var out := card.create_tween()
+	card.set_meta("tween", out)
+	_leave(card, out, Nav.ui_view().x + 2.0)
+
+
+## Slides the card back out to `away`, or takes it away at once with reduced motion.
+static func _leave(card: Control, tw: Tween, away: float) -> void:
+	if not Settings.reduced_motion:
+		tw.tween_property(card, "position:x", away, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tw.tween_callback(card.queue_free)

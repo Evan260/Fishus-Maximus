@@ -71,9 +71,11 @@ func _notification(what: int) -> void:
 		NOTIFICATION_APPLICATION_FOCUS_IN:
 			_focused = true
 			_update_fps()
+			_apply_volume()
 		NOTIFICATION_APPLICATION_FOCUS_OUT:
 			_focused = false
 			_update_fps()
+			_apply_volume()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -383,10 +385,14 @@ func _set_click_area() -> void:
 
 
 func _apply_volume() -> void:
+	var whole := Settings.master
+	# A recording is made while other windows have the focus, so it always keeps its sound.
+	if not _focused and Engine.get_write_movie_path() == "":
+		whole *= float({"quieter": 0.25, "muted": 0.0}.get(Settings.background_sound, 1.0))
 	# Focus mode turns everything down a little, so a strip left running all day stays in the background.
 	var quiet := -8.0 if strip and focus_mode else 0.0
 	var bus := AudioServer.get_bus_index("Master")
-	AudioServer.set_bus_volume_db(bus, linear_to_db(maxf(0.0001, Settings.master)) + quiet)
+	AudioServer.set_bus_volume_db(bus, linear_to_db(maxf(0.0001, whole)) + quiet)
 
 
 func _update_fps() -> void:

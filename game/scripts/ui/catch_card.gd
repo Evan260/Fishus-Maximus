@@ -155,6 +155,14 @@ static func _unfurl(card: Control, hang: Control) -> void:
 	unroll.call(0.0)
 	var tw := card.create_tween()
 	card.set_meta("tween", tw)
+	if Settings.reduced_motion:
+		card.position.y = y
+		card.modulate.a = 1.0
+		unroll.call(full)
+		(hang.get_node("Cloth") as CanvasItem).material = null
+		tw.tween_interval(SHOWN)
+		tw.tween_callback(card.queue_free)
+		return
 	tw.tween_property(card, "modulate:a", 1.0, 0.12)
 	tw.parallel().tween_property(card, "position:y", y, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_method(unroll, 0.0, full, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

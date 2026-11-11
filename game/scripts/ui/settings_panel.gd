@@ -89,6 +89,10 @@ static func _sound(page: VBoxContainer) -> void:
 	var own := Ui.setting(page, "Your own music", "Open folder", func(): Audio.open_music_folder(), WIDTH)
 	own.get_parent().name = "OwnMusic"
 	Ui.tip_on(own, "Music you put in this folder (.ogg, .mp3 or .wav) plays between the game's own tracks.")
+	var quiet := {"full": "Full volume", "quieter": "Quieter", "muted": "Muted"}
+	Ui.setting(page, "While you use other windows", quiet.get(Settings.background_sound, "Full volume"), func():
+		Settings.set_value("background_sound", {"full": "quieter", "quieter": "muted"}.get(Settings.background_sound, "full"))
+		open(), WIDTH).get_parent().name = "background_sound"
 
 
 static func _display(page: VBoxContainer) -> void:
@@ -110,7 +114,9 @@ static func _gameplay(page: VBoxContainer) -> void:
 	_toggle(page, "Old Rufus's advice for new players", "guide")
 	_toggle(page, "Tips when you point at a button", "tooltips")
 	_toggle(page, "Larger text for messages", "large_text")
+	_toggle(page, "Reduced motion", "reduced_motion")
 	_toggle(page, "Gentle fishing: lines never snap", "gentle")
+	_toggle(page, "Flash the taskbar when something needs you", "notifications")
 
 
 static func _toggle(page: VBoxContainer, text: String, key: String) -> void:

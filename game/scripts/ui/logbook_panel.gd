@@ -148,6 +148,13 @@ static func _flip_to(to_section: int, to_spread: int) -> void:
 		return
 	if not is_instance_valid(_book) or not _book.is_inside_tree():
 		return
+	if Settings.reduced_motion:
+		Audio.play("page_turn")
+		section = to_section
+		spread = to_spread
+		selected = ""
+		open(section)
+		return
 	_turning = true
 	var book := _book
 	var direction := 1 if (to_section > section if to_section != section else to_spread > spread) else -1
