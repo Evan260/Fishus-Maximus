@@ -694,11 +694,11 @@ func _input(e: InputEvent) -> void:
 
 ## The cast button just pressed: Space or the controller, or a click on the water.
 func _pressed() -> bool:
-	return Input.is_action_just_pressed("cast") or _click
+	return (Input.is_action_just_pressed("cast") and not Pad.clicking) or _click
 
 
 func _held() -> bool:
-	return Input.is_action_pressed("cast") or _mouse_held
+	return (Input.is_action_pressed("cast") and not Pad.clicking) or _mouse_held
 
 
 func _reeling_input() -> bool:

@@ -119,3 +119,30 @@ func test_an_achievement_card_stays_five_seconds_or_till_clicked() -> void:
 	(card.get_meta("tween") as Tween).custom_step(1.0)
 	check(card.is_queued_for_deletion(), "a click takes it away at once")
 	_clear()
+
+
+func test_a_controller_clicks_in_menus_and_casts_on_the_coast() -> void:
+	_clear()
+	var kept := Nav.current_name
+	var a := InputEventJoypadButton.new()
+	a.button_index = JOY_BUTTON_A
+	a.pressed = true
+	Nav.current_name = "title"
+	Pad._input(a)
+	check(Pad.clicking, "on the title, A clicks like the mouse")
+	a.pressed = false
+	Pad._input(a)
+	check(not Pad.clicking, "and lets go when A does")
+	Nav.current_name = "coast"
+	a.pressed = true
+	Pad._input(a)
+	check(not Pad.clicking, "on the coast with nothing under the pointer, A is left to cast")
+	Ui.window("Test", 100, 60)
+	Pad._input(a)
+	check(Pad.clicking, "but with a window open it clicks")
+	a.pressed = false
+	Pad._input(a)
+	check(InputMap.action_get_events("close_panel").any(func(e): return e is InputEventJoypadButton and e.button_index == JOY_BUTTON_B),
+		"and B closes the window or steps back")
+	Nav.current_name = kept
+	_clear()
