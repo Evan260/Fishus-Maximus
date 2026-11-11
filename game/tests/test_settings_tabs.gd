@@ -146,3 +146,16 @@ func test_a_controller_clicks_in_menus_and_casts_on_the_coast() -> void:
 		"and B closes the window or steps back")
 	Nav.current_name = kept
 	_clear()
+
+
+func test_every_setting_is_kept_in_one_settings_file() -> void:
+	var kept: Dictionary = Settings.strip.duplicate()
+	Settings.strip = {"dock": "top", "strip_scale": 3, "focus_mode": true}
+	var cfg := ConfigFile.new()
+	Settings.write_to(cfg)
+	check(cfg.get_value("strip", "dock") == "top" and int(cfg.get_value("strip", "strip_scale")) == 3, "the strip's settings go in settings.cfg")
+	var fresh: Node = load("res://scripts/autoload/settings.gd").new()
+	fresh.read_from(cfg)
+	check(fresh.strip.get("dock") == "top" and bool(fresh.strip.get("focus_mode")), "and come back from it")
+	fresh.free()
+	Settings.strip = kept

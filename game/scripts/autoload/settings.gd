@@ -33,6 +33,8 @@ var guide := true
 var tooltips := true
 ## The keys the player has chosen in place of an action's own, by action; see `Controls`.
 var keys := {}
+## The desktop strip's size, width, place, dock, see-through sky and focus mode, which `Windowing` reads and sets.
+var strip := {}
 var _before := DisplayServer.WINDOW_MODE_WINDOWED
 
 
@@ -71,6 +73,10 @@ func read_from(cfg: ConfigFile) -> void:
 	tooltips = cfg.get_value("play", "tooltips", tooltips)
 	var u := str(cfg.get_value("display", "units", units))
 	units = u if u in ["metric", "imperial"] else "metric"
+	strip = {}
+	if cfg.has_section("strip"):
+		for key in cfg.get_section_keys("strip"):
+			strip[key] = cfg.get_value("strip", key)
 	keys = {}
 	if cfg.has_section("keys"):
 		for action in cfg.get_section_keys("keys"):
@@ -146,6 +152,8 @@ func write_to(cfg: ConfigFile) -> void:
 	cfg.set_value("play", "tooltips", tooltips)
 	for action in keys:
 		cfg.set_value("keys", action, int(keys[action]))
+	for key in strip:
+		cfg.set_value("strip", key, strip[key])
 
 
 ## The interface size after `step`: Normal, Larger, Largest, Smaller, then Normal again.

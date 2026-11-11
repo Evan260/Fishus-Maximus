@@ -1,11 +1,12 @@
 extends Node
 ## The desktop strip from Farmus Maximus: F10 turns the window into a borderless band along an edge of the screen,
 ## always on top, where the fisherman fishes on his own. Its size, width, place, dock, see-through sky and focus mode
-## are kept in user://window.json, and the game draws fewer frames in the strip or in the background.
+## are kept in the [strip] section of user://settings.cfg, and the game draws fewer frames in the strip or in the background.
 
 signal view_changed
 
-const SETTINGS_PATH := "user://window.json"
+## Where the strip's settings were kept before settings.cfg held them, read once to carry them over.
+const OLD_PATH := "user://window.json"
 const BASE := Vector2i(480, 270)
 ## The strip shows these rows of the coast: the boat, the waterline and a little of the water below.
 const STRIP := Vector2i(480, 90)
@@ -423,10 +424,14 @@ func _persist() -> bool:
 
 
 func _load() -> void:
-	if not _persist() or not FileAccess.file_exists(SETTINGS_PATH):
+	if not _persist():
 		return
-	var d: Variant = JSON.parse_string(FileAccess.get_file_as_string(SETTINGS_PATH))
-	if typeof(d) != TYPE_DICTIONARY:
+	var d: Dictionary = Settings.strip
+	if d.is_empty() and FileAccess.file_exists(OLD_PATH):
+		var old: Variant = JSON.parse_string(FileAccess.get_file_as_string(OLD_PATH))
+		if typeof(old) == TYPE_DICTIONARY:
+			d = old
+	if d.is_empty():
 		return
 	transparent = bool(d.get("transparent", true))
 	strip_scale = int(d.get("strip_scale", 0))
@@ -440,7 +445,6 @@ func _load() -> void:
 func _save() -> void:
 	if not _persist():
 		return
-	var f := FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)
-	if f:
-		f.store_string(JSON.stringify({"transparent": transparent, "strip_scale": strip_scale, "strip_width": strip_width,
-			"offset_x": offset_x, "offset_y": offset_y, "dock": dock, "focus_mode": focus_mode}))
+	Settings.strip = {"transparent": transparent, "strip_scale": strip_scale, "strip_width": strip_width,
+		"offset_x": offset_x, "offset_y": offset_y, "dock": dock, "focus_mode": focus_mode}
+	Settings.save()
