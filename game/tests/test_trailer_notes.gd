@@ -113,3 +113,8 @@ func test_the_dog_barks_softly() -> void:
 	check(DogView.PETTED_DB <= DogView.BARK_DB, "and a yip when petted is no louder")
 	var shots := FileAccess.get_file_as_string("res://tools/trailer/shots.gd")
 	check(shots.contains("Audio._sounds.erase(\"dog\")"), "the trailer's shots leave the dog's sounds out")
+
+
+func test_nothing_creaks() -> void:
+	check(not Audio._sounds.has("creak"), "the creaking rope is gone from the sounds")
+	check(not FileAccess.get_file_as_string("res://scripts/coast/coast_screen.gd").contains("\"creak\""), "and the coast never plays it")

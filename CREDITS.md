@@ -32,4 +32,3 @@ These were recorded for Freesound and given away under CC0, and are cut by `tool
 - Cicadas Mediterranean by denkmal, for the cicadas
 - Athens Market by AlbertinaVonStade, for the market
 - Wind at Ocean shore by Tom_Kaszuba, for the wind
-- Mooring Rope by Rmutt, for the boat's creak
