@@ -1,7 +1,7 @@
 class_name AchievementCard
 ## A small card that slides in from the right, in the bottom right corner, when an achievement is earned, and stays
 ## `HOLD` seconds unless clicked away. Several earned at once take turns, and none slides in while a landed fish's
-## banner is hung out, which it would cover.
+## banner is hung out or a window is open, which it would cover.
 
 const HOLD := 5.0
 
@@ -49,7 +49,7 @@ static func show_earned(id: String) -> void:
 		_next()
 
 
-## Slides in the next card waiting, once no banner is hung out; each card that goes, however it goes, calls the next.
+## Slides in the next card waiting, once no banner is hung out and no window is open; each card that goes, however it goes, calls the next.
 static func _next() -> void:
 	_busy = false
 	while not _queue.is_empty() and (not is_instance_valid(_queue[0]) or _queue[0].is_queued_for_deletion()):
@@ -57,7 +57,7 @@ static func _next() -> void:
 	if _queue.is_empty() or Nav.ui == null:
 		return
 	_busy = true
-	if CatchCard.is_open():
+	if CatchCard.is_open() or Ui.window_open():
 		Nav.get_tree().create_timer(0.25).timeout.connect(func(): _next())
 		return
 	var card: Control = _queue.pop_front()

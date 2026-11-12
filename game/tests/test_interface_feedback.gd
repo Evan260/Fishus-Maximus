@@ -70,6 +70,20 @@ func test_an_achievement_waits_for_the_catch_banner() -> void:
 	_clear()
 
 
+func test_an_achievement_waits_for_an_open_window() -> void:
+	_clear()
+	Game.new_game("Test", "mutt")
+	Ui.window("Logbook")
+	AchievementCard.show_earned("first_fish")
+	var card: Control = _cards()[0]
+	await Nav.get_tree().create_timer(0.3).timeout
+	check(not card.get_meta("shown", false), "a card earned with a window open waits rather than covering it")
+	Ui.close_window()
+	await Nav.get_tree().create_timer(0.3).timeout
+	check(card.get_meta("shown", false), "and slides in once the window has closed")
+	_clear()
+
+
 func _texts(n: Node) -> String:
 	return " ".join(n.find_children("*", "Label", true, false).map(func(l): return l.text))
 
