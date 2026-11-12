@@ -43,3 +43,17 @@ func test_fish_in_a_wide_view_count_as_near() -> void:
 	check(sw.crowded("tuna"), "so a third tuna shoal waits")
 	sw.free()
 	Nav.port.size_2d_override = was
+
+
+
+func test_a_fish_that_reads_heavy_enough_for_an_order_is_taken() -> void:
+	var units := Settings.units
+	Settings.units = "metric"
+	var want := {"fish": "mullet", "min_pounds": 2.0}
+	check(Orders.suits(want, {"fish": "mullet", "pounds": 1.99}, false), "an order for 0.9 kg takes a mullet that reads 0.90 kg")
+	check(not Orders.suits(want, {"fish": "mullet", "pounds": 1.9}, false), "but not one that reads 0.86 kg")
+	Settings.units = "imperial"
+	want = {"fish": "grouper", "min_pounds": 12.3}
+	check(Orders.suits(want, {"fish": "grouper", "pounds": 12.1}, false), "an order for 12 lb takes a 12.1 lb fish")
+	check(not Orders.suits(want, {"fish": "grouper", "pounds": 11.4}, false), "but not an 11.4 lb one")
+	Settings.units = units

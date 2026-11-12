@@ -17,12 +17,22 @@ static func weight(lb: float) -> String:
 ## A weight asked for or suited, rounded so it reads as a person would say it: two decimals under a tenth, one under
 ## ten, whole above.
 static func need(lb: float) -> String:
+	var v := _rounded(lb)
+	if v < 0.1:
+		return _unit() % ("%.2f" % v).trim_suffix("0")
+	return _unit() % ("%.1f" % v).trim_suffix(".0")
+
+
+## The weight `need` shows, back in pounds, so a fish that reads as heavy enough as the player was told always counts.
+static func need_pounds(lb: float) -> float:
+	return _rounded(lb) / KG_PER_LB if metric() else _rounded(lb)
+
+
+static func _rounded(lb: float) -> float:
 	var v := _amount(lb)
 	if v < 0.1:
-		return _unit() % ("%.2f" % snappedf(v, 0.01)).trim_suffix("0")
-	v = snappedf(v, 0.1) if v < 10.0 else roundf(v)
-	var text := "%.1f" % v
-	return _unit() % text.trim_suffix(".0")
+		return snappedf(v, 0.01)
+	return snappedf(v, 0.1) if v < 10.0 else roundf(v)
 
 
 ## Text with each {weight} in it written as need(lb), so a request in the data reads in the chosen unit.

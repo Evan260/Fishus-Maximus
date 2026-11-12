@@ -48,7 +48,7 @@ static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
 
 ## Whether a caught fish meets a request: the right kind, heavy enough, and alive when it must be.
 static func suits(want: Dictionary, fish: Dictionary, from_well: bool) -> bool:
-	return fish["fish"] == want["fish"] and float(fish["pounds"]) >= float(want["min_pounds"]) \
+	return fish["fish"] == want["fish"] and float(fish["pounds"]) >= minf(float(want["min_pounds"]), Units.need_pounds(float(want["min_pounds"])) - 0.0001) \
 		and (not want.get("alive", false) or from_well)
 
 
