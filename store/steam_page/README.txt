@@ -49,6 +49,11 @@ four show in the store page's sidebar and in search, so they lead with the harbo
 catch banner and the boat fishing in a strip along a desktop (laid over marketing/desktop.png).
 
 
+ACHIEVEMENTS
+
+The 64 by 64 achievement icons are in store/achievements; docs/Steam-setup.md has the table to enter.
+
+
 TRAILER (Trailers tab)
 
 The trailer is rendered to marketing/recordings/videos/steam_trailer/ (kept out of git because of its size) by
@@ -62,4 +67,4 @@ STILL TO DECIDE BEFORE SUBMITTING
 - Developer and publisher name (your own name or a studio name).
 - Release date: "Coming soon", or a season and year such as "Spring 2027".
 - Price in CAD, which Steamworks asks for separately and which Valve reviews.
-- Steam Cloud and the 42 achievements are set up in Steamworks.
+- Steam Cloud and achievements are set up as described in docs/Steam-setup.md.
