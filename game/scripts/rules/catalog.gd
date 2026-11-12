@@ -34,9 +34,9 @@ static func habits(id: String) -> Array:
 	var to := float(hours[1])
 	if from >= 4.0 and from <= 7.0 and to <= 10.0:
 		out.append(str(TranslationServer.translate("at dawn")))
-	elif from >= 16.0 and from <= 19.0 and to <= 22.0:
+	elif from >= 16.0 and from <= 19.0 and to <= 23.0:
 		out.append(str(TranslationServer.translate("at dusk")))
-	elif in_hours(12.0, hours) and not in_hours(0.0, hours):
+	elif (in_hours(12.0, hours) or in_hours(15.0, hours)) and not in_hours(0.0, hours):
 		out.append(str(TranslationServer.translate("by day")))
 	elif in_hours(0.0, hours) and not in_hours(12.0, hours):
 		out.append(str(TranslationServer.translate("at night")))

@@ -77,3 +77,12 @@ func test_garum_left_on_the_table_past_midnight_sells_at_the_market_price() -> v
 	Ui.close_window()
 	for c in Nav.ui.get_children():
 		c.free()
+
+
+func test_every_fish_that_keeps_to_part_of_the_day_says_when() -> void:
+	for id in Data.fish:
+		var hours: Array = Data.fish[id]["hours"]
+		if float(hours[1]) - float(hours[0]) == 24.0:
+			continue
+		var when := Catalog.habits(id).filter(func(h): return h in ["at dawn", "at dusk", "by day", "at night"])
+		check(when.size() == 1, "%s, about from %s to %s, says when it is found" % [id, hours[0], hours[1]])
