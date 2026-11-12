@@ -679,3 +679,6 @@ time,kind,name,cost_usd,cost_generations,usd_left
 2026-11-11T11:58:42,inpaint,tools/art/estate_parts/wall.png,0.0619,0,8.4359
 2026-11-11T12:06:36,proflash,tools/art/estate_parts/pond_rocks_raw.png,0.0419,0,7.9913
 2026-11-11T12:06:44,proflash,tools/art/estate_parts/pond_cave_raw.png,0.0419,0,7.9624
+2026-11-11T19:04:16,pixen,tools/art/places/parts/open_bay/sunken_boat_try2.png,0.0083,0,4.0460
+2026-11-11T19:04:21,pixen,tools/art/places/parts/open_bay/sunken_boat_try1.png,0.0170,0,4.0373
+2026-11-11T19:05:21,proflash,tools/art/places/parts/open_bay/sunken_boat_try3.png,0.0322,0,4.0051

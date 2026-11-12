@@ -99,6 +99,7 @@
 			{"file": "places/rocky_shore/boulders.png", "z": -9, "mirror": true, "world": [1100, 318]},
 			{"file": "places/open_bay/starfish.png", "z": -9, "world": [700, 265]},
 			{"file": "places/open_bay/starfish.png", "z": -9, "mirror": true, "world": [1720, 455]},
+			{"file": "places/open_bay/sunken_boat.png", "z": -9, "world": [310, 124]},
 			{"file": "front/pine_branch.png", "front": "top", "x": 520, "factor": [1.6, 1.3], "z": 5},
 			{"file": "front/olive_branch.png", "front": "top", "x": 1280, "factor": [1.5, 1.3], "z": 5, "mirror": true},
 			{"file": "front/pine_branch.png", "front": "top", "x": 2050, "factor": [1.7, 1.3], "z": 5, "mirror": true}

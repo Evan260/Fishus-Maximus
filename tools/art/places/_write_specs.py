@@ -185,7 +185,9 @@ specs[p] = {
       + bed(p, "fans.png", "a few red and yellow sea fans on a small rock", "64x48", [1300, 1900], sway=True)
       + bed(p, "pinnacle.png", "a tall underwater rock pinnacle rising from the sand, covered in sponges and sea fans, small dark holes", "128x160", [1520], sink=10)
       + bed(p, "boulders.png", "", "", [2080, 1100], sink=8, use="places/rocky_shore/boulders.png")
-      + bed(p, "starfish.png", "a single red starfish lying flat, seen from the side", "48x32", [700, 1720]),
+      + bed(p, "starfish.png", "a single red starfish lying flat, seen from the side", "48x32", [700, 1720])
+      # Painted by Pro Flash with the rocky shore's wreck as its style picture, so the two wrecks share one look.
+      + bed(p, "sunken_boat.png", "the wreck of a small ancient Roman fishing boat seen from the side, half buried in a low mound of pale sea floor sand, its broken wooden hull sunk deep in the sand with a few snapped ribs sticking up, seaweed growing on the planks, one spilled clay amphora lying in the sand beside it", "192x96", [310], sink=2),
 }
 
 p = "capri"

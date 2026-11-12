@@ -210,3 +210,9 @@ func test_the_rod_is_held_only_while_fishing() -> void:
 			check(s.line_state() == "reeled" and s.rod_down(), "%s facing %d: once the line is in he lays it down again" % [id, facing])
 			check(not line.bait_shown() or s.rod_down(), "%s facing %d: and the hook and bait are put away with it" % [id, facing])
 			_done(s)
+
+
+func test_a_sunken_boat_lies_in_the_open_bay() -> void:
+	var wreck: Array = Data.places["open_bay"]["layers"].filter(func(l): return str(l.get("file", "")) == "places/open_bay/sunken_boat.png")
+	check(wreck.size() == 1 and ResourceLoader.exists("res://assets/art/" + str(wreck[0]["file"])), "the open bay has its sunken boat")
+	check(int(wreck[0].get("z", 0)) == -9 and wreck[0].has("world"), "drawn behind the fish and the floor, as seabed pieces are")

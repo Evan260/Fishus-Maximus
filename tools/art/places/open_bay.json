@@ -279,6 +279,14 @@
    "use": "places/open_bay/starfish.png"
   },
   {
+   "file": "sunken_boat.png",
+   "on_bed": 310,
+   "sink": 2,
+   "z": -9,
+   "prompt": "the wreck of a small ancient Roman fishing boat seen from the side, half buried in a low mound of pale sea floor sand, its broken wooden hull sunk deep in the sand with a few snapped ribs sticking up, seaweed growing on the planks, one spilled clay amphora lying in the sand beside it, a single object on its own, nothing behind it, empty transparent background, no water, no frame, no border, no scene",
+   "size": "192x96"
+  },
+  {
    "file": "pine_branch.png",
    "use": "front/pine_branch.png",
    "front": "top",
