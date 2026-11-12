@@ -109,7 +109,7 @@ func open_panel(window: String) -> void:
 		HoldChoice.ask({"fish": "bream", "pounds": 2.4})
 	elif window.begins_with("settings"):
 		if window.contains(":"):
-			SettingsPanel.tab = window.get_slice(":", 1)
+			SettingsPanel.tab = settings_tab(window.get_slice(":", 1))
 		SettingsPanel.open()
 	elif Nav.current and Nav.current.has_method("_load"):
 		match window:
@@ -121,6 +121,14 @@ func open_panel(window: String) -> void:
 				var info := Saves.slot_info(1)
 				if not info.is_empty():
 					Nav.current.call("_confirm_delete", 1, info)
+
+
+## The settings tab named in any capitals, or the one already chosen when no tab has that name.
+func settings_tab(name: String) -> String:
+	for t in SettingsPanel.TABS:
+		if t.to_lower() == name.to_lower():
+			return t
+	return SettingsPanel.tab
 
 
 ## Slides in the card for the achievement named by --achievement=ID, or the first one, without earning it.

@@ -159,3 +159,18 @@ func test_every_setting_is_kept_in_one_settings_file() -> void:
 	check(fresh.strip.get("dock") == "top" and bool(fresh.strip.get("focus_mode")), "and come back from it")
 	fresh.free()
 	Settings.strip = kept
+
+
+func test_the_settings_flag_takes_a_tab_in_any_capitals() -> void:
+	_clear()
+	for name in ["display", "DISPLAY", "Display", "dIsPlAy"]:
+		SettingsPanel.tab = "Sound"
+		Dev.open_panel("settings:" + name)
+		check(SettingsPanel.tab == "Display", "--panel=settings:%s opens the Display tab, %s" % [name, SettingsPanel.tab])
+		check(Nav.ui.find_child("Display", true, false) != null, "and lays out its page for %s" % name)
+		_clear()
+	SettingsPanel.tab = "Keys"
+	Dev.open_panel("settings:nonsense")
+	check(SettingsPanel.tab == "Keys", "a tab with no such name keeps the one chosen")
+	_clear()
+	SettingsPanel.tab = "Sound"
