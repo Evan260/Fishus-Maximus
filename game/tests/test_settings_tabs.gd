@@ -86,6 +86,7 @@ func test_reduced_motion_larger_text_and_the_sound_behind_other_windows() -> voi
 	Windowing._focused = true
 	Windowing._apply_volume()
 	check(absf(AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Master")) - linear_to_db(0.8)) < 0.1, "and at full volume again in front")
+	_clear()
 	Game.new_game("Still", "mutt")
 	Settings.reduced_motion = true
 	AchievementCard.show_earned("first_fish")
