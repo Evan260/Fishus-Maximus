@@ -35,7 +35,7 @@ func _walk() -> void:
 	await _shot(dir, "08_board")
 	Ui.close_window()
 	await _go("shore", {}, dir, "09_shore")
-	PondPanel.open(0, Nav.current.views[0])
+	PondPanel.open(Nav.current.pond)
 	await _shot(dir, "10_pond")
 	GarumPanel.open()
 	await _shot(dir, "11_garum")
