@@ -125,7 +125,7 @@ func _init() -> void:
 		for move in _hands:
 			var list: Array[Texture2D] = []
 			for i in (_hands[move] as Array).size():
-				var path := MAN + ("sit.png" if move == "sit" else "%s_%02d.png" % [move, i])
+				var path := MAN + ("%s.png" % move if move in ["sit", "rest"] else "%s_%02d.png" % [move, i])
 				if ResourceLoader.exists(path):
 					list.append(load(path))
 			_frames[move] = list
@@ -305,7 +305,7 @@ func throw() -> float:
 	return _swing
 
 
-## What he is doing now, as the move and the frame of it.
+## What he is doing now, as the move and the frame of it; with the rod laid down he rests his hands on his knee.
 func pose() -> Array:
 	if not person.visible:
 		return ["sit", 0]
@@ -317,6 +317,8 @@ func pose() -> Array:
 		return ["cast", mini(WIND_FRAMES - 1, int(clampf(charge, 0.0, 1.0) * WIND_FRAMES))]
 	if rowing > 0.0 and oars:
 		return ["row", int(_row_t * ROW_FPS) % (_frames["row"] as Array).size()]
+	if rod_down() and not (_frames.get("rest", []) as Array).is_empty():
+		return ["rest", 0]
 	return ["sit", 0]
 
 

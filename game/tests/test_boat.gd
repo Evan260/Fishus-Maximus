@@ -80,7 +80,7 @@ func test_the_rod_is_laid_down_while_the_boat_sails() -> void:
 		s.row(1.0, 0.05)
 		s.relayout()
 		check(b.rod_down() and s.rod_down(), "%s: while the boat sails along the rod is laid down in the boat" % id)
-		check(b.pose()[0] == "sit", "%s: and he sits, with no oars to pull" % id)
+		check(b.pose()[0] == "rest", "%s: and he sits with his hands at rest, with no oars to pull" % id)
 		var tip: Vector2 = b.rod_tip(s.boat_x)
 		check(tip.y > held.y + 10.0, "%s: so its tip lies down in the hull, row %.0f, not up in the air at %.0f" % [id, tip.y, held.y])
 		b._process(0.5)
@@ -177,3 +177,19 @@ func test_the_banner_shows_each_fish_larger_and_the_logbook_keeps_the_small_one(
 		var k := minf(big.get_width() / float(small.get_width()), big.get_height() / float(small.get_height()))
 		check(k >= 1.3, "%s: drawn %.2f times as large as in the logbook, %s against %s" % [id, k, big.get_size(), small.get_size()])
 		check(ItemArt._fish(id) == small, "%s: the logbook and the shops keep the small picture the sea shows" % id)
+
+
+func test_his_hands_rest_on_his_knee_while_the_rod_is_down() -> void:
+	for id in ["skiff", "fishing_boat", "sailing_boat", "big_boat"]:
+		var s := _coast(id)
+		var b: BoatView = s._boat
+		b.line_out = false
+		s.relayout()
+		check(b.rod_down() and b.pose() == ["rest", 0], "%s: with the rod laid down he sits at rest, %s" % [id, b.pose()])
+		check(b.person.texture.resource_path.ends_with("rest.png"), "%s: in his resting picture" % id)
+		var hands: Array = b._hands["rest"][0]
+		var held: Array = b._hands["sit"][0]
+		check(hands[1] > held[1] + 5, "%s: his hands lie low in his lap, not raised as if holding a rod" % id)
+		b.line_out = true
+		check(b.pose() == ["sit", 0], "%s: and with his line out he holds the rod up again" % id)
+		_done(s)
