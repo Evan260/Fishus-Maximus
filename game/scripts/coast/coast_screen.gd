@@ -384,12 +384,17 @@ func _pets_dog(at: Vector2) -> bool:
 	return not _state in ["nibble", "bite"] and dog.rect().has_point(at)
 
 
+## Where the net and the trident are thrown from and the lamp hangs: the rod's tip as he would hold it, over the bow.
+func bow_reach() -> Vector2:
+	return _boat.rest_tip(boat_x)
+
+
 ## Whether he is rowing, with the rod laid down in the boat.
 func rowing() -> bool:
 	return _boat.rowing > 0.0 and _boat.oars
 
 
-## Whether the rod lies in the boat with its line wound in, while he rows or the boat sails.
+## Whether the rod lies in the boat with its line wound in, whenever he is not fishing with it.
 func rod_down() -> bool:
 	return _boat.rod_down()
 
@@ -564,6 +569,7 @@ func relayout() -> void:
 	_water.cam = camera.cam
 	_water.time = _time
 	_boat.charge = charge if methods.method == "line" else -1.0
+	_boat.line_out = _state != "reeled"
 	_boat.strain = fight.tension if fight != null else 0.0
 	_boat.pull = hook
 	_boat.place(boat_x, camera.cam, _time)

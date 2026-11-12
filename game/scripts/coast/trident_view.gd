@@ -25,13 +25,13 @@ func _ready() -> void:
 
 ## Where the lamp's light falls in the world: under the bow, a little below the surface.
 func light_at() -> Vector2:
-	return screen.rod_tip() + Vector2(-8.0 * screen.facing(), 60.0)
+	return screen.bow_reach() + Vector2(-8.0 * screen.facing(), 60.0)
 
 
 func _draw() -> void:
 	var cam: Vector2 = screen.camera.cam
 	if lit:
-		var bow: Vector2 = screen.rod_tip() + Vector2(-10.0 * screen.facing(), 8.0) - cam
+		var bow: Vector2 = screen.bow_reach() + Vector2(-10.0 * screen.facing(), 8.0) - cam
 		var flicker := 0.9 + 0.1 * sin(screen.time() * 13.0)
 		for k in 6:
 			var r := 70.0 - k * 11.0
@@ -46,7 +46,7 @@ func _draw() -> void:
 	if _spear:
 		_spear.visible = thrown_left > 0.0
 	if thrown_left > 0.0 and _spear:
-		var from: Vector2 = screen.rod_tip() - cam
+		var from: Vector2 = screen.bow_reach() - cam
 		var to := thrown_at - cam
 		var k := 1.0 - thrown_left / 0.35
 		var angle := (to - from).angle()

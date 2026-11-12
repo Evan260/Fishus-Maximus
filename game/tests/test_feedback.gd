@@ -103,6 +103,7 @@ func test_a_cast_line_flies_out_before_it_lands() -> void:
 func test_the_rod_bends_towards_a_pulling_fish() -> void:
 	var b := BoatView.new()
 	b.set_boat("skiff")
+	b.line_out = true
 	b.place(100.0, Vector2.ZERO, 0.0)
 	var straight: Vector2 = b.rod_tip(100.0)
 	b.strain = 1.0

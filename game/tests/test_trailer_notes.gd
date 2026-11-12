@@ -172,3 +172,41 @@ func _rising(frames: Array) -> bool:
 		if frames[i] < frames[i - 1]:
 			return false
 	return true
+
+
+func test_the_rod_is_held_only_while_fishing() -> void:
+	for id in Data.boats:
+		for facing in [1.0, -1.0]:
+			var s := _coast(id)
+			var b: BoatView = s._boat
+			var line: LineView = s._line
+			b.facing = facing
+			s._process(1.0 / 30.0)
+			check(s.rod_down(), "%s facing %d: sitting still with the line in, the rod lies in the boat" % [id, facing])
+			check(b.rod_tip(s.boat_x).y > b.rest_tip(s.boat_x).y + 10.0, "%s facing %d: its tip down in the hull" % [id, facing])
+			var hooks := 0
+			# Winding up, the hook hangs from the raised rod's tip and never on the dog.
+			for k in BoatView.WIND_FRAMES:
+				s.charge = (k + 0.5) / BoatView.WIND_FRAMES
+				s.relayout()
+				check(not s.rod_down(), "%s facing %d: he holds the rod as he winds up" % [id, facing])
+				var hook: Vector2 = s.rod_tip() - s.camera.cam + Vector2(0, 10)
+				if s.dog.rect().grow(-6.0).intersects(Rect2(hook - Vector2(2, 0), Vector2(5, 6))):
+					hooks += 1
+			check(hooks == 0, "%s facing %d: the hook and bait never rest on the dog (%d frames)" % [id, facing, hooks])
+			s.charge = -1.0
+			s.cast(0.6)
+			for k in 60:
+				b._process(1.0 / 30.0)
+				s._process(1.0 / 30.0)
+				check(not s.rod_down(), "%s facing %d: he holds it through the cast and while the line is out" % [id, facing])
+			s.reel_in()
+			for k in 300:
+				b._process(1.0 / 30.0)
+				s._process(1.0 / 30.0)
+				if s.line_state() == "reeled":
+					break
+			s._process(1.0 / 30.0)
+			check(s.line_state() == "reeled" and s.rod_down(), "%s facing %d: once the line is in he lays it down again" % [id, facing])
+			check(not line.bait_shown() or s.rod_down(), "%s facing %d: and the hook and bait are put away with it" % [id, facing])
+			_done(s)

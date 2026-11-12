@@ -247,7 +247,7 @@ func _dev_pot(how: String) -> void:
 
 func _throw_net() -> void:
 	var aim := net_view.aim
-	var tip: Vector2 = screen.rod_tip()
+	var tip: Vector2 = screen.bow_reach()
 	if absf(aim.x - tip.x) > NET_REACH or aim.y < 0.0 or aim.y > 80.0:
 		Toast.say("Throw the net over a shoal near the boat.")
 		return
@@ -298,7 +298,7 @@ func _nearest_shoal(at: Vector2) -> Array:
 
 func _throw_trident() -> void:
 	var aim := trident_view.aim
-	if aim.distance_to(screen.rod_tip()) > SPEAR_REACH or aim.y < 0.0:
+	if aim.distance_to(screen.bow_reach()) > SPEAR_REACH or aim.y < 0.0:
 		Toast.say("Too far to throw.")
 		return
 	trident_view.thrown_at = aim

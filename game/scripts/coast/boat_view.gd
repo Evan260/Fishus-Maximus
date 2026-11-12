@@ -79,6 +79,8 @@ var oars := false
 var rowing := 0.0
 ## How many times the oar's blade has gone into the water, each with its splash.
 var strokes := 0
+## Whether his line is out in the water or a fish is on it, so he holds the rod.
+var line_out := false
 ## How far the cast is wound up, from 0 to 1, or below zero when it is not being held.
 var charge := -1.0
 ## How hard a hooked fish pulls, as the line's tension, and the point in the world it pulls towards.
@@ -318,9 +320,9 @@ func pose() -> Array:
 	return ["sit", 0]
 
 
-## Whether the rod is laid down in the boat, as it is while he rows or the boat sails along.
+## Whether the rod is laid down in the boat: he holds it only to cast, while his line is out and through a fight.
 func rod_down() -> bool:
-	return rowing > 0.0 and _throw < 0.0 and charge < 0.0
+	return _throw < 0.0 and charge < 0.0 and not line_out
 
 
 ## The rower faces the stern, so he is turned round from the way the boat goes.
