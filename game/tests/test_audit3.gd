@@ -25,3 +25,21 @@ func test_a_wide_window_opens_on_the_boat_without_gliding() -> void:
 		c.free()
 	s.free()
 	Nav.port.size_2d_override = was
+
+
+func test_fish_in_a_wide_view_count_as_near() -> void:
+	var was := Nav.port.size_2d_override
+	Nav.port.size_2d_override = Vector2i(960, 300)
+	var sw := Swimmers.new()
+	sw.setup("open_bay", Seabed.new(Data.places["open_bay"]["seabed"]), Seeds.rng(5, "wide"))
+	Nav.port.add_child(sw)
+	sw.cam = Vector2(400, -160)
+	var tex := sw.texture_for("tuna")
+	for x in [1300.0, 1500.0]:
+		var s := Swimmers.sprite_for("tuna", tex)
+		sw.add_child(s)
+		sw.fish.append({"id": "tuna", "lb": 100.0, "sprite": s, "pos": Vector2(x, 80), "heading": 1.0, "leader": {}, "state": "swim"})
+	check(sw._near_count() == 2, "two shoals in the right of a wide view are counted as near, not %d" % sw._near_count())
+	check(sw.crowded("tuna"), "so a third tuna shoal waits")
+	sw.free()
+	Nav.port.size_2d_override = was

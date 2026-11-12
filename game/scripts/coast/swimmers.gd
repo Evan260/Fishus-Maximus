@@ -303,7 +303,8 @@ func _near_count() -> int:
 
 
 func _near_leaders() -> Array:
-	return fish.filter(func(f): return f["leader"].is_empty() and absf(f["pos"].x - (cam.x + 240.0)) < 240.0 + REACH)
+	var half := Nav.view().x / 2.0
+	return fish.filter(func(f): return f["leader"].is_empty() and absf(f["pos"].x - (cam.x + half)) < half + REACH)
 
 
 ## Whether a kind already has as many fish or shoals near the camera as one kind may.
