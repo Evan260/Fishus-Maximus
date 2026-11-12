@@ -62,9 +62,17 @@ has its shot list. Before uploading, confirm with the composer of the harp music
 pack may be used in a trailer.
 
 
+BUILDS (SteamPipe)
+
+The game itself goes up with python tools/steam/publish.py, for Windows, macOS and Linux. docs/Steam-publishing.md
+has the one-time setup in Steamworks (the App ID, the three depots, the launch options and the test branch) and how
+the Mac app is signed and notarized. docs/Steam-setup.md covers GodotSteam, the achievements and Steam Cloud.
+
+
 STILL TO DECIDE BEFORE SUBMITTING
 
 - Developer and publisher name (your own name or a studio name).
 - Release date: "Coming soon", or a season and year such as "Spring 2027".
 - Price in CAD, which Steamworks asks for separately and which Valve reviews.
 - Steam Cloud and achievements are set up as described in docs/Steam-setup.md.
+- The app, its depots and the account that uploads are filled in to tools/steam/steam.json (docs/Steam-publishing.md).
