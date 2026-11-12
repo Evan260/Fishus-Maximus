@@ -175,7 +175,8 @@ static func _flip_to(to_section: int, to_spread: int) -> void:
 	# A leaf that landed has already passed the turning on to the next one, so only a leaf cut short clears it.
 	turn.tree_exiting.connect(func():
 		if turn.progress < 1.0:
-			_turning = false)
+			_turning = false
+			_queued = [])
 	_book.add_child(turn)
 	# The new page is pictured a frame later, long before the leaf shows its back, so no one frame does all the work.
 	await turn.get_tree().process_frame

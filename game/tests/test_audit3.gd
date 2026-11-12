@@ -113,3 +113,22 @@ func test_the_strips_centre_tip_names_the_key_chosen() -> void:
 	check("Back to the middle (G)" in tips, "the re-centre tip names G: %s" % [tips])
 	Controls.rebind("reset_strip", KEY_F9)
 	c.free()
+
+
+func test_a_turn_waiting_behind_a_closed_book_is_forgotten() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "mutt")
+	var reduced := Settings.reduced_motion
+	Settings.reduced_motion = false
+	LogbookPanel.open(0)
+	LogbookPanel._bookmark_turn(1)
+	LogbookPanel._bookmark_turn(2)
+	check(LogbookPanel._turning, "a turn is under way with another waiting")
+	Ui.close_window()
+	for c in Nav.ui.get_children():
+		c.free()
+	check(not LogbookPanel._turning and LogbookPanel._queued.is_empty(), "closing the book forgets the waiting turn")
+	LogbookPanel._queued = []
+	LogbookPanel._turning = false
+	Settings.reduced_motion = reduced
