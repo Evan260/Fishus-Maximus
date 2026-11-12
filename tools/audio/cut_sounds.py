@@ -1,7 +1,9 @@
 """Cuts the game's sea sounds out of CC0 Freesound recordings in tools/audio/recordings (each named by its preview id)
 into game/assets/audio: short effects, and ambience loops whose end is blended into their start so they loop without
-a gap. Needs ffmpeg on the path. Usage: python tools/audio/cut_sounds.py"""
+a gap. Needs ffmpeg on the path. Usage: python tools/audio/cut_sounds.py [NAME...], where names cut only the sounds
+starting with them."""
 import subprocess
+import sys
 import tempfile
 import wave
 from pathlib import Path
@@ -16,9 +18,9 @@ RATE = 44100
 
 # name: (recording, start, end, high-pass in Hz, loudness target in LUFS)
 EFFECTS = {
-    "oars_1": ("585316_12458758", 3.2, 4.9, 80, -20),
-    "oars_2": ("585316_12458758", 8.2, 9.9, 80, -20),
-    "oars_3": ("585316_12458758", 12.7, 14.4, 80, -20),
+    "stroke_1": ("507091_8682843", 1.02, 1.62, 150, -24),
+    "stroke_2": ("507091_8682843", 2.2, 2.8, 150, -24),
+    "stroke_3": ("507091_8682843", 3.6, 4.2, 150, -24),
     "reel": ("507078_8682843", 0.5, 2.6, 120, -18),
     "splash_small": ("178736_2596329", 2.3, 2.95, 180, -18),
     "splash_big": ("507091_8682843", 1.0, 2.7, 100, -16),
@@ -33,11 +35,12 @@ LOOPS = {
 }
 
 
-def decode(name: str, start: float, end: float, highpass: int, lufs: int) -> np.ndarray:
+def decode(name: str, start: float, end: float, highpass: int, lufs: int, lowpass: int = 0) -> np.ndarray:
     with tempfile.TemporaryDirectory() as tmp:
         out = Path(tmp) / "cut.wav"
+        soften = f"lowpass=f={lowpass}," if lowpass else ""
         subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-ss", str(start), "-to", str(end), "-i", str(RAW / f"{name}.mp3"),
-                        "-af", f"highpass=f={highpass},loudnorm=I={lufs}:TP=-2", "-ac", "1", "-ar", str(RATE), str(out)], check=True)
+                        "-af", f"highpass=f={highpass},{soften}loudnorm=I={lufs}:TP=-2", "-ac", "1", "-ar", str(RATE), str(out)], check=True)
         with wave.open(str(out)) as w:
             return np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float32) / 32768.0
 
@@ -62,6 +65,14 @@ def fade(clip: np.ndarray, seconds: float = 0.03) -> np.ndarray:
     return clip
 
 
+def dip(clip: np.ndarray) -> np.ndarray:
+    """Shapes a stretch of splashing into one oar blade dipping in: a quick rise, a short hold and a soft tail."""
+    t = np.arange(len(clip)) / RATE
+    rise, hold = 0.015, 0.07
+    env = np.where(t < rise, t / rise, np.exp(-np.maximum(t - rise - hold, 0.0) / 0.12))
+    return fade(clip * env, 0.02)
+
+
 def blend_loop(clip: np.ndarray, seconds: float = 2.0) -> np.ndarray:
     """Overlaps the last seconds onto the first with an equal-power crossfade, so the end runs into the start."""
     n = int(seconds * RATE)
@@ -71,14 +82,21 @@ def blend_loop(clip: np.ndarray, seconds: float = 2.0) -> np.ndarray:
     return np.concatenate([joined, body])
 
 
-def main():
+def main(only: list):
     for name, spec in EFFECTS.items():
-        encode(fade(decode(*spec), 0.08 if name.startswith("splash") else 0.03), SFX / f"{name}.ogg")
+        if only and not any(name.startswith(o) for o in only):
+            continue
+        if name.startswith("stroke"):
+            encode(dip(decode(*spec, lowpass=3200)), SFX / f"{name}.ogg")
+        else:
+            encode(fade(decode(*spec), 0.08 if name.startswith("splash") else 0.03), SFX / f"{name}.ogg")
         print("cut", name)
     for name, spec in LOOPS.items():
+        if only and not any(name.startswith(o) for o in only):
+            continue
         encode(blend_loop(decode(*spec)), AMBIENCE / f"{name}.ogg")
         print("looped", name)
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

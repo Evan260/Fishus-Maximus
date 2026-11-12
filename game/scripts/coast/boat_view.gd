@@ -73,6 +73,8 @@ var dog_spot := Vector2(0.24, 38.0)
 var oars := false
 ## Seconds of rowing still to show; the coast tops it up while the player rows.
 var rowing := 0.0
+## How many times the oar's blade has gone into the water, each with its splash.
+var strokes := 0
 ## How far the cast is wound up, from 0 to 1, or below zero when it is not being held.
 var charge := -1.0
 ## How hard a hooked fish pulls, as the line's tension, and the point in the world it pulls towards.
@@ -95,6 +97,8 @@ var _cut := NAN
 var _blade_at := Vector2.ZERO
 var _swept := 0.0
 var _sweep := 0.0
+## Whether the oar's blade was under the water last frame, so each stroke splashes once as it goes in.
+var _blade_in := false
 ## For each column of the boat's picture, the top of its hull: the first solid row from the deck down.
 var _rails := PackedFloat32Array()
 ## How full of wind the sail is, from 0 at rest to 1 under way.
@@ -430,9 +434,15 @@ func _splash_step(delta: float) -> void:
 func _stir() -> void:
 	if not (person and person.visible and pose()[0] == "row"):
 		_cut = NAN
+		_blade_in = false
 		return
 	var oar := _oar()
-	if oar[0].y <= 0.0:
+	var dipped: bool = oar[0].y > 0.0
+	if dipped and not _blade_in:
+		Audio.play("stroke", 0.0, randf_range(0.92, 1.08))
+		strokes += 1
+	_blade_in = dipped
+	if not dipped:
 		_cut = NAN
 		return
 	var x: float = oar[1].x

@@ -31,7 +31,6 @@ var methods: CoastMethods
 var events: CoastEvents
 var dog: DogView
 var hud: Hud
-var _row_sound := 0.0
 var _cheer_wait := 0.0
 var fight: LineFight
 var weather := "clear"
@@ -351,10 +350,6 @@ func row(dir: float, seconds: float) -> void:
 	if _rowed >= ROWED:
 		_rowed = 0.0
 		Game.state["stats"]["rowed"] = int(Game.state["stats"].get("rowed", 0)) + 1
-	_row_sound -= seconds
-	if _row_sound <= 0.0:
-		_row_sound = 1.1
-		Audio.play("oars", -6.0)
 	Game.state["boat_x"] = boat_x
 	hook = _boat.rod_tip(boat_x)
 

@@ -25,10 +25,9 @@ These come from Farmus Maximus, which credits them the same way:
 
 These were recorded for Freesound and given away under CC0, and are cut by `tools/audio/cut_sounds.py`:
 
-- Rowing boat by ilmari_freesound, for the oars
 - Angel Fly Fish Reel Slow Wind by paulprit, for the reel
 - Rock In Water Splash-Plop 2 by jc144940, for the cast
-- Fish Jumping Splash 2 by paulprit, for a fish landed
+- Fish Jumping Splash 2 by paulprit, for a fish landed and for each stroke of the oars
 - Sines Recreational Port, Seagulls by Sonotomia, for the gulls
 - Cicadas Mediterranean by denkmal, for the cicadas
 - Athens Market by AlbertinaVonStade, for the market
