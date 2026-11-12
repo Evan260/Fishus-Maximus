@@ -20,8 +20,8 @@ static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
 	# Only fish he can catch now: with a way of fishing open and the gear for it, and in their season.
 	var ways: Array = Story.unlocks(int(state["chapter"]))["methods"].filter(func(m): return m in ["line", "trap"] \
 		or (m == "net" and str(state["gear"].get("net", "")) != "") or (m == "trident" and str(state["gear"].get("lamp", "")) != ""))
-	var kinds := Data.fish.keys().filter(func(id): return (not Data.fish[id]["legend"] or (legends_open and not state["legends"].has(id))) \
-		and Data.fish[id]["places"].any(func(p): return p in places) and Data.fish[id]["methods"].any(func(m): return m in ways) \
+	var kinds := Data.fish.keys().filter(func(id): return (not Data.fish[id]["legend"] or (legends_open and not state["legends"].has(id) \
+		and _legend_about_today(state, id))) and Data.fish[id]["places"].any(func(p): return p in places) and Data.fish[id]["methods"].any(func(m): return m in ways) \
 		and (Data.fish[id]["seasons"].is_empty() or season in Data.fish[id]["seasons"]))
 	if kinds.is_empty():
 		return
@@ -44,6 +44,14 @@ static func new_day(state: Dictionary, rng: RandomNumberGenerator) -> void:
 		state["orders"].append({"fish": fish, "min_pounds": min_lb, "alive": alive, "feast": feast,
 			"reward": (int(worth * (2.4 if alive else 1.8)) + 4) * (2 if feast else 1), "reputation": clampi(11 - int(f["rarity"]), 1, 8),
 			"due": today + rng.randi_range(0, 2)})
+
+
+## Whether today brings the weather or the event a legend needs, so one asked for can be caught before it is due.
+static func _legend_about_today(state: Dictionary, id: String) -> bool:
+	var f: Dictionary = Data.fish[id]
+	var today := Clock.day_of(float(state["time"]))
+	return (f.get("weather", []).is_empty() or Weather.for_day(int(state["seed"]), today) in f["weather"]) \
+		and (f.get("event", null) == null or f["event"] in Events.on(today))
 
 
 ## Whether a caught fish meets a request: the right kind, heavy enough, and alive when it must be.
