@@ -1,12 +1,13 @@
-"""Draw the Fishus Maximus logo as pixel art on the game's own pixel grid, for the YouTube banner and other marketing, in
-the same lettering as Farmus Maximus's and Mosaicus Maximus's.
+"""Draw the Fishus Maximus logo as pixel art on the game's own pixel grid, for the trailer, the Steam store page and the
+YouTube banner, in the same lettering as Farmus Maximus's and Mosaicus Maximus's.
 
 The letters are Cinzel (SIL Open Font License, kept beside this script), a typeface drawn from Roman inscriptions,
 rendered large and sampled down to whole pixels, then shaded by hand rules: sunlit gold on top, deeper ochre below,
 a carved edge, a dark outline and a little depth underneath, with a laurel sprig curling out from each side.
 
 Usage: python tools/trailer/make_logo.py
-Writes tools/trailer/logo.png and logo_plain.png (the name without the laurel) at 1 pixel per game pixel.
+Writes tools/trailer/logo.png, logo_plain.png (the name without the laurel) and scroll.png, the parchment scroll the
+trailer's end card writes "Wishlist now on Steam" on, at 1 pixel per game pixel.
 """
 import math
 from pathlib import Path
@@ -17,6 +18,7 @@ from PIL import Image, ImageDraw, ImageFont
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "logo.png"
 PLAIN_OUT = HERE / "logo_plain.png"
+SCROLL_OUT = HERE / "scroll.png"
 CAP = 27
 SUPER = 8
 LINES = ["FISHUS", "MAXIMUS"]
@@ -33,28 +35,41 @@ BANDS = [(255, 232, 160), (250, 212, 110), (240, 182, 72), (224, 150, 52), (204,
 LEAF_DARK, LEAF_MID, LEAF_LIGHT = (52, 86, 46), (86, 128, 62), (138, 172, 88)
 
 
-def glyph_line(text):
-    """One line of capitals as a coverage mask with letters a little apart, CAP pixels tall."""
+def glyph_line(text, cap_px=CAP, tracking=TRACKING):
+    """One line of capitals as a coverage mask with letters a little apart, cap_px pixels tall."""
     font = ImageFont.truetype(str(HERE / "Cinzel.ttf"), 10)
     font.set_variation_by_axes([900])
     cap = font.getbbox("H")
-    size = int(10 * CAP * SUPER / (cap[3] - cap[1]))
+    size = int(10 * cap_px * SUPER / (cap[3] - cap[1]))
     font = ImageFont.truetype(str(HERE / "Cinzel.ttf"), size)
     font.set_variation_by_axes([900])
     top = font.getbbox("H")[1]
     widths = [font.getbbox(ch)[2] for ch in text]
-    total = sum(widths) + TRACKING * SUPER * (len(text) - 1)
-    canvas = Image.new("L", (total + SUPER * 4, CAP * SUPER + SUPER * 2), 0)
+    total = sum(widths) + tracking * SUPER * (len(text) - 1)
+    canvas = Image.new("L", (total + SUPER * 4, cap_px * SUPER + SUPER * 2), 0)
     d = ImageDraw.Draw(canvas)
     x = SUPER * 2
     for ch, w in zip(text, widths):
         d.text((x, SUPER - top), ch, font=font, fill=255)
-        x += w + TRACKING * SUPER
+        x += w + tracking * SUPER
     small = canvas.resize((canvas.width // SUPER, canvas.height // SUPER), Image.BOX)
     mask = np.array(small) > 110
     cols = np.nonzero(mask.any(0))[0]
     rows = np.nonzero(mask.any(1))[0]
     return mask[rows[0]:rows[-1] + 1, cols[0]:cols[-1] + 1]
+
+
+def compact_name(cap_px=24, tracking=1, gap=4):
+    """The name alone in smaller, closer letters, for the Steam store's small capsule, which is too narrow for the
+    plain logo at twice its size."""
+    lines = [shade(glyph_line(t, cap_px, tracking)) for t in LINES]
+    width = max(l.width for l in lines)
+    name = Image.new("RGBA", (width, sum(l.height for l in lines) + gap), (0, 0, 0, 0))
+    y = 0
+    for l in lines:
+        name.alpha_composite(l, ((width - l.width) // 2, y))
+        y += l.height + gap
+    return name.crop(name.getbbox())
 
 
 def sprig(length, flip):
@@ -146,6 +161,87 @@ def shade(mask):
     return Image.fromarray(out, "RGBA")
 
 
+def scroll(width=286, height=44, roll=13, sheet_inset=7):
+    """A parchment scroll: a toned sheet between two rolled ends, each a shaded cylinder whose spiral shows at its
+    top and bottom, with a fine inner border, ink outline and a soft shadow beneath."""
+    W, H = width, height
+    img = np.zeros((H + 3, W, 4), np.uint8)
+
+    def put(x, y, c, a=255):
+        if 0 <= x < W and 0 <= y < H + 3:
+            img[y, x] = (*c, a)
+
+    top, bottom = sheet_inset, H - sheet_inset
+    left, right = roll - 3, W - roll + 3
+    # The sheet: lightest across its middle, deepening towards its rolled-in edges, with faint fibres in the paper.
+    tones = [(214, 186, 140), (232, 210, 168), (244, 228, 194), (251, 241, 216), (253, 246, 226)]
+    rng = np.random.default_rng(7)
+    for y in range(top, bottom + 1):
+        for x in range(left, right + 1):
+            t = 1.0 - abs((y - top) / max(1, bottom - top) - 0.5) * 2.0
+            edge = min(x - left, right - x)
+            t = min(t, edge / 5.0)
+            c = tones[min(len(tones) - 1, int(t * len(tones)))]
+            if rng.random() < 0.05 and 1 < y - top < bottom - top - 1:
+                c = tuple(max(0, v - 14) for v in c)
+            put(x, y, c)
+    for x in range(left, right + 1):
+        put(x, top - 1, OUTLINE)
+        put(x, bottom + 1, OUTLINE)
+        # A soft shadow falls below the sheet.
+        put(x, bottom + 2, (40, 24, 18), 90)
+        put(x, bottom + 3, (40, 24, 18), 40)
+    # A fine inner border, drawn in faded ink, with a small diamond at each end.
+    border = (170, 120, 76)
+    for x in range(left + 14, right - 13):
+        put(x, top + 3, border)
+        put(x, bottom - 3, border)
+    mid = (top + bottom) // 2
+    for cx in (left + 9, right - 9):
+        for dy in range(-2, 3):
+            w = 2 - abs(dy)
+            for dx in range(-w, w + 1):
+                put(cx + dx, mid + dy, (226, 160, 60) if abs(dx) + abs(dy) < 2 else (150, 92, 44))
+    # The rolled ends: cylinders lit down their left third, standing taller than the sheet, with a spiral at each cap.
+    shades = [(120, 80, 48), (176, 132, 86), (222, 190, 140), (240, 216, 172), (226, 198, 152), (204, 170, 122),
+              (186, 148, 102), (168, 128, 84), (150, 110, 70), (134, 94, 58), (120, 80, 48)]
+    for x0 in (0, W - roll):
+        for y in range(2, H - 1):
+            for i in range(roll):
+                put(x0 + i, y, shades[int(i * len(shades) / roll)])
+        for y in range(2, H - 1):
+            put(x0, y, OUTLINE)
+            put(x0 + roll - 1, y, OUTLINE)
+        for cap_y, step in ((2, 1), (H - 2, -1)):
+            # Each cap is a flat ellipse of rolled paper with its spiral drawn in.
+            for i in range(1, roll - 1):
+                put(x0 + i, cap_y - step, OUTLINE)
+                put(x0 + i, cap_y, (244, 228, 194))
+                put(x0 + i, cap_y + step, (214, 186, 140))
+            put(x0, cap_y, (0, 0, 0), 0)
+            put(x0 + roll - 1, cap_y, (0, 0, 0), 0)
+        for i in range(roll):
+            put(x0 + i, H + 1, (40, 24, 18), 80)
+    # Gold knobs crown the rod at both ends of each roll, as on a Roman scroll.
+    knob_rows = ["...X...", "..XaX..", ".XabbX.", "XabbbcX", ".XbccX.", "..XXX.."]
+    knob_colours = {"X": OUTLINE, "a": (255, 240, 186), "b": (240, 186, 82), "c": (196, 120, 40)}
+    knob = len(knob_rows) - 1
+    out = np.zeros((H + 3 + 2 * knob, W, 4), np.uint8)
+    out[knob:knob + H + 3] = img
+    for x0 in (0, W - roll):
+        cx = x0 + roll // 2 - 3
+        for k, row in enumerate(knob_rows):
+            for i, ch in enumerate(row):
+                if ch == ".":
+                    continue
+                c = knob_colours[ch]
+                out[k + 2, cx + i] = (*c, 255)
+                # The lower knob is the same one turned over, lit the same way from above.
+                below = knob + H - 3 + (len(knob_rows) - 1 - k)
+                out[below, cx + i] = (*(knob_colours["b"] if ch == "a" else c), 255)
+    return Image.fromarray(out, "RGBA")
+
+
 def main():
     lines = [shade(glyph_line(t)) for t in LINES]
     width = max(l.width for l in lines)
@@ -170,7 +266,8 @@ def main():
     logo.alpha_composite(right, ((total_w + second.width) // 2 - 2, mid))
     OUT.parent.mkdir(parents=True, exist_ok=True)
     logo.save(OUT)
-    print(f"logo: {OUT} ({logo.width} x {logo.height} game pixels)")
+    scroll().save(SCROLL_OUT)
+    print(f"logo: {OUT} ({logo.width} x {logo.height} game pixels), and {SCROLL_OUT.name}")
 
 
 if __name__ == "__main__":

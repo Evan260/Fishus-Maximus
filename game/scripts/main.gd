@@ -1,5 +1,6 @@
 extends Node
-## Opens the title screen, or the screen named with --screen= for checking it on its own, or runs the tests.
+## Opens the title screen, or the screen named with --screen= for checking it on its own, runs the tests, or plays a
+## trailer shot.
 
 
 func _ready() -> void:
@@ -15,6 +16,9 @@ func _ready() -> void:
 		return
 	if Dev.has("flow"):
 		add_child(load("res://tests/flow_bot.gd").new())
+		return
+	if Dev.has("trailer-shot"):
+		add_child(load("res://tools/trailer/shots.gd").new())
 		return
 	if Dev.has("demo-state"):
 		Game.demo_state()
