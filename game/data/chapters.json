@@ -32,7 +32,7 @@
 	{
 		"chapter": 2,
 		"name": "The rocky shore",
-		"reputation": 10,
+		"reputation": 17,
 		"places": [
 			"rocky_shore"
 		],
@@ -95,7 +95,7 @@
 	{
 		"chapter": 4,
 		"name": "Capri",
-		"reputation": 180,
+		"reputation": 120,
 		"places": [
 			"capri"
 		],
@@ -128,7 +128,7 @@
 	{
 		"chapter": 5,
 		"name": "The deep",
-		"reputation": 380,
+		"reputation": 232,
 		"places": [
 			"misenum"
 		],

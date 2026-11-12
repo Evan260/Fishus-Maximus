@@ -77,5 +77,5 @@ static func sellable(state: Dictionary, fish: String) -> bool:
 
 static func catch(state: Dictionary, legend: String) -> void:
 	if not state["legends"].has(legend):
-		Story.add_reputation(state, 20)
+		Story.add_reputation(state, int(Data.num("legends.reputation", 20)))
 	state["legends"][legend] = true

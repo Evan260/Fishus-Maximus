@@ -2,7 +2,8 @@ class_name PacingBot
 extends RefCounted
 ## A keen player run on the game's own rules, minute by minute of game time: it fishes where the day's orders and
 ## clients' fish live, sells when the hold is full, fills orders, buys bait, gear and the next boat, digs the pond and
-## hunts the legends whose time has come. It notes when each chapter, boat and legend arrives, in hours of play.
+## hunts the legends whose time has come. It notes when each chapter, boat and legend arrives, and the first catch,
+## sale and piece of gear bought, in hours of play.
 
 ## Seconds each cast by hand takes before a fish is on: the cast, the sink, the wait for a bite and its nibbles.
 const BITE_SECONDS := 34.0
@@ -15,7 +16,7 @@ const LEGEND := 0.06
 
 var state: Dictionary
 var rng: RandomNumberGenerator
-var log := {"chapters": {}, "boats": {}, "legends": {}, "denarii": 0}
+var log := {"chapters": {}, "boats": {}, "legends": {}, "firsts": {}, "denarii": 0}
 var _minutes := 0.0
 var _place := "harbour"
 ## Seconds of fishing by hand carried from one minute into the next; below nought while a long fight runs on.
@@ -126,6 +127,7 @@ func _fish_a_minute() -> void:
 			_line_seconds -= FIGHT_STEP
 		if fight.state == "landed":
 			Catches.record(state, fish, lb, Data.fish[fish].get("live", false))
+			_first("catch")
 		if Hold.room(state) <= 0:
 			_line_seconds = 0.0
 			return
@@ -153,9 +155,15 @@ func _go_to_town() -> void:
 	for i in state["live_well"].size():
 		Ponds.stock(state, 0)
 	Ponds.feed(state)
-	Market.sell_all(state)
+	if Market.sell_all(state) > 0:
+		_first("sale")
 	_shop()
 	_tick(2.0)
+
+
+func _first(what: String) -> void:
+	if not log["firsts"].has(what):
+		log["firsts"][what] = snappedf(_minutes / 60.0, 0.01)
 
 
 func _find(want: Dictionary) -> Array:
@@ -177,8 +185,8 @@ func _shop() -> void:
 		if Shop.on_sale(state, boat) and not Shop.owned(state, boat):
 			return
 	for id in ["ash_rod", "horsehair_line", "barbed_hook", "yew_rod", "twisted_line", "iron_hook", "masters_rod", "fine_line", "cast_net"]:
-		if int(state["denarii"]) > Shop.price(id) + 150:
-			Shop.buy(state, id)
+		if int(state["denarii"]) > Shop.price(id) + 150 and Shop.buy(state, id):
+			_first("upgrade")
 	if Ponds.stage(state) < Ponds.allowed(state) and int(state["denarii"]) > Ponds.next_price(state) + 300:
 		Ponds.widen(state)
 	for f in ["rocks", "sand", "weed", "caves"]:

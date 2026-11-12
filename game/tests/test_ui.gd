@@ -61,11 +61,13 @@ func test_the_helpers_work_while_you_are_away() -> void:
 	check(Game.state["hold"].size() >= 5, "fishes on his own all day")
 
 
-func test_the_pacing_bot_reaches_chapter_two() -> void:
+func test_the_pacing_bot_reaches_chapter_two_in_its_hour() -> void:
 	var bot := PacingBot.new()
 	var log := bot.run(2.0, 7)
-	check(log["chapters"].has(2), "a keen player reaches the rocky shore within two hours")
+	check(log["chapters"].has(2) and float(log["chapters"][2]) >= 1.0, "a keen player reaches the rocky shore after an hour and within two, at %s" % [log["chapters"]])
 	check(not log["chapters"].has(3), "but not the lake and the bay yet")
+	check(float(log["firsts"].get("sale", 9.0)) <= 0.25 and float(log["firsts"].get("upgrade", 9.0)) <= 0.5,
+		"while the first sale and the first new gear still come within minutes: %s" % [log["firsts"]])
 
 
 func test_the_sounds_around_you_have_their_own_volume() -> void:

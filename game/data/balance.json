@@ -66,6 +66,9 @@
 	"traps": {
 		"hours_per_catch": 2.0
 	},
+	"legends": {
+		"reputation": 5
+	},
 	"idle": {
 		"rate": 0.33,
 		"active_rate": 1.0
