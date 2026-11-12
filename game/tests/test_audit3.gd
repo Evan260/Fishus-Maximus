@@ -86,3 +86,20 @@ func test_every_fish_that_keeps_to_part_of_the_day_says_when() -> void:
 			continue
 		var when := Catalog.habits(id).filter(func(h): return h in ["at dawn", "at dusk", "by day", "at night"])
 		check(when.size() == 1, "%s, about from %s to %s, says when it is found" % [id, hours[0], hours[1]])
+
+
+func test_the_ways_of_fishing_name_a_key_just_changed() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "mutt")
+	var s: Node = load("res://scripts/coast/coast_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({"place": "harbour"})
+	Controls.rebind("method_line", KEY_Q)
+	s.hud.refresh()
+	var tip := str(s.hud.method_buttons["line"].get_meta("tip"))
+	check(tip.begins_with("Line (key Q)"), "the line's tip names the new key: %s" % tip.left(20))
+	Controls.rebind("method_line", KEY_1)
+	for c in Nav.ui.get_children():
+		c.free()
+	s.free()

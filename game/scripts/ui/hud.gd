@@ -102,6 +102,8 @@ func refresh() -> void:
 	_idle.text = tr("At the rod") if screen.methods.idle else tr("Fish on his own")
 	for m in method_buttons:
 		Ui.choose(method_buttons[m], m == method)
+		# The keys named in the tips may have been changed in the settings since the boat was set out.
+		Ui.tip_on(method_buttons[m], method_tip(m))
 	var usable := {"net": str(s["gear"].get("net", "")) != "", "trident": Trident.can_use(screen.hour, str(s["gear"].get("lamp", "")))}
 	for m in usable:
 		(method_buttons[m].get_node("Picture") as TextureRect).modulate.a = 1.0 if usable[m] else 0.4
