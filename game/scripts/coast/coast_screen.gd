@@ -103,6 +103,7 @@ func enter(args: Dictionary) -> void:
 	seabed = Seabed.new(place["seabed"])
 	_ground_below = float(place.get("ground_below", 24))
 	camera = CoastCamera.new(Vector2(float(place["width"]), float(place["depth"]) + 40.0))
+	camera.view = Nav.view()
 	if not Game.state.has("weather"):
 		Game.state["weather"] = Weather.for_day(int(Game.state["seed"]), Clock.day_of(float(Game.state["time"])))
 	weather = str(Dev.get_arg("weather", str(Game.state["weather"])))
@@ -115,10 +116,10 @@ func enter(args: Dictionary) -> void:
 	if Dev.has("at"):
 		var xy := Dev.get_arg("at").split(",")
 		boat_x = clampf(float(xy[0]), 0.0, _end())
-		camera.jump(Vector2(boat_x + 52.0 - 240.0, float(xy[1]) if xy.size() > 1 else CoastCamera.HOME_Y))
+		camera.jump(Vector2(boat_x + 52.0 - camera.view.x / 2.0, float(xy[1]) if xy.size() > 1 else CoastCamera.HOME_Y))
 		_pinned = xy.size() > 1
 	else:
-		camera.jump(Vector2(boat_x + 52.0 - 240.0, CoastCamera.HOME_Y))
+		camera.jump(Vector2(boat_x + 52.0 - camera.view.x / 2.0, CoastCamera.HOME_Y))
 	hook = _boat.rod_tip(boat_x)
 	_update_swimmer_world()
 	swimmers.populate()
