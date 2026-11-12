@@ -220,6 +220,8 @@ func _spawn(anywhere := false) -> void:
 			one["leader"] = {}
 		else:
 			one["pos"] = Vector2(x, y) + one["offset"]
+			# A fish further down its shoal starts clear of the seabed, so it never jumps up out of it on its first step.
+			one["pos"].y = _keep_y(one, one["pos"].x, one["pos"].y, 0.0)
 		# The fish is put where it swims at once, so a sea that has just opened shows it from its first frame.
 		_show(one, Vector2.ZERO, 0.0)
 		fish.append(one)

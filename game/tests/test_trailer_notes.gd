@@ -216,3 +216,17 @@ func test_a_sunken_boat_lies_in_the_open_bay() -> void:
 	var wreck: Array = Data.places["open_bay"]["layers"].filter(func(l): return str(l.get("file", "")) == "places/open_bay/sunken_boat.png")
 	check(wreck.size() == 1 and ResourceLoader.exists("res://assets/art/" + str(wreck[0]["file"])), "the open bay has its sunken boat")
 	check(int(wreck[0].get("z", 0)) == -9 and wreck[0].has("world"), "drawn behind the fish and the floor, as seabed pieces are")
+
+
+func test_every_fish_of_a_shoal_starts_clear_of_the_seabed() -> void:
+	var below := 0
+	for round in 40:
+		var s := _coast("skiff", "harbour", 300.0)
+		var sw: Swimmers = s.swimmers
+		for k in 30:
+			sw._spawn(true)
+		for f in sw.fish:
+			if f["pos"].y > sw.seabed.depth_at(f["pos"].x) - 5.0 + 0.01:
+				below += 1
+		_done(s)
+	check(below == 0, "no fish starts in the seabed, where its first step would lift it out at once (%d did)" % below)
