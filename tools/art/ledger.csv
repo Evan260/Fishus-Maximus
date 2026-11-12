@@ -703,3 +703,7 @@ time,kind,name,cost_usd,cost_generations,usd_left
 2026-11-11T23:55:45,inpaint,tools/art/estate_parts/channel/try1.png,0.0233,0,3.1753
 2026-11-11T23:56:29,inpaint,tools/art/estate_parts/channel/try2.png,0.0227,0,3.1526
 2026-11-11T23:57:28,proflash,tools/art/estate_parts/tunnel/try1.png,0.0284,0,3.1242
+2026-11-12T17:46:28,edit,tools\art\fish_banner_raw\goby_2.png,0.0000,0,3.1242
+2026-11-12T17:47:06,proflash,tools\art\fish_banner_raw\goby_3.png,0.0248,0,3.0994
+2026-11-12T17:48:20,inpaint,tools/art/fish_banner_raw/goby_4.png,0.0252,0,3.0742
+2026-11-12T17:49:17,inpaint,tools/art/fish_banner_raw/goby_5.png,0.0238,0,3.0504

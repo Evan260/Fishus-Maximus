@@ -12,6 +12,7 @@ Usage:
   python tools/art/make_banner_fish.py again ID...     paint one more try for each fish from the start
   python tools/art/make_banner_fish.py more ID...      edit each fish's latest try once more as a new try
   python tools/art/make_banner_fish.py flash ID...     paint one more try afresh with Pro Flash, which costs
+  python tools/art/make_banner_fish.py mend ID...      inpaint the latest try's flat blocks of doubled pixels as a new try
   python tools/art/make_banner_fish.py build [ID...]   write the banner pictures from the chosen tries"""
 import json
 import subprocess
@@ -80,7 +81,7 @@ PICK = {"mullet": 2, "grey_mullet": 3, "bream": 3, "white_bream": 3, "salema": 3
         "squid": 2, "crab": 3, "eel": 2, "moray": 2, "scorpionfish": 3, "comber": 2, "lobster": 3, "urchin": 2,
         "dentex": 2, "conger": 2, "oyster": 2, "sea_bass": 3, "sand_smelt": 2, "flounder": 2, "golden_mullet": 2,
         "tuna": 2, "john_dory": 2, "parrotfish": 2, "forkbeard": 2, "slipper_lobster": 2, "red_scorpionfish": 2,
-        "carteia_octopus": 3, "orata_bream": 2, "claudius_parrotfish": 2}
+        "carteia_octopus": 3, "orata_bream": 2, "claudius_parrotfish": 2, "goby": 5}
 # The fish kept as the dithered enlargement, where every painting was cut off by its canvas, too small or short of a fin.
 KEEP = {"amberjack", "thornback", "great_tuna", "misenum_swordfish", "wreck_conger", "numbing_ray", "sleeping_sunfish",
         "neptune_lobster"}
@@ -172,6 +173,38 @@ def flash(fid: str) -> None:
                                        "with finer detail", "--out", str(out.relative_to(ROOT))],
                        cwd=ROOT, capture_output=True, text=True, timeout=600)
     print("painted", fid, out.stem if out.exists() else "FAILED " + (r.stdout + r.stderr)[-200:])
+
+
+def flat_blocks(im: Image.Image) -> np.ndarray:
+    """Every pixel in a solid square of three by three of one colour, with a pixel round it: the doubled pixels left."""
+    a = np.array(im.convert("RGBA")).astype(int)
+    h, w = a.shape[:2]
+    out = np.zeros((h, w), np.uint8)
+    for y in range(h - 2):
+        for x in range(w - 2):
+            b = a[y:y + 3, x:x + 3]
+            if b[..., 3].min() > 127 and (np.abs(b - b[0, 0]).max(-1) <= 6).all():
+                out[y:y + 3, x:x + 3] = 1
+    return cv2.dilate(out, np.ones((3, 3), np.uint8)) & (a[..., 3] > 127)
+
+
+def mend(fid: str) -> None:
+    """One more try: the latest try with only its flat blocks inpainted, so the rest of the fish stays as it was."""
+    done = tries(fid)
+    blocks = flat_blocks(Image.open(done[-1]))
+    if not blocks.any():
+        return print("no flat blocks left in", done[-1].stem)
+    n = len(done) + 1
+    mask = RAW / f"{fid}_{n}_mask.png"
+    Image.fromarray(blocks * 255).save(mask)
+    out = RAW / f"{fid}_{n}.png"
+    w, h = Image.open(done[-1]).size
+    subprocess.run([sys.executable, str(Path(__file__).with_name("pixellab.py")), "inpaint", str(done[-1].relative_to(ROOT)),
+                    str(mask.relative_to(ROOT)), f"{look_of(fid)} seen from the side: fine single-pixel scales, speckles "
+                    f"and fin rays in the same colours as the rest of the fish, crisp pixel art at one pixel size, no "
+                    f"blocky doubled pixels, no outline", "--out", str(out.relative_to(ROOT)), "--transparent",
+                    "--tile", f"{w // 4 * 4}x{h // 4 * 4}"], cwd=ROOT, timeout=600)
+    print("painted", fid, out.stem if out.exists() else "FAILED")
 
 
 def edits(fid: str) -> None:
@@ -286,11 +319,13 @@ def main(cmd: str, ids: list[str]) -> None:
             more(fid)
         elif cmd == "flash":
             flash(fid)
+        elif cmd == "mend":
+            mend(fid)
         elif cmd == "build":
             build(fid)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or sys.argv[1] not in ("paint", "again", "more", "flash", "build"):
+    if len(sys.argv) < 2 or sys.argv[1] not in ("paint", "again", "more", "flash", "mend", "build"):
         sys.exit(__doc__)
     main(sys.argv[1], sys.argv[2:])
