@@ -24,7 +24,7 @@ The tag must be `v` followed by `config/version`, or the tests job stops with "V
 | Job | Runs on | What it does |
 |---|---|---|
 | Tests | Ubuntu | Imports the project and runs `--run-tests`; fails unless it prints `ALL TESTS PASSED` |
-| Export (three at once) | Ubuntu | Exports Windows, macOS and Linux with `tools/export.py`, with `Credits and licences.txt` and, for Windows, the everything-unlocked launcher |
+| Export (three at once) | Ubuntu | Exports Windows, macOS and Linux with `tools/export.py`, with `Credits and licences.txt` and, for Windows, the everything-unlocked launcher, which stays in the release but never goes to Steam |
 | Sign macOS | Mac | Signs the app and its libraries with the Developer ID certificate, notarizes it with Apple, staples the ticket and checks it with Gatekeeper |
 | GitHub release | Ubuntu | Only for a tag: creates the release and attaches every build |
 | Steam upload | Ubuntu | Switched off until set up (below) |
@@ -124,7 +124,7 @@ GitHub never shows a secret again once saved, and the workflow keeps them out of
 
 ## The Steam upload
 
-The Steam job is written but switched off. It uploads the builds from the same run with steamcmd and makes them live on the `testing` branch, never the default branch, which is still set live by hand in Steamworks (`Steam-publishing.md`). The Mac depot needs the signed Mac build, so the Apple secrets come first. To switch it on:
+The Steam job is written but switched off. It uploads the builds from the same run with steamcmd and makes them live on the `testing` branch, never the default branch, which is still set live by hand in Steamworks (`Steam-publishing.md`). It takes the everything-unlocked launcher out of the Windows build first, so players never get it. The Mac depot needs the signed Mac build, so the Apple secrets come first. To switch it on:
 
 1. Fill in `tools/steam/steam.json` (the account, and the App ID and depots of `playtest` and `game`; `Steam-publishing.md`, step 8) and commit it.
 2. Log steamcmd in once in WSL, as in `Steam-publishing.md` step 9, with the account that uploads builds. That saves the login in `~/Steam/config/config.vdf` inside WSL.

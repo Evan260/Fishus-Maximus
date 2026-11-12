@@ -90,6 +90,8 @@ def main():
     builder.godot("--import")
     for platform in platforms:
         print(f"built {platform}: {builder.export(platform, stage / platform)}")
+        # The everything-unlocked launcher is for local checks, never for players.
+        (stage / platform / builder.LAUNCHER_NAME).unlink(missing_ok=True)
     work = f"{home}/fishus-steam/{args.target}"
     commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     note = f"{datetime.date.today()} {commit} {args.note}".strip().replace('"', "'")
