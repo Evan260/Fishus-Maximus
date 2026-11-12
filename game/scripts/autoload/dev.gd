@@ -83,20 +83,21 @@ func _take_shot(path: String, last: bool) -> void:
 ## garum, pond (on the shore), hold (the full-hold choice), and on the title new_game, load, or delete,
 ## which leaves slot 1 waiting for the word typed, deleting nothing.
 func open_panel(window: String) -> void:
-	if window == "logbook":
-		LogbookPanel.open()
+	if window in ["logbook", "achievements"]:
+		if window == "logbook":
+			LogbookPanel.open()
+		else:
+			LogbookPanel.open_achievements()
 		# --turn-at=S turns to the next section S seconds after the logbook opens (--turn-back the other way), for checks.
 		if args.has("turn-at"):
 			get_tree().create_timer(float(args["turn-at"])).timeout.connect(func():
-				LogbookPanel._bookmark_turn(LogbookPanel.section + (-1 if args.has("turn-back") else 1)))
+				LogbookPanel._bookmark_turn(posmod(LogbookPanel.section + (-1 if args.has("turn-back") else 1), LogbookPanel._sections().size())))
 	elif window.begins_with("logbook:"):
 		var fish := window.get_slice(":", 1)
 		var f: Dictionary = Data.fish[fish]
 		LogbookPanel.open(LogbookPanel._sections().find("legends" if f["legend"] else str(f["places"][0])))
 		LogbookPanel.selected = fish
 		LogbookPanel.open(LogbookPanel.section)
-	elif window == "achievements":
-		LogbookPanel.open_achievements()
 	elif window == "board":
 		BoardPanel.open()
 	elif window == "client":

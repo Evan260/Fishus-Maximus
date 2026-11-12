@@ -1,7 +1,8 @@
 class_name LogbookPanel
 ## The logbook, drawn as an open book: bookmarks down the side choose a place, the legends or the achievements, the two
 ## pages list its fish, those not yet caught as dark shapes and a legend by its clue, and clicking one shows its record
-## facing it; the achievements' pages list each one earned or still to earn, with what it asks.
+## facing it; the achievements are one spread, those earned on the left page and those still to earn on the right, each
+## page scrolling, with what each asks.
 
 const SHORT := {"harbour": "Harbour", "rocky_shore": "Rocky shore", "lucrine": "Lucrine", "open_bay": "Open bay", "capri": "Capri",
 	"misenum": "Misenum", "legends": "Legends", "achievements": "Achievements"}
@@ -15,9 +16,9 @@ const OUTER := 7
 const INNER := 9
 const ROWS := 6
 const ROW := Vector2(PAGE_W - OUTER - INNER, 30)
-## An achievement takes three lines, its name and what it asks, so its pages hold fewer.
-const HONOUR_ROWS := 5
-const HONOUR := Vector2(PAGE_W - OUTER - INNER, 34)
+## An achievement's row leaves room for its page's scroll bar.
+const HONOUR := Vector2(PAGE_W - OUTER - INNER - 6, 34)
+const LIST_H := PAGE_H - TOP - 4 - 16
 const STAR := "res://assets/art/ui/banner_star.png"
 const PICTURE := Vector2(62, 30)
 const PAPER := Color8(244, 229, 192)
@@ -53,8 +54,8 @@ static func open(at := -1) -> void:
 	section = posmod(section, sections.size())
 	var here: String = sections[section]
 	var all := _entries(here)
-	var rows := _rows(here)
-	var spreads := maxi(1, ceili(all.size() / float(rows * 2)))
+	var rows := ROWS
+	var spreads := 1 if here == "achievements" else maxi(1, ceili(all.size() / float(rows * 2)))
 	spread = clampi(spread, 0, spreads - 1)
 	var shown := all.slice(spread * rows * 2, (spread + 1) * rows * 2)
 	if not shown.has(selected):
@@ -90,6 +91,9 @@ static func open(at := -1) -> void:
 	_book = book
 	var detail_side := 0 if shown.find(selected) >= rows else 1
 	var pages := [_page(book, STACK + OUTER), _page(book, STACK + PAGE_W + SPINE + INNER)]
+	if here == "achievements":
+		_honours(pages, all)
+		return
 	for side in 2:
 		var page: VBoxContainer = pages[side]
 		if selected != "" and side == detail_side:
@@ -97,15 +101,10 @@ static func open(at := -1) -> void:
 			continue
 		if side == 0:
 			_header(page, here, all)
-		elif here == "achievements":
-			page.add_child(_blank_head())
 		else:
 			_overall(page)
 		for id in shown.slice(side * rows, (side + 1) * rows):
-			if here == "achievements":
-				_honour(page, id)
-			else:
-				_entry(page, id)
+			_entry(page, id)
 
 
 ## Opens the logbook at the achievements.
@@ -120,15 +119,15 @@ static func refresh_achievements() -> void:
 	if _turning:
 		_stale = true
 		return
+	var kept := _book.find_children("*", "ScrollContainer", true, false).map(func(c): return c.scroll_vertical)
 	open(section)
+	var lists := _book.find_children("*", "ScrollContainer", true, false)
+	for i in mini(kept.size(), lists.size()):
+		lists[i].set_deferred("scroll_vertical", kept[i])
 
 
 static func _sections() -> Array:
 	return Data.places.keys() + ["legends", "achievements"]
-
-
-static func _rows(here: String) -> int:
-	return HONOUR_ROWS if here == "achievements" else ROWS
 
 
 ## The fish written under a place are the ordinary ones first found there; every legend has the legends' own pages, and
@@ -279,11 +278,31 @@ static func _header(page: VBoxContainer, here: String, all: Array) -> void:
 	count.add_theme_color_override("font_color", UiTheme.MUTED)
 
 
-## An empty head for the right-hand page, so its rows line up with the left's.
-static func _blank_head() -> Control:
-	var head := Control.new()
+## The achievements' spread: those earned under the head of the left page and those still to earn on the right, each
+## list scrolling within its page.
+static func _honours(pages: Array, all: Array) -> void:
+	var earned := all.filter(func(id): return _earned(id))
+	var to_earn := all.filter(func(id): return not _earned(id))
+	_header(pages[0], "achievements", all)
+	var head := HBoxContainer.new()
 	head.custom_minimum_size = Vector2(0, 15)
-	return head
+	pages[1].add_child(head)
+	Ui.label(head, Ui.upper("Still to earn"), "Heading").size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	Ui.label(head, str(to_earn.size()), "Heading").add_theme_color_override("font_color", UiTheme.MUTED)
+	for side in 2:
+		var scroll := ScrollContainer.new()
+		scroll.name = "Earned" if side == 0 else "StillToEarn"
+		scroll.custom_minimum_size = Vector2(ROW.x, LIST_H)
+		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		pages[side].add_child(scroll)
+		var list := VBoxContainer.new()
+		list.add_theme_constant_override("separation", 1)
+		scroll.add_child(list)
+		var ids: Array = earned if side == 0 else to_earn
+		if ids.is_empty():
+			_para(list, "None earned yet." if side == 0 else "Every one earned.", "MutedLabel").custom_minimum_size.x = HONOUR.x
+		for id in ids:
+			_honour(list, id)
 
 
 static func _earned(id: String) -> bool:
@@ -292,7 +311,7 @@ static func _earned(id: String) -> bool:
 
 ## One achievement on the page: a starfish, bright once it is earned and a dark shape until then, its name, and what it
 ## asks.
-static func _honour(page: VBoxContainer, id: String) -> void:
+static func _honour(page: Container, id: String) -> void:
 	var a := Achievements.find(id)
 	var earned := _earned(id)
 	var line := HBoxContainer.new()

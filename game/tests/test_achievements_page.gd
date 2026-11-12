@@ -32,26 +32,38 @@ func test_every_achievement_is_listed_with_what_it_asks() -> void:
 	var seen := []
 	LogbookPanel.spread = 0
 	LogbookPanel.open_achievements()
-	var spreads := ceili(Data.achievements.size() / float(LogbookPanel.HONOUR_ROWS * 2))
-	for k in spreads:
-		LogbookPanel.spread = k
-		LogbookPanel.open(LogbookPanel.section)
-		var rows := _honours()
-		check(rows.size() <= LogbookPanel.HONOUR_ROWS * 2, "spread %d holds at most %d" % [k, LogbookPanel.HONOUR_ROWS * 2])
-		for r in rows:
-			var id: String = r.name.trim_prefix("Honour_")
-			seen.append(id)
-			var a := Achievements.find(id)
-			var words: Array = r.find_children("*", "Label", true, false).map(func(l): return l.text)
-			check(str(a["name"]) in words, "%s shows its name" % id)
-			check(" ".join(words.slice(1)).strip_edges() == str(a["text"]), "%s says what it asks, %s" % [id, words])
-			var star: TextureRect = r.find_child("Star", true, false)
-			var earned: bool = id == "first_fish"
-			check(is_equal_approx(star.modulate.a, 1.0 if earned else 0.45), "%s's starfish is %s" % [id, "bright" if earned else "a faint shape"])
-			check((r.find_child("Name", true, false) as Label).theme_type_variation == ("" if earned else "MutedLabel"), "%s's name is inked once earned" % id)
+	for r in _honours():
+		var id: String = r.name.trim_prefix("Honour_")
+		seen.append(id)
+		var a := Achievements.find(id)
+		var words: Array = r.find_children("*", "Label", true, false).map(func(l): return l.text)
+		check(str(a["name"]) in words, "%s shows its name" % id)
+		check(" ".join(words.slice(1)).strip_edges() == str(a["text"]), "%s says what it asks, %s" % [id, words])
+		var star: TextureRect = r.find_child("Star", true, false)
+		var earned: bool = id == "first_fish"
+		check(is_equal_approx(star.modulate.a, 1.0 if earned else 0.45), "%s's starfish is %s" % [id, "bright" if earned else "a faint shape"])
+		check((r.find_child("Name", true, false) as Label).theme_type_variation == ("" if earned else "MutedLabel"), "%s's name is inked once earned" % id)
 	check(seen.size() == Data.achievements.size() and Data.achievements.all(func(a): return a["id"] in seen), "every achievement is on its pages, %d of %d" % [seen.size(), Data.achievements.size()])
 	var head: Array = _window().find_children("*", "Label", true, false).map(func(l): return l.text)
 	check("1 / %d" % Data.achievements.size() in head, "the head of the pages counts those earned")
+	_clear()
+
+
+func test_the_achievements_are_one_spread_of_two_scrolling_pages() -> void:
+	_clear()
+	Game.new_game("Test", "mutt")
+	Game.state["achievements"] = ["first_fish"]
+	LogbookPanel.open_achievements()
+	var turns: Array = _window().find_children("*", "Button", true, false).filter(func(b): return b.text in ["<", ">"])
+	check(turns.is_empty(), "no next or previous page buttons")
+	var earned: ScrollContainer = _window().find_child("Earned", true, false)
+	var to_earn: ScrollContainer = _window().find_child("StillToEarn", true, false)
+	check(earned != null and to_earn != null, "each page holds a scrolling list")
+	var left := earned.find_children("Honour_*", "HBoxContainer", true, false).map(func(r): return r.name.trim_prefix("Honour_"))
+	var right := to_earn.find_children("Honour_*", "HBoxContainer", true, false).map(func(r): return r.name.trim_prefix("Honour_"))
+	check(left == ["first_fish"], "the earned one is on the left page, %s" % [left])
+	check(right.size() == Data.achievements.size() - 1 and not "first_fish" in right, "the rest are on the right page")
+	check(to_earn.get_combined_minimum_size().y <= LogbookPanel.LIST_H + 0.5, "the list scrolls within its page rather than growing past it")
 	_clear()
 
 
