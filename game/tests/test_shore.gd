@@ -260,6 +260,45 @@ func test_the_wall_runs_on_unbroken_from_the_bank() -> void:
 	check(absi(top.call(bank, bank.get_width() - 1) - top.call(wall, 0)) <= 4, "the bank's right end comes down to the wall's grass")
 
 
+func test_every_feature_rests_on_the_pond_bed() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["denarii"] = 500
+	Ponds.widen(Game.state)
+	Game.state["pond"]["features"] = Data.ponds["features"].map(func(f): return str(f["id"]))
+	var s := _open()
+	var pieces: Array = s._bed.get_children()
+	var want := 0
+	for feature in s.PIECES:
+		want += (s.PIECES[feature] as Array).size()
+	check(pieces.size() == want, "every piece of every feature is laid on the floor, %d of %d" % [pieces.size(), want])
+	check(s._bed.z_index > s._floor.z_index, "the pieces stand in front of the floor, so it never cuts their feet off straight")
+	for p in pieces:
+		var img: Image = p.texture.get_image()
+		var used := img.get_used_rect()
+		var middle: float = p.position.x + used.get_center().x
+		var sand: float = s.sand_top(middle)
+		var floating := 0
+		var columns := 0
+		for x in range(used.position.x + used.size.x / 6, used.end.x - used.size.x / 6):
+			for y in range(used.end.y - 1, used.position.y - 1, -1):
+				if img.get_pixel(x, y).a > 0.5:
+					columns += 1
+					if p.position.y + y < sand - 1.0:
+						floating += 1
+					break
+		check(floating <= columns / 5, "%s at %d rests on the sand, %d of %d columns above it" % [p.texture.resource_path, middle, floating, columns])
+		check(p.position.y + used.end.y <= sand + 8.0, "and is not sunk into it, its foot at row %d with the sand at %d" % [p.position.y + used.end.y, sand])
+		var open_sides := true
+		for y in range(img.get_height() - 8, img.get_height()):
+			open_sides = open_sides and img.get_pixel(0, y).a < 0.5 and img.get_pixel(img.get_width() - 1, y).a < 0.5
+		check(open_sides, "%s has no plant cut off by its picture's sides near the sand" % p.texture.resource_path)
+	check(s._channel.visible and s._channel.texture != null, "the sea channel is a painted culvert in the wall")
+	Game.state["pond"]["features"] = []
+	s._dress_pond()
+	check(not s._channel.visible, "and is gone from a pond without it")
+	_close(s)
+
+
 func _open() -> Node:
 	for c in Nav.ui.get_children():
 		c.free()

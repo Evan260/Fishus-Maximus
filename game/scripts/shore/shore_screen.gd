@@ -33,14 +33,28 @@ const LAYERS := [
 	{"band": "#4d8590", "at": [0, POND_TOP], "z": -15},
 	{"file": "estate/bank.png", "at": [BANK_AT.x, BANK_AT.y], "z": -14},
 ]
-## Seabed pieces each feature puts on the pond's floor: its picture and where along the pond it lies.
+## Seabed pieces each feature puts on the pond's floor: its picture and where along the pond it lies, all within the
+## stretch a 16:9 view shows.
 const PIECES := {
-	"rocks": [["estate/pond_rocks.png", 300], ["estate/pond_rocks.png", 650]],
-	"caves": [["estate/pond_cave.png", 470]],
-	"weed": [["places/harbour/seagrass.png", 210], ["places/harbour/seagrass.png", 395], ["places/harbour/seagrass.png", 560]],
-	"sand": [["places/harbour/tuft.png", 250], ["places/harbour/tuft.png", 520]],
+	"tunnel": [["estate/pond_tunnel.png", 545]],
+	"rocks": [["estate/pond_rocks.png", 300], ["estate/pond_rocks.png", 690]],
+	"caves": [["estate/pond_cave.png", 445]],
+	"weed": [["estate/pond_weed.png", 200], ["estate/pond_weed.png", 380], ["estate/pond_weed.png", 610]],
+	"sand": [["places/harbour/tuft.png", 245], ["places/harbour/tuft.png", 515]],
 }
+## The sea channel's culvert through the wall, laid over the bank where it was painted into it, and where its water
+## streams into the pond; the spring's place along the pond; and the stretch the shade roof keeps in shadow.
+const CHANNEL_AT := Vector2(512, 96)
+const CHANNEL_X := 562.0
+const SPRING_X := 185.0
+const SHADE_FROM := 160.0
+const SHADE_TO := 330.0
+## How many rows of the floor's picture lie above the seabed line, and how far into the sand a piece's base sinks.
+const SURFACE := 6
+const SINK := 2
 
+## The row each piece's picture rests on, by its path, worked out once.
+static var _bases := {}
 ## The garum works' mask and its outline, traced once.
 static var _garum_traced := []
 var views: Array = []
@@ -61,6 +75,9 @@ var _ground: Node2D
 var _surface: Node2D
 var _murk: Murk
 var _bed: Node2D
+var _shade: Node2D
+var _channel: Sprite2D
+var _spill: Node2D
 var _painter: Node2D
 var _names: Control
 var _bed_built := []
@@ -88,6 +105,10 @@ func enter(_args: Dictionary) -> void:
 		Game.new_game("Marcus", "")
 	if Dev.has("hour"):
 		Game.state["time"] = Clock.at_hour(float(Game.state["time"]), Dev.num("hour", 12.0))
+	# --features=all (or a list such as rocks,channel) dresses a dug pond with those features, for checks.
+	if Dev.has("features") and Ponds.dug(Game.state):
+		var want := str(Dev.get_arg("features", "all"))
+		Ponds.of(Game.state)["features"] = Data.ponds["features"].map(func(f): return str(f["id"])) if want in ["", "all"] else Array(want.split(","))
 	if not Game.state.has("weather"):
 		Game.state["weather"] = Weather.for_day(int(Game.state["seed"]), Clock.day_of(float(Game.state["time"])))
 	_rng = Seeds.rng(int(Game.state["seed"]), "shore", Clock.day_of(float(Game.state["time"])))
@@ -156,8 +177,22 @@ func _build() -> void:
 	_back.z_index = -9
 	_back.draw.connect(_draw_back)
 	_lit.add_child(_back)
+	_channel = Sprite2D.new()
+	_channel.texture = load(ESTATE + "channel.png")
+	_channel.centered = false
+	_channel.z_index = -13
+	_lit.add_child(_channel)
+	_spill = Node2D.new()
+	_spill.z_index = -13
+	_spill.draw.connect(_draw_spill)
+	_lit.add_child(_spill)
+	_shade = Node2D.new()
+	_shade.z_index = -9
+	_shade.draw.connect(_draw_shade)
+	_lit.add_child(_shade)
 	_bed = Node2D.new()
-	_bed.z_index = -9
+	# The pieces stand in front of the floor, so their own uneven feet rest on the sand rather than being cut by it.
+	_bed.z_index = -7
 	_lit.add_child(_bed)
 	_floor = FloorView.new()
 	_floor.z_index = -8
@@ -221,15 +256,17 @@ func _dress_pond() -> void:
 	var want := "places/harbour/floor.png" if "sand" in features else "places/rocky_shore/floor.png"
 	if want != _floor_file:
 		_floor_file = want
-		_floor.bake({"width": WIDTH, "depth": DEPTH, "floor": {"file": want, "surface": 6}}, Seabed.new(FLOOR))
+		_floor.bake({"width": WIDTH, "depth": DEPTH, "floor": {"file": want, "surface": SURFACE}}, Seabed.new(FLOOR))
 		var strip: Texture2D = load("res://assets/art/" + want)
 		for side in _floor_sides:
 			side.texture = strip
-			side.position.y = DEPTH - 6.0
+			side.position.y = DEPTH - SURFACE
 			# The region starts at the side's own place along the pond, so its sand runs on from the pond's.
 			side.region_rect = Rect2(fposmod(side.position.x, strip.get_width()), 0, REACH, strip.get_height())
+	_channel.visible = "channel" in features
 	if _bed_built == features:
 		return
+	_shade.queue_redraw()
 	_bed_built = features.duplicate()
 	for c in _bed.get_children():
 		c.queue_free()
@@ -242,7 +279,7 @@ func _dress_pond() -> void:
 			s.texture = tex
 			s.centered = false
 			var used := ParallaxLayers.used_rect(tex)
-			s.position = Vector2(float(piece[1]) - used.size.x / 2.0 - used.position.x, DEPTH + 3.0 - used.end.y)
+			s.position = Vector2(float(piece[1]) - used.size.x / 2.0 - used.position.x, sand_top(float(piece[1])) + SINK - base_row(tex))
 			var layer := {"sway": feature == "weed"}
 			s.self_modulate = Murk.shade_for(layer)
 			var m := ShaderMaterial.new()
@@ -257,6 +294,32 @@ func _dress_pond() -> void:
 			m.set_shader_parameter("keep", Murk.keep_for(layer))
 			s.material = m
 			_bed.add_child(s)
+
+
+## The top row of the floor's sand at a point along the pond, where its picture's ragged top edge turns solid.
+static func sand_top(x: float) -> float:
+	return roundf(Seabed.new(FLOOR).depth_at(x))
+
+
+## The row of a piece's picture that rests on the sand: most of its middle columns reach down to it, so the piece stands
+## on the floor in front of it without floating, and only a stray pebble or root runs on into the sand.
+static func base_row(tex: Texture2D) -> int:
+	var key := tex.resource_path
+	if not _bases.has(key):
+		var img := tex.get_image()
+		if img.is_compressed():
+			img.decompress()
+		var used := img.get_used_rect()
+		var lows := []
+		var margin := used.size.x / 6
+		for x in range(used.position.x + margin, used.end.x - margin):
+			for y in range(used.end.y - 1, used.position.y - 1, -1):
+				if img.get_pixel(x, y).a > 0.5:
+					lows.append(y)
+					break
+		lows.sort()
+		_bases[key] = int(lows[lows.size() / 5]) if not lows.is_empty() else used.end.y - 1
+	return _bases[key]
 
 
 func _relayout() -> void:
@@ -310,6 +373,8 @@ func _show_frame() -> void:
 	_water.time = _time
 	_floor.place_at(pond_cam)
 	_bed.position = -pond_cam
+	_shade.position = -pond_cam
+	_channel.position = _bank_at() + CHANNEL_AT
 	pond.cam = pond_cam
 	_murk.place_at(pond_cam, _lit.modulate)
 	for s in _layers.swaying():
@@ -320,6 +385,7 @@ func _show_frame() -> void:
 	hovered = "" if Ui.window_open() else _thing_at(_mouse)
 	_water.queue_redraw()
 	_back.queue_redraw()
+	_spill.queue_redraw()
 	_ground.queue_redraw()
 	_surface.queue_redraw()
 	_painter.queue_redraw()
@@ -367,34 +433,57 @@ static func _solid(img: Image, p: Vector2i) -> bool:
 	return p.x >= 0 and p.y >= 0 and p.x < img.get_width() and p.y < img.get_height() and img.get_pixelv(p).a > 0.5
 
 
-## What the features add to the pond's far wall and floor, seen through the water.
+## What the features add to the pond's water: the channel's sea water streaming in as bubbles near the top, and the
+## spring's fresh water rising from the floor at the far end, shimmering as it meets the sea water.
 func _draw_back() -> void:
 	var features: Array = Ponds.of(Game.state).get("features", [])
-	if "tunnel" in features:
-		# Lucullus's tunnel, a dark arch through the wall toward the open sea.
-		var at := Vector2(700.0, DEPTH - 2.0) - pond_cam
-		Pixels.disc(_back, at + Vector2(0, -22), 12.0, Color("#0b1c24"))
-		_back.draw_rect(Rect2(at + Vector2(-12, -22), Vector2(24, 22)), Color("#0b1c24"))
 	if "channel" in features:
-		# The sea channel's mouth near the top of the wall, its fresh water pouring in as a stream of bubbles.
-		var at := Vector2(640.0, 6.0) - pond_cam
-		_back.draw_rect(Rect2(at + Vector2(-7, -3), Vector2(14, 8)), Color("#0e2630"))
+		var at := Vector2(CHANNEL_X, 3.0) - pond_cam
 		for i in 10:
 			var t := fposmod(_time * 0.7 + i * 0.1, 1.0)
-			var bx := at.x + 8.0 + t * 46.0 + sin(_time * 3.0 + i) * 1.5
-			_back.draw_rect(Rect2(Vector2(bx, at.y + 2.0 + t * 10.0 - t * t * 8.0).floor(), Vector2.ONE), Color(0.9, 0.97, 1.0, 0.6 * (1.0 - t)))
+			var bx := at.x + (i % 5 - 2) * 2.0 + sin(_time * 3.0 + i) * 1.5
+			_back.draw_rect(Rect2(Vector2(bx, at.y + t * 26.0).floor(), Vector2.ONE), Color(0.9, 0.97, 1.0, 0.6 * (1.0 - t)))
 	if "spring" in features:
-		# The freshwater spring rising from the floor at the pond's far end, shimmering as it meets the sea water.
-		var at := Vector2(110.0, DEPTH) - pond_cam
+		var at := Vector2(SPRING_X, sand_top(SPRING_X)) - pond_cam
 		for i in 12:
 			var t := fposmod(_time * 0.35 + i / 12.0, 1.0)
 			var bx := at.x + sin(t * 9.0 + i) * (2.0 + t * 5.0)
 			_back.draw_rect(Rect2(Vector2(bx, at.y - t * (DEPTH - 4.0)).floor(), Vector2.ONE), Color(0.92, 0.98, 1.0, 0.55 * (1.0 - t * 0.7)))
-	if "shade" in features:
-		# The shade roof over the near end keeps that part of the pond in cool shadow.
-		var span := Rect2(Vector2(40.0, 0.0) - pond_cam, Vector2(160.0, DEPTH))
-		for i in 6:
-			_back.draw_rect(Rect2(span.position + Vector2(i * 4.0, 0), Vector2(span.size.x - i * 8.0, span.size.y)), Color(0.02, 0.06, 0.08, 0.05))
+
+
+## The shade roof's shadow over the near end of the pond, drawn once: bands slanting with the sun where its slats keep
+## the light off, the lighter gaps between them, and soft ends where the shadow thins out.
+func _draw_shade() -> void:
+	if not "shade" in Ponds.of(Game.state).get("features", []):
+		return
+	var shadow := Color(0.02, 0.06, 0.08, 0.06)
+	var lean := 0.35 * DEPTH
+	for k in 5:
+		var inset := k * 5.0
+		Pixels.polygon(_shade, PackedVector2Array([Vector2(SHADE_FROM + inset, 0), Vector2(SHADE_TO - inset, 0),
+			Vector2(SHADE_TO - inset + lean, DEPTH + 4.0), Vector2(SHADE_FROM + inset + lean, DEPTH + 4.0)]), shadow, Vector2.ZERO)
+	var x := SHADE_FROM + 6.0
+	while x < SHADE_TO - 12.0:
+		var fade := clampf(minf(x - SHADE_FROM, SHADE_TO - x) / 30.0, 0.0, 1.0)
+		Pixels.polygon(_shade, PackedVector2Array([Vector2(x, 0), Vector2(x + 6.0, 0), Vector2(x + 6.0 + lean, DEPTH + 4.0),
+			Vector2(x + lean, DEPTH + 4.0)]), Color(shadow, 0.08 * fade), Vector2.ZERO)
+		x += 9.0
+
+
+## The sea water pouring out of the channel's culvert into the pond below it, in falling streaks with foam where it
+## lands.
+func _draw_spill() -> void:
+	if not "channel" in Ponds.of(Game.state).get("features", []):
+		return
+	var sill := _bank_at() + CHANNEL_AT + Vector2(34.0, 54.0)
+	var fall := WATER - POND_TOP
+	for i in 20:
+		var t := fposmod(_time * 1.1 + i / 20.0, 1.0)
+		var spread := float(i % 7 - 3) * (1.0 + t * 1.6)
+		_spill.draw_rect(Rect2((sill + Vector2(spread, t * fall)).floor(), Vector2(1, 2)), Color(0.86, 0.95, 0.98, 0.75 * (1.0 - t * 0.8)))
+	for i in 6:
+		var w := 3.0 + fposmod(_time * 6.0 + i * 1.7, 4.0)
+		_spill.draw_rect(Rect2((sill + Vector2(-w - 2.0 + i * 1.0, fall - 1.0 + float(i % 2))).floor(), Vector2(w, 1)), Color(0.95, 0.99, 1.0, 0.5))
 
 
 ## Solid ground below the pond's floor, fading in over its last rows, as the coast draws it.
