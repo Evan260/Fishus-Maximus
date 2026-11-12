@@ -1,0 +1,24 @@
+{
+  "_note": "For Evan to fill in once Steamworks gives the numbers (docs/Steam-publishing.md): the account that uploads, and each app's App ID and depot ids. A depot left at 0 is skipped.",
+  "account": "",
+  "targets": {
+    "playtest": {
+      "app_id": 0,
+      "depots": {
+        "windows": 0,
+        "macos": 0,
+        "linux": 0
+      },
+      "branch": "testing"
+    },
+    "game": {
+      "app_id": 0,
+      "depots": {
+        "windows": 0,
+        "macos": 0,
+        "linux": 0
+      },
+      "branch": "testing"
+    }
+  }
+}
