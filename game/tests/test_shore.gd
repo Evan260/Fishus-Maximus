@@ -51,6 +51,24 @@ func test_the_pond_is_dug_stocked_named_and_dressed() -> void:
 	check(Ponds.of(Game.state)["fish"][0]["fed"], "fed by hand")
 
 
+func test_a_fish_sells_from_the_pond_for_more_only_once_settled() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["denarii"] = 1000
+	Ponds.widen(Game.state)
+	Game.state["boat"] = "fishing_boat"
+	Hold.add(Game.state, {"fish": "bream", "pounds": 2.0, "fresh": 1.0, "live": true})
+	Ponds.stock(Game.state, 0)
+	var worth := Catalog.value("bream", 2.0, 1.0)
+	var f: Dictionary = Ponds.of(Game.state)["fish"][0]
+	check(Ponds.live_price(f) == worth, "a fish just put in sells for its worth at market, not half again")
+	for d in int(Data.num("ponds.settled_days", 3)):
+		Ponds.day(Game.state, Seeds.rng(d, "p"))
+	check(Ponds.settled(f) and Ponds.live_price(f) == int(Catalog.value("bream", float(f["pounds"]), 1.0) * 1.5), "once it has lived there some days it fetches half again")
+	var before := int(Game.state["denarii"])
+	check(Ponds.sell_live(Game.state, 0) == int(Game.state["denarii"]) - before, "and that is what selling it pays")
+	check(Ponds.settled({"fish": "bream", "pounds": 2.0}), "a fish from an older save, its days not counted, is taken as settled")
+
+
 func test_there_is_one_pond_widened_as_the_chapters_open() -> void:
 	Game.new_game("Test", "mutt")
 	Game.state["denarii"] = 100000

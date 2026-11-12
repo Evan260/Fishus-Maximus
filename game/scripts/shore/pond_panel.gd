@@ -37,6 +37,9 @@ static func open(view: PondView) -> void:
 		view.ring()
 		Audio.play("pond_bell")
 		Ui.close_window())
+	if not p["fish"].is_empty():
+		var rule := Ui.label(list, view.tr("A fish kept %d days in the pond sells to the villas for half again its worth.") % int(Data.num("ponds.settled_days", 3)), "MutedLabel")
+		rule.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	for i in p["fish"].size():
 		var f: Dictionary = p["fish"][i]
 		var fi: int = i
@@ -63,11 +66,12 @@ static func open(view: PondView) -> void:
 				Ponds.dress(Game.state, fi, wear)
 				view.sync()
 				open(view))
-		Ui.button(r, view.tr("Sell"), func():
+		var sell := Ui.button(r, view.tr("Sell"), func():
 			Toast.say(view.tr("Sold to a villa at Baiae for %s.") % Ui.coins_text(Ponds.sell_live(Game.state, fi)))
 			Game.changed.emit()
 			view.sync()
 			open(view))
+		Ui.tip_on(sell, view.tr("The villas pay %s.") % Ui.coins_text(Ponds.live_price(f)))
 	for i in Game.state["live_well"].size():
 		var f: Dictionary = Game.state["live_well"][i]
 		var wi: int = i

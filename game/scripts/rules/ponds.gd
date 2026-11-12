@@ -75,6 +75,7 @@ static func day(state: Dictionary, rng: RandomNumberGenerator) -> void:
 			var grow := Data.num("ponds.growth", 0.04) * (hi - lo) * happiness(pond, f) * (1.0 + bonus)
 			f["pounds"] = snappedf(minf(hi * Data.num("ponds.max_size", 1.3), float(f["pounds"]) + grow), 0.01)
 		f["age_days"] = int(f.get("age_days", 0)) + 1
+		f["kept_days"] = kept_days(f) + 1
 	_breed(pond, rng)
 	for f in pond["fish"]:
 		f["fed"] = false
@@ -96,7 +97,7 @@ static func _breed(pond: Dictionary, _rng: RandomNumberGenerator) -> void:
 		var need: int = int(Data.fish[kind].get("pond", {}).get("room", 2))
 		if breeding[kind] >= int(Data.num("ponds.breed_days", 5)) and room_used(pond) + need <= room(pond):
 			pond["fish"].append({"fish": kind, "pounds": float(Data.fish[kind]["pounds"][0]), "name": "", "finery": "",
-				"age_days": 0, "fed": false})
+				"age_days": 0, "kept_days": 0, "fed": false})
 			breeding[kind] = 0
 	pond["breeding"] = breeding
 
@@ -152,7 +153,7 @@ static func stock(state: Dictionary, well_index: int) -> bool:
 		return false
 	state["live_well"].remove_at(well_index)
 	of(state)["fish"].append({"fish": f["fish"], "pounds": float(f["pounds"]), "name": "", "finery": "",
-		"age_days": 5, "fed": false})
+		"age_days": 5, "kept_days": 0, "fed": false})
 	return true
 
 
@@ -176,11 +177,26 @@ static func dress(state: Dictionary, fish_index: int, finery: String) -> bool:
 	return true
 
 
-## Sells a pond fish live to the villas at Baiae, for half again its worth fresh from the sea.
+## How many mornings a fish has spent in the pond; one from a save before this was counted is taken as settled.
+static func kept_days(f: Dictionary) -> int:
+	return int(f.get("kept_days", Data.num("ponds.settled_days", 3)))
+
+
+## Whether a pond fish has lived there long enough for the villas to pay its keeping bonus.
+static func settled(f: Dictionary) -> bool:
+	return kept_days(f) >= int(Data.num("ponds.settled_days", 3))
+
+
+## What the villas at Baiae pay for a pond fish: its worth fresh from the sea, and half again once it is settled.
+static func live_price(f: Dictionary) -> int:
+	return int(Catalog.value(f["fish"], float(f["pounds"]), 1.0) * (Data.num("ponds.settled_bonus", 1.5) if settled(f) else 1.0))
+
+
+## Sells a pond fish live to the villas at Baiae for `live_price`.
 static func sell_live(state: Dictionary, fish_index: int) -> int:
 	var fish: Array = of(state)["fish"]
 	var f: Dictionary = fish[fish_index]
-	var paid := int(Catalog.value(f["fish"], float(f["pounds"]), 1.0) * 1.5)
+	var paid := live_price(f)
 	state["denarii"] = int(state["denarii"]) + paid
 	if f.get("finery", "") != "":
 		state["finery"].append(f["finery"])

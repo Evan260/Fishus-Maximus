@@ -142,7 +142,7 @@ The heart of the game: a living collection you build, breed and show off.
   - **Dressing up:** they can be decked out with finery from the goldsmith, earrings included, as Antonia's moray was.
 - **Visitors.** Villa owners and townsfolk come to see the pond, and a fine pond raises your name in town.
 - **The pond show.** Once a year the town's pond keepers show their best fish for prizes.
-- **Selling live.** Pond fish fill live orders and sell to the villas at Baiae.
+- **Selling live.** Pond fish fill live orders and sell to the villas at Baiae: for their worth at market, and for half again once they have lived 3 days in the pond.
 
 ## The garum works
 
