@@ -31,6 +31,7 @@ var _rng: RandomNumberGenerator
 var _top: Label
 var _sleep: Button
 var _painter: Node2D
+var _marks: Node2D
 var _stage: Node2D
 ## The street, the buildings and the people, lit by the hour; the gold outline and the names over them stay bright.
 var _lit: Node2D
@@ -102,6 +103,11 @@ func enter(args: Dictionary) -> void:
 		var used: Rect2i = traced[1]
 		_masks[id] = {"image": traced[0], "at": b.position, "rect": Rect2(b.position + Vector2(used.position), used.size)}
 		_outlines[id] = traced[2]
+	_marks = Node2D.new()
+	_marks.draw.connect(_draw_marks)
+	_marks.z_index = 2
+	_marks.light_mask = 0
+	_stage.add_child(_marks)
 	_painter = Node2D.new()
 	_painter.draw.connect(_draw_over)
 	_painter.z_index = 2
@@ -290,6 +296,7 @@ func _process(delta: float) -> void:
 		s.position = Vector2(roundf(f["x"]), STREET_Y - 46.0) + shift
 	hovered = "" if Ui.window_open() else _building_at(_pointer())
 	_painter.queue_redraw()
+	_marks.queue_redraw()
 
 
 ## Where the mouse is on the street; --outline=ID holds it over that building, and --outline=none off them all, for screenshots.
@@ -319,12 +326,15 @@ func _draw_over() -> void:
 		# Kept inside the scene, which every window shows whole, so the name of the board at its edge is not cut off.
 		at.x = clampf(at.x, 3.0, Nav.SIZE.x - w - 3.0)
 		Ui.draw_tag(_painter, at, name)
-	# A gold mark bobs over each client who has something to ask.
+
+
+## A gold mark bobs over each client who has something to ask, under the name of a building the mouse is over.
+func _draw_marks() -> void:
 	for c in _clients.filter(func(c): return c["id"] in marked_clients()):
 		var bob := roundf(sin(Time.get_ticks_msec() / 300.0) * 1.5)
 		var at := Vector2(c["x"] - 2.0, STREET_Y - 46.0 + bob)
-		_painter.draw_rect(Rect2(at + Vector2(-3, -9), Vector2(10, 11)), Color(UiTheme.INK, 0.8))
-		_painter.draw_string(UiTheme.name_font(), at + Vector2(0, 0), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
+		_marks.draw_rect(Rect2(at + Vector2(-3, -9), Vector2(10, 11)), Color(UiTheme.INK, 0.8))
+		_marks.draw_string(UiTheme.name_font(), at + Vector2(0, 0), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, UiTheme.GOLD)
 
 
 func _unhandled_input(e: InputEvent) -> void:

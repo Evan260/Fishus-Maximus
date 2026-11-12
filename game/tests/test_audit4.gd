@@ -39,3 +39,16 @@ func test_the_board_asks_for_a_legend_only_when_it_can_be_about() -> void:
 					and (f.get("event", null) == null or f["event"] in Events.on(d)))
 			check(some_day, "%s is asked for on day %d only if its weather or event comes before it is due" % [o["fish"], today])
 	check(posted > 0, "the board does ask for legends")
+
+
+func test_a_building_name_is_drawn_over_the_clients_marks() -> void:
+	Game.new_game("Test", "mutt")
+	var s: Node = load("res://scripts/town/town_screen.gd").new()
+	Nav.port.add_child(s)
+	s.enter({})
+	var marks: Node2D = s.get("_marks")
+	check(marks != null and marks.z_index <= s._painter.z_index and marks.get_index() < s._painter.get_index()
+		and marks.get_parent() == s._painter.get_parent(), "the clients' marks are drawn under the hovered building's name")
+	for c in Nav.ui.get_children():
+		c.free()
+	s.free()
