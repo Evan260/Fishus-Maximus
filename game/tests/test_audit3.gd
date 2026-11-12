@@ -103,3 +103,13 @@ func test_the_ways_of_fishing_name_a_key_just_changed() -> void:
 	for c in Nav.ui.get_children():
 		c.free()
 	s.free()
+
+
+func test_the_strips_centre_tip_names_the_key_chosen() -> void:
+	Controls.rebind("reset_strip", KEY_G)
+	var c := StripControls.new()
+	Nav.ui.add_child(c)
+	var tips: Array = c.find_children("*", "Button", true, false).map(func(b): return str(b.get_meta("tip", "")))
+	check("Back to the middle (G)" in tips, "the re-centre tip names G: %s" % [tips])
+	Controls.rebind("reset_strip", KEY_F9)
+	c.free()

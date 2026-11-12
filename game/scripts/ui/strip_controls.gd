@@ -72,7 +72,7 @@ func _ready() -> void:
 	_dock_button = _icon_button("to_top", "Move to the other edge of the screen", func(): Windowing.toggle_dock())
 	_sky_button = _icon_button("sky", "See the desktop through the sky", func(): Windowing.set_transparent(not Windowing.transparent))
 	_focus_button = _icon_button("focus", "Focus mode: quieter and slower", func(): Windowing.set_focus_mode(not Windowing.focus_mode))
-	_icon_button("centre", "Back to the middle (F9)", func(): Windowing.reset_strip())
+	_icon_button("centre", TranslationServer.translate("Back to the middle (%s)") % Controls.key_name("reset_strip"), func(): Windowing.reset_strip())
 	for b in [_sky_button, _focus_button]:
 		b.toggle_mode = true
 	_refresh()
