@@ -4,9 +4,15 @@ What has to happen on Steam's side before launch. The game already does its part
 
 ## 1. Connect the game to Steam
 
+GodotSteam 4.24 (the GDExtension build, with Steamworks SDK 1.65) is in `game/addons/godotsteam`, with its libraries for 64-bit Windows, macOS and Linux. Every export carries them: beside the exe on Windows and Linux, and inside the app on macOS. `game/scripts/autoload/awards.gd` starts Steam with `steamInitEx()`, runs Steam's callbacks every frame and sends achievements; when the Steam client is not running, it prints one line saying so and the achievements stay in the save. The game needs nothing else from Steam.
+
 1. Create the app in Steamworks and note its App ID.
-2. Add GodotSteam (the GDExtension build for Godot 4.7) to `game/addons/`. The game looks for its `Steam` object and uses it when it is there (`game/scripts/autoload/awards.gd`); without it, nothing breaks.
-3. While testing outside Steam, put a file named `steam_appid.txt` holding the App ID next to the game's executable.
+2. To try Steam outside Steam before then, put a file named `steam_appid.txt` holding `480` (Valve's Spacewar test app) next to the game's executable, or in `game/` when running from the editor, and start the Steam client. `steam_appid.txt` is ignored by git and never goes into a build, because Steam gives the real App ID to a game it launches. Achievements sent under 480 land on Spacewar, not on Fishus Maximus, so use it only to see that Steam starts.
+3. When the real App ID exists, it goes into `tools/steam/steam.json`; `steam_appid.txt` can hold it instead of 480 for local tests.
+
+Uploading builds to Steam is in `docs/Steam-publishing.md`.
+
+To update GodotSteam, download the newest GDExtension release (the tag ending in `-gde`) from codeberg.org/godotsteam/godotsteam/releases, replace the `win64`, `osx` and `linux64` folders and `license.md`, and change the version in `game/data/credits.json`. The `godotsteam.gdextension` here lists only those three platforms.
 
 ## 2. The store page
 

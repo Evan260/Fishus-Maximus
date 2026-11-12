@@ -87,6 +87,6 @@ func test_a_save_is_written_safely_and_keeps_backups() -> void:
 func test_the_credits_name_every_part_of_the_game() -> void:
 	var credits: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/credits.json"))
 	check(credits is Dictionary, "the credits read")
-	for part in ["made_by", "music", "sounds", "font"]:
+	for part in ["made_by", "music", "sounds", "font", "libraries"]:
 		check(credits is Dictionary and not (credits.get(part, []) as Array).is_empty(), "with their %s" % part)
 	check(FileAccess.file_exists("res://tools/write_credits.gd"), "and a tool writes them out with Godot's licence")

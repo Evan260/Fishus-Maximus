@@ -20,3 +20,6 @@ Thumbs.db
 
 # Worktrees made for helper agents.
 .claude/worktrees/
+
+# The test App ID for running with Steam outside Steam, never shipped
+steam_appid.txt
