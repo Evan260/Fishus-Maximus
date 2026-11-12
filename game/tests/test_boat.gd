@@ -213,30 +213,64 @@ func test_he_sits_down_to_the_near_rail_in_every_boat() -> void:
 		_done(s)
 
 
-## A pixel of rope in the big boat's picture: a warm grey, much less yellow than its sail's cloth or its wood.
-func _rope(c: Color) -> bool:
-	return c.a > 0.5 and c.r > 0.35 and c.r - c.g < 0.1 and c.r - c.b < 0.2
+
+func test_the_rigging_is_drawn_behind_his_face() -> void:
+	for id in ["big_boat"]:
+		var b := BoatView.new()
+		b.set_boat(id)
+		var boat: Image = b.boat.texture.get_image()
+		var bare: Image = (b.boat.material as ShaderMaterial).get_shader_parameter("bare").get_image()
+		var w := boat.get_width()
+		for facing in [1.0, -1.0]:
+			b.facing = facing
+			var seen := []
+			var touching := 0
+			var ropes_left := 0
+			var painted := 0
+			for k in 4 + BoatView.WIND_FRAMES:
+				_set_pose(b, k)
+				b.place(0.0, Vector2.ZERO, 0.3)
+				seen.append(b.pose()[0])
+				var man: Image = b.person.texture.get_image()
+				var corner := Vector2i((b.person.position - b.boat.position).round())
+				# His hat and face are the picture's top 25 rows from column 23; left of that are his neck and the hand winding back.
+				for y in 25:
+					for x in range(23, man.get_width()):
+						if man.get_pixel(x, y).a < 0.5:
+							continue
+						var col := man.get_width() - 1 - x if b.person.flip_h else x
+						for d in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+							var v: Vector2i = corner + Vector2i(col, y) + d
+							var p := Vector2i(w - 1 - v.x if b.boat.flip_h else v.x, v.y)
+							if p.x < 0 or p.y < 0 or p.x >= w or p.y >= boat.get_height():
+								continue
+							var drawn := bare.get_pixel(p.x, p.y) if b.behind_him(p) else boat.get_pixel(p.x, p.y)
+							if BoatView.is_rope(drawn):
+								touching += 1
+							if BoatView.is_rope(boat.get_pixel(p.x, p.y)):
+								painted += 1
+				for y in boat.get_height():
+					for x in w:
+						if BoatView.is_rope(boat.get_pixel(x, y)) and not b.behind_him(Vector2i(x, y)):
+							ropes_left += 1
+			check(seen.count("rest") == 1 and seen.count("sit") == 1 and seen.count("cast") == 9, "%s: he is seen resting, holding the rod and casting" % id)
+			check(painted > 0, "%s facing %d: its painted rigging runs past his face" % [id, facing])
+			check(touching == 0, "%s facing %d: no rope is drawn across or beside his hat and face, %d pixels are" % [id, facing, touching])
+			check(ropes_left > 100 * seen.size(), "%s facing %d: the rest of the rigging is still drawn" % [id, facing])
+		b.free()
+	var big := BoatView.new()
+	big.set_boat("big_boat")
+	check(big.dog_spot == Vector2(0.16, 76) and big.dog_cut == 67.0, "the dog keeps its place in the big boat's stern")
+	big.free()
 
 
-func test_the_big_boats_rigging_stays_off_his_face() -> void:
-	var b := BoatView.new()
-	b.set_boat("big_boat")
-	b.facing = 1.0
-	var boat: Image = b.boat.texture.get_image()
-	var corner := (b._person_at(0.0, false) - Vector2(0.0, -b.ride)).round()
-	var touching := 0
-	for move in ["sit", "rest", "cast"]:
-		for frame in b._frames[move]:
-			var man: Image = (frame as Texture2D).get_image()
-			# His hat and face are the picture's top 25 rows from column 23; left of that are his neck and the hand winding back.
-			for y in 25:
-				for x in range(23, man.get_width()):
-					if man.get_pixel(x, y).a < 0.5:
-						continue
-					for d in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
-						var p: Vector2i = Vector2i(corner) + Vector2i(x, y) + d
-						if p.x >= 0 and p.y >= 0 and p.x < boat.get_width() and p.y < boat.get_height() and _rope(boat.get_pixel(p.x, p.y)):
-							touching += 1
-	check(touching == 0, "no rope of the big boat's rigging runs across or beside his hat and face, %d pixels do" % touching)
-	check(b.dog_spot == Vector2(0.16, 76) and b.dog_cut == 67.0, "and the dog keeps its place in the stern")
-	b.free()
+## Puts him in the kth of his poses with the rod: at rest, holding it up, then every frame of the cast.
+func _set_pose(b: BoatView, k: int) -> void:
+	b.charge = -1.0
+	b._throw = -1.0
+	b.line_out = k == 1
+	if k >= 2 and k < 2 + BoatView.WIND_FRAMES:
+		b.charge = (k - 2 + 0.5) / BoatView.WIND_FRAMES
+	elif k >= 2:
+		b._swing = 0.0
+		b._throw = 0.001 if k == 2 + BoatView.WIND_FRAMES else 1.001 / BoatView.THROW_FPS

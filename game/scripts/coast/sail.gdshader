@@ -16,6 +16,13 @@ uniform vec4 flag = vec4(0.0);
 // How many texels the flag's free end rises and falls, and the time it waves by.
 uniform float flutter = 1.0;
 uniform float clock = 0.0;
+// Where his outline `man`, placed at `man_at` in the view, covers the boat, it is read from `bare`, the boat without its ropes.
+uniform bool hide_ropes = false;
+uniform sampler2D bare : filter_nearest;
+uniform sampler2D man : filter_nearest;
+uniform vec2 man_at;
+uniform bool man_flip = false;
+uniform bool boat_flip = false;
 
 varying vec4 tint;
 
@@ -39,6 +46,18 @@ bool in_sail(vec2 p) {
 
 bool in_flag(vec2 p) {
 	return p.x >= min(flag.x, flag.y) && p.x <= max(flag.x, flag.y) && p.y >= flag.z && p.y <= flag.w;
+}
+
+bool behind_him(vec2 px, vec2 size) {
+	vec2 m_size = vec2(textureSize(man, 0));
+	vec2 v = vec2(boat_flip ? size.x - 1.0 - px.x : px.x, px.y) - man_at;
+	if (man_flip) {
+		v.x = m_size.x - 1.0 - v.x;
+	}
+	if (v.x < 0.0 || v.y < 0.0 || v.x >= m_size.x || v.y >= m_size.y) {
+		return false;
+	}
+	return texelFetch(man, ivec2(v), 0).r > 0.5;
 }
 
 void fragment() {
@@ -75,5 +94,6 @@ void fragment() {
 			cleared = true;
 		}
 	}
-	COLOR = cleared ? vec4(0.0) : texture(TEXTURE, (from + 0.5) / size) * tint;
+	vec4 c = hide_ropes && behind_him(px, size) ? texture(bare, (from + 0.5) / size) : texture(TEXTURE, (from + 0.5) / size);
+	COLOR = cleared ? vec4(0.0) : c * tint;
 }

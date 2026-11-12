@@ -17,6 +17,10 @@ const FLUTTER := [0.6, 1.0]
 const TINT := Color(0.5, 0.78, 0.84, 0.85)
 ## What each boat's picture gives: its deck, its rails and the near side drawn over the dog, by boat and picture.
 static var _shapes := {}
+## His outline in each picture of him, with its hollows filled and a pixel round it, which the rigging is hidden under.
+static var _outlines := {}
+## How many pixels wide a hollow in his outline may be and still be filled, such as under his hat's brim.
+const HOLLOW := 2
 ## How deep the hull sits in the water, unless the boat names its own `draft` in boats.json.
 const DRAFT := 8.0
 const ROD_LENGTH := 26.0
@@ -174,7 +178,8 @@ func set_boat(id: String) -> void:
 		_rails = _rail_rows(img)
 		_place_seat(spec)
 		near_rail = _near_rail_rows(spec.get("rail", []), img.get_width(), seat.y)
-		_shapes[key] = {"deck": deck, "rails": _rails, "near_rail": near_rail, "front": _near_side(img, near_rail)}
+		_shapes[key] = {"deck": deck, "rails": _rails, "near_rail": near_rail, "front": _near_side(img, near_rail),
+				"bare": _without_ropes(img, near_rail) if spec.get("rigging", false) else null}
 	var shape: Dictionary = _shapes[key]
 	deck = shape["deck"]
 	_rails = shape["rails"]
@@ -187,6 +192,8 @@ func set_boat(id: String) -> void:
 	lantern = Vector2(float(flame[0]), float(flame[1])) if flame.size() == 2 else Vector2(-1, -1)
 	oars = bool(spec.get("oars", false))
 	boat.material = _sail_material(spec)
+	if boat.material and shape["bare"]:
+		boat.material.set_shader_parameter("bare", shape["bare"])
 	person.visible = _painted and _frames.has("sit") and not (_frames["sit"] as Array).is_empty()
 
 
@@ -245,6 +252,104 @@ static func _near_side(img: Image, rails: PackedFloat32Array) -> ImageTexture:
 		for y in range(int(rails[x]), img.get_height()):
 			out.set_pixel(x, y, img.get_pixel(x, y))
 	return ImageTexture.create_from_image(out)
+
+
+## A rope of the rigging: a warm grey, much less yellow than the sail's cloth or the wood, and lighter than the hull's shade.
+static func is_rope(c: Color) -> bool:
+	return c.a > 0.5 and c.r > 0.28 and c.r - c.g < 0.1 and c.r - c.b < 0.2
+
+
+## The boat's picture without the ropes above its near rail: cloth or wood on both sides fills a rope, or else the sea shows.
+static func _without_ropes(img: Image, rails: PackedFloat32Array) -> ImageTexture:
+	var out := img.duplicate() as Image
+	out.convert(Image.FORMAT_RGBA8)
+	var w := img.get_width()
+	for y in img.get_height():
+		var x := 0
+		while x < w:
+			if y >= int(rails[x]) or not is_rope(img.get_pixel(x, y)):
+				x += 1
+				continue
+			var end := x
+			while end + 1 < w and y < int(rails[end + 1]) and is_rope(img.get_pixel(end + 1, y)):
+				end += 1
+			var behind := Color(0, 0, 0, 0)
+			if x > 0 and end + 1 < w and img.get_pixel(x - 1, y).a > 0.5 and img.get_pixel(end + 1, y).a > 0.5:
+				behind = img.get_pixel(x - 1, y)
+			for k in range(x, end + 1):
+				out.set_pixel(k, y, behind)
+			x = end + 1
+	return ImageTexture.create_from_image(out)
+
+
+## His outline in a picture of him down to the rows shown, padded by `outline_pad()` on every side.
+static func outline(tex: Texture2D, rows: int) -> ImageTexture:
+	var key := "%s|%d" % [tex.resource_path, rows]
+	if _outlines.has(key):
+		return _outlines[key]
+	var img := tex.get_image()
+	if img.is_compressed():
+		img.decompress()
+	var pad := outline_pad()
+	var w := img.get_width() + pad * 2
+	var h := rows + pad * 2
+	var on := PackedByteArray()
+	on.resize(w * h)
+	for y in mini(rows, img.get_height()):
+		for x in img.get_width():
+			if img.get_pixel(x, y).a > 0.5:
+				on[(y + pad) * w + x + pad] = 1
+	on = _spread(_spread(on, w, h, HOLLOW + 1, true), w, h, HOLLOW, false)
+	var mask := Image.create(w, h, false, Image.FORMAT_L8)
+	for i in on.size():
+		if on[i]:
+			mask.set_pixel(i % w, i / w, Color.WHITE)
+	_outlines[key] = ImageTexture.create_from_image(mask)
+	_outlines[key].set_meta("image", mask)
+	return _outlines[key]
+
+
+## How far past his picture's edges the outline's mask reaches.
+static func outline_pad() -> int:
+	return HOLLOW + 2
+
+
+## Grows a mask by `r` pixels in every direction, or with `grow` false shrinks it, a row and then a column at a time.
+static func _spread(on: PackedByteArray, w: int, h: int, r: int, grow: bool) -> PackedByteArray:
+	for vertical in [false, true]:
+		var out := PackedByteArray()
+		out.resize(w * h)
+		for y in h:
+			for x in w:
+				var hit := not grow
+				for d in range(-r, r + 1):
+					var nx: int = x if vertical else x + d
+					var ny: int = y + d if vertical else y
+					var v: bool = nx >= 0 and ny >= 0 and nx < w and ny < h and on[ny * w + nx] == 1
+					if grow and v:
+						hit = true
+						break
+					if not grow and not v:
+						hit = false
+						break
+				out[y * w + x] = 1 if hit else 0
+		on = out
+	return on
+
+
+## Whether the boat's pixel at `px`, in its own picture, is shown without its rigging, as the shader works it out.
+func behind_him(px: Vector2i) -> bool:
+	var sail := boat.material as ShaderMaterial if boat else null
+	if sail == null or not sail.get_shader_parameter("hide_ropes"):
+		return false
+	var mask: Texture2D = sail.get_shader_parameter("man")
+	var at: Vector2 = sail.get_shader_parameter("man_at")
+	var v := Vector2(width() - 1.0 - px.x if sail.get_shader_parameter("boat_flip") else float(px.x), px.y) - at
+	if sail.get_shader_parameter("man_flip"):
+		v.x = mask.get_width() - 1.0 - v.x
+	if v.x < 0.0 or v.y < 0.0 or v.x >= mask.get_width() or v.y >= mask.get_height():
+		return false
+	return (mask.get_meta("image") as Image).get_pixel(int(v.x), int(v.y)).r > 0.5
 
 
 ## The hull's top edge: going up from the hull's widest row, the first row much narrower, which skips masts and sails.
@@ -503,6 +608,15 @@ func place(x: float, cam: Vector2, time: float) -> void:
 		person.region_rect = Rect2(0, 0, 64, _hip - 1.0)
 		person.flip_h = _turned()
 		person.position = _person_at(x, _turned()) - cam
+	var sail := boat.material as ShaderMaterial
+	if sail and sail.get_shader_parameter("bare"):
+		sail.set_shader_parameter("hide_ropes", person.visible)
+		if person.visible:
+			var pad := float(outline_pad())
+			sail.set_shader_parameter("man", outline(person.texture, int(person.region_rect.size.y)))
+			sail.set_shader_parameter("man_at", (person.position - boat.position).round() - Vector2(pad, pad))
+			sail.set_shader_parameter("man_flip", person.flip_h)
+			sail.set_shader_parameter("boat_flip", boat.flip_h)
 	_cam = cam
 	_x = x
 	_stir()

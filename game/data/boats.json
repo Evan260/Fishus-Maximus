@@ -70,11 +70,12 @@
 		"speed": 70,
 		"storm": true,
 		"seat": [
-			0.62,
+			0.47,
 			71
 		],
 		"dog": [0.16, 76],
 		"dog_cut": 67,
+		"rigging": true,
 		"lantern": [116, 46],
 		"price": 2200,
 		"text": "Strong enough for the deep water off Cape Misenum, with a post for the lamp."
