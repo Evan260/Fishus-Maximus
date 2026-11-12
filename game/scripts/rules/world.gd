@@ -85,7 +85,7 @@ static func _judge_contest(state: Dictionary) -> void:
 	if Clock.day_of(t) < int(c["day"]) or (Clock.day_of(t) == int(c["day"]) and Clock.hour(t) < 12.0):
 		return
 	c["done"] = true
-	var bar := 2.5 + int(state["chapter"]) * 1.5
+	var bar := contest_bar(int(state["chapter"]))
 	var won := float(c["best"]) > bar
 	var prize := 40 * int(state["chapter"]) if won else 0
 	if won:
@@ -93,6 +93,17 @@ static func _judge_contest(state: Dictionary) -> void:
 		Story.add_reputation(state, 10)
 		state["stats"]["neptunalia_won"] = int(state["stats"].get("neptunalia_won", 0)) + 1
 	state["_contest"] = {"won": won, "pounds": float(c["best"]) if won else bar + 0.4, "fish": str(c["fish"]), "prize": prize}
+
+
+## The town's best catch at the Neptunalia, rising with the chapter but never past a share of the heaviest fish the
+## harbour gives on a line in the contest's hours, so it can always be beaten.
+static func contest_bar(chapter: int) -> float:
+	var heaviest := 0.0
+	for hour in range(int(CoastEvents.CONTEST_HOURS[0]), int(CoastEvents.CONTEST_HOURS[1])):
+		for depth in range(0, int(Data.places["harbour"]["depth"]), 10):
+			for id in Catalog.available("harbour", float(depth), float(hour), "summer", "clear", "line"):
+				heaviest = maxf(heaviest, float(Data.fish[id]["pounds"][1]))
+	return minf(Data.num("contest.bar", 2.5) + chapter * Data.num("contest.bar_per_chapter", 1.5), heaviest * Data.num("contest.most", 0.75))
 
 
 ## Goes to bed in town and wakes at the next dawn, with everything that happens overnight.

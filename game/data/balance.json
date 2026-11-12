@@ -18,6 +18,11 @@
 		"floor": 0.4,
 		"recover": 0.3
 	},
+	"contest": {
+		"bar": 2.5,
+		"bar_per_chapter": 1.5,
+		"most": 0.75
+	},
 	"sky": {
 		"aurora_chance": 0.07,
 		"aurora_sure_after_days": 30
