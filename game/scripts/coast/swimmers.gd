@@ -307,10 +307,11 @@ func _near_leaders() -> Array:
 	return fish.filter(func(f): return f["leader"].is_empty() and absf(f["pos"].x - (cam.x + half)) < half + REACH)
 
 
-## Whether a kind already has as many fish or shoals near the camera as one kind may.
+## Whether a kind already has as many fish or shoals in the water about the camera as one kind may.
 func crowded(kind: String) -> bool:
 	var most := MOST_SHOALS if Data.fish[kind].get("shoal", false) else MOST_SINGLES
-	return _near_leaders().filter(func(f): return f["id"] == kind).size() >= most
+	# Every one still swimming counts, since one just out of reach can wander back into view.
+	return fish.filter(func(f): return f["leader"].is_empty() and f["id"] == kind and f["state"] != "gone").size() >= most
 
 
 ## Gives a fish what it swims with that it was made without: its pace, its facing, its turn and its tail's beat.
