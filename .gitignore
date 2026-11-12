@@ -5,9 +5,6 @@ builds/
 # Secrets
 .env
 
-# The trimmed engine, copied from Mosaicus Maximus
-tools/engine/*.exe
-
 # Recordings, the scratch frames they are cut from, and the window size the recording scripts set
 recordings/
 game/override.cfg

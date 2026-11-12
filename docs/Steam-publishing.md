@@ -12,7 +12,7 @@ How builds get onto Steam and to players. Once the steps below are done, every u
 - `tools/steam/steam.json` holds the Steam account name and the app and depot numbers. They are all zero until the steps below give you those numbers; a depot left at 0 is skipped.
 - GodotSteam is in `game/addons/godotsteam` and goes out with every build; `docs/Steam-setup.md` says how the game uses it and how to test with Valve's test app.
 
-The Windows build uses a trimmed Godot engine, `tools/engine/slim.windows.template_release.x86_64.exe`, copied from Farmus Maximus. It is not in git, so copy it again on a new computer and after every Godot update; its build settings are in `tools/engine/slim_profile.py`. The macOS and Linux builds use Godot's standard export templates.
+The Windows build uses a trimmed Godot engine, `tools/engine/slim.windows.template_release.x86_64.exe`, copied from Farmus Maximus. It is kept in Git LFS, so a fresh clone and the GitHub release builds (`Release-builds.md`) use it; copy it again after every Godot update and commit it; its build settings are in `tools/engine/slim_profile.py`. The macOS and Linux builds use Godot's standard export templates.
 
 ## One-time setup on this computer
 
