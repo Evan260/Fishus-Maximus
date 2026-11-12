@@ -7,7 +7,9 @@ a carved edge, a dark outline and a little depth underneath, with a laurel sprig
 
 Usage: python tools/trailer/make_logo.py
 Writes tools/trailer/logo.png, logo_plain.png (the name without the laurel) and scroll.png, the parchment scroll the
-trailer's end card writes "Wishlist now on Steam" on, at 1 pixel per game pixel.
+trailer's end card writes "Wishlist now on Steam" on, at 1 pixel per game pixel, and the game's boot splash,
+game/assets/art/ui/boot_splash.png: the logo at SPLASH_SCALE window pixels to its pixel, as the game draws it in its
+1440 by 810 window, shown on the title's dark background colour (project.godot's boot_splash settings).
 """
 import math
 from pathlib import Path
@@ -19,6 +21,8 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "logo.png"
 PLAIN_OUT = HERE / "logo_plain.png"
 SCROLL_OUT = HERE / "scroll.png"
+SPLASH_OUT = HERE.parents[1] / "game" / "assets" / "art" / "ui" / "boot_splash.png"
+SPLASH_SCALE = 3
 CAP = 27
 SUPER = 8
 LINES = ["FISHUS", "MAXIMUS"]
@@ -266,6 +270,7 @@ def main():
     logo.alpha_composite(right, ((total_w + second.width) // 2 - 2, mid))
     OUT.parent.mkdir(parents=True, exist_ok=True)
     logo.save(OUT)
+    logo.resize((logo.width * SPLASH_SCALE, logo.height * SPLASH_SCALE), Image.NEAREST).save(SPLASH_OUT)
     scroll().save(SCROLL_OUT)
     print(f"logo: {OUT} ({logo.width} x {logo.height} game pixels), and {SCROLL_OUT.name}")
 
