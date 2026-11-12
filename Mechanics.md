@@ -59,7 +59,7 @@ The bay is six fishing places. Each is one long stretch of coast, 3 to 5 screens
 
 - Wicker pots are dropped from the boat onto the seabed wherever you choose, and fill over the hours with the place's trap fish: octopus, lobsters, crabs and eels. Each one is seen sinking to the bed and, when lifted, hauled back up hand over hand; what it caught is told once it is in the boat.
 - You can have 2 traps at the start and up to 6 later. They are pulled up whenever you row over them.
-- Trap catches are alive.
+- A trap catch is kept alive when its kind can be: crabs, lobsters and octopus go to the live well, while sea urchins, the octopus of Carteia and Neptune's lobster go to the hold.
 
 ## Nets
 

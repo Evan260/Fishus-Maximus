@@ -1,5 +1,5 @@
 class_name Traps
-## Wicker pots on the seabed that fill over the hours with the place's trap fish, alive.
+## Wicker pots on the seabed that fill over the hours with the place's trap fish, alive when their kind can be.
 
 
 ## Every kind a pot can take at this place and depth.
@@ -16,7 +16,13 @@ static func fill(trap: Dictionary, hours: float, rng: RandomNumberGenerator) -> 
 	if pool.is_empty():
 		return
 	while trap["catch"].size() < wanted:
-		trap["catch"].append(Pick.catch_of(Pick.by_rarity(pool, rng), rng, true))
+		var fish := Pick.by_rarity(pool, rng)
+		trap["catch"].append(Pick.catch_of(fish, rng, alive(fish)))
+
+
+## Whether a pot keeps this kind alive: urchins and the like are not kept in the live well.
+static func alive(fish: String) -> bool:
+	return bool(Data.fish[fish].get("live", false))
 
 
 ## Empties a pot into the well and the hold as far as there is room, leaving the rest in the pot; says what came out.
@@ -25,7 +31,7 @@ static func empty_into(state: Dictionary, trap: Dictionary) -> Array:
 	var left := []
 	for c in trap["catch"]:
 		if Hold.can_take(state, c):
-			Catches.record(state, c["fish"], float(c["pounds"]), bool(c.get("live", true)))
+			Catches.record(state, c["fish"], float(c["pounds"]), bool(c.get("live", true)) and alive(c["fish"]))
 			taken.append(c)
 		else:
 			left.append(c)

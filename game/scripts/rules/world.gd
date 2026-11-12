@@ -72,7 +72,7 @@ static func _trap_legend(state: Dictionary, trap: Dictionary, start: float, minu
 				continue
 			if str(trap.get("bait", "")) in Data.fish[id]["baits"] and rng.randf() < 0.08 * hours / slices \
 					and not state["traps"].any(func(t): return t["catch"].any(func(c): return c["fish"] == id)):
-				trap["catch"].append(Pick.catch_of(id, rng, true))
+				trap["catch"].append(Pick.catch_of(id, rng, Traps.alive(id)))
 
 
 ## At noon on its day the Neptunalia is judged against the best of the town's fishermen, wherever you are by then,

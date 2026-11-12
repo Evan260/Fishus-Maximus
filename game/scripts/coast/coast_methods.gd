@@ -239,8 +239,9 @@ func _dev_pot(how: String) -> void:
 	var mid: float = screen.boat_x + 52.0
 	if how == "haul":
 		var kinds := Traps.kinds(screen.place_id, screen.seabed.depth_at(mid))
+		var kind: String = kinds[0] if not kinds.is_empty() else "crab"
 		Game.state["traps"].append({"place": screen.place_id, "x": roundf(mid), "depth": screen.seabed.depth_at(mid),
-			"set_time": float(Game.state["time"]), "catch": [Pick.catch_of(kinds[0] if not kinds.is_empty() else "crab", _rng, true)],
+			"set_time": float(Game.state["time"]), "catch": [Pick.catch_of(kind, _rng, Traps.alive(kind))],
 			"size": 3, "hours": 2.0, "bait": ""})
 	_set_or_lift_trap()
 

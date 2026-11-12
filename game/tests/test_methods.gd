@@ -7,9 +7,23 @@ func test_traps_fill_over_the_hours() -> void:
 	check(t["catch"].size() == 2, "two catches in five hours")
 	Traps.fill(t, 40.0, Seeds.rng(2, "t"))
 	check(t["catch"].size() == 3, "never more than the trap holds")
-	check(t["catch"].all(func(c): return "trap" in Data.fish[c["fish"]]["methods"] and c["live"]), "trap fish, alive")
+	check(t["catch"].all(func(c): return "trap" in Data.fish[c["fish"]]["methods"] and c["live"] == Traps.alive(c["fish"])), "trap fish, kept alive when their kind can be")
 	var got := Traps.pull(t)
 	check(got.size() == 3 and t["catch"].is_empty(), "pulling empties the trap")
+
+
+func test_a_pot_puts_an_urchin_in_the_hold_not_the_well() -> void:
+	Game.new_game("Marcus", "mutt")
+	Game.state["boat"] = "big_boat"
+	var t := {"place": "rocky_shore", "x": 300, "depth": 120, "catch": [{"fish": "urchin", "pounds": 0.5, "fresh": 1.0, "live": true},
+		{"fish": "crab", "pounds": 0.5, "fresh": 1.0, "live": true}], "size": 3, "hours": 4.0}
+	Traps.empty_into(Game.state, t)
+	check(Game.state["hold"].map(func(f): return f["fish"]) == ["urchin"], "an urchin, even one from an old pot, goes to the hold")
+	check(Game.state["live_well"].map(func(f): return f["fish"]) == ["crab"], "a crab to the well")
+	check(not Traps.alive("carteia_octopus") and not Traps.alive("neptune_lobster") and Traps.alive("lobster"), "the legends in pots are not kept alive")
+	var pot := {"place": "rocky_shore", "x": 300, "depth": 120, "catch": [], "size": 6}
+	Traps.fill(pot, 200.0, Seeds.rng(5, "t"))
+	check(pot["catch"].all(func(c): return c["live"] == Traps.alive(c["fish"])), "a filled pot marks each catch as its kind lives")
 
 
 func test_a_net_catches_more_the_better_it_is_aimed() -> void:
