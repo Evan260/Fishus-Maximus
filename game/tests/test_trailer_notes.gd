@@ -118,3 +118,57 @@ func test_the_dog_barks_softly() -> void:
 func test_nothing_creaks() -> void:
 	check(not Audio._sounds.has("creak"), "the creaking rope is gone from the sounds")
 	check(not FileAccess.get_file_as_string("res://scripts/coast/coast_screen.gd").contains("\"creak\""), "and the coast never plays it")
+
+
+## The cast frames shown from a cast until the throw ends, stepping the coast as the game does.
+func _cast_frames(s: Node, start: Callable) -> Array:
+	var b: BoatView = s._boat
+	start.call()
+	var frames := []
+	var tip_held := true
+	for k in 40:
+		var p: Array = b.pose()
+		if p[0] == "cast" and (frames.is_empty() or frames[-1] != p[1]):
+			frames.append(p[1])
+		if p[0] == "cast" and p[1] < BoatView.WIND_FRAMES and s.flight > 0.0 and s.flying().distance_to(b.rod_tip(s.boat_x)) > 1.5:
+			tip_held = false
+		b._process(1.0 / 30.0)
+		s._process(1.0 / 30.0)
+	check(tip_held, "the float hangs from the rod's tip while he swings back")
+	return frames
+
+
+func test_every_cast_plays_the_throw() -> void:
+	for id in Data.boats:
+		for facing in [1.0, -1.0]:
+			var s := _coast(id)
+			s._demo = true
+			s._time = -100.0
+			s._boat.facing = facing
+			s._process(1.0 / 30.0)
+			var frames := _cast_frames(s, func(): s.cast(1.0))
+			check(frames.size() >= 6 and frames[0] <= 1 and frames.has(BoatView.WIND_FRAMES - 1) and frames.has(7) and frames.has(8),
+				"%s facing %d: a scripted cast swings the rod back and throws it forward (%s)" % [id, facing, frames])
+			check(_rising(frames), "%s facing %d: the frames run in order" % [id, facing])
+			_done(s)
+	var s := _coast("skiff")
+	s._demo = true
+	s._time = -100.0
+	s._process(1.0 / 30.0)
+	var wound := _cast_frames(s, func():
+		s._boat.charge = 1.0
+		s.cast(1.0))
+	check(wound.size() >= 3 and wound[0] == BoatView.WIND_FRAMES - 1 and wound.has(7) and wound.has(8), "a cast wound right back throws straight away (%s)" % [wound])
+	_done(s)
+	s = _coast("fishing_boat")
+	s.methods.set_idle(true)
+	var idle := _cast_frames(s, func(): s.methods._recast_in = 0.0)
+	check(idle.has(BoatView.WIND_FRAMES - 1) and idle.has(8), "fishing on his own, as in the desktop strip, he throws too (%s)" % [idle])
+	_done(s)
+
+
+func _rising(frames: Array) -> bool:
+	for i in range(1, frames.size()):
+		if frames[i] < frames[i - 1]:
+			return false
+	return true

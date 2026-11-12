@@ -41,6 +41,8 @@ var flight := 0.0
 ## How far the float has drifted from where it landed.
 var _drift := 0.0
 var _flight_from := Vector2.ZERO
+## Seconds until the rod comes forward in the throw and the float sets off, hanging from its tip until then.
+var _release := 0.0
 var _flight_time := 0.5
 var _arc := 40.0
 ## A click on the water this frame, and whether the mouse is still held down after one; clicks on buttons never get here.
@@ -357,7 +359,7 @@ func row(dir: float, seconds: float) -> void:
 ## Casts the line out in front of the boat: power 0 lands it close, power 1 as far as the rod throws.
 func cast(power: float) -> void:
 	var tip := _boat.rest_tip(boat_x)
-	_boat.throw()
+	_release = _boat.throw()
 	power = clampf(power, 0.0, 1.0)
 	hook = seabed.clamp_hook(Vector2(tip.x + _boat.facing * lerpf(CAST_NEAR, CAST_FAR, power), 0.0))
 	_state = "sinking"
@@ -517,6 +519,7 @@ func _let_go() -> void:
 	biter = {}
 	twitch = 0.0
 	flight = 0.0
+	_release = 0.0
 
 
 func _use_bait() -> void:
@@ -617,7 +620,10 @@ func _process(delta: float) -> void:
 		_demo_step()
 	else:
 		_handle_input(delta)
-	if flight > 0.0:
+	if _release > 0.0:
+		_release -= delta
+		_flight_from = _boat.rod_tip(boat_x)
+	elif flight > 0.0:
 		flight -= delta
 		if flight <= 0.0:
 			Audio.play("splash_small", -4.0)

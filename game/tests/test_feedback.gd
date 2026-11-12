@@ -91,6 +91,8 @@ func test_a_cast_line_flies_out_before_it_lands() -> void:
 	check(s.flight > 0.0 and not s.hook_baited(), "the float is still in the air, so nothing can take it yet")
 	var mid: Vector2 = s.flying()
 	check(mid.y < 0.0, "and it arcs above the water on its way out")
+	s._process(0.5)
+	check(s.flight > 0.0, "the float leaves the rod once he has swung it back and thrown")
 	s._process(1.0)
 	check(s.flight <= 0.0 and s.hook_baited(), "once it lands the bait is in the water")
 	for c in Nav.ui.get_children():

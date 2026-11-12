@@ -29,6 +29,10 @@ const ROD_CAST := [-45.0, -60.0, -95.0, -125.0, -135.0, -140.0, -140.0, -20.0, -
 const WIND_FRAMES := 7
 const ROW_FPS := 9.0
 const THROW_FPS := 14.0
+## How fast he swings the rod back over his shoulder when a cast is let go before it was wound all the way back.
+const SWING_FPS := 24.0
+## How long the forward throw is shown for.
+const THROW_SECONDS := 0.3
 ## Where the oarlock is on his canvas, ahead of him on the gunwale, and how far the oar reaches past it.
 const OARLOCK := Vector2(50, 38)
 const OAR_OUT := 30.0
@@ -81,6 +85,9 @@ var charge := -1.0
 var strain := 0.0
 var pull := Vector2.ZERO
 var _throw := -1.0
+## The frame of the wind-up the throw swings back from, and how long that swing back takes.
+var _swing_from := 0
+var _swing := 0.0
 var _row_t := 0.0
 var _frames := {}
 var _hands := {}
@@ -286,18 +293,24 @@ func _along(k: float) -> float:
 	return width() * (k if facing > 0.0 else 1.0 - k)
 
 
-## Starts the throw that sends the line out, once the cast is let go.
-func throw() -> void:
+## Starts the throw that sends the line out, once the cast is let go: the rod swings the rest of the way back over his
+## shoulder and then forward. Returns the seconds until it comes forward and lets the line go.
+func throw() -> float:
+	_swing_from = mini(WIND_FRAMES - 1, int(clampf(charge, 0.0, 1.0) * WIND_FRAMES)) if charge >= 0.0 else 0
+	_swing = (WIND_FRAMES - _swing_from) / SWING_FPS
 	_throw = 0.0
 	charge = -1.0
+	return _swing
 
 
 ## What he is doing now, as the move and the frame of it.
 func pose() -> Array:
 	if not person.visible:
 		return ["sit", 0]
+	if _throw >= 0.0 and _throw < _swing:
+		return ["cast", mini(WIND_FRAMES - 1, _swing_from + int(_throw * SWING_FPS))]
 	if _throw >= 0.0:
-		return ["cast", mini(8, WIND_FRAMES + int(_throw * THROW_FPS))]
+		return ["cast", mini(8, WIND_FRAMES + int((_throw - _swing) * THROW_FPS))]
 	if charge >= 0.0:
 		return ["cast", mini(WIND_FRAMES - 1, int(clampf(charge, 0.0, 1.0) * WIND_FRAMES))]
 	if rowing > 0.0 and oars:
@@ -380,7 +393,7 @@ func _process(delta: float) -> void:
 		_row_t += delta
 	if _throw >= 0.0:
 		_throw += delta
-		if WIND_FRAMES + int(_throw * THROW_FPS) > 8 and _throw > 0.3:
+		if _throw - _swing > THROW_SECONDS:
 			_throw = -1.0
 	_splash_step(delta)
 
