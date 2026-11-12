@@ -25,6 +25,8 @@ func _ready() -> void:
 	Awards.process_mode = Node.PROCESS_MODE_DISABLED
 	# The edit lays the trailer's own music over the shots, so the game's is left out of the recording.
 	AudioServer.set_bus_mute(AudioServer.get_bus_index("Music"), true)
+	# The dog barks at a bite and yips when petted, which the trailer leaves out.
+	Audio._sounds.erase("dog")
 	var layer := CanvasLayer.new()
 	layer.layer = 128
 	add_child(layer)

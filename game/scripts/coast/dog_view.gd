@@ -12,6 +12,9 @@ const SETTLES := ["sit_east", "sleep_east"]
 const FPS := 8.0
 ## How many rows of a lying dog's body stay tucked behind the gunwale.
 const TUCK := 3.0
+## How loud the dog's bark is, well under the sea and the reel, so it never startles; a pleased yip when petted is softer still.
+const BARK_DB := -15.0
+const PETTED_DB := -18.0
 
 var screen: Node
 var mood := "sit_east"
@@ -52,16 +55,16 @@ func bark() -> void:
 		return
 	_bark_left = 0.8
 	cheer(1.5)
-	Audio.play("dog")
+	Audio.play("dog", BARK_DB)
 
 
 func pet() -> void:
 	_heart()
 	if _asleep():
-		Audio.play("dog", -14.0, 0.8)
+		Audio.play("dog", PETTED_DB - 6.0, 0.8)
 		return
 	cheer(3.0)
-	Audio.play("dog", -6.0, 1.2)
+	Audio.play("dog", PETTED_DB, 1.2)
 
 
 ## How many hearts are floating up from it now.

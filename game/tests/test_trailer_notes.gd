@@ -106,3 +106,10 @@ func test_a_fish_let_go_of_the_bait_sinks_back_gently() -> void:
 	sw.step(1.0 / 30.0, null, "")
 	check(f["pos"].y - y < 1.0, "a deep fish above its depth sinks back a little at a time, not at once (%.1f)" % (f["pos"].y - y))
 	_done(s)
+
+
+func test_the_dog_barks_softly() -> void:
+	check(DogView.BARK_DB <= -12.0, "the bark is well down, at %.0f dB" % DogView.BARK_DB)
+	check(DogView.PETTED_DB <= DogView.BARK_DB, "and a yip when petted is no louder")
+	var shots := FileAccess.get_file_as_string("res://tools/trailer/shots.gd")
+	check(shots.contains("Audio._sounds.erase(\"dog\")"), "the trailer's shots leave the dog's sounds out")
