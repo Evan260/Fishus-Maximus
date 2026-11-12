@@ -132,3 +132,19 @@ func test_a_turn_waiting_behind_a_closed_book_is_forgotten() -> void:
 	LogbookPanel._queued = []
 	LogbookPanel._turning = false
 	Settings.reduced_motion = reduced
+
+
+func test_clicks_wait_while_the_screen_changes() -> void:
+	Game.new_game("Test", "mutt")
+	Nav.go("map")
+	check(Nav._fade.mouse_filter == Control.MOUSE_FILTER_STOP, "a click while the screen fades is caught by the fade")
+	while Nav._busy:
+		await Nav.get_tree().process_frame
+	check(Nav._fade.mouse_filter == Control.MOUSE_FILTER_IGNORE, "and clicks go through again once it has come in")
+	Nav.current.free()
+	Nav.current = null
+	Nav.current_name = ""
+	for c in Nav.ui.get_children():
+		c.free()
+	for c in Nav.sky.get_children():
+		c.free()

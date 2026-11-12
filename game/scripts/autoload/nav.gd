@@ -199,6 +199,8 @@ func go(screen: String, args: Dictionary = {}) -> void:
 	if _busy or not SCREENS.has(screen):
 		return
 	_busy = true
+	# The fade takes the clicks while one screen gives way to the next, so none acts on a screen coming or going.
+	_fade.mouse_filter = Control.MOUSE_FILTER_STOP
 	if Saves.slot > 0 and not Game.state.is_empty():
 		Saves.save()
 	if current:
@@ -228,6 +230,7 @@ func go(screen: String, args: Dictionary = {}) -> void:
 	var back := create_tween()
 	back.tween_property(_fade, "color:a", 0.0, 0.2)
 	await back.finished
+	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_busy = false
 
 
