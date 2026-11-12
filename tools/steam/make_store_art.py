@@ -41,10 +41,10 @@ WATERLINE = 160
 # name: (trailer shot, seconds into it). Upload them in this order; the first few lead in the sidebar and in search.
 SCREENSHOTS = {
     "01_the_harbour_at_dawn": ("dawn", 2.5),
-    "02_a_dentex_on_the_line": ("cast", 21.6),
-    "03_the_catch_banner": ("cast", 29.5),
+    "02_a_dentex_on_the_line": ("cast", 8.9),
+    "03_the_catch_banner": ("cast", 14.6),
     "04_on_your_desktop": ("strip", 6.0),
-    "05_northern_lights_off_misenum": ("night", 2.5),
+    "05_northern_lights_off_misenum": ("night", 5.5),
     "06_the_caves_of_capri": ("capri", 2.0),
     "07_the_logbook": ("logbook", 6.1),
     "08_the_harbour_town": ("town", 3.0),
@@ -52,6 +52,7 @@ SCREENSHOTS = {
     "10_the_pond_at_home": ("pond", 6.0),
     "11_the_rocky_shore": ("rocky", 3.0),
     "12_misenum_at_dusk": ("misenum", 3.0),
+    "13_a_wreck_in_the_open_bay": ("wreck", 4.0),
 }
 DESKTOP_SHOT = "04_on_your_desktop"
 

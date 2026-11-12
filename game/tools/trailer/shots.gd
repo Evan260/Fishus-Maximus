@@ -15,6 +15,8 @@ var _ring: Sprite2D
 var _biter := {}
 ## Which way the boat is rowed or sailed each frame, as a player holding the key would.
 var _row := 0.0
+## How fast the view is carried along, in game pixels a second, for a shot that pans over the seabed.
+var _pan := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -47,6 +49,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _row != 0.0 and Nav.current and Nav.current.has_method("row"):
 		Nav.current.row(_row, delta)
+	if _pan != Vector2.ZERO and Nav.current and "camera" in Nav.current:
+		Nav.current.camera.cam += _pan * delta
 	if _biter.is_empty() or not Nav.current or not "swimmers" in Nav.current:
 		return
 	for f in Nav.current.swimmers.fish:
@@ -108,7 +112,7 @@ func _shot_cast() -> void:
 	_early_game()
 	await _open("coast", {"place": "rocky_shore", "hour": "8.2", "weather": "clear", "no-hud": "", "at": "260", "demo-cast": "", "leap": ""})
 	var coast: Node = Nav.current
-	coast._time = -0.6
+	coast._time = -0.2
 	# The dentex swims in from past the right of the view before the part of the shot that is used.
 	_biter = coast.swimmers.bring_in(FIRST_FISH, FIRST_POUNDS, 70.0, 1.0)
 	while coast.line_state() != "sinking" or coast.flight > 0.0:
@@ -119,6 +123,11 @@ func _shot_cast() -> void:
 	coast._state = "waiting"
 	await _wait(0.8)
 	_biter["state"] = "approach"
+	while coast.fight == null:
+		await get_tree().process_frame
+	# The trailer has a few seconds for the fight, so this dentex runs and leaps once and then tires.
+	coast.fight._energy = coast.fight._full_energy * 0.3
+	coast.fight.distance = minf(coast.fight.distance, 45.0)
 
 
 ## Capri's cliffs and caves at noon, sailing past in the sailing boat.
@@ -142,6 +151,22 @@ func _shot_misenum() -> void:
 	_late_game()
 	await _open("coast", {"place": "misenum", "hour": "18.6", "weather": "clear", "no-hud": "", "at": "400"})
 	_row = 1.0
+
+
+## The open bay's seabed in the early afternoon: the view passes slowly over the sunken fishing boat as fish swim by.
+func _shot_wreck() -> void:
+	_late_game()
+	await _open("coast", {"place": "open_bay", "hour": "13.5", "weather": "clear", "no-hud": "", "at": "150,70"})
+	var coast: Node = Nav.current
+	coast.camera.cam = Vector2(90.0, 30.0)
+	coast._update_swimmer_world()
+	var sw: Swimmers = coast.swimmers
+	var kinds: Array = sw.kinds_at(170.0, 240.0).filter(func(k): return not Data.fish[k].get("shoal", false) and not Data.fish[k]["legend"])
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	for k in mini(2, kinds.size()):
+		sw.bring_in(kinds[k], Catalog.roll_pounds(kinds[k], rng), 165.0 + 30.0 * k, 1.0)
+	_pan = Vector2(22.0, 0.0)
 
 
 ## Deep water off Misenum at night under the northern lights: the line goes down into the dark after the big fish.

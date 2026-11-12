@@ -18,32 +18,36 @@ const SCROLL_Y := 164
 ## Where the scroll's line of text sits, from the top of its picture, so it is centred on the sheet between the rolls.
 const SCROLL_TEXT_TOP := -1
 const SCROLL_TEXT_HEIGHT := 54
-## The story, told in order: the boat left by an uncle, the first fish, the places along the bay, the logbook, the
-## town, a bigger boat, the dog, the pond at home and the strip on the desktop. A shot plays from `from` seconds into
-## its recording; a card is black with one line of text; `zoom` shows a shot a whole number of times larger around
-## `centre`, in screen pixels.
+## The story, told in order: the boat left by an uncle, the first fish, the places along the bay and a wreck on its
+## seabed, the logbook, the town, a bigger boat, the dog, the pond at home and the strip on the desktop. A shot plays
+## from `from` seconds into its recording; a card is black with one line of text; `zoom` shows a shot a whole number of
+## times larger around `centre`, in screen pixels.
 const TRAILER := [
 	{"card": "The Bay of Naples, AD 72.", "beats": 4},
 	{"shot": "dawn", "from": 1.5, "beats": 6, "fade_in": 1.2},
-	{"card": "Your uncle has left you\nhis old boat.", "beats": 3},
-	{"shot": "cast", "from": 1.5, "beats": 5},
-	{"shot": "cast", "from": 7.6, "beats": 5},
-	{"shot": "cast", "from": 27.2, "beats": 5},
-	{"card": "Sixty kinds of fish,\nall ones the Romans knew.", "beats": 3},
+	{"card": "Your uncle has left you
+his old boat.", "beats": 3},
+	{"shot": "cast", "from": 0.85, "beats": 16},
+	{"card": "Sixty kinds of fish,
+all ones the Romans knew.", "beats": 3},
 	{"shot": "rocky", "from": 1.0, "beats": 3},
 	{"shot": "capri", "from": 1.0, "beats": 3},
 	{"shot": "misenum", "from": 2.0, "beats": 3},
-	{"shot": "night", "from": 1.5, "beats": 6},
-	{"shot": "logbook", "from": 1.5, "beats": 5},
-	{"card": "Sell your catch in town,\nand save for a bigger boat.", "beats": 3},
+	{"shot": "wreck", "from": 2.0, "beats": 4},
+	{"shot": "night", "from": 1.5, "beats": 5},
+	{"shot": "logbook", "from": 1.5, "beats": 4},
+	{"card": "Sell your catch in town,
+and save for a bigger boat.", "beats": 3},
 	{"shot": "town", "from": 2.0, "beats": 3},
 	{"shot": "boatwright", "from": 1.0, "beats": 3},
-	{"shot": "sail", "from": 5.0, "beats": 5},
+	{"shot": "sail", "from": 5.0, "beats": 4},
 	{"shot": "dog", "from": 1.0, "beats": 3, "zoom": 2.0, "centre": Vector2(1000, 480)},
-	{"card": "Keep the best alive\nin your own pond.", "beats": 3},
-	{"shot": "pond", "from": 2.0, "beats": 5},
-	{"card": "Or let him fish on his own,\nalong the bottom of your screen.", "beats": 3},
-	{"desk": "strip", "from": 2.0, "beats": 6},
+	{"card": "Keep the best alive
+in your own pond.", "beats": 3},
+	{"shot": "pond", "from": 2.0, "beats": 4},
+	{"card": "Or let him fish on his own,
+along the bottom of your screen.", "beats": 3},
+	{"desk": "strip", "from": 2.0, "beats": 5},
 	{"end": "endcard", "from": 1.0, "beats": 6, "dim": 0.45},
 ]
 

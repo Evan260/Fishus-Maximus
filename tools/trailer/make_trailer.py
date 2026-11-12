@@ -40,6 +40,7 @@ SHOTS = {
     "rocky": 7,
     "capri": 7,
     "misenum": 7,
+    "wreck": 10,
     "night": 14,
     "logbook": 12,
     "town": 9,

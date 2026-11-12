@@ -6,8 +6,8 @@ The Steam trailer is 78 seconds long. It tells one story: you inherit your uncle
 
 1. **The place and the time.** A black card: "The Bay of Naples, AD 72."
 2. **The inheritance.** The harbour at first light: the skiff waits by the jetty with the dog aboard, then rows out into the bay. A card: "Your uncle has left you his old boat."
-3. **The first fish.** Off the rocky shore the line is cast, a dentex swims up to the bait, nibbles and takes it, the dog barks, and the fight runs with the fish leaping clear of the water. It comes up onto the catch banner, new to the logbook.
-4. **The bay.** A card: "Sixty kinds of fish, all ones the Romans knew." The rocky shore, the caves of Capri under sail and Misenum at dusk, then deep water off Misenum at night under the northern lights, the big boat's lantern lit as the line goes out.
+3. **The first fish.** Off the rocky shore the rod swings back and the line is cast, a dentex swims in from past the edge of the view, comes up to the bait, nibbles and takes it, and the fight runs with the fish leaping clear of the water. It comes up onto the catch banner, new to the logbook, all in one unbroken take.
+4. **The bay.** A card: "Sixty kinds of fish, all ones the Romans knew." The rocky shore, the caves of Capri under sail and Misenum at dusk, a slow pass over the sunken fishing boat on the open bay's seabed with fish swimming by, then deep water off Misenum at night under the northern lights, the big boat's lantern lit as the line goes out.
 5. **The collection.** The logbook's pages turn from place to place, every fish drawn with its best weight.
 6. **The town.** A card: "Sell your catch in town, and save for a bigger boat." The covered street with its townsfolk, the boatwright where the big boat is bought, and the big boat under sail in the golden hour, its sail full and its flag flying.
 7. **The dog.** The dog in the boat is petted, wags and sends up hearts, shown twice as large.
@@ -24,29 +24,28 @@ One beat is 0.857 seconds of "Adventure Begins" from the game's soundtrack, whic
 | 1 | Card: The Bay of Naples, AD 72. | 4 |
 | 2 | `dawn`: the harbour at first light, fading in, the skiff rowing out | 6 |
 | 3 | Card: Your uncle has left you his old boat. | 3 |
-| 4 | `cast`: the cast, and the dentex swimming up to the bait | 5 |
-| 5 | `cast`, later: the bite, the bark and the fight, with leaps | 5 |
-| 6 | `cast`, at its end: the catch banner | 5 |
-| 7 | Card: Sixty kinds of fish, all ones the Romans knew. | 3 |
-| 8 | `rocky`, `capri`, `misenum`: three places along the bay | 3 each |
-| 9 | `night`: off Misenum under the northern lights, the line cast into the dark | 6 |
-| 10 | `logbook`: the pages turning | 5 |
-| 11 | Card: Sell your catch in town, and save for a bigger boat. | 3 |
-| 12 | `town`: the street | 3 |
-| 13 | `boatwright`: the big boat bought | 3 |
-| 14 | `sail`: the big boat under sail | 5 |
-| 15 | `dog`: the dog petted, twice as large | 3 |
-| 16 | Card: Keep the best alive in your own pond. | 3 |
-| 17 | `pond`: the estate's pond, fed | 5 |
-| 18 | Card: Or let him fish on his own, along the bottom of your screen. | 3 |
-| 19 | `strip`: the strip over a desktop | 6 |
-| 20 | `endcard`: the harbour at sunset, the logo and the wishlist scroll | 6 |
+| 4 | `cast`: the cast, the dentex swimming in to the bait, the bite, the fight with a leap, and the catch banner, in one take | 16 |
+| 5 | Card: Sixty kinds of fish, all ones the Romans knew. | 3 |
+| 6 | `rocky`, `capri`, `misenum`: three places along the bay | 3 each |
+| 7 | `wreck`: the view passing over the sunken boat in the open bay as fish swim by | 4 |
+| 8 | `night`: off Misenum under the northern lights, the line cast into the dark | 5 |
+| 9 | `logbook`: the pages turning | 4 |
+| 10 | Card: Sell your catch in town, and save for a bigger boat. | 3 |
+| 11 | `town`: the street | 3 |
+| 12 | `boatwright`: the big boat bought | 3 |
+| 13 | `sail`: the big boat under sail | 4 |
+| 14 | `dog`: the dog petted, twice as large | 3 |
+| 15 | Card: Keep the best alive in your own pond. | 3 |
+| 16 | `pond`: the estate's pond, fed | 4 |
+| 17 | Card: Or let him fish on his own, along the bottom of your screen. | 3 |
+| 18 | `strip`: the strip over a desktop | 5 |
+| 19 | `endcard`: the harbour at sunset, the logo and the wishlist scroll | 6 |
 
 ## How it is made
 
 - `python tools/trailer/make_trailer.py` records every shot that is not recorded yet, then renders the trailer. `shots NAME...` records shots again, and `render` renders from the recorded shots, or from a given second into a preview.
-- `game/tools/trailer/shots.gd` scripts the shots. The game starts it with `--trailer-shot=NAME`. Each makes up a game with `Game.demo_state()` or `Game.max_state()` (the late game's logbook filled and its pond stocked), never saved, with the seed fixed at 7, the game's music muted and no achievement told of, then opens the screen with the game's own flags and plays it: rowing as a held key would, the first cast by the game's own demo cast with a dentex sent to the bait, the logbook turned, and a drawn pointer that clicks the boatwright's tile. The real mouse is shut out.
-- `game/tools/trailer/edit.gd` is the edit: the cut list, the cards in the game's own text font at twice its size, the strip laid over `marketing/desktop.png` above its taskbar, the end card and the music. Each shot's own sounds play under the music.
+- `game/tools/trailer/shots.gd` scripts the shots. The game starts it with `--trailer-shot=NAME`. Each makes up a game with `Game.demo_state()` or `Game.max_state()` (the late game's logbook filled and its pond stocked), never saved, with the seed fixed at 7, the game's music muted and no achievement told of, then opens the screen with the game's own flags and plays it: rowing as a held key would, the first cast by the game's own demo cast with a dentex brought in from past the right of the view by `Swimmers.bring_in` and sent to the bait (its fight cut short so the whole catch fits one take), the view carried slowly over the open bay's wreck, the logbook turned, and a drawn pointer that clicks the boatwright's tile. The real mouse is shut out.
+- `game/tools/trailer/edit.gd` is the edit: the cut list, the cards in the game's own text font at twice its size, the strip laid over `marketing/desktop.png` above its taskbar, the end card and the music. Each shot's own sounds play under the music; the dog's bark and yips are left out of the recordings.
 - The shots are recorded at 1920 by 1080 and 30 frames a second, four screen pixels to the game pixel, into `marketing/recordings/content/trailer_shots/`, which git ignores. The strip is recorded at its own size, 1920 by 270 at three screen pixels to the game pixel, on its see-through background.
 - The finished trailer, `steam_trailer.avi` and an `.mp4` copy with its sound brought to -16 LUFS, goes to `marketing/recordings/videos/steam_trailer/`, beside its `title.txt`, `description.txt` and `thumbnail.png`, a frame of the end card. Git ignores it for its size.
 - `marketing/desktop.png` is Farmus Maximus's desktop screenshot with the Fishus Maximus icon in place of the Farmus one, on the desktop and the taskbar.

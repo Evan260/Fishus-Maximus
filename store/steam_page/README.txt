@@ -44,7 +44,7 @@ app_icon.ico                 Client icon (the game's own Windows icon)
 
 SCREENSHOTS (Screenshots tab)
 
-screenshots/01 to 12, all 1920x1080, moments of the trailer's recorded shots. Upload them in this order; the first
+screenshots/01 to 13, all 1920x1080, moments of the trailer's recorded shots. Upload them in this order; the first
 four show in the store page's sidebar and in search, so they lead with the harbour at dawn, a fish on the line, the
 catch banner and the boat fishing in a strip along a desktop (laid over marketing/desktop.png).
 
