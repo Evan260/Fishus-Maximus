@@ -339,6 +339,33 @@ func test_a_legend_a_client_still_wants_can_be_found_again() -> void:
 	check(int(Game.state["reputation"]) == rep, "and catching it again does not raise your name again")
 
 
+
+func test_a_legend_pays_its_big_price_only_once() -> void:
+	Game.new_game("Test", "mutt")
+	Game.state["chapter"] = 5
+	Game.state["boat"] = "big_boat"
+	Catches.record(Game.state, "sleeping_sunfish", 900.0, false)
+	Catches.record(Game.state, "mullet", 1.0, false)
+	var before := int(Game.state["denarii"])
+	check(Market.sell(Game.state, 0) == 0 and Game.state["hold"].size() == 2, "the market keeps back a sunfish the priest's story still asks for")
+	Market.sell_all(Game.state)
+	check(Game.state["hold"].map(func(f): return f["fish"]) == ["sleeping_sunfish"] and int(Game.state["denarii"]) > before, "and selling the whole hold leaves it there")
+	Game.state["clients"]["priest"] = 3
+	check(Story.deliver(Game.state, "priest", 0, false), "the first catch serves the priest")
+	check(Legends.paid(Game.state, "sleeping_sunfish") and not Legends.can_appear("sleeping_sunfish", "open_bay", 14.0, "summer", "clear", Game.state),
+		"and once handed over it never comes back")
+	Game.new_game("Test", "mutt")
+	Game.state["chapter"] = 5
+	Game.state["boat"] = "big_boat"
+	Catches.record(Game.state, "senator_grouper", 160.0, false)
+	check(Market.sell(Game.state, 0) > 0 and Legends.paid(Game.state, "senator_grouper"), "a legend no client wants sells at once")
+	check(Game.state["logbook"].has("senator_grouper") and Game.state["legends"].has("senator_grouper"), "and stays in the logbook as caught")
+	check(not Legends.can_appear("senator_grouper", "misenum", 12.0, "summer", "clear", Game.state), "never to be caught and sold again")
+	var saved := Game.to_dict()
+	Game.from_dict(saved)
+	check(Legends.paid(Game.state, "senator_grouper"), "which a save keeps")
+
+
 func _town_at(hour: float) -> Node:
 	for c in Nav.ui.get_children():
 		c.free()

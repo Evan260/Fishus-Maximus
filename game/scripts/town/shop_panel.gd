@@ -15,10 +15,10 @@ static func market() -> void:
 		return
 	var total := 0
 	for f in Game.state["hold"]:
-		total += Market.price(Game.state, f["fish"], float(f["pounds"]), float(f.get("fresh", 1.0)))
+		if Legends.sellable(Game.state, f["fish"]):
+			total += Market.price(Game.state, f["fish"], float(f["pounds"]), float(f.get("fresh", 1.0)))
 	Ui.row(list, TranslationServer.translate("The whole hold, about %s") % Ui.coins_text(total), "Sell all", func():
-		while not Game.state["hold"].is_empty():
-			Market.sell(Game.state, 0)
+		Market.sell_all(Game.state)
 		Audio.play("coins")
 		Game.changed.emit()
 		market())
@@ -27,6 +27,10 @@ static func market() -> void:
 		var f: Dictionary = Game.state["hold"][i]
 		var p := Market.price(Game.state, f["fish"], float(f["pounds"]), float(f.get("fresh", 1.0)))
 		var idx: int = i
+		if not Legends.sellable(Game.state, f["fish"]):
+			Ui.tile(fish, ItemArt.of(f["fish"]), "", Ui.text([TranslationServer.translate("%s.") % Ui.fish_text(f), "Kept back for the client who is waiting for it."]),
+				func(): pass, false, false, FISH_TILE)
+			continue
 		Ui.price_tile(fish, ItemArt.of(f["fish"]), p, TranslationServer.translate("%s. Sells for %s.") % [Ui.fish_text(f), Ui.coins_text(p)], func():
 			Market.sell(Game.state, idx)
 			Audio.play("coins")

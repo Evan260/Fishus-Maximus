@@ -71,7 +71,11 @@ static func open(view: PondView) -> void:
 			Game.changed.emit()
 			view.sync()
 			open(view))
-		Ui.tip_on(sell, view.tr("The villas pay %s.") % Ui.coins_text(Ponds.live_price(f)))
+		if Legends.sellable(Game.state, f["fish"]):
+			Ui.tip_on(sell, view.tr("The villas pay %s.") % Ui.coins_text(Ponds.live_price(f)))
+		else:
+			sell.disabled = true
+			Ui.tip_on(sell, view.tr("Kept back for the client who is waiting for it."))
 	for i in Game.state["live_well"].size():
 		var f: Dictionary = Game.state["live_well"][i]
 		var wi: int = i

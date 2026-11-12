@@ -196,7 +196,10 @@ static func live_price(f: Dictionary) -> int:
 static func sell_live(state: Dictionary, fish_index: int) -> int:
 	var fish: Array = of(state)["fish"]
 	var f: Dictionary = fish[fish_index]
+	if not Legends.sellable(state, f["fish"]):
+		return 0
 	var paid := live_price(f)
+	Legends.pay(state, f["fish"])
 	state["denarii"] = int(state["denarii"]) + paid
 	if f.get("finery", "") != "":
 		state["finery"].append(f["finery"])

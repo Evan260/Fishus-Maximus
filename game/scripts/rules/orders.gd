@@ -67,7 +67,7 @@ static func fill_from(state: Dictionary, order_index: int, at: Dictionary) -> bo
 	var o: Dictionary = state["orders"][order_index]
 	if Supply.find(state, o) != at:
 		return false
-	Supply.take(state, at)
+	Legends.pay(state, Supply.take(state, at).get("fish", ""))
 	state["orders"].remove_at(order_index)
 	state["denarii"] = int(state["denarii"]) + int(o["reward"])
 	Story.add_reputation(state, int(o["reputation"]))
@@ -84,6 +84,7 @@ static func fill(state: Dictionary, order_index: int, hold_index: int, from_well
 	var o: Dictionary = state["orders"][order_index]
 	if not suits(o, list[hold_index], from_well):
 		return false
+	Legends.pay(state, list[hold_index]["fish"])
 	list.remove_at(hold_index)
 	state["orders"].remove_at(order_index)
 	state["denarii"] = int(state["denarii"]) + int(o["reward"])

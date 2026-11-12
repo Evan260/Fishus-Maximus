@@ -1,6 +1,6 @@
 class_name Legends
 ## The twelve legendary fish: each turns up only at its own place, hours, season, weather and event, and only until
-## it is caught.
+## it is caught, or, when a client's story still asks for it, until it has been sold or handed over once.
 
 
 static func can_appear(legend: String, place: String, hour: float, season: String, weather: String, state: Dictionary) -> bool:
@@ -28,16 +28,36 @@ static func clue(legend: String) -> String:
 	return str(Data.fish.get(legend, {}).get("clue", ""))
 
 
-## Whether a client's story still has to have a legend caught before, while none is kept in the hold, the well or the pond.
-static func still_wanted(state: Dictionary, legend: String) -> bool:
-	var wanted := Data.clients.keys().any(func(c):
+## Whether a client's story still has a step asking for this fish.
+static func owed(state: Dictionary, legend: String) -> bool:
+	return Data.clients.keys().any(func(c):
 		var steps: Array = Data.clients[c]["steps"]
 		return steps.slice(int(state["clients"].get(c, 0))).any(func(s): return s["fish"] == legend))
-	if not wanted:
+
+
+## Whether a legend once caught comes back: only for a client still owed it, before it has ever been sold or handed
+## over, and while none is kept in the hold, the well or the pond.
+static func still_wanted(state: Dictionary, legend: String) -> bool:
+	if paid(state, legend) or not owed(state, legend):
 		return false
 	var kept: Array = state["hold"] + state["live_well"]
 	kept += Ponds.of(state).get("fish", [])
 	return not kept.any(func(f): return f["fish"] == legend)
+
+
+static func paid(state: Dictionary, legend: String) -> bool:
+	return legend in state.get("legends_paid", [])
+
+
+## Notes that a fish leaving for money was a legend, so its big price is had only once.
+static func pay(state: Dictionary, fish: String) -> void:
+	if Data.fish.get(fish, {}).get("legend", false) and not paid(state, fish):
+		state["legends_paid"] = state.get("legends_paid", []) + [fish]
+
+
+## Whether the market takes this fish: not a legend a client's story still asks for, which is kept back for them.
+static func sellable(state: Dictionary, fish: String) -> bool:
+	return not Data.fish.get(fish, {}).get("legend", false) or not owed(state, fish)
 
 
 static func catch(state: Dictionary, legend: String) -> void:

@@ -28,7 +28,7 @@ func defaults() -> Dictionary:
 		"gear": {"rod": "cane_rod", "line": "flax_line", "hook": "bronze_hook", "net": "", "traps": 2, "lamp": "", "bait_box": 1},
 		"bait": {"worm": 20}, "current_bait": "worm", "method": "line",
 		"hold": [], "live_well": [], "traps": [], "pond": {}, "tanks": [], "orders": [], "clients": {}, "logbook": {},
-		"legends": {}, "market": {}, "achievements": [], "dog": "", "dog_coat": "golden", "dog_name": Dogs.DEFAULT_NAME, "helpers": [], "stats": {}, "finery": [], "salt": 6, "garum": {}, "guide": {"done": [], "finished": false},
+		"legends": {}, "legends_paid": [], "market": {}, "achievements": [], "dog": "", "dog_coat": "golden", "dog_name": Dogs.DEFAULT_NAME, "helpers": [], "stats": {}, "finery": [], "salt": 6, "garum": {}, "guide": {"done": [], "finished": false},
 		"last_real_time": Time.get_unix_time_from_system()}
 
 

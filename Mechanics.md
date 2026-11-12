@@ -121,6 +121,8 @@ Each legend has a clue told in town, and turns up only under its own conditions:
 11. **The sleeping sunfish**, which lies flat on the surface on calm summer afternoons.
 12. **Neptune's lobster**, in the deepest cave at Capri.
 
+A legend's great price is had once. Once caught it stays in the logbook and does not come back, except for a client whose story still asks for it, and only until it has first been sold or handed over. While a client's story still asks for one, the market and the villas keep it back for them, so the first catch serves them.
+
 ## The pond
 
 The heart of the game: a living collection you build, breed and show off.

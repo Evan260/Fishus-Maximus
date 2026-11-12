@@ -75,7 +75,7 @@ static func deliver_from(state: Dictionary, client: String, at: Dictionary) -> b
 	var step := client_step(state, client)
 	if step.is_empty() or at.is_empty() or Supply.find(state, step) != at:
 		return false
-	Supply.take(state, at)
+	Legends.pay(state, Supply.take(state, at).get("fish", ""))
 	state["denarii"] = int(state["denarii"]) + int(step["reward"])
 	add_reputation(state, int(step["reputation"]))
 	advance_client(state, client)
@@ -88,6 +88,7 @@ static func deliver(state: Dictionary, client: String, index: int, from_well: bo
 	var list: Array = state["live_well"] if from_well else state["hold"]
 	if step.is_empty() or index < 0 or index >= list.size() or not Orders.suits(step, list[index], from_well):
 		return false
+	Legends.pay(state, list[index]["fish"])
 	list.remove_at(index)
 	state["denarii"] = int(state["denarii"]) + int(step["reward"])
 	add_reputation(state, int(step["reputation"]))

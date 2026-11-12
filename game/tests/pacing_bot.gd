@@ -153,8 +153,7 @@ func _go_to_town() -> void:
 	for i in state["live_well"].size():
 		Ponds.stock(state, 0)
 	Ponds.feed(state)
-	while not state["hold"].is_empty():
-		Market.sell(state, 0)
+	Market.sell_all(state)
 	_shop()
 	_tick(2.0)
 
