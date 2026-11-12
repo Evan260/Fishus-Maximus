@@ -19,6 +19,9 @@ const RAISE := WATER + CoastCamera.HOME_Y
 const SKY_SHIFT := SkyView.HORIZON - HORIZON + RAISE
 ## The pond's floor along its length, levelled by hand but never quite flat.
 const FLOOR := [[0, 72], [130, 73], [260, 71], [410, 73], [560, 71], [690, 72], [800, 72]]
+## How far past the estate's ends the beach, the wall and the pond's floor carry on: past the edge of the widest view, and
+## a whole number of the beach's and the floor's pictures, so they line up with the estate's own.
+const REACH := 4096.0
 const BANK_AT := Vector2(-144, 16)
 const BEACH_AT := Vector2(-160, 96)
 const POND_TOP := 166.0
@@ -50,6 +53,8 @@ var _lit: Node2D
 var _layers: ParallaxLayers
 var _beach: Sprite2D
 var _floor: FloorView
+## The pond's floor carried on past each end of the pond, flat as the pond's own ends are.
+var _floor_sides: Array[Sprite2D] = []
 var _water: WaterView
 var _back: Node2D
 var _ground: Node2D
@@ -123,6 +128,7 @@ func _build() -> void:
 			spec["at"] = [spec["at"][0], spec["at"][1] - RAISE]
 			spec["factor"] = [1.0, 1.0]
 		specs.append(spec)
+	specs.append_array(_walls())
 	_layers.build(specs)
 	for n in _layers.bands() + _layers.reflections():
 		var m: ShaderMaterial = n.material
@@ -132,13 +138,13 @@ func _build() -> void:
 	_beach.centered = false
 	_beach.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	_beach.region_enabled = true
-	_beach.region_rect = Rect2(0, 0, WIDTH, _beach.texture.get_height())
+	_beach.region_rect = Rect2(0, 0, WIDTH + REACH * 2.0, _beach.texture.get_height())
 	_beach.z_index = -16
 	var wash := ShaderMaterial.new()
 	wash.shader = preload("res://scripts/shore/wash.gdshader")
 	wash.set_shader_parameter("sea", Color("#6f93a0"))
 	wash.set_shader_parameter("moon_colour", SkyView.MOON_LIGHT)
-	wash.set_shader_parameter("home", BEACH_AT + Vector2(0, SKY_SHIFT - RAISE))
+	wash.set_shader_parameter("home", BEACH_AT + Vector2(-REACH, SKY_SHIFT - RAISE))
 	ShoreWash.set_up(wash)
 	_beach.material = wash
 	_lit.add_child(_beach)
@@ -156,6 +162,14 @@ func _build() -> void:
 	_floor = FloorView.new()
 	_floor.z_index = -8
 	_lit.add_child(_floor)
+	for x in [-REACH, WIDTH]:
+		var side := Sprite2D.new()
+		side.centered = false
+		side.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		side.region_enabled = true
+		side.position.x = x
+		_floor.add_child(side)
+		_floor_sides.append(side)
 	_ground = Node2D.new()
 	_ground.z_index = -6
 	_ground.draw.connect(_draw_ground)
@@ -188,6 +202,19 @@ func _build() -> void:
 	pond.sync()
 
 
+## The stone wall along the pond carried on past each end of the bank, a stretch of the bank's own wall over and over,
+## laid so its stones run on unbroken from the bank's.
+func _walls() -> Array:
+	var bank: Texture2D = load(ESTATE + "bank.png")
+	var tile := float((load(ESTATE + "wall.png") as Texture2D).get_width())
+	var count := ceili(REACH / tile)
+	var y := BANK_AT.y - RAISE
+	return [
+		{"file": "estate/wall.png", "at": [BANK_AT.x - tile * count, y], "factor": [1.0, 1.0], "repeat": count, "z": -14},
+		{"file": "estate/wall.png", "at": [BANK_AT.x + bank.get_width(), y], "factor": [1.0, 1.0], "repeat": count, "z": -14},
+	]
+
+
 ## The pond's floor and the pieces on it for the features it has; laid again whenever the features change.
 func _dress_pond() -> void:
 	var features: Array = Ponds.of(Game.state).get("features", [])
@@ -195,6 +222,12 @@ func _dress_pond() -> void:
 	if want != _floor_file:
 		_floor_file = want
 		_floor.bake({"width": WIDTH, "depth": DEPTH, "floor": {"file": want, "surface": 6}}, Seabed.new(FLOOR))
+		var strip: Texture2D = load("res://assets/art/" + want)
+		for side in _floor_sides:
+			side.texture = strip
+			side.position.y = DEPTH - 6.0
+			# The region starts at the side's own place along the pond, so its sand runs on from the pond's.
+			side.region_rect = Rect2(fposmod(side.position.x, strip.get_width()), 0, REACH, strip.get_height())
 	if _bed_built == features:
 		return
 	_bed_built = features.duplicate()
@@ -270,7 +303,7 @@ func _show_frame() -> void:
 	_layers.time = _time
 	_layers.place(cam)
 	_copy_sea(_beach.material)
-	_beach.position = BEACH_AT + Vector2(-cam.x, -RAISE - cam.y + CoastCamera.HOME_Y)
+	_beach.position = BEACH_AT + Vector2(-REACH - cam.x, -RAISE - cam.y + CoastCamera.HOME_Y)
 	_beach.material.set_shader_parameter("wash_time", _time)
 	_beach.material.set_shader_parameter("to_sky", _beach.global_position.x - _sky.position.x)
 	_water.cam = pond_cam

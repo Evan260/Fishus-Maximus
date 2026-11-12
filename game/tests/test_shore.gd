@@ -217,6 +217,49 @@ func test_the_shore_opens_on_one_large_pond() -> void:
 	_close(s)
 
 
+func test_the_estate_carries_on_past_the_widest_view() -> void:
+	Game.new_game("Test", "mutt")
+	var s := _open()
+	# A short window as wide as an 8K screen is the widest view the game can have, at one window pixel per game pixel.
+	var half := (7680.0 - Nav.SIZE.x) / 2.0
+	var shown := Vector2(-half, Nav.SIZE.x + half)
+	var beach := Vector2(s.BEACH_AT.x - s.REACH, s.BEACH_AT.x - s.REACH + s._beach.region_rect.size.x)
+	check(beach.x <= shown.x and beach.y >= shown.y, "the beach reaches both edges, %s" % beach)
+	var walls: Array = s._walls()
+	var tile := float(load(s.ESTATE + "wall.png").get_width())
+	var left := float(walls[0]["at"][0])
+	var right := float(walls[1]["at"][0]) + tile * int(walls[1]["repeat"])
+	check(left <= shown.x and right >= shown.y, "and so does the wall, %s to %s" % [left, right])
+	check(is_equal_approx(left + tile * int(walls[0]["repeat"]), s.BANK_AT.x), "the wall on the left runs up to the bank")
+	var sides: Array = s._floor_sides
+	check(sides[0].position.x - s.LEFT <= shown.x and sides[1].position.x + sides[1].region_rect.size.x - s.LEFT >= shown.y, "and the pond's floor")
+	check(is_equal_approx(sides[0].position.x + sides[0].region_rect.size.x, 0.0) and sides[1].position.x == s.WIDTH, "running on from the pond's own floor")
+	_close(s)
+
+
+func test_the_wall_runs_on_unbroken_from_the_bank() -> void:
+	var bank: Image = load("res://assets/art/estate/bank.png").get_image()
+	var wall: Image = load("res://assets/art/estate/wall.png").get_image()
+	var w := wall.get_width()
+	var same_left := true
+	var same_right := true
+	# The wall's stones, below the grass and the bank's own slope, are the same pixels at either join.
+	for y in range(133, wall.get_height()):
+		for x in w:
+			same_left = same_left and bank.get_pixel(x, y) == wall.get_pixel(x, y)
+		# The bank's last stretch of stones began partway through the wall's picture, at its eleventh column.
+		for x in range(10, w):
+			same_right = same_right and bank.get_pixel(bank.get_width() - w + x, y) == wall.get_pixel(x, y)
+	check(same_left, "the wall's stones on the left run on from the bank's first stones")
+	check(same_right, "and on the right from its last")
+	var top := func(img: Image, x: int) -> int:
+		for y in img.get_height():
+			if img.get_pixel(x, y).a > 0.5:
+				return y
+		return -1
+	check(absi(top.call(bank, bank.get_width() - 1) - top.call(wall, 0)) <= 4, "the bank's right end comes down to the wall's grass")
+
+
 func _open() -> Node:
 	for c in Nav.ui.get_children():
 		c.free()
