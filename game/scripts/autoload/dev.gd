@@ -79,7 +79,8 @@ func _take_shot(path: String, last: bool) -> void:
 		Audio.quit()
 
 
-## Opens a window by name: logbook, logbook:FISH (its page), achievements, settings or settings:TAB, board, client,
+## Opens a window by name: logbook, logbook:FISH (its page), achievements, settings or settings:TAB, board or board:FISH
+## (with an order for that fish first), client,
 ## garum, pond (on the shore), hold (the full-hold choice), and on the title new_game, load, or delete,
 ## which leaves slot 1 waiting for the word typed, deleting nothing.
 func open_panel(window: String) -> void:
@@ -98,7 +99,12 @@ func open_panel(window: String) -> void:
 		LogbookPanel.open(LogbookPanel._sections().find("legends" if f["legend"] else str(f["places"][0])))
 		LogbookPanel.selected = fish
 		LogbookPanel.open(LogbookPanel.section)
-	elif window == "board":
+	elif window.begins_with("board"):
+		if window.contains(":"):
+			var fish := window.get_slice(":", 1)
+			var lb: Array = Data.fish[fish]["pounds"]
+			Game.state["orders"].push_front({"fish": fish, "min_pounds": float(lb[0]), "alive": false, "feast": false,
+				"reward": Catalog.value(fish, float(lb[0]), 1.0), "reputation": 8, "due": Clock.day_of(float(Game.state["time"]))})
 		BoardPanel.open()
 	elif window == "client":
 		ClientVisit.open(str(Data.clients.keys()[0]))

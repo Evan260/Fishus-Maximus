@@ -685,6 +685,7 @@ dolphins in the bay,dolphins in the bay,des dauphins dans la baie,Delfine in der
 due in %d days,due in %d days,pour dans %d jours,fällig in %d Tagen,para dentro de %d días,scade tra %d giorni,para daqui a %d dias,termin za %d dni,%d gün içinde teslim,осталось дней: %d,строк: через %d дн.,あと%d日,%d일 뒤 마감,%d 天后到期,%d 天後到期
 due today,due today,pour aujourd’hui,heute fällig,para hoy,scade oggi,para hoje,termin dziś,bugün teslim,срок сегодня,строк: сьогодні,今日まで,오늘 마감,今天到期,今天到期
 due tomorrow,due tomorrow,pour demain,morgen fällig,para mañana,scade domani,para amanhã,termin jutro,yarın teslim,срок завтра,строк: завтра,明日まで,내일 마감,明天到期,明天到期
+during the tuna run,during the tuna run,pendant le passage des thons,während des Thunfischzugs,durante el paso del atún,durante il passo dei tonni,durante a passagem dos atuns,podczas ciągu tuńczyków,orkinos göçü sırasında,во время хода тунца,під час ходу тунця,マグロの回遊の時期,참치 떼가 올 때,金枪鱼洄游时,鮪魚洄游時
 dusky grouper,dusky grouper,mérou brun,Brauner Zackenbarsch,mero,cernia bruna,garoupa,granik,orfoz,тёмный групер,темний групер,ハタ,능성어,石斑鱼,褐石斑魚
 fine,fine,belle taille,prächtig,magnífico,ottima taglia,excelente,piękna sztuka,seçkin,отличный,відмінна,上物,훌륭함,优质,上等
 flounder,flounder,flet,Flunder,platija,passera,solha,flądra,dere pisisi,речная камбала,камбала,カレイ,도다리,川鲽,比目魚
@@ -702,10 +703,18 @@ greater weever,greater weever,grande vive,Petermännchen,pez araña,tracina,peix
 grey mullet,grey mullet,mulet cabot,Meeräsche,mújol,cefalo,tainha,cefal,has kefal,кефаль-лобан,лобань,ボラ,숭어,鲻鱼,烏魚
 hake,hake,merlu,Seehecht,merluza,nasello,merluza,morszczuk,bakalyaro,хек,хек,メルルーサ,메를루사,无须鳕,無鬚鱈
 horse mackerel,horse mackerel,chinchard,Stöcker,jurel,suro,chicharro,ostrobok,istavrit,ставрида,ставрида,アジ,전갱이,竹荚鱼,竹筴魚
+in autumn,in autumn,en automne,im Herbst,en otoño,in autunno,no outono,jesienią,sonbaharda,осенью,восени,秋,가을에,秋季,秋天
+in calm weather,in calm weather,par temps calme,bei ruhigem Wetter,con tiempo en calma,col tempo calmo,com tempo calmo,przy spokojnej pogodzie,sakin havalarda,в тихую погоду,у тиху погоду,穏やかな晴れの日,잔잔한 날에,风平浪静时,風平浪靜時
+in spring,in spring,au printemps,im Frühling,en primavera,in primavera,na primavera,wiosną,ilkbaharda,весной,навесні,春,봄에,春季,春天
+in storms,in storms,par tempête,bei Sturm,con tormenta,con la tempesta,nas tempestades,podczas sztormu,fırtınalarda,в шторм,у шторм,嵐の日,폭풍이 칠 때,暴风雨时,暴風雨時
+in summer,in summer,en été,im Sommer,en verano,d’estate,no verão,latem,yazın,летом,влітку,夏,여름에,夏季,夏天
 in the Lucrine Lake,in the Lucrine Lake,dans le lac Lucrin,im Lucriner See,en el lago Lucrino,nel lago Lucrino,no Lago Lucrino,na Jeziorze Lukryńskim,Lucrinus Gölü'nde,в Лукринском озере,у Лукринському озері,ルクリヌス湖,루크리노 호수에서,在卢克林湖里,在盧克林湖
 in the harbour,in the harbour,dans le port,im Hafen,en el puerto,nel porto,no porto,w porcie,limanda,в гавани,у гавані,港内,항구에서,在港口里,在港口
 in the morning,in the morning,le matin,morgens,por la mañana,al mattino,de manhã,rano,sabahları,утром,уранці,朝,아침에,早上,早上
+in the rain,in the rain,sous la pluie,bei Regen,con lluvia,con la pioggia,na chuva,w deszczu,yağmurda,в дождь,у дощ,雨の日,비 오는 날에,雨天,雨天
 in the sea caves of Capri,in the sea caves of Capri,dans les grottes marines de Capri,in den Meereshöhlen von Capri,en las cuevas marinas de Capri,nelle grotte marine di Capri,nas grutas marinhas de Capri,w morskich jaskiniach Capri,Capri deniz mağaralarında,в морских пещерах Капри,у морських печерах Капрі,カプリの海の洞窟,카프리 바다 동굴에서,在卡普里岛的海蚀洞里,在卡布里島的海蝕洞
+in the wind,in the wind,par vent fort,bei Wind,con viento,col vento,com vento,przy wietrze,rüzgârlı havalarda,в ветер,у вітер,風の強い日,바람 부는 날에,大风天,風大時
+in winter,in winter,en hiver,im Winter,en invierno,d’inverno,no inverno,zimą,kışın,зимой,взимку,冬,겨울에,冬季,冬天
 live sardine,live sardine,sardine vivante,lebende Sardine,sardina viva,sardina viva,sardinha viva,żywa sardynka,canlı sardalya,живая сардина,жива сардина,生きイワシ,산 정어리,活沙丁鱼,活沙丁魚
 mackerel,mackerel,maquereau,Makrele,caballa,sgombro,cavala,makrela,uskumru,скумбрия,скумбрія,サバ,고등어,鲭鱼,鯖魚
 middling fish,middling fish,poissons moyens,mittelgroße Fische,peces medianos,pesci medi,peixes médios,średnie ryby,orta boy balıklar,средней рыбы,середня риба,中くらいの魚,중간 크기 물고기,中型鱼,中型魚
@@ -772,6 +781,7 @@ the sleeping sunfish,the sleeping sunfish,le poisson-lune endormi,der schlafende
 the swordfish of Misenum,the swordfish of Misenum,l’espadon de Misène,der Schwertfisch von Misenum,el pez espada de Miseno,il pesce spada di Miseno,o espadarte de Miseno,miecznik z Misenum,Misenum kılıç balığı,меч-рыба Мизена,риба-меч з Мізена,ミセヌムのメカジキ,미세눔의 황새치,米塞努姆的剑鱼,米塞努姆的劍旗魚
 the tuna are running,the tuna are running,le passage des thons,die Thunfische ziehen,pasa el atún,passano i tonni,os atuns estão passando,ciąg tuńczyków,orkinos göçü,идёт тунец,іде тунець,マグロの回遊,참치 떼가 몰려옴,金枪鱼洄游,鮪魚洄游中
 thornback ray,thornback ray,raie bouclée,Nagelrochen,raya de clavos,razza chiodata,raia-pregada,raja nabijana,dikenli vatoz,морская лисица,морська лисиця,ガンギエイ,가시홍어,背棘鳐,背棘鰩
+under cloud,under cloud,par temps couvert,bei bedecktem Himmel,con el cielo nublado,col cielo coperto,com o céu nublado,przy pochmurnym niebie,bulutlu havalarda,в пасмурную погоду,у похмуру погоду,曇りの日,흐린 날에,阴天,陰天
 up to %s,up to %s,jusqu’à %s,bis %s,hasta %s,fino a %s,até %s,do %s,en fazla %s,до %s,до %s,%sまで,%s 이하,%s以内,最多 %s
 white sea bream,white sea bream,sar,Geißbrasse,sargo,sarago,sargo,sargus,sargoz,сарг,сарг,サルゴ,흰도미,白鲷,白鯛
 who is building fish ponds at his villa in Baiae,who is building fish ponds at his villa in Baiae,qui construit des bassins à poissons dans sa villa de Baïes,der in seiner Villa in Baiae Fischteiche baut,que está construyendo estanques en su villa de Bayas,che costruisce peschiere nella sua villa di Baia,que está construindo lagos de peixes na sua vila em Baias,który buduje stawy rybne w swojej willi w Bajach,Baiae'deki villasına balık havuzları yaptırıyor,строит рыбные пруды на своей вилле в Байях,який будує рибні ставки на своїй віллі в Байях,バイアエの別荘で魚の池を造っている,바이아이의 별장에 물고기 연못을 짓는 중,正在巴亚的别墅里修建鱼塘,正在巴亞的別墅建造魚池

@@ -44,6 +44,25 @@ func test_filling_an_order_pays_and_raises_your_name() -> void:
 	check(Game.state["orders"].is_empty() and Game.state["hold"].size() == 1, "the order and the fish are gone")
 
 
+func test_a_legend_order_on_the_board_says_when_it_is_about() -> void:
+	check(Legends.hints("misenum_swordfish") == ["by day", "in storms"], "the swordfish: %s" % [Legends.hints("misenum_swordfish")])
+	check(Legends.hints("numbing_ray") == ["at dusk", "deep down"], "the numbing ray: %s" % [Legends.hints("numbing_ray")])
+	check(Legends.hints("sleeping_sunfish") == ["by day", "near the surface", "in summer", "in calm weather"], "the sunfish: %s" % [Legends.hints("sleeping_sunfish")])
+	check("during the tuna run" in Legends.hints("great_tuna"), "the great tuna in the tuna run")
+	for id in Data.fish:
+		if Data.fish[id]["legend"]:
+			check(not Legends.hints(id).is_empty(), "%s has a hint" % id)
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "mutt")
+	Game.state["orders"] = [{"fish": "misenum_swordfish", "min_pounds": 500.0, "alive": false, "feast": false, "reward": 900, "reputation": 8, "due": 0},
+		{"fish": "mullet", "min_pounds": 0.5, "alive": false, "feast": false, "reward": 9, "reputation": 5, "due": 0}]
+	BoardPanel.open()
+	var words := " | ".join(Nav.ui.find_children("*", "Label", true, false).map(func(l): return l.text))
+	check(words.count("Found ") == 1 and "Found by day, in storms." in words, "the legend's order says when it comes, the mullet's does not: %s" % words)
+	Ui.close_window()
+
+
 func test_orders_run_out_of_time() -> void:
 	Game.new_game("Test", "mutt")
 	Game.state["orders"] = [{"fish": "mullet", "min_pounds": 1.0, "alive": false, "reward": 20, "reputation": 3, "due": 0}]

@@ -23,6 +23,9 @@ static func open() -> void:
 				Toast.say("Order filled.")
 				Game.changed.emit()
 			open(), not at.is_empty())
+		if Data.fish[o["fish"]]["legend"] and not Legends.hints(o["fish"]).is_empty():
+			var hint := Ui.label(list, TranslationServer.translate("Found %s.") % Ui.series(Legends.hints(o["fish"])), "MutedLabel")
+			hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 
 ## Where a fish that suits a request is kept, as [index, from the well], or [-1, false] when there is none.

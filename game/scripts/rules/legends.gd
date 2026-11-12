@@ -24,6 +24,21 @@ static func here(place: String, hour: float, season: String, weather: String, st
 		and can_appear(id, place, hour, season, weather, state))
 
 
+## When a legend is about, as phrases for "Found %s.": its hours and depth, then its season, weather and event.
+static func hints(legend: String) -> Array:
+	var f: Dictionary = Data.fish[legend]
+	var out := Catalog.habits(legend)
+	var seasons := {"spring": "in spring", "summer": "in summer", "autumn": "in autumn", "winter": "in winter"}
+	var weathers := {"clear": "in calm weather", "cloudy": "under cloud", "rain": "in the rain", "wind": "in the wind", "storm": "in storms"}
+	for s in f["seasons"]:
+		out.append(str(TranslationServer.translate(seasons[s])))
+	for w in f.get("weather", []):
+		out.append(str(TranslationServer.translate(weathers[w])))
+	if f.get("event", null) == "tuna_run":
+		out.append(str(TranslationServer.translate("during the tuna run")))
+	return out
+
+
 static func clue(legend: String) -> String:
 	return str(Data.fish.get(legend, {}).get("clue", ""))
 

@@ -175,7 +175,7 @@ The townsfolk are named people with their own trades. Their talk carries the clu
 
 ## Orders and clients
 
-- **The harbour board** has three orders each morning, and more as your name grows. An order names a kind of fish, a minimum weight, alive or not, and a deadline of the same day or a few days. It pays in denarii and raises your name.
+- **The harbour board** has three orders each morning, and more as your name grows. An order names a kind of fish, a minimum weight, alive or not, and a deadline of the same day or a few days. It pays in denarii and raises your name. An order for a legend says when it is found: its hours and depth, its season, its weather and the tuna run.
 - **Clients.** Six named clients come back with their own stories:
   - a senator building ponds at Baiae, who wants rare live fish;
   - the cook of a Pompeii tavern, who needs fish for the day's dishes;
