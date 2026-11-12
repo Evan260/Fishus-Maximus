@@ -211,3 +211,32 @@ func test_he_sits_down_to_the_near_rail_in_every_boat() -> void:
 				gaps += 1
 		check(gaps <= 2, "%s: the near side starts right under him, with no open rows between his picture and the rail, %d columns open" % [id, gaps])
 		_done(s)
+
+
+## A pixel of rope in the big boat's picture: a warm grey, much less yellow than its sail's cloth or its wood.
+func _rope(c: Color) -> bool:
+	return c.a > 0.5 and c.r > 0.35 and c.r - c.g < 0.1 and c.r - c.b < 0.2
+
+
+func test_the_big_boats_rigging_stays_off_his_face() -> void:
+	var b := BoatView.new()
+	b.set_boat("big_boat")
+	b.facing = 1.0
+	var boat: Image = b.boat.texture.get_image()
+	var corner := (b._person_at(0.0, false) - Vector2(0.0, -b.ride)).round()
+	var touching := 0
+	for move in ["sit", "rest", "cast"]:
+		for frame in b._frames[move]:
+			var man: Image = (frame as Texture2D).get_image()
+			# His hat and face are the picture's top 25 rows from column 23; left of that are his neck and the hand winding back.
+			for y in 25:
+				for x in range(23, man.get_width()):
+					if man.get_pixel(x, y).a < 0.5:
+						continue
+					for d in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+						var p: Vector2i = Vector2i(corner) + Vector2i(x, y) + d
+						if p.x >= 0 and p.y >= 0 and p.x < boat.get_width() and p.y < boat.get_height() and _rope(boat.get_pixel(p.x, p.y)):
+							touching += 1
+	check(touching == 0, "no rope of the big boat's rigging runs across or beside his hat and face, %d pixels do" % touching)
+	check(b.dog_spot == Vector2(0.16, 76) and b.dog_cut == 67.0, "and the dog keeps its place in the stern")
+	b.free()
