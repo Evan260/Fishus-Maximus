@@ -79,3 +79,51 @@ func test_the_logbook_tip_names_the_achievements() -> void:
 	check("achievements" in str(tile.get_meta("tip", "")), "the logbook's tip says the achievements are in it")
 	_clear()
 	s.free()
+
+
+func test_the_pages_tick_an_achievement_earned_while_they_are_open() -> void:
+	_clear()
+	Game.new_game("Test", "mutt")
+	LogbookPanel.spread = 0
+	LogbookPanel.open_achievements()
+	var id := str(Data.achievements[0]["id"])
+	var star: TextureRect = _window().find_child("Honour_" + id, true, false).find_child("Star", true, false)
+	check(star.modulate.a < 1.0, "%s starts as a faint shape" % id)
+	Game.state["achievements"].append(id)
+	LogbookPanel.refresh_achievements()
+	star = _window().find_child("Honour_" + id, true, false).find_child("Star", true, false)
+	check(is_equal_approx(star.modulate.a, 1.0), "%s's starfish brightens on the open page" % id)
+	var head: Array = _window().find_children("*", "Label", true, false).map(func(l): return l.text)
+	check("1 / %d" % Data.achievements.size() in head, "and the head counts it, %s" % [head])
+	_clear()
+
+
+func test_earning_an_achievement_ticks_the_open_pages() -> void:
+	_clear()
+	Game.new_game("Test", "mutt")
+	LogbookPanel.spread = 0
+	LogbookPanel.open_achievements()
+	Catches.record(Game.state, "bream", 1.0, false)
+	Game.earn_achievements()
+	var earned: Array = Game.state["achievements"]
+	check(not earned.is_empty(), "landing a first fish earns an achievement")
+	for id in earned:
+		var row: Node = _window().find_child("Honour_" + str(id), true, false)
+		if row:
+			check(is_equal_approx((row.find_child("Star", true, false) as TextureRect).modulate.a, 1.0), "%s is ticked on the open page" % id)
+	_clear()
+
+
+func test_a_page_turning_is_ticked_when_it_lands() -> void:
+	_clear()
+	Game.new_game("Test", "mutt")
+	LogbookPanel.spread = 0
+	LogbookPanel.open_achievements()
+	LogbookPanel._turning = true
+	var id := str(Data.achievements[0]["id"])
+	Game.state["achievements"].append(id)
+	LogbookPanel.refresh_achievements()
+	LogbookPanel._landed()
+	var star: TextureRect = _window().find_child("Honour_" + id, true, false).find_child("Star", true, false)
+	check(is_equal_approx(star.modulate.a, 1.0), "the page is laid out again once the leaf lands")
+	_clear()

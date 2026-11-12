@@ -143,6 +143,16 @@ func catch_up() -> float:
 	return minutes
 
 
+## Earns every achievement newly met: sent to Steam, its card slid in, and the logbook's pages ticked if they are open.
+func earn_achievements() -> void:
+	var got := Achievements.check(state)
+	for id in got:
+		Awards.unlock(id)
+		AchievementCard.show_earned(id)
+	if not got.is_empty():
+		LogbookPanel.refresh_achievements()
+
+
 func _process(delta: float) -> void:
 	if state.is_empty() or Dev.has("run-tests"):
 		return
@@ -150,9 +160,7 @@ func _process(delta: float) -> void:
 	if _check_left > 0.0:
 		return
 	_check_left = 2.0
-	for id in Achievements.check(state):
-		Awards.unlock(id)
-		AchievementCard.show_earned(id)
+	earn_achievements()
 	if int(state.get("_chapter_seen", state["chapter"])) < int(state["chapter"]):
 		var c: Dictionary = Data.chapters[int(state["chapter"]) - 1]
 		Toast.say(tr("Chapter %d: %s. %s") % [int(c["chapter"]), tr(c["name"]), tr(c["text"])])

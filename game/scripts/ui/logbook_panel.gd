@@ -36,9 +36,12 @@ static var _book: Control
 static var _turning := false
 ## A turn asked for while another is under way, as [section, spread], taken as soon as that one lands.
 static var _queued := []
+## Whether something shown on the pages changed while a leaf was turning, so they are laid out again when it lands.
+static var _stale := false
 
 
 static func open(at := -1) -> void:
+	_stale = false
 	var sections := _sections()
 	if at < 0:
 		var place := str(Game.state.get("place", "harbour"))
@@ -108,6 +111,16 @@ static func open(at := -1) -> void:
 ## Opens the logbook at the achievements.
 static func open_achievements() -> void:
 	open(_sections().find("achievements"))
+
+
+## Lays the achievements' pages out again while they are open, after the leaf in flight lands if a page is turning.
+static func refresh_achievements() -> void:
+	if not is_instance_valid(_book) or not Ui.window_open() or not Nav.ui.get_node("Window").is_ancestor_of(_book) 			or _sections()[section] != "achievements":
+		return
+	if _turning:
+		_stale = true
+		return
+	open(section)
 
 
 static func _sections() -> Array:
@@ -193,6 +206,8 @@ static func _landed() -> void:
 		var next: Array = _queued
 		_queued = []
 		_flip_to(next[0], next[1])
+	elif _stale:
+		refresh_achievements()
 
 
 ## A page of the book as it is laid out, to be pictured with its paper: 0 the left page, 1 the right.
