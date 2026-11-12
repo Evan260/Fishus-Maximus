@@ -190,7 +190,7 @@ func test_the_dog_sits_down_inside_each_boat() -> void:
 		var b := BoatView.new()
 		b.set_boat(id)
 		var seat := b.dog_seat()
-		check(seat.y - b.seat.y >= 12.0, "%s: the dog sits down in the hull, whose near side hides its legs (%d rows)" % [id, seat.y - b.seat.y])
+		check(seat.y - b.dog_rail >= 11.0, "%s: the dog sits down in the hull, whose near side hides its legs (%d rows)" % [id, seat.y - b.dog_rail])
 		var w := b.width()
 		check(seat.x > w * 0.15 and seat.x < w * 0.88, "%s: and off the very tips of the bow and stern" % id)
 		b.free()

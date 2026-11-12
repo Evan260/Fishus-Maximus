@@ -314,7 +314,7 @@ func dog_rail() -> float:
 
 ## The row of the boat's picture the dog is drawn down to, below which the hull's near side hides it.
 func dog_cut() -> float:
-	return _boat.seat.y + 3.0
+	return _boat.dog_cut
 
 
 ## In the desktop strip the fisherman fishes on his own and the panels make way for the view.

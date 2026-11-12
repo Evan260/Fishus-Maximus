@@ -92,7 +92,7 @@ func test_the_dog_never_shows_below_the_hull() -> void:
 			lowest = mini(lowest, b)
 		var deepest: float = seat.y + s.dog.cut
 		check(deepest <= lowest, "%s: the dog is drawn no lower than row %d, inside the hull's bottom at %d" % [id, deepest, lowest])
-		check(deepest >= s._boat.seat.y, "%s: and down to the near rail, which then hides the rest of it" % id)
+		check(deepest >= s._boat.dog_rail, "%s: and down to the near rail, which then hides the rest of it" % id)
 		s.free()
 	for c in Nav.ui.get_children():
 		c.free()

@@ -193,3 +193,21 @@ func test_his_hands_rest_on_his_knee_while_the_rod_is_down() -> void:
 		b.line_out = true
 		check(b.pose() == ["sit", 0], "%s: and with his line out he holds the rod up again" % id)
 		_done(s)
+
+
+func test_he_sits_down_to_the_near_rail_in_every_boat() -> void:
+	for id in Data.boats:
+		var s := _coast(id)
+		var b: BoatView = s._boat
+		var near: Image = b.front.texture.get_image()
+		var lowest := int(b.seat.y) + 1
+		var gaps := 0
+		var middle := int(b.seat.x * b.width())
+		for x in range(middle - 4, middle + 5):
+			var y := lowest + 1
+			while y < near.get_height() and near.get_pixel(x, y).a < 0.5:
+				y += 1
+			if y > lowest + 1:
+				gaps += 1
+		check(gaps <= 2, "%s: the near side starts right under him, with no open rows between his picture and the rail, %d columns open" % [id, gaps])
+		_done(s)

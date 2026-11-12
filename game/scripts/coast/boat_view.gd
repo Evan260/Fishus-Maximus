@@ -73,6 +73,8 @@ var deck := 30.0
 var seat := Vector2(0.62, 30.0)
 ## Where the dog sits, the same way: how far along, and the row its feet rest on.
 var dog_spot := Vector2(0.24, 38.0)
+## The row the dog is drawn down to, three below his seat unless the boat names its own `dog_cut` in boats.json.
+var dog_cut := 33.0
 ## Whether this boat is rowed, so he takes up the oar when it moves.
 var oars := false
 ## Seconds of rowing still to show; the coast tops it up while the player rows.
@@ -195,6 +197,7 @@ func _place_seat(spec: Dictionary) -> void:
 	seat = Vector2(float(at[0]), float(at[1])) if at.size() == 2 else Vector2(0.62, deck)
 	var dog_at: Array = spec.get("dog", [])
 	dog_spot = Vector2(float(dog_at[0]), float(dog_at[1])) if dog_at.size() == 2 else Vector2(0.24, deck + 8.0)
+	dog_cut = float(spec.get("dog_cut", seat.y + 3.0))
 
 
 ## The material that moves a boat's sail and flag, from `sail`, `mast` and `flag` in boats.json, or none.

@@ -63,7 +63,7 @@
 		"draft": 10,
 		"sail": [[57, 11], [87, 25], [84, 63], [55, 53]],
 		"flag": [73, 67, 0, 5],
-		"rail": [[0, 55], [3, 56], [33, 66], [36, 62], [47, 62], [48, 64], [121, 64]],
+		"rail": [[0, 55], [3, 56], [33, 66], [36, 62], [47, 62], [48, 71], [83, 71], [84, 64], [121, 64]],
 		"name": "The big boat",
 		"hold": 40,
 		"well": 6,
@@ -71,9 +71,10 @@
 		"storm": true,
 		"seat": [
 			0.47,
-			64
+			71
 		],
 		"dog": [0.16, 76],
+		"dog_cut": 67,
 		"lantern": [116, 46],
 		"price": 2200,
 		"text": "Strong enough for the deep water off Cape Misenum, with a post for the lamp."
