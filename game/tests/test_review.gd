@@ -114,6 +114,25 @@ func test_pond_fish_fill_live_orders_and_requests() -> void:
 	check(Orders.fill_from(Game.state, 0, at) and Game.state["denarii"] == before + 90 and Game.state["pond"]["fish"].is_empty(), "and fills the order")
 
 
+func test_time_away_catches_keep_to_the_hours_that_passed() -> void:
+	# Off the harbour at the surface, sardines and the like swim by day and nothing but night fish by night.
+	var night_only := Data.fish.keys().filter(func(id): return not Data.fish[id]["legend"] and "harbour" in Data.fish[id]["places"] 		and "line" in Data.fish[id]["methods"] and not Catalog.in_hours(12.0, Data.fish[id]["hours"]))
+	var day_only := Data.fish.keys().filter(func(id): return not Data.fish[id]["legend"] and "harbour" in Data.fish[id]["places"] 		and "line" in Data.fish[id]["methods"] and not Catalog.in_hours(0.0, Data.fish[id]["hours"]))
+	check(not night_only.is_empty() and not day_only.is_empty(), "the harbour has fish of the day and of the night")
+	Game.new_game("Test", "mutt")
+	Game.state["boat"] = "big_boat"
+	Game.state["bait"] = {"worm": 500, "shrimp": 500}
+	Game.state["idle"] = {"place": "harbour", "bait": "worm", "depth": 60.0}
+	# Closed at dawn and opened in the night: nearly all the time away was daylight.
+	Game.state["time"] = 0.0
+	Game.state["last_real_time"] = Time.get_unix_time_from_system() - (Data.num("time.day_minutes", 20) + 1.5) * 60.0
+	Game.catch_up()
+	check(Clock.is_night(float(Game.state["time"])), "the game opens at night")
+	var caught: Array = Game.state["hold"].map(func(f): return f["fish"])
+	var by_day := caught.filter(func(id): return id in day_only).size()
+	check(by_day > caught.size() / 2, "yet most of what he caught are day fish, from the hours they were caught in: %s" % [caught])
+
+
 func test_fishing_on_his_own_carries_on_while_the_game_is_closed() -> void:
 	Game.new_game("Test", "mutt")
 	Game.state["idle"] = {"place": "harbour", "bait": "worm", "depth": 60.0}

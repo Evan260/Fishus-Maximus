@@ -11,7 +11,7 @@ The rules of the game in detail, building on `Overview.md`. Money in the game is
   - the traps fill;
   - the garum ferments;
   - the pond fish grow and are fed if a feeder is hired;
-  - the boat goes on fishing if it was left fishing on its own.
+  - the boat goes on fishing if it was left fishing on its own, each hour away bringing the fish of that hour, season and weather.
 
 ## Places
 

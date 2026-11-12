@@ -130,17 +130,30 @@ func catch_up() -> float:
 	state["last_real_time"] = now
 	if minutes > 0.0:
 		var rng := Seeds.rng(int(state["seed"]), "away", int(now))
-		World.advance(state, minutes, rng)
-		if state.has("idle"):
-			var idle: Dictionary = state["idle"]
+		# The time away is lived an hour of the clock at a time, so each catch keeps to the hour, season and weather it was made in.
+		var left := minutes
+		while left > 0.0:
 			var t := float(state["time"])
-			var bait := str(idle["bait"])
-			var left := int(state["bait"].get(bait, 0)) if bait != "" else 0
-			for c in Idle.catches(minutes, str(idle["place"]), float(idle["depth"]), bait, mini(Hold.room(state), left), rng,
-					Clock.hour(t), Clock.season(Clock.day_of(t)), str(state.get("weather", "clear")), float(idle.get("water", INF))):
-				Catches.record(state, c["fish"], float(c["pounds"]), false)
-				state["bait"][bait] = int(state["bait"][bait]) - 1
+			var step := minf(left, Clock.minutes_for_hours(t, 1.0))
+			World.advance(state, step, rng)
+			_fish_away(step, t + step / 2.0, rng)
+			left -= step
 	return minutes
+
+
+## What the boat left fishing on its own catches in `minutes` of time away around the time `t`.
+func _fish_away(minutes: float, t: float, rng: RandomNumberGenerator) -> void:
+	if not state.has("idle"):
+		return
+	var idle: Dictionary = state["idle"]
+	var bait := str(idle["bait"])
+	var left := int(state["bait"].get(bait, 0)) if bait != "" else 0
+	var day := Clock.day_of(t)
+	var weather := str(state.get("weather", "clear")) if day == Clock.day_of(float(state["time"])) else Weather.for_day(int(state["seed"]), day)
+	for c in Idle.catches(minutes, str(idle["place"]), float(idle["depth"]), bait, mini(Hold.room(state), left), rng,
+			Clock.hour(t), Clock.season(day), weather, float(idle.get("water", INF))):
+		Catches.record(state, c["fish"], float(c["pounds"]), false)
+		state["bait"][bait] = int(state["bait"][bait]) - 1
 
 
 ## Earns every achievement newly met: sent to Steam, its card slid in, and the logbook's pages ticked if they are open.
