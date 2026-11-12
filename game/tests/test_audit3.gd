@@ -57,3 +57,23 @@ func test_a_fish_that_reads_heavy_enough_for_an_order_is_taken() -> void:
 	check(Orders.suits(want, {"fish": "grouper", "pounds": 12.1}, false), "an order for 12 lb takes a 12.1 lb fish")
 	check(not Orders.suits(want, {"fish": "grouper", "pounds": 11.4}, false), "but not an 11.4 lb one")
 	Settings.units = units
+
+
+func test_garum_left_on_the_table_past_midnight_sells_at_the_market_price() -> void:
+	for c in Nav.ui.get_children():
+		c.free()
+	Game.new_game("Test", "mutt")
+	Game.state["time"] = Clock.minutes_per_day() * 7.0 + 10.0
+	Game.state["garum"] = {"muria": 3}
+	GarumPanel.open()
+	Game.state["time"] = Clock.minutes_per_day() * 8.0 + 10.0
+	var sell: Array = Nav.ui.get_node("Window").find_children("*", "Button", true, false).filter(func(b): return b.text == "Sell one")
+	check(sell.size() == 1, "one grade to sell")
+	var before := int(Game.state["denarii"])
+	if not sell.is_empty():
+		sell[0].pressed.emit()
+	var paid := int(Game.state["denarii"]) - before
+	check(paid == Garum.price("muria", Garum.quality(Game.state, "muria"), false), "the ship has gone, so it fetches the market price, not %d" % paid)
+	Ui.close_window()
+	for c in Nav.ui.get_children():
+		c.free()

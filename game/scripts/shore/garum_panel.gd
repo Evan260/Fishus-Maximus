@@ -65,7 +65,7 @@ static func open() -> void:
 			var p := Garum.price(id, Garum.quality(Game.state, id), export)
 			var offer: String = TranslationServer.translate("%s of %s, %s each to the ship") if export else TranslationServer.translate("%s of %s, %s each")
 			Ui.row(list, offer % [amphorae(n), Data.lower_of(g), Ui.coins_text(p)], "Sell one", func():
-				Garum.sell(Game.state, id, export)
+				Garum.sell(Game.state, id, Garum.export_day(Clock.day_of(float(Game.state["time"]))))
 				Game.changed.emit()
 				open())
 
