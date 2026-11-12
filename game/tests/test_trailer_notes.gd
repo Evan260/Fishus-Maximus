@@ -43,3 +43,66 @@ func test_the_oars_splash_as_each_blade_goes_in() -> void:
 		else:
 			check(b.strokes == 0, "%s: a boat under sail makes no oar sounds (%d)" % [id, b.strokes])
 		_done(s)
+
+
+## Every fish's picture on screen, by the fish, as a rectangle in view pixels.
+func _seen(sw: Swimmers) -> Dictionary:
+	var out := {}
+	var view := Rect2(Vector2.ZERO, Nav.view())
+	for f in sw.fish:
+		if f["state"] == "gone":
+			continue
+		var s: Sprite2D = f["sprite"]
+		var r := Rect2(s.position - s.texture.get_size() / 2.0, s.texture.get_size())
+		if r.intersects(view):
+			out[s.get_instance_id()] = f["pos"]
+	return out
+
+
+func test_no_fish_appears_or_jumps_inside_the_view() -> void:
+	var old_size: Vector2i = Nav.port.size_2d_override
+	var old_zoom: int = Nav.zoom
+	for size in [Vector2i(480, 270), Vector2i(640, 270), Vector2i(480, 360)]:
+		Nav.fit(size, 1)
+		for place in ["harbour", "rocky_shore", "open_bay", "misenum"]:
+			var s := _coast("big_boat", place, 600.0)
+			var sw: Swimmers = s.swimmers
+			s._pinned = true
+			var known := {}
+			for f in sw.fish:
+				known[(f["sprite"] as Sprite2D).get_instance_id()] = true
+			var last := _seen(sw)
+			var start: Vector2 = s.camera.cam
+			var appeared := 0
+			var jumped := 0
+			for k in 900:
+				var t := k / 30.0
+				# The camera sweeps along the coast both ways and down into the deep and back, as rowing and the line take it.
+				s.camera.cam = Vector2(maxf(0.0, start.x + sin(t * 0.35) * 500.0 + t * 20.0), CoastCamera.HOME_Y + (1.0 - cos(t * 0.5)) * 0.5 * minf(300.0, float(sw.place["depth"]) - 200.0))
+				s._update_swimmer_world()
+				sw.step(1.0 / 30.0, null, "")
+				var now := _seen(sw)
+				for id in now:
+					if not known.has(id) and not last.has(id):
+						appeared += 1
+					elif last.has(id) and (now[id] as Vector2).distance_to(last[id]) > 6.0:
+						jumped += 1
+				for f in sw.fish:
+					known[(f["sprite"] as Sprite2D).get_instance_id()] = true
+				last = now
+			check(appeared == 0, "%s at %s: no new fish shows up inside the view (%d did)" % [place, size, appeared])
+			check(jumped == 0, "%s at %s: no fish jumps inside the view (%d did)" % [place, size, jumped])
+			_done(s)
+	Nav.fit(old_size, old_zoom)
+
+
+func test_a_fish_let_go_of_the_bait_sinks_back_gently() -> void:
+	var s := _coast("skiff", "rocky_shore", 600.0)
+	var sw: Swimmers = s.swimmers
+	var f := sw.bring_in("dentex", 8.0, 30.0, 1.0)
+	check(not Rect2(Vector2.ZERO, Nav.view()).intersects(Rect2(f["sprite"].position - f["sprite"].texture.get_size() / 2.0, f["sprite"].texture.get_size())), "a fish brought in starts out of sight")
+	f["pos"] = Vector2(s.camera.cam.x + 200.0, 20.0)
+	var y: float = f["pos"].y
+	sw.step(1.0 / 30.0, null, "")
+	check(f["pos"].y - y < 1.0, "a deep fish above its depth sinks back a little at a time, not at once (%.1f)" % (f["pos"].y - y))
+	_done(s)

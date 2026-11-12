@@ -107,9 +107,10 @@ func _shot_cast() -> void:
 	await _open("coast", {"place": "rocky_shore", "hour": "8.2", "weather": "clear", "no-hud": "", "at": "260", "demo-cast": "", "leap": ""})
 	var coast: Node = Nav.current
 	coast._time = -0.6
+	# The dentex swims in from past the right of the view before the part of the shot that is used.
+	_biter = coast.swimmers.bring_in(FIRST_FISH, FIRST_POUNDS, 70.0, 1.0)
 	while coast.line_state() != "sinking" or coast.flight > 0.0:
 		await get_tree().process_frame
-	_biter = _put_fish(coast.swimmers, FIRST_FISH, coast.hook + Vector2(-80.0, 50.0), FIRST_POUNDS)
 	# The line is held near the surface, as a player holding reel-up does, so the fight runs where the fish can leap.
 	while coast.hook.y < 48.0:
 		await get_tree().process_frame
@@ -227,20 +228,6 @@ func _shot_endcard() -> void:
 
 
 # Helpers -----------------------------------------------------------------
-
-## A fish of this kind put in the water, swimming on its own until it is sent to the bait.
-func _put_fish(sw: Swimmers, id: String, at: Vector2, pounds: float) -> Dictionary:
-	var s := Swimmers.sprite_for(id, sw.texture_for(id))
-	s.material.set_shader_parameter("keep", Murk.FISH_KEEP)
-	sw.add_child(s)
-	var f := {"id": id, "lb": pounds, "sprite": s, "pos": at, "heading": 1.0, "phase": 0.0, "speed": 12.0,
-		"band": Data.fish[id]["depth"], "goal_y": at.y, "turn": 30.0, "look": 99.0, "state": "swim", "leader": {},
-		"group": 9999, "offset": Vector2.ZERO, "vel": Vector2(8.0, 0.0), "swim": 0.0, "pace_left": 30.0, "drift": 0.3}
-	sw._fill(f)
-	sw._show(f, Vector2.ZERO, 0.0)
-	sw.fish.append(f)
-	return f
-
 
 ## The shop tile selling this item, found by the price written under it.
 func _tile_for(id: String) -> Control:

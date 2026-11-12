@@ -38,6 +38,8 @@ const SHALLOWS_AHEAD := 30.0
 const BAIT_MIDDLE := Vector2(0, 5)
 ## How far past the view's edge a new fish starts, so it swims into sight rather than appearing in it.
 const OUT_OF_SIGHT := 12.0
+## How fast a fish above the top of its depth sinks back down to it, in pixels a second.
+const SINK_BACK := 14.0
 ## What a fish is given to swim with when it was made without it.
 const AT_REST := {"vel": Vector2.ZERO, "width": 1.0, "swim": 0.0, "pace": 1.0, "pace_left": 2.0, "drift": 0.3, "flee": 0.0, "age": 0.0}
 
@@ -189,6 +191,9 @@ func _spawn(anywhere := false) -> void:
 			y = 6.0
 	var f: Dictionary = Data.fish[id]
 	var big := texture_for(id).get_width() > 24
+	if not anywhere and _in_sight(x, texture_for(id).get_width() / 2.0):
+		return
+	y = clampf(y, minf(_top_of(f["depth"]), floor_y), floor_y)
 	if fish.any(func(o): return o["leader"].is_empty() and absf(o["pos"].x - x) < APART and absf(o["pos"].y - y) < APART):
 		return
 	var count := (_rng.randi_range(2, 3) if big else _rng.randi_range(4, 7)) if f.get("shoal", false) else 1
@@ -218,6 +223,35 @@ func _spawn(anywhere := false) -> void:
 		# The fish is put where it swims at once, so a sea that has just opened shows it from its first frame.
 		_show(one, Vector2.ZERO, 0.0)
 		fish.append(one)
+
+
+## Whether a fish this many pixels either side of x would show in the view.
+func _in_sight(x: float, half: float) -> bool:
+	return absf(x - (cam.x + Nav.view().x / 2.0)) < Nav.view().x / 2.0 + half + OUT_OF_SIGHT
+
+
+## The highest a fish of a depth band swims.
+static func _top_of(band: Array) -> float:
+	return maxf(5.0, float(band[0]) * 0.5)
+
+
+## Puts one fish of a kind just out of sight past one side of the view (`side` 1 for the right), at depth y, swimming
+## in, for a scripted moment that needs that fish.
+func bring_in(id: String, pounds: float, y: float, side := 1.0) -> Dictionary:
+	var tex := texture_for(id)
+	var x := cam.x + Nav.view().x / 2.0 + side * (Nav.view().x / 2.0 + tex.get_width() / 2.0 + OUT_OF_SIGHT + 2.0)
+	var s := sprite_for(id, tex)
+	s.material.set_shader_parameter("keep", Murk.FISH_KEEP)
+	add_child(s)
+	_groups += 1
+	var speed := 12.0 * (1.0 + float(Data.fish[id]["strength"]) * 0.08)
+	var f := {"id": id, "lb": pounds, "sprite": s, "pos": Vector2(x, y), "heading": -side, "phase": 0.0, "speed": speed,
+		"band": Data.fish[id]["depth"], "goal_y": y, "turn": 30.0, "look": 99.0, "state": "swim", "leader": {}, "group": _groups,
+		"offset": Vector2.ZERO, "vel": Vector2(-side * speed, 0.0), "swim": 0.0, "pace_left": 30.0, "drift": 0.3}
+	_fill(f)
+	_show(f, Vector2.ZERO, 0.0)
+	fish.append(f)
+	return f
 
 
 ## How often a kind is chosen: its rarity, and far more often the tuna while they run.
@@ -328,7 +362,7 @@ func _move(f: Dictionary, delta: float, bait) -> void:
 			f["heading"] = signf(bait.x - f["pos"].x) if absf(bait.x - f["pos"].x) > 4.0 else f["heading"]
 			f["pos"] = f["pos"].move_toward(near, f["speed"] * delta)
 	if not f["state"] in ["approach", "bit"]:
-		f["pos"].y = _keep_y(f, f["pos"].x, f["pos"].y)
+		f["pos"].y = _keep_y(f, f["pos"].x, f["pos"].y, delta)
 	_show(f, (f["pos"] - was) / delta if delta > 0.0 else Vector2.ZERO, delta)
 
 
@@ -397,11 +431,14 @@ func _biting_spot(f: Dictionary, bait: Vector2) -> Vector2:
 	return to
 
 
-## The nearest depth to y that a fish keeps to at x: no higher than half its band's top, and clear of the seabed.
-func _keep_y(f: Dictionary, x: float, y: float) -> float:
-	var lo := maxf(5.0, float(f["band"][0]) * 0.5)
+## The depth a fish keeps to at x: clear of the seabed, and sinking back gently when it is above half its band's top,
+## as after it lets go of a bait, so it never jumps down in view.
+func _keep_y(f: Dictionary, x: float, y: float, delta: float) -> float:
 	var hi := seabed.depth_at(x) - 5.0
-	return clampf(y, minf(lo, hi), hi)
+	var lo := minf(_top_of(f["band"]), hi)
+	if y < lo:
+		y = minf(lo, y + SINK_BACK * delta)
+	return minf(y, hi)
 
 
 ## How full of fish water this deep is, from a few in the shallows by the shore to all of them in the open sea.
