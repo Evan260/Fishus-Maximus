@@ -24,7 +24,7 @@ var background_sound := "full"
 ## Flashes the taskbar when a fish bites or an achievement is earned while the player is in another window.
 var notifications := true
 ## How large the interface is drawn: -1 Smaller, 0 Normal (a step under the game's own size), 1 Larger (the game's
-## own size) or 2 Largest.
+## own size) or 2 Largest, each a step larger on a small screen (`Nav.SMALL_ZOOM`).
 var ui_scale_step := 0
 ## The units weights are shown in: "metric" for kilograms or "imperial" for pounds.
 var units := "metric"

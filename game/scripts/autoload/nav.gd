@@ -11,6 +11,9 @@ const SIZE := Vector2(480, 270)
 const UI_LEAST := Vector2(360, 200)
 ## The same in the desktop strip, where its controls widen the strip to fit them.
 const STRIP_UI_LEAST := Vector2(0, 60)
+## The game's zoom at and under which every interface size is drawn a step larger: a window about 800 pixels tall or
+## less, such as 1280 by 720 or the Steam Deck's 1280 by 800, where a step under the game's zoom is one window pixel.
+const SMALL_ZOOM := 2
 const SCREENS := {
 	"title": "res://scripts/screens/title.gd",
 	"coast": "res://scripts/coast/coast_screen.gd",
@@ -137,11 +140,12 @@ func _fit_ui() -> void:
 	ui.size = (shown / ui_zoom).floor()
 
 
-## Window pixels per interface pixel for `shown` window pixels at `scale`: the settings' step from the game's zoom,
-## never under one, and a larger interface only while it keeps the room its bars need.
+## Window pixels per interface pixel for `shown` window pixels at `scale`: the settings' step from the game's zoom, a
+## step larger on a small screen, never under one, and a larger interface only while it keeps the room its bars need.
 func ui_zoom_for(shown: Vector2, scale: int) -> int:
 	var least := STRIP_UI_LEAST if Windowing.strip else UI_LEAST
-	var z := maxi(1, scale - 1 + Settings.ui_scale_step)
+	var lift := 1 if scale <= SMALL_ZOOM and not Windowing.strip else 0
+	var z := maxi(1, scale - 1 + lift + Settings.ui_scale_step)
 	while z > scale and (shown.x / z < least.x or shown.y / z < least.y):
 		z -= 1
 	return z

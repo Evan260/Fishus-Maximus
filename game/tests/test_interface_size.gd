@@ -48,15 +48,30 @@ func test_each_interface_size_draws_its_pixels_whole() -> void:
 		var zoom := Nav.zoom
 		for step in [-1, 0, 1, 2]:
 			_set_size(step)
-			var room := Vector2(size) / float(zoom + 1)
-			var want := maxi(1, zoom - 1 + step)
-			if step > 1 and (room.x < Nav.UI_LEAST.x or room.y < Nav.UI_LEAST.y):
-				want = zoom
+			var want := maxi(1, zoom - 1 + step + (1 if zoom <= Nav.SMALL_ZOOM else 0))
+			while want > zoom and (size.x / want < Nav.UI_LEAST.x or size.y / want < Nav.UI_LEAST.y):
+				want -= 1
 			check(Nav.ui_zoom == want, "%s at %d: the interface is %dx, not %dx" % [size, step, want, Nav.ui_zoom])
 			var corner := _in_window(Rect2(Vector2(5, 7), Vector2(11, 3)))
 			check(corner.position.is_equal_approx(Vector2(5, 7) * Nav.ui_zoom) and corner.size.is_equal_approx(Vector2(11, 3) * Nav.ui_zoom),
 				"%s at %d: interface pixels start at the window's corner and are %d window pixels each, not %s" % [size, step, Nav.ui_zoom, corner])
 			check(Nav.ui_view() == (Vector2(size) / float(Nav.ui_zoom)).floor(), "%s at %d: the interface fills the window, %s" % [size, step, Nav.ui_view()])
+	_restore(before)
+
+
+func test_a_small_screen_draws_the_interface_a_step_larger() -> void:
+	var before := Windowing.get_window().size
+	_set_size(0)
+	for size in [Vector2i(1280, 720), Vector2i(1280, 800), Vector2i(1366, 768)]:
+		_resize(size)
+		check(Nav.zoom == 2 and Nav.ui_zoom == 2, "%s: Normal draws the interface at the game's own size, %dx" % [size, Nav.ui_zoom])
+		check(Nav.ui_view().y >= Nav.UI_LEAST.y, "%s: and it keeps the room its bars need" % size)
+	_set_size(-1)
+	check(Nav.ui_zoom == 1, "Smaller still draws it smaller there")
+	_set_size(0)
+	for size in [Vector2i(1440, 810), Vector2i(1920, 1080)]:
+		_resize(size)
+		check(Nav.ui_zoom == Nav.zoom - 1, "%s: Normal stays a step under the game's size" % size)
 	_restore(before)
 
 
