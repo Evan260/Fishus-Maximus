@@ -20,6 +20,8 @@ var _method: Label
 var _idle: Button
 ## The method tiles along the bottom, by method.
 var method_buttons := {}
+## The controller buttons' pictures on the controls they work, shown while the controller is in use.
+var _badges: Array[TextureRect] = []
 var _left := 0.0
 
 
@@ -52,6 +54,8 @@ func setup(s: Node) -> void:
 			screen.cast(0.6))
 	# It starts just past the bay map's picture, which the coast hangs in the corner.
 	Ui.hang(bar, "bottom_left", Vector2(8 + TILE.x, 4))
+	for b in [[method_buttons["line"], "method_line"], [method_buttons["net"], "method_net"], [_idle, "idle"]]:
+		_badge(b[0], b[1])
 	var right := HBoxContainer.new()
 	right.add_theme_constant_override("separation", 2)
 	add_child(right)
@@ -67,6 +71,18 @@ static func method_tip(id: String) -> String:
 	if id == "line":
 		keys.append(Controls.key_name("cast"))
 	return TranslationServer.translate(METHOD_TIPS[id]) % keys
+
+
+## The picture of an action's controller button, hung on the top left corner of the control it works.
+func _badge(on: Control, action: String) -> void:
+	var t := TextureRect.new()
+	t.name = "PadBadge_" + action
+	t.texture = Controls.glyph(action)
+	t.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	t.position = Vector2(-3, -3)
+	t.visible = Pad.active
+	on.add_child(t)
+	_badges.append(t)
 
 
 func _corner_tile(row: HBoxContainer, id: String, tip: String, action: Callable) -> void:
@@ -104,6 +120,8 @@ func refresh() -> void:
 		Ui.choose(method_buttons[m], m == method)
 		# The keys named in the tips may have been changed in the settings since the boat was set out.
 		Ui.tip_on(method_buttons[m], method_tip(m))
+	for b in _badges:
+		b.visible = Pad.active
 	var usable := {"net": str(s["gear"].get("net", "")) != "", "trident": Trident.can_use(screen.hour, str(s["gear"].get("lamp", "")))}
 	for m in usable:
 		(method_buttons[m].get_node("Picture") as TextureRect).modulate.a = 1.0 if usable[m] else 0.4

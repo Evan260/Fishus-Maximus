@@ -14,6 +14,8 @@ const FAREWELL_SECONDS := 14.0
 var screen: Node
 var screen_name := ""
 var _text: Label
+## The lesson with the controller's buttons drawn in it, shown instead of `_text` while the controller is in use.
+var _rich: RichTextLabel
 var _arrow: Control
 var _shown := ""
 var _last := ""
@@ -64,6 +66,18 @@ func _ready() -> void:
 	_text.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_text.custom_minimum_size = Vector2(WIDTH, 0)
+	_rich = RichTextLabel.new()
+	_rich.bbcode_enabled = true
+	_rich.fit_content = true
+	_rich.scroll_active = false
+	_rich.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_rich.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	_rich.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_rich.add_theme_color_override("default_color", UiTheme.INK)
+	_rich.add_theme_constant_override("line_separation", 0)
+	_rich.visible = false
+	col.add_child(_rich)
+	col.move_child(_rich, _text.get_index() + 1)
 	var buttons := HBoxContainer.new()
 	col.add_child(buttons)
 	var name := Ui.label(buttons, "Old Rufus", "MutedLabel")
@@ -113,7 +127,7 @@ func refresh() -> void:
 			say = tr(_praise)
 			id = "praise " + _praise
 		elif not step.is_empty() and step["screen"] == screen_name:
-			say = Controls.fill(tr(step["text"]))
+			say = Controls.fill_pad(tr(step["text"])) if Pad.active else Controls.fill(tr(step["text"]))
 			id = now
 		elif Guide.farewell_due(Game.state):
 			say = tr(str(Data.guide.get("farewell", "")))
@@ -126,10 +140,17 @@ func refresh() -> void:
 	# What he was told to put away is kept with the game, so it stays away on every screen until he has news.
 	visible = say != "" and id != str(Game.state.get("_guide_dismissed", "")) and not away
 	var big := Settings.message_scale()
-	if _text.text != say or _text.custom_minimum_size.x != WIDTH * big:
+	var rich := say.contains("[img")
+	if _text.text != say or _rich.visible != rich or _text.custom_minimum_size.x != WIDTH * big:
 		_text.text = say
 		_text.custom_minimum_size.x = WIDTH * big
 		_text.add_theme_font_size_override("font_size", UiTheme.text_size() * big)
+		_text.visible = not rich
+		_rich.visible = rich
+		_rich.text = say if rich else ""
+		_rich.custom_minimum_size.x = WIDTH * big
+		_rich.add_theme_font_override("normal_font", UiTheme.body_font())
+		_rich.add_theme_font_size_override("normal_font_size", UiTheme.text_size() * big)
 		reset_size()
 	Ui.hang(self, "top_right", Vector2(4, _top()))
 	_arrow.visible = visible and target_rect().has_area()

@@ -21,6 +21,11 @@ const ACTIONS := {
 const PAD := [["row_left", JOY_BUTTON_DPAD_LEFT], ["row_right", JOY_BUTTON_DPAD_RIGHT], ["reel_up", JOY_BUTTON_DPAD_UP],
 	["let_out", JOY_BUTTON_DPAD_DOWN], ["cast", JOY_BUTTON_A], ["idle", JOY_BUTTON_Y], ["method_line", JOY_BUTTON_LEFT_SHOULDER],
 	["method_net", JOY_BUTTON_RIGHT_SHOULDER], ["close_panel", JOY_BUTTON_B]]
+## Each controller button's picture in assets/art/ui/pad/, drawn by tools/art/make_pad_glyphs.py.
+const GLYPHS := {JOY_BUTTON_A: "a", JOY_BUTTON_B: "b", JOY_BUTTON_X: "x", JOY_BUTTON_Y: "y", JOY_BUTTON_LEFT_SHOULDER: "lb",
+	JOY_BUTTON_RIGHT_SHOULDER: "rb", JOY_BUTTON_DPAD_LEFT: "dpad_left", JOY_BUTTON_DPAD_RIGHT: "dpad_right",
+	JOY_BUTTON_DPAD_UP: "dpad_up", JOY_BUTTON_DPAD_DOWN: "dpad_down"}
+const GLYPH_DIR := "res://assets/art/ui/pad/"
 
 
 static func ensure() -> void:
@@ -60,6 +65,35 @@ static func fill(text: String) -> String:
 	var keys := {}
 	for action in ACTIONS:
 		keys[action] = key_name(action)
+	return text.format(keys)
+
+
+## The controller button that does an action, or -1 when none does.
+static func pad_button(action: String) -> int:
+	for p in PAD:
+		if p[0] == action:
+			return p[1]
+	return -1
+
+
+static func glyph_path(action: String) -> String:
+	var b := pad_button(action)
+	return GLYPH_DIR + GLYPHS[b] + ".png" if GLYPHS.has(b) else ""
+
+
+## The picture of the controller button that does an action, or null when none does.
+static func glyph(action: String) -> Texture2D:
+	var path := glyph_path(action)
+	return load(path) if path != "" and ResourceLoader.exists(path) else null
+
+
+## Text with each {action} in it as a picture of its controller button, for a RichTextLabel; an action with no button
+## keeps its key.
+static func fill_pad(text: String) -> String:
+	var keys := {}
+	for action in ACTIONS:
+		var path := glyph_path(action)
+		keys[action] = "[img=center]%s[/img]" % path if path != "" else key_name(action)
 	return text.format(keys)
 
 

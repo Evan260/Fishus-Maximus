@@ -169,6 +169,13 @@ static func _keys(page: VBoxContainer) -> void:
 			_waiting = a
 			open(), WIDTH)
 		b.get_parent().name = a
+		if Pad.active or not Input.get_connected_joypads().is_empty():
+			var pic := TextureRect.new()
+			pic.name = "PadGlyph" if Controls.glyph(a) else "NoPadGlyph"
+			pic.texture = Controls.glyph(a)
+			pic.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+			pic.custom_minimum_size = Vector2(16, 0)
+			b.get_parent().add_child(pic)
 		# A key's name is the same in every language, so it is never looked up as words to translate.
 		b.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED if _waiting != a else Node.AUTO_TRANSLATE_MODE_INHERIT
 	page.add_child(KeyCatcher.new())

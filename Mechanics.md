@@ -260,7 +260,7 @@ Your name in town rises with orders, the pond show and legends caught. Five chap
 - **Platform:** Steam, on Windows, Mac, Linux and Steam Deck. Built in Godot 4 on Farmus Maximus's systems.
 - **Controls:**
   - **Mouse:** click to cast, strike and reel. A and D row.
-  - **Controller:** full support.
+  - **Controller:** full support. The left stick or D-pad rows, A casts, strikes and reels, up and down on the D-pad raise and lower the bait, LB and RB pick the line and the net, Y fishes on his own and B closes a window. A stick moves the pointer for everything else. In a window the right stick scrolls, and LB and RB turn a page. While the controller is in use, its buttons are pictured beside the hints. On a screen about 800 pixels tall, such as the Steam Deck's, the interface is drawn a size larger.
 - **Saving:** three save slots, kept with Steam Cloud.
 - **Settings:** gentle fishing, text size, weights in kilograms or pounds (kilograms by default), the desktop strip, and fishing on its own.
 
