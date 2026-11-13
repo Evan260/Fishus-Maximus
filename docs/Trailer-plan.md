@@ -51,3 +51,22 @@ One beat is 0.857 seconds of "Adventure Begins" from the game's soundtrack, whic
 - `marketing/desktop.png` is Farmus Maximus's desktop screenshot with the Fishus Maximus icon in place of the Farmus one, on the desktop and the taskbar.
 - The logo and the end card's scroll are drawn by `tools/trailer/make_logo.py`.
 - The music is "Adventure Begins" from Bard's Tales: Peaceful Harp Music Pack by Amos Cháb (Mythago Music), the game's own soundtrack, which asks for no credit; the description credits it anyway. Before uploading, confirm with Mythago Music that the free edition may be used in a trailer, as for the other two games.
+
+## The shorts
+
+Seven vertical shorts for YouTube Shorts, Instagram Reels and TikTok, made the same way as the trailer and laid out like Mosaicus Maximus's and Farmus Maximus's: 1080 by 1920 at 30 frames a second, 15 to 31 seconds, a caption from the very first frame in the game's text font at three times its size, outlined in ink, and the same end card as the trailer, the logo and "Wishlist now on Steam" over the harbour at sunset. The captions sit below the top bar of a phone's video apps and the end card above their captions at the bottom. Each is `python tools/trailer/make_trailer.py --cut=NAME`.
+
+| Cut | Hook | Shots |
+|---|---|---|
+| `legend` | "something huge is under my boat": the Senator comes out of the dark at night off Misenum, is fought up and hangs on the catch banner | `legend` |
+| `first_vs_last` | "my first fishing boat": the skiff, the fishing boat, the sailing boat and the big boat | `boat_skiff`, `boat_fishing`, `boat_sailing`, `boat_big` |
+| `cozy_sounds` | "turn your sound on": no music, the harbour at dawn, a cast and its reel, rain on the rocky shore, the pond fed and the harbour at night | `dawn`, `cast`, `rain`, `pond`, `night_harbour` |
+| `pet_the_dog` | "yes, you can pet the dog": the hound, the mastiff, the sighthound and the sheepdog petted in the bow, shown twice as large; the lapdog sits down out of sight behind the fishing boat's side | `pet_hound`, `pet_molossian`, `pet_sighthound`, `pet_sheepdog` |
+| `on_my_desktop` | "I put a Roman fishing boat on my desktop": the strip over the middle of `marketing/desktop.png`, the boat fishing on its own and the dog asleep | `desk`, `idle`, `idle_dog` |
+| `shipwreck` | "what's under my boat?": the view goes down from the boat to the old wreck off the rocky shore, and a conger swims out | `wreck_dive` |
+| `fish_by_name` | "Roman fish came when called by name": the bell is rung at the pond and Hortensia, Aurata and Lupus come to the front | `pond_bell` |
+
+- The shots are recorded at six screen pixels to the game pixel, a view 180 game pixels wide and 320 tall. The game would draw a window of a phone's shape at two, so `shots.gd` fits the view itself (`TALL_ZOOM`) and keeps the boat in the middle of it.
+- `dawn`, `cast`, `pond` and `endcard` are the trailer's own shots recorded again in the tall frame. The strip is recorded 1080 pixels wide at three screen pixels to the game pixel, over the middle of the desktop enlarged to fill the frame.
+- Every short but `cozy_sounds` plays "Adventure Begins" under the shots' own sounds. The dog's bark and yips are left out, as in the trailer.
+- Each finished short goes to `marketing/recordings/videos/short_<name>/` with an `.mp4` copy, beside its `title.txt`, `description.txt` and `thumbnail.png`, a frame of the short with its caption.

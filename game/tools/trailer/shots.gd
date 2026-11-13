@@ -7,6 +7,11 @@ const CREAM := Color(0.99, 0.95, 0.86)
 ## The fish the first cast brings in, and its weight in pounds.
 const FIRST_FISH := "dentex"
 const FIRST_POUNDS := 8.2
+## Window pixels to the game pixel in the shorts' tall frame, closer than the game would choose for a phone's shape.
+const TALL_ZOOM := 6
+## How deep the line is held for the legend, and the Senator's weight.
+const LEGEND_DEPTH := 230.0
+const LEGEND_POUNDS := 172.0
 
 var shot := ""
 var _pointer: Sprite2D
@@ -17,6 +22,8 @@ var _biter := {}
 var _row := 0.0
 ## How fast the view is carried along, in game pixels a second, for a shot that pans over the seabed.
 var _pan := Vector2.ZERO
+## How deep a downward pan stops.
+var _pan_to := INF
 
 
 func _ready() -> void:
@@ -43,14 +50,22 @@ func _ready() -> void:
 	layer.add_child(_ring)
 	# The real mouse plays no part: wherever it rests would light up what it is over.
 	get_tree().root.set_disable_input(true)
+	_fit_tall()
 	call("_shot_" + shot)
 
 
 func _process(delta: float) -> void:
+	_fit_tall()
+	# The shorts carry their own captions, so the game's passing messages would cover them.
+	if _tall() and is_instance_valid(Toast._box):
+		Toast._box.visible = false
 	if _row != 0.0 and Nav.current and Nav.current.has_method("row"):
 		Nav.current.row(_row, delta)
 	if _pan != Vector2.ZERO and Nav.current and "camera" in Nav.current:
 		Nav.current.camera.cam += _pan * delta
+		if Nav.current.camera.cam.y >= _pan_to:
+			Nav.current.camera.cam.y = _pan_to
+			_pan = Vector2.ZERO
 	if _biter.is_empty() or not Nav.current or not "swimmers" in Nav.current:
 		return
 	for f in Nav.current.swimmers.fish:
@@ -91,9 +106,17 @@ func _late_game() -> void:
 
 func _open(screen: String, flags: Dictionary) -> void:
 	Dev.args.merge(flags, true)
+	# The window takes its size in the first frames, and the screen lays itself out for the view it opens in.
+	for i in 3:
+		await get_tree().process_frame
+		_fit_tall()
 	Nav.go(screen, Dev.args)
 	while Nav.current_name != screen or Nav.current == null:
 		await get_tree().process_frame
+	if _tall() and "camera" in Nav.current:
+		var coast: Node = Nav.current
+		coast.camera.view = Nav.view()
+		coast.camera.jump(Vector2(coast.boat_x + 52.0 - Nav.view().x / 2.0, coast.camera.cam.y))
 
 
 # Shots -------------------------------------------------------------------
@@ -235,6 +258,8 @@ func _shot_dog() -> void:
 func _shot_pond() -> void:
 	_late_game()
 	await _open("shore", {"hour": "16.8", "weather": "clear", "no-hud": ""})
+	if _tall():
+		_hide_shore_hud()
 	await _wait(2.0)
 	Nav.current.pond.feed()
 
@@ -254,7 +279,188 @@ func _shot_endcard() -> void:
 	await _open("coast", {"place": "harbour", "hour": "19.0", "weather": "clear", "no-hud": "", "no-front": "", "at": "330"})
 
 
+# The shorts' shots, recorded in the tall frame -----------------------------
+
+## Night off Misenum under the northern lights: the Senator comes out of the dark to the bait and is fought up.
+func _shot_legend() -> void:
+	_late_game()
+	Game.state["logbook"].erase("senator_grouper")
+	await _open("coast", {"place": "misenum", "hour": "22.6", "weather": "clear", "no-hud": "", "at": "980", "aurora": "", "demo-cast": ""})
+	var coast: Node = Nav.current
+	coast._time = 0.2
+	while coast.line_state() != "sinking" or coast.flight > 0.0:
+		await get_tree().process_frame
+	while coast.hook.y < LEGEND_DEPTH:
+		await get_tree().process_frame
+	coast._state = "waiting"
+	_biter = coast.swimmers.bring_in("senator_grouper", LEGEND_POUNDS, coast.hook.y + 6.0, 1.0)
+	await _wait(1.6)
+	_biter["state"] = "approach"
+	while coast.fight == null:
+		await get_tree().process_frame
+	coast.fight._energy = coast.fight._full_energy * 0.45
+
+
+## The skiff in the harbour; the rowing boats wait at rest, since rowing lifts the view off the waterline all four share.
+func _shot_boat_skiff() -> void:
+	_early_game()
+	await _open("coast", {"place": "harbour", "hour": "7.4", "weather": "clear", "no-hud": "", "at": "300"})
+
+
+## The fishing boat along the rocky shore.
+func _shot_boat_fishing() -> void:
+	_early_game()
+	Game.state["boat"] = "fishing_boat"
+	await _open("coast", {"place": "rocky_shore", "hour": "10", "weather": "clear", "no-hud": "", "at": "600"})
+
+
+## The sailing boat past the cliffs of Capri.
+func _shot_boat_sailing() -> void:
+	_late_game()
+	Game.state["boat"] = "sailing_boat"
+	await _open("coast", {"place": "capri", "hour": "13", "weather": "clear", "no-hud": "", "at": "500"})
+	_row = 1.0
+
+
+## The big boat under full sail in the golden hour.
+func _shot_boat_big() -> void:
+	_late_game()
+	await _open("coast", {"place": "open_bay", "hour": "17.8", "weather": "clear", "no-hud": "", "at": "400"})
+	_row = 1.0
+
+
+## Each dog in the bow, petted twice.
+func _shot_pet_hound() -> void:
+	await _pet("hound")
+
+
+func _shot_pet_molossian() -> void:
+	await _pet("molossian")
+
+
+func _shot_pet_sighthound() -> void:
+	await _pet("sighthound")
+
+
+func _shot_pet_sheepdog() -> void:
+	await _pet("sheepdog")
+
+
+func _pet(breed: String) -> void:
+	_early_game()
+	Game.state["boat"] = "fishing_boat"
+	Game.state["dog"] = breed
+	await _open("coast", {"place": "harbour", "hour": "16.5", "weather": "clear", "no-hud": "", "at": "420"})
+	await _wait(1.6)
+	Nav.current.dog.pet()
+	await _wait(1.4)
+	Nav.current.dog.pet()
+
+
+## The boat fishing on its own in the strip, at the shorts' width.
+func _shot_desk() -> void:
+	_late_game()
+	Game.state["boat"] = "fishing_boat"
+	await _open("coast", {"place": "harbour", "hour": "10", "weather": "clear", "at": "520", "idle": "", "idle-speed": "12"})
+	Windowing.set_strip(true)
+
+
+## Close up on the boat fishing on its own and bringing in a bream, with the dog asleep in the bow.
+func _shot_idle() -> void:
+	_late_game()
+	Game.state["boat"] = "fishing_boat"
+	await _open("coast", {"place": "harbour", "hour": "10.5", "weather": "clear", "no-hud": "", "no-front": "", "at": "520", "idle": ""})
+	_hold_on_boat()
+	# A bream takes his bait at a set moment, as one he catches on his own would.
+	await _wait(1.6)
+	Nav.current.idle_catch("bream")
+
+
+## The dog asleep while the boat fishes on its own, petted anyway.
+func _shot_idle_dog() -> void:
+	_late_game()
+	Game.state["boat"] = "fishing_boat"
+	await _open("coast", {"place": "harbour", "hour": "14", "weather": "clear", "no-hud": "", "no-front": "", "at": "520", "idle": ""})
+	_hold_on_boat()
+	await _wait(1.8)
+	Nav.current.dog.pet()
+	await _wait(1.6)
+	Nav.current.dog.pet()
+
+
+## From the boat on the surface the view goes slowly down to the old wreck off the rocky shore, where a conger lives.
+func _shot_wreck_dive() -> void:
+	_late_game()
+	Game.state["boat"] = "fishing_boat"
+	await _open("coast", {"place": "rocky_shore", "hour": "12.5", "weather": "clear", "no-hud": "", "no-front": "", "at": "1348,-160"})
+	var coast: Node = Nav.current
+	await _wait(1.5)
+	_pan = Vector2(0.0, 34.0)
+	_pan_to = 175.0
+	await _wait(6.8)
+	coast.swimmers.bring_in("conger", 22.0, 335.0, 1.0)
+
+
+## The estate's pond: the bell is rung and the named fish come to the front, their names over them.
+func _shot_pond_bell() -> void:
+	_late_game()
+	Game.state["pond"]["fish"] = Game.state["pond"]["fish"].filter(func(f): return f["name"] in ["", "Hortensia", "Aurata", "Lupus"])
+	await _open("shore", {"hour": "9.5", "weather": "clear", "no-hud": ""})
+	_hide_shore_hud()
+	await _wait(1.0)
+	Nav.current.pond.feed()
+	await _wait(3.0)
+	Nav.current.pond.ring()
+
+
+## Rain on the rocky shore, rowing slowly under the cliffs.
+func _shot_rain() -> void:
+	_early_game()
+	Game.state["boat"] = "fishing_boat"
+	await _open("coast", {"place": "rocky_shore", "hour": "15", "weather": "rain", "no-hud": "", "at": "700"})
+	await _wait(2.5)
+	_row = 0.6
+
+
+## The harbour at night, the lamps of the town lit and the crickets out.
+func _shot_night_harbour() -> void:
+	_late_game()
+	Game.state["boat"] = "fishing_boat"
+	await _open("coast", {"place": "harbour", "hour": "21.5", "weather": "clear", "no-hud": "", "at": "330", "aurora": ""})
+
+
 # Helpers -----------------------------------------------------------------
+
+## A tall window for the shorts is drawn closer than the game draws it, so the boat fills a phone's width.
+## Hides the shore's top bar and its button back to town, which the narrow frame cuts off, but keeps the fish's names.
+func _hide_shore_hud() -> void:
+	for c in Nav.ui.get_children():
+		if c != Nav.current._names:
+			c.visible = false
+
+
+## Keeps the view on the boat, where it would follow the line out of the narrow frame.
+func _hold_on_boat() -> void:
+	var coast: Node = Nav.current
+	coast._pinned = true
+	coast.camera.jump(Vector2(coast.boat_x + 52.0 - coast.camera.view.x / 2.0, CoastCamera.HOME_Y))
+
+
+func _tall() -> bool:
+	return get_window().size.y > get_window().size.x
+
+
+func _fit_tall() -> void:
+	var size := get_window().size
+	if not _tall():
+		return
+	var view := Vector2i(ceili(size.x / float(TALL_ZOOM)), ceili(size.y / float(TALL_ZOOM)))
+	if Nav.zoom == TALL_ZOOM and Vector2i(Nav.view()) == view:
+		return
+	Windowing._fitted = size
+	Nav.fit(view, TALL_ZOOM)
+	Windowing.view_changed.emit()
+
 
 ## The shop tile selling this item, found by the price written under it.
 func _tile_for(id: String) -> Control:
