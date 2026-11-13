@@ -22,9 +22,9 @@ One beat is 0.857 seconds of "Adventure Begins" from the game's soundtrack, whic
 | # | Shot or card | Beats |
 |---|---|---|
 | 1 | Card: The Bay of Naples, AD 72. | 4 |
-| 2 | `dawn`: the harbour at first light, fading in, the skiff rowing out | 6 |
+| 2 | `dawn`: the harbour at first light, fading in, the skiff rowing out | 5 |
 | 3 | Card: Your uncle has left you his old boat. | 3 |
-| 4 | `cast`: the cast, the dentex swimming in to the bait, the bite, the fight with a leap, and the catch banner, in one take | 16 |
+| 4 | `cast`: the cast, the dentex swimming in to the bait, the bite, the fight with a leap, and the catch banner, in one take | 17 |
 | 5 | Card: Sixty kinds of fish, all ones the Romans knew. | 3 |
 | 6 | `rocky`, `capri`, `misenum`: three places along the bay | 3 each |
 | 7 | `wreck`: the view passing over the sunken boat in the open bay as fish swim by | 4 |
@@ -44,8 +44,8 @@ One beat is 0.857 seconds of "Adventure Begins" from the game's soundtrack, whic
 ## How it is made
 
 - `python tools/trailer/make_trailer.py` records every shot that is not recorded yet, then renders the trailer. `shots NAME...` records shots again, and `render` renders from the recorded shots, or from a given second into a preview.
-- `game/tools/trailer/shots.gd` scripts the shots. The game starts it with `--trailer-shot=NAME`. Each makes up a game with `Game.demo_state()` or `Game.max_state()` (the late game's logbook filled and its pond stocked), never saved, with the seed fixed at 7, the game's music muted and no achievement told of, then opens the screen with the game's own flags and plays it: rowing as a held key would, the first cast by the game's own demo cast with a dentex brought in from past the right of the view by `Swimmers.bring_in` and sent to the bait (its fight cut short so the whole catch fits one take), the view carried slowly over the open bay's wreck, the logbook turned, and a drawn pointer that clicks the boatwright's tile. The real mouse is shut out.
-- `game/tools/trailer/edit.gd` is the edit: the cut list, the cards in the game's own text font at twice its size, the strip laid over `marketing/desktop.png` above its taskbar, the end card and the music. Each shot's own sounds play under the music; the dog's bark and yips are left out of the recordings.
+- `game/tools/trailer/shots.gd` scripts the shots. The game starts it with `--trailer-shot=NAME`. Each makes up a game with `Game.demo_state()` or `Game.max_state()` (the late game's logbook filled and its pond stocked), never saved, with the seed fixed at 7, the game's music muted and no achievement told of, then opens the screen with the game's own flags and plays it: rowing as a held key would, the first cast by the game's own demo cast with a dentex brought in from past the right of the view by `Swimmers.bring_in` and sent to the bait (with the best rod and a tired fish, so the whole catch fits one take with the fish reeled in at the game's own pace), the view carried slowly over the open bay's wreck, the logbook turned, and a drawn pointer that clicks the boatwright's tile. The real mouse is shut out.
+- `game/tools/trailer/edit.gd` is the edit: the cut list, the cards in the game's own text font at twice its size, the strip laid over `marketing/desktop.png` above its taskbar, the end card and the music. Each shot's own sounds play under the music; the dog's bark and yips and the late afternoon's cicadas are left out of the recordings, with the gulls kept softly where nothing else would play, so the end card at sunset has the calm harbour under it.
 - The shots are recorded at 1920 by 1080 and 30 frames a second, four screen pixels to the game pixel, into `marketing/recordings/content/trailer_shots/`, which git ignores. The strip is recorded at its own size, 1920 by 270 at three screen pixels to the game pixel, on its see-through background.
 - The finished trailer, `steam_trailer.avi` and an `.mp4` copy with its sound brought to -16 LUFS, goes to `marketing/recordings/videos/steam_trailer/`, beside its `title.txt`, `description.txt` and `thumbnail.png`, a frame of the end card. Git ignores it for its size.
 - `marketing/desktop.png` is Farmus Maximus's desktop screenshot with the Fishus Maximus icon in place of the Farmus one, on the desktop and the taskbar.
@@ -68,5 +68,5 @@ Seven vertical shorts for YouTube Shorts, Instagram Reels and TikTok, made the s
 
 - The shots are recorded at six screen pixels to the game pixel, a view 180 game pixels wide and 320 tall. The game would draw a window of a phone's shape at two, so `shots.gd` fits the view itself (`TALL_ZOOM`) and keeps the boat in the middle of it.
 - `dawn`, `cast`, `pond` and `endcard` are the trailer's own shots recorded again in the tall frame. The strip is recorded 1080 pixels wide at three screen pixels to the game pixel, over the middle of the desktop enlarged to fill the frame.
-- Every short but `cozy_sounds` plays "Adventure Begins" under the shots' own sounds. The dog's bark and yips are left out, as in the trailer.
+- Every short but `cozy_sounds` plays "Adventure Begins" under the shots' own sounds. The dog's bark and yips and the cicadas are left out, as in the trailer.
 - Each finished short goes to `marketing/recordings/videos/short_<name>/` with an `.mp4` copy, beside its `title.txt`, `description.txt` and `thumbnail.png`, a frame of the short with its caption.

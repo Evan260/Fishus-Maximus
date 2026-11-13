@@ -19,10 +19,10 @@ const SCROLL_TEXT_HEIGHT := 54
 ## times larger around `centre`, in screen pixels.
 const TRAILER := [
 	{"card": "The Bay of Naples, AD 72.", "beats": 4},
-	{"shot": "dawn", "from": 1.5, "beats": 6, "fade_in": 1.2},
+	{"shot": "dawn", "from": 1.5, "beats": 5, "fade_in": 1.2},
 	{"card": "Your uncle has left you
 his old boat.", "beats": 3},
-	{"shot": "cast", "from": 0.85, "beats": 16},
+	{"shot": "cast", "from": 0.85, "beats": 17},
 	{"card": "Sixty kinds of fish,
 all ones the Romans knew.", "beats": 3},
 	{"shot": "rocky", "from": 1.0, "beats": 3},
@@ -65,7 +65,7 @@ const BOATS := [
 ## No music: the harbour at dawn, a cast and its reel, rain on the cliffs, the pond fed and the harbour at night.
 const ASMR := [
 	{"shot": "dawn", "from": 1.5, "beats": 7, "caption": "turn your\nsound on", "caption_at": 0.0},
-	{"shot": "cast", "from": 5.0, "beats": 8},
+	{"shot": "cast", "from": 6.0, "beats": 8},
 	{"shot": "rain", "from": 1.5, "beats": 6},
 	{"shot": "pond", "from": 1.5, "beats": 5},
 	{"shot": "night_harbour", "from": 1.5, "beats": 5},

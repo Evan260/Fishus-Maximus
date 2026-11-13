@@ -50,12 +50,16 @@ func _ready() -> void:
 	layer.add_child(_ring)
 	# The real mouse plays no part: wherever it rests would light up what it is over.
 	get_tree().root.set_disable_input(true)
+	# The shots run after the screens and the sound after the shots, so the shots have the last word on the ambience.
+	process_priority = 100
+	Audio.process_priority = 200
 	_fit_tall()
 	call("_shot_" + shot)
 
 
 func _process(delta: float) -> void:
 	_fit_tall()
+	_without_cicadas()
 	# The shorts carry their own captions, so the game's passing messages would cover them.
 	if _tall() and is_instance_valid(Toast._box):
 		Toast._box.visible = false
@@ -133,6 +137,8 @@ func _shot_dawn() -> void:
 ## it, the dog barks, the fight runs and leaps, and the fish comes up onto the catch banner.
 func _shot_cast() -> void:
 	_early_game()
+	# The best rod reels the dentex in at the game's own pace soon enough for the whole catch to fit one take.
+	Game.state["gear"]["rod"] = "masters_rod"
 	await _open("coast", {"place": "rocky_shore", "hour": "8.2", "weather": "clear", "no-hud": "", "at": "260", "demo-cast": "", "leap": ""})
 	var coast: Node = Nav.current
 	coast._time = -0.2
@@ -149,8 +155,7 @@ func _shot_cast() -> void:
 	while coast.fight == null:
 		await get_tree().process_frame
 	# The trailer has a few seconds for the fight, so this dentex runs and leaps once and then tires.
-	coast.fight._energy = coast.fight._full_energy * 0.3
-	coast.fight.distance = minf(coast.fight.distance, 45.0)
+	coast.fight._energy = coast.fight._full_energy * 0.15
 
 
 ## Capri's cliffs and caves at noon, sailing past in the sailing boat.
@@ -431,7 +436,17 @@ func _shot_night_harbour() -> void:
 
 # Helpers -----------------------------------------------------------------
 
-## A tall window for the shorts is drawn closer than the game draws it, so the boat fills a phone's width.
+## Leaves the late afternoon's cicadas out of the recordings, keeping the gulls softly where nothing else would play.
+func _without_cicadas() -> void:
+	if float(Audio.wanted.get("cicadas", 0.0)) <= 0.0:
+		return
+	var calm: Dictionary = Audio.wanted.duplicate()
+	calm.erase("cicadas")
+	if calm.values().all(func(v): return float(v) <= 0.0):
+		calm["gulls"] = 0.2
+	Audio.wanted = calm
+
+
 ## Hides the shore's top bar and its button back to town, which the narrow frame cuts off, but keeps the fish's names.
 func _hide_shore_hud() -> void:
 	for c in Nav.ui.get_children():
@@ -450,6 +465,7 @@ func _tall() -> bool:
 	return get_window().size.y > get_window().size.x
 
 
+## A tall window for the shorts is drawn closer than the game draws it, so the boat fills a phone's width.
 func _fit_tall() -> void:
 	var size := get_window().size
 	if not _tall():
