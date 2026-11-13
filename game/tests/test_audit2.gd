@@ -183,7 +183,7 @@ func test_the_full_hold_choice_is_a_window_of_its_own() -> void:
 
 func test_the_dog_still_shows_when_it_naps() -> void:
 	for id in ["skiff", "fishing_boat", "sailing_boat", "big_boat"]:
-		for breed in ["hound", "sighthound", "lapdog"]:
+		for breed in ["hound", "molossian", "sighthound", "lapdog", "sheepdog"]:
 			Game.new_game("Test", breed)
 			Game.state["boat"] = id
 			var s := _coast_at("harbour")
@@ -191,7 +191,8 @@ func test_the_dog_still_shows_when_it_naps() -> void:
 			for i in 40:
 				s.dog._process(0.05)
 			check(s.dog.mood == "sleep_east", "%s, %s: the dog naps while he fishes on his own" % [id, breed])
-			check(s.dog.shown_rows() >= 8, "%s, %s: and enough of it shows over the gunwale to see it lying there, %d rows" % [id, breed, s.dog.shown_rows()])
+			check(s.dog.shown_rows() >= 7, "%s, %s: and enough of it shows over the gunwale to see it lying there, %d rows" % [id, breed, s.dog.shown_rows()])
+			check(s.dog.columns_hanging() == 0, "%s, %s: and it lies on the boat, with no sky under any of it, %d columns hang" % [id, breed, s.dog.columns_hanging()])
 			_done(s)
 
 

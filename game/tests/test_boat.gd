@@ -53,7 +53,7 @@ func test_the_dog_sits_in_front_of_the_far_side_and_behind_the_near_side() -> vo
 			check(far_drawn == 0, "%s facing %d: nothing above the near rail, the far side, is drawn over the dog (%d pixels are)" % [id, facing, far_drawn])
 			check(near_missing == 0, "%s facing %d: the near side from its rail down is drawn over the dog (%d pixels missing)" % [id, facing, near_missing])
 			check(absf(b.dog_rail - b.near_rail[col]) <= 1.0, "%s facing %d: the dog's rail is the near rail where it sits" % [id, facing])
-			var shown_to: float = roundf(s.dog_seat().y) + minf(s.dog.cut, s.dog._hidden_from())
+			var shown_to: float = roundf(s.dog_seat().y) + minf(s.dog.cut, s.dog_rail() - roundf(s.dog_seat().y))
 			check(shown_to >= b.dog_rail, "%s facing %d: the dog is drawn down to the near rail, row %d, not cut off above it at %d" % [id, facing, b.dog_rail, shown_to])
 			if id in ["skiff", "big_boat"]:
 				check(far_rows >= 20, "%s facing %d: the far side shows above the near rail where the dog sits, %d pixels, and stays behind it" % [id, facing, far_rows])

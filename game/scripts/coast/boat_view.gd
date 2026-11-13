@@ -65,6 +65,9 @@ var front: Sprite2D
 var near_rail := PackedFloat32Array()
 ## The row where the hull's near side starts at the dog's spot.
 var dog_rail := 0.0
+## For each column of the boat's picture, the top of the wood that runs unbroken up from its near rail, the far side or
+## a post behind the dog, or the near rail itself where there is only sky above it.
+var backing := PackedFloat32Array()
 ## The middle of the lantern's flame in the boat's picture, for a boat that carries one, or below zero.
 var lantern := Vector2(-1, -1)
 var facing := 1.0
@@ -178,13 +181,14 @@ func set_boat(id: String) -> void:
 		_rails = _rail_rows(img)
 		_place_seat(spec)
 		near_rail = _near_rail_rows(spec.get("rail", []), img.get_width(), seat.y)
-		_shapes[key] = {"deck": deck, "rails": _rails, "near_rail": near_rail, "front": _near_side(img, near_rail),
+		_shapes[key] = {"deck": deck, "rails": _rails, "near_rail": near_rail, "backing": _backing_rows(img, near_rail), "front": _near_side(img, near_rail),
 				"bare": _without_ropes(img, near_rail) if spec.get("rigging", false) else null}
 	var shape: Dictionary = _shapes[key]
 	deck = shape["deck"]
 	_rails = shape["rails"]
 	_place_seat(spec)
 	near_rail = shape["near_rail"]
+	backing = shape["backing"]
 	front.texture = shape["front"]
 	var w := tex.get_width()
 	dog_rail = near_rail[clampi(int(dog_spot.x * w), 0, w - 1)]
@@ -242,6 +246,18 @@ static func _near_rail_rows(points: Array, width: int, fallback: float) -> Packe
 			if x >= float(a[0]) and x <= float(b[0]):
 				rows[x] = roundf(lerpf(float(a[1]), float(b[1]), (x - float(a[0])) / maxf(1.0, float(b[0]) - float(a[0]))))
 				break
+	return rows
+
+
+## For each column, the top of the solid run of the picture ending just above its near rail.
+static func _backing_rows(img: Image, rails: PackedFloat32Array) -> PackedFloat32Array:
+	var rows := PackedFloat32Array()
+	rows.resize(img.get_width())
+	for x in img.get_width():
+		var y := int(rails[x])
+		while y > 0 and img.get_pixel(x, y - 1).a > 0.5:
+			y -= 1
+		rows[x] = y
 	return rows
 
 
@@ -485,6 +501,27 @@ func rest_tip(x: float) -> Vector2:
 	var hand: Array = _hands["sit"][0]
 	var angle := deg_to_rad(ROD_REST)
 	return _on_person(x, Vector2(hand[0], hand[1]), facing < 0.0) + Vector2(cos(angle) * facing, sin(angle)) * ROD_LENGTH
+
+
+## The row where the hull's near side starts in a column of the boat's picture as it is drawn, turned with the boat.
+func near_rail_at(col: int) -> float:
+	if near_rail.is_empty():
+		return dog_rail
+	var c := clampi(col, 0, near_rail.size() - 1)
+	return near_rail[near_rail.size() - 1 - c if facing < 0.0 else c]
+
+
+## The top of the wood behind the dog in a column of the boat's picture as it is drawn, turned with the boat.
+func backing_at(col: int) -> float:
+	if backing.is_empty():
+		return near_rail_at(col)
+	var c := clampi(col, 0, backing.size() - 1)
+	return backing[backing.size() - 1 - c if facing < 0.0 else c]
+
+
+## Whether the dog's spot is in the front half of the boat.
+func dog_in_bow() -> bool:
+	return dog_spot.x > 0.5
 
 
 ## Where the dog sits, on the boat picture's own pixels.

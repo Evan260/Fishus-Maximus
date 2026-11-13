@@ -10,7 +10,7 @@ static var HEART: ImageTexture = _heart_texture()
 ## Sitting down and lying down are painted from standing, so they play once and then hold their last frame.
 const SETTLES := ["sit_east", "sleep_east"]
 const FPS := 8.0
-## How many rows of a lying dog's body stay tucked behind the gunwale.
+## How many rows of a lying dog's body stay tucked behind the gunwale, where the gunwale is lowest under it.
 const TUCK := 3.0
 ## How loud the dog's bark is, well under the sea and the reel, so it never startles; a pleased yip when petted is softer still.
 const BARK_DB := -15.0
@@ -25,7 +25,8 @@ var _since := 0.0
 var cut := INF
 var _happy_left := 0.0
 var _bark_left := 0.0
-static var _lowest := {}
+## For each picture, the row under the lowest part of the dog in every column, or -1 where a column is empty.
+static var _bottoms := {}
 
 
 static func _heart_texture() -> ImageTexture:
@@ -123,39 +124,66 @@ func _process(delta: float) -> void:
 	var facing: float = screen.facing()
 	position = screen.boat_screen_position() + screen.dog_seat().round()
 	cut = screen.dog_cut() - roundf(screen.dog_seat().y)
-	scale = Vector2(1.0 if facing > 0.0 else -1.0, 1.0)
+	# Lying in the bow, it turns its head towards the middle of the boat, where the gunwale is low enough to show it.
+	var turn := -1.0 if mood == "sleep_east" and screen.has_method("dog_in_bow") and screen.dog_in_bow() else 1.0
+	scale = Vector2((1.0 if facing > 0.0 else -1.0) * turn, 1.0)
 	queue_redraw()
 
 
-## The lowest row of a frame with any of the dog in it.
-static func _lowest_row(tex: Texture2D) -> int:
-	# Keyed by path where the picture has one, so a picture let go and loaded again is found again.
+## The row under the lowest part of the dog in each column of a frame, or -1 where the column is empty.
+static func _column_bottoms(tex: Texture2D) -> PackedInt32Array:
 	var key: Variant = tex.resource_path if tex.resource_path != "" else tex
-	if not _lowest.has(key):
+	if not _bottoms.has(key):
 		var img := tex.get_image()
 		if img.is_compressed():
 			img.decompress()
-		var y := img.get_height() - 1
-		while y > 0 and not range(img.get_width()).any(func(x): return img.get_pixel(x, y).a > 0.5):
-			y -= 1
-		_lowest[key] = y
-	return _lowest[key]
+		var out := PackedInt32Array()
+		out.resize(img.get_width())
+		for x in img.get_width():
+			out[x] = -1
+			for y in range(img.get_height() - 1, -1, -1):
+				if img.get_pixel(x, y).a > 0.5:
+					out[x] = y + 1
+					break
+		_bottoms[key] = out
+	return _bottoms[key]
 
 
-## The row, from the dog's seat, below which the boat's near side hides it.
-func _hidden_from() -> float:
-	return minf(cut, screen.dog_rail() - roundf(screen.dog_seat().y)) if screen else cut
+## The column of the boat's picture under a column of the dog's picture, as both are drawn.
+func _boat_column(tex: Texture2D, x: int) -> int:
+	var left := -roundf(tex.get_width() / 2.0) + x
+	return int(roundf(screen.dog_seat().x) + (left if scale.x > 0.0 else -left - 1.0))
 
 
-## How far up the dog is drawn as it lies down, so its body comes to rest just over the gunwale instead of below it.
+## The row, from the dog's seat, below which the boat's near side hides a column of the dog's picture.
+func _hidden_at(tex: Texture2D, x: int) -> float:
+	if screen == null or not screen.has_method("dog_rail_at"):
+		return cut
+	return minf(cut, screen.dog_rail_at(_boat_column(tex, x)) - roundf(screen.dog_seat().y))
+
+
+## The row, from the dog's seat, of the top of the wood behind a column of the dog's picture.
+func _backing_at(tex: Texture2D, x: int) -> float:
+	if screen == null or not screen.has_method("dog_backing_at"):
+		return cut
+	return minf(_hidden_at(tex, x), screen.dog_backing_at(_boat_column(tex, x)) - roundf(screen.dog_seat().y))
+
+
+## How far up the dog is drawn as it lies down: its body rests just behind the gunwale where it lies, and no part of
+## it sits higher than the wood behind it, so no sky shows under it where the gunwale dips.
 func lift() -> float:
 	var frames: Array = frames_of(mood)
 	if mood != "sleep_east" or frames.is_empty() or screen == null:
 		return 0.0
 	var last: Texture2D = frames[frames.size() - 1]
-	var bottom := _lowest_row(last) + 1.0 - (last.get_height() - 8.0)
+	var bottoms := _column_bottoms(last)
+	var top := -(last.get_height() - 8.0)
+	var need := minf(cut, screen.dog_rail() - roundf(screen.dog_seat().y)) + TUCK - (top + float(Array(bottoms).max()))
+	for x in bottoms.size():
+		if bottoms[x] >= 0:
+			need = maxf(need, _backing_at(last, x) + 1.0 - (top + bottoms[x]))
 	var k := clampf(float(frame() + 1) / frames.size(), 0.0, 1.0)
-	return minf(0.0, roundf((_hidden_from() + TUCK - bottom) * k))
+	return minf(0.0, roundf(need * k))
 
 
 ## How many rows of the dog show over the boat's near side now.
@@ -170,7 +198,22 @@ func shown_rows() -> int:
 	var top := -(tex.get_height() - 8.0) + lift()
 	var n := 0
 	for y in img.get_height():
-		if top + y < _hidden_from() and range(img.get_width()).any(func(x): return img.get_pixel(x, y).a > 0.5):
+		if range(img.get_width()).any(func(x): return img.get_pixel(x, y).a > 0.5 and top + y < _hidden_at(tex, x)):
+			n += 1
+	return n
+
+
+## How many columns of the dog have sky under them, between it and the wood of the boat, for the tests.
+func columns_hanging() -> int:
+	var frames: Array = frames_of(mood)
+	if frames.is_empty():
+		return 0
+	var tex: Texture2D = frames[frame()]
+	var bottoms := _column_bottoms(tex)
+	var top := -(tex.get_height() - 8.0) + lift()
+	var n := 0
+	for x in bottoms.size():
+		if bottoms[x] >= 0 and top + bottoms[x] - 1.0 < _backing_at(tex, x):
 			n += 1
 	return n
 

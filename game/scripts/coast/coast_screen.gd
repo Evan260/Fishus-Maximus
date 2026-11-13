@@ -312,6 +312,20 @@ func dog_rail() -> float:
 	return _boat.dog_rail
 
 
+## The row in a column of the boat's picture where its near side starts.
+func dog_rail_at(col: int) -> float:
+	return _boat.near_rail_at(col)
+
+
+func dog_in_bow() -> bool:
+	return _boat.dog_in_bow()
+
+
+## The top of the wood behind the dog in a column of the boat's picture.
+func dog_backing_at(col: int) -> float:
+	return _boat.backing_at(col)
+
+
 ## The row of the boat's picture the dog is drawn down to, below which the hull's near side hides it.
 func dog_cut() -> float:
 	return _boat.dog_cut
