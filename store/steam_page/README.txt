@@ -71,7 +71,7 @@ the Mac app is signed and notarized. docs/Steam-setup.md covers GodotSteam, the 
 
 DEVELOPER AND PUBLISHER (Basic Info)
 
-Slow Villa Games, in both the Developer and the Publisher fields.
+Slow Sunday Games, in both the Developer and the Publisher fields.
 
 
 STILL TO DECIDE BEFORE SUBMITTING
