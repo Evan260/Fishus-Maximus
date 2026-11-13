@@ -85,3 +85,15 @@ Use Auto-Cloud; the game needs no code for it. Each game slot is saved as `save_
 | Linux | `LinuxXdgDataHome` | `godot/app_userdata/Fishus Maximus` | `save_*.json.bak*` |
 
 The patterns leave out `save_N.json.tmp`, which only exists for the moment a save is being written. The player's own music (`music/`) and `settings.cfg` stay on each computer. If the save files are ever renamed, these patterns must change with them in `game/scripts/autoload/saves.gd`, or cloud saves quietly stop syncing.
+
+## 5. Rich presence
+
+Steam friends see what the player is doing, such as "Fishing off Capri at dusk" or "Selling the catch in town". `awards.gd` sets the `steam_display` token for the screen (`#Title`, `#Town`, `#Pond`, `#Map`, or `#Fishing_` and the place's id on the coast, with `when` set to `dawn`, `day`, `dusk` or `night`), checks every five seconds and on each change of screen, and hands Steam only what has changed. Without the Steam client running it never calls Steam.
+
+The words are in `tools/steam/rich_presence.vdf`, in all 14 of the game's languages. Upload it once, and again whenever it changes:
+
+1. In Steamworks, open the app's Edit Steamworks Settings, then Community, then Rich Presence.
+2. Under Localization, choose the file `tools/steam/rich_presence.vdf` and upload it. Steam reads every language from the one file.
+3. Publish the change from the Publish tab.
+
+A new screen or place needs its token in every language of the file; `game/tests/test_steam.gd` fails until it has one.

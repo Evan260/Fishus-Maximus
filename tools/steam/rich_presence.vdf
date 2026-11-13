@@ -1,0 +1,283 @@
+"lang"
+{
+	"english"
+	{
+		"tokens"
+		{
+			"#Title"	"Getting ready to fish"
+			"#Town"	"Selling the catch in town"
+			"#Pond"	"Tending the fish pond"
+			"#Map"	"Sailing across the bay"
+			"#Fishing_harbour"	"Fishing in the harbour {#When_%when%}"
+			"#Fishing_rocky_shore"	"Fishing along the rocky shore {#When_%when%}"
+			"#Fishing_lucrine"	"Fishing on the Lucrine Lake {#When_%when%}"
+			"#Fishing_open_bay"	"Fishing out in the open bay {#When_%when%}"
+			"#Fishing_capri"	"Fishing off Capri {#When_%when%}"
+			"#Fishing_misenum"	"Fishing off Cape Misenum {#When_%when%}"
+			"#When_dawn"	"at dawn"
+			"#When_day"	"by day"
+			"#When_dusk"	"at dusk"
+			"#When_night"	"at night"
+		}
+	}
+	"french"
+	{
+		"tokens"
+		{
+			"#Title"	"Se prépare à pêcher"
+			"#Town"	"Vend sa pêche en ville"
+			"#Pond"	"S’occupe du vivier"
+			"#Map"	"Navigue dans la baie"
+			"#Fishing_harbour"	"Pêche dans le port {#When_%when%}"
+			"#Fishing_rocky_shore"	"Pêche le long de la côte rocheuse {#When_%when%}"
+			"#Fishing_lucrine"	"Pêche sur le lac Lucrin {#When_%when%}"
+			"#Fishing_open_bay"	"Pêche en pleine baie {#When_%when%}"
+			"#Fishing_capri"	"Pêche au large de Capri {#When_%when%}"
+			"#Fishing_misenum"	"Pêche au large du cap Misène {#When_%when%}"
+			"#When_dawn"	"à l’aube"
+			"#When_day"	"en plein jour"
+			"#When_dusk"	"au crépuscule"
+			"#When_night"	"la nuit"
+		}
+	}
+	"german"
+	{
+		"tokens"
+		{
+			"#Title"	"Macht sich bereit zum Angeln"
+			"#Town"	"Verkauft den Fang in der Stadt"
+			"#Pond"	"Kümmert sich um den Fischteich"
+			"#Map"	"Segelt über die Bucht"
+			"#Fishing_harbour"	"Angelt {#When_%when%} im Hafen"
+			"#Fishing_rocky_shore"	"Angelt {#When_%when%} an der Felsküste"
+			"#Fishing_lucrine"	"Angelt {#When_%when%} auf dem Lucriner See"
+			"#Fishing_open_bay"	"Angelt {#When_%when%} in der offenen Bucht"
+			"#Fishing_capri"	"Angelt {#When_%when%} vor Capri"
+			"#Fishing_misenum"	"Angelt {#When_%when%} vor Kap Misenum"
+			"#When_dawn"	"bei Tagesanbruch"
+			"#When_day"	"tagsüber"
+			"#When_dusk"	"in der Abenddämmerung"
+			"#When_night"	"nachts"
+		}
+	}
+	"spanish"
+	{
+		"tokens"
+		{
+			"#Title"	"Preparándose para pescar"
+			"#Town"	"Vendiendo la pesca en la ciudad"
+			"#Pond"	"Cuidando el estanque de peces"
+			"#Map"	"Navegando por la bahía"
+			"#Fishing_harbour"	"Pescando en el puerto {#When_%when%}"
+			"#Fishing_rocky_shore"	"Pescando en la costa rocosa {#When_%when%}"
+			"#Fishing_lucrine"	"Pescando en el lago Lucrino {#When_%when%}"
+			"#Fishing_open_bay"	"Pescando en la bahía abierta {#When_%when%}"
+			"#Fishing_capri"	"Pescando frente a Capri {#When_%when%}"
+			"#Fishing_misenum"	"Pescando frente al cabo Miseno {#When_%when%}"
+			"#When_dawn"	"al amanecer"
+			"#When_day"	"de día"
+			"#When_dusk"	"al anochecer"
+			"#When_night"	"de noche"
+		}
+	}
+	"italian"
+	{
+		"tokens"
+		{
+			"#Title"	"Si prepara a pescare"
+			"#Town"	"Vende il pescato in città"
+			"#Pond"	"Si prende cura della peschiera"
+			"#Map"	"Naviga nella baia"
+			"#Fishing_harbour"	"Pesca nel porto {#When_%when%}"
+			"#Fishing_rocky_shore"	"Pesca lungo la scogliera {#When_%when%}"
+			"#Fishing_lucrine"	"Pesca sul lago Lucrino {#When_%when%}"
+			"#Fishing_open_bay"	"Pesca in mare aperto {#When_%when%}"
+			"#Fishing_capri"	"Pesca al largo di Capri {#When_%when%}"
+			"#Fishing_misenum"	"Pesca al largo di Capo Miseno {#When_%when%}"
+			"#When_dawn"	"all'alba"
+			"#When_day"	"di giorno"
+			"#When_dusk"	"al crepuscolo"
+			"#When_night"	"di notte"
+		}
+	}
+	"brazilian"
+	{
+		"tokens"
+		{
+			"#Title"	"Se preparando para pescar"
+			"#Town"	"Vendendo o pescado na cidade"
+			"#Pond"	"Cuidando do viveiro de peixes"
+			"#Map"	"Navegando pela baía"
+			"#Fishing_harbour"	"Pescando no porto {#When_%when%}"
+			"#Fishing_rocky_shore"	"Pescando na costa rochosa {#When_%when%}"
+			"#Fishing_lucrine"	"Pescando no Lago Lucrino {#When_%when%}"
+			"#Fishing_open_bay"	"Pescando na baía aberta {#When_%when%}"
+			"#Fishing_capri"	"Pescando ao largo de Capri {#When_%when%}"
+			"#Fishing_misenum"	"Pescando ao largo do Cabo Miseno {#When_%when%}"
+			"#When_dawn"	"ao amanhecer"
+			"#When_day"	"de dia"
+			"#When_dusk"	"ao entardecer"
+			"#When_night"	"à noite"
+		}
+	}
+	"polish"
+	{
+		"tokens"
+		{
+			"#Title"	"Szykuje się do łowienia"
+			"#Town"	"Sprzedaje połów w mieście"
+			"#Pond"	"Dogląda stawu rybnego"
+			"#Map"	"Żegluje po zatoce"
+			"#Fishing_harbour"	"Łowi ryby w porcie {#When_%when%}"
+			"#Fishing_rocky_shore"	"Łowi ryby przy skalistym brzegu {#When_%when%}"
+			"#Fishing_lucrine"	"Łowi ryby na Jeziorze Lukryńskim {#When_%when%}"
+			"#Fishing_open_bay"	"Łowi ryby na otwartej zatoce {#When_%when%}"
+			"#Fishing_capri"	"Łowi ryby u wybrzeży Capri {#When_%when%}"
+			"#Fishing_misenum"	"Łowi ryby u Przylądka Misenum {#When_%when%}"
+			"#When_dawn"	"o świcie"
+			"#When_day"	"w dzień"
+			"#When_dusk"	"o zmierzchu"
+			"#When_night"	"nocą"
+		}
+	}
+	"turkish"
+	{
+		"tokens"
+		{
+			"#Title"	"Balık tutmaya hazırlanıyor"
+			"#Town"	"Şehirde avını satıyor"
+			"#Pond"	"Balık havuzuyla ilgileniyor"
+			"#Map"	"Körfezde yelken açıyor"
+			"#Fishing_harbour"	"{#When_%when%} limanda balık tutuyor"
+			"#Fishing_rocky_shore"	"{#When_%when%} kayalık kıyıda balık tutuyor"
+			"#Fishing_lucrine"	"{#When_%when%} Lucrinus Gölü'nde balık tutuyor"
+			"#Fishing_open_bay"	"{#When_%when%} açık körfezde balık tutuyor"
+			"#Fishing_capri"	"{#When_%when%} Capri açıklarında balık tutuyor"
+			"#Fishing_misenum"	"{#When_%when%} Misenum Burnu açıklarında balık tutuyor"
+			"#When_dawn"	"Şafakta"
+			"#When_day"	"Gündüz"
+			"#When_dusk"	"Akşamüstü"
+			"#When_night"	"Geceleyin"
+		}
+	}
+	"russian"
+	{
+		"tokens"
+		{
+			"#Title"	"Готовится к рыбалке"
+			"#Town"	"Продаёт улов в городе"
+			"#Pond"	"Ухаживает за рыбным прудом"
+			"#Map"	"Плывёт по заливу"
+			"#Fishing_harbour"	"Рыбачит в гавани {#When_%when%}"
+			"#Fishing_rocky_shore"	"Рыбачит у скалистого берега {#When_%when%}"
+			"#Fishing_lucrine"	"Рыбачит на Лукринском озере {#When_%when%}"
+			"#Fishing_open_bay"	"Рыбачит в открытом заливе {#When_%when%}"
+			"#Fishing_capri"	"Рыбачит у Капри {#When_%when%}"
+			"#Fishing_misenum"	"Рыбачит у мыса Мизен {#When_%when%}"
+			"#When_dawn"	"на рассвете"
+			"#When_day"	"днём"
+			"#When_dusk"	"в сумерках"
+			"#When_night"	"ночью"
+		}
+	}
+	"ukrainian"
+	{
+		"tokens"
+		{
+			"#Title"	"Готується до риболовлі"
+			"#Town"	"Продає улов у місті"
+			"#Pond"	"Доглядає рибний став"
+			"#Map"	"Пливе затокою"
+			"#Fishing_harbour"	"Рибалить у гавані {#When_%when%}"
+			"#Fishing_rocky_shore"	"Рибалить біля скелястого берега {#When_%when%}"
+			"#Fishing_lucrine"	"Рибалить на Лукринському озері {#When_%when%}"
+			"#Fishing_open_bay"	"Рибалить у відкритій затоці {#When_%when%}"
+			"#Fishing_capri"	"Рибалить біля Капрі {#When_%when%}"
+			"#Fishing_misenum"	"Рибалить біля мису Мізен {#When_%when%}"
+			"#When_dawn"	"на світанку"
+			"#When_day"	"удень"
+			"#When_dusk"	"у сутінках"
+			"#When_night"	"вночі"
+		}
+	}
+	"japanese"
+	{
+		"tokens"
+		{
+			"#Title"	"釣りの準備中"
+			"#Town"	"町で釣った魚を売っている"
+			"#Pond"	"養魚池の世話をしている"
+			"#Map"	"湾を航海中"
+			"#Fishing_harbour"	"{#When_%when%}港で釣り中"
+			"#Fishing_rocky_shore"	"{#When_%when%}岩場で釣り中"
+			"#Fishing_lucrine"	"{#When_%when%}ルクリヌス湖で釣り中"
+			"#Fishing_open_bay"	"{#When_%when%}湾の沖で釣り中"
+			"#Fishing_capri"	"{#When_%when%}カプリ沖で釣り中"
+			"#Fishing_misenum"	"{#When_%when%}ミセヌム岬沖で釣り中"
+			"#When_dawn"	"夜明けに"
+			"#When_day"	"昼に"
+			"#When_dusk"	"夕暮れに"
+			"#When_night"	"夜に"
+		}
+	}
+	"koreana"
+	{
+		"tokens"
+		{
+			"#Title"	"낚시 준비 중"
+			"#Town"	"마을에서 잡은 물고기를 파는 중"
+			"#Pond"	"양어장을 돌보는 중"
+			"#Map"	"만을 항해하는 중"
+			"#Fishing_harbour"	"{#When_%when%} 항구에서 낚시 중"
+			"#Fishing_rocky_shore"	"{#When_%when%} 바위 해안에서 낚시 중"
+			"#Fishing_lucrine"	"{#When_%when%} 루크리노 호수에서 낚시 중"
+			"#Fishing_open_bay"	"{#When_%when%} 만 한가운데서 낚시 중"
+			"#Fishing_capri"	"{#When_%when%} 카프리 앞바다에서 낚시 중"
+			"#Fishing_misenum"	"{#When_%when%} 미세눔 곶 앞바다에서 낚시 중"
+			"#When_dawn"	"새벽에"
+			"#When_day"	"낮에"
+			"#When_dusk"	"해 질 녘에"
+			"#When_night"	"밤에"
+		}
+	}
+	"schinese"
+	{
+		"tokens"
+		{
+			"#Title"	"准备出海钓鱼"
+			"#Town"	"在城里卖鱼"
+			"#Pond"	"照料鱼池"
+			"#Map"	"在海湾中航行"
+			"#Fishing_harbour"	"{#When_%when%}在港口钓鱼"
+			"#Fishing_rocky_shore"	"{#When_%when%}在岩石海岸钓鱼"
+			"#Fishing_lucrine"	"{#When_%when%}在卢克林湖钓鱼"
+			"#Fishing_open_bay"	"{#When_%when%}在开阔海湾钓鱼"
+			"#Fishing_capri"	"{#When_%when%}在卡普里岛外海钓鱼"
+			"#Fishing_misenum"	"{#When_%when%}在米塞努姆角外海钓鱼"
+			"#When_dawn"	"黎明时"
+			"#When_day"	"白天"
+			"#When_dusk"	"黄昏时"
+			"#When_night"	"夜里"
+		}
+	}
+	"tchinese"
+	{
+		"tokens"
+		{
+			"#Title"	"準備出海釣魚"
+			"#Town"	"在城裡賣魚"
+			"#Pond"	"照料魚池"
+			"#Map"	"在海灣中航行"
+			"#Fishing_harbour"	"{#When_%when%}在港口釣魚"
+			"#Fishing_rocky_shore"	"{#When_%when%}在岩石海岸釣魚"
+			"#Fishing_lucrine"	"{#When_%when%}在盧克林湖釣魚"
+			"#Fishing_open_bay"	"{#When_%when%}在開闊海灣釣魚"
+			"#Fishing_capri"	"{#When_%when%}在卡布里島外海釣魚"
+			"#Fishing_misenum"	"{#When_%when%}在米塞努姆角外海釣魚"
+			"#When_dawn"	"黎明時分"
+			"#When_day"	"白天"
+			"#When_dusk"	"黃昏時分"
+			"#When_night"	"夜裡"
+		}
+	}
+}

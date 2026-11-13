@@ -50,6 +50,18 @@ static func minutes_for_hours(t: float, hours: float) -> float:
 	return minutes
 
 
+## The part of the day at t: "dawn" and "dusk" for the hour and a half at each end of daylight, "day" or "night".
+static func part_of_day(t: float) -> String:
+	if is_night(t):
+		return "night"
+	var h := hour(t)
+	if h < Data.num("time.dawn_hour", 5) + 1.5:
+		return "dawn"
+	if h >= Data.num("time.dusk_hour", 20) - 1.5:
+		return "dusk"
+	return "day"
+
+
 static func is_night(t: float) -> bool:
 	return fposmod(t, minutes_per_day()) >= Data.num("time.day_minutes", 20)
 
