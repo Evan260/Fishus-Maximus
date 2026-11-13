@@ -97,3 +97,22 @@ The words are in `tools/steam/rich_presence.vdf`, in all 14 of the game's langua
 3. Publish the change from the Publish tab.
 
 A new screen or place needs its token in every language of the file; `game/tests/test_steam.gd` fails until it has one.
+
+## 6. Demo
+
+The free demo is the same project exported with the `demo` export presets in `game/export_presets.cfg` (`python tools/export.py --demo`). It holds chapters 1 and 2, the harbour and the rocky shore. Later places, the boats past the skiff and anything else past chapter 2 show "In the full game", and when chapter 3 would open, an end card thanks the player, tells what the full game holds and offers Wishlist on Steam. The title says Demo and has the same button. Its save sits in the same folder as the full game's, so a demo game carries over on the same computer and opens chapter 3 at once in the full game if the player's name has earned it.
+
+The Wishlist on Steam button opens the full game's store page, in the Steam client when it runs and in the browser otherwise. It reads the full game's App ID from `steam.app_id` in `game/data/balance.json` and stays hidden while that is 0. Put the App ID there as soon as Steamworks gives it; `tools/steam/publish.py` refuses to upload until it matches `targets.game` in `tools/steam/steam.json`.
+
+Achievements: the demo sends none to Steam unless Steam runs it under the full game's App ID. They stay in the save, and the full game sends them the first time it loads that save with Steam running.
+
+In Steamworks, the demo is an app of its own, linked to the main game:
+
+1. On the main game's Steamworks page, under All Associated Packages, DLC, Demos and Tools, create a demo. Steam gives it its own App ID.
+2. Set it up like the main game (steps 2 to 6 of the Steamworks setup in `Steam-publishing.md`): three depots, a `testing` branch, App Bundles Are Notarized, and these launch options:
+   - `Fishus Maximus Demo.exe`, Windows
+   - `Fishus Maximus.app`, macOS (Godot names the Mac app after the project, so the demo's app keeps the full game's name)
+   - `Fishus Maximus Demo.x86_64`, Linux + SteamOS
+3. Upload `tools/steam/rich_presence.vdf` to the demo's Rich Presence page too (section 5).
+4. Put its App ID and depots into `targets.demo` in `tools/steam/steam.json`.
+5. Upload it with `python tools/steam/publish.py demo`. As with the main game, the build goes live on `testing`, and you set it live on the default branch in Steamworks when the demo is ready to release.

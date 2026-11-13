@@ -4,6 +4,7 @@ Usage:
   python tools/steam/publish.py playtest            upload to the Playtest app, live on its test branch
   python tools/steam/publish.py game                upload to the main game, live on its test branch
   python tools/steam/publish.py playtest --note "Calmer gulls"
+  python tools/steam/publish.py demo                upload the free demo, live on its test branch
   python tools/steam/publish.py game --dry-run      build, sign and lay out every platform, but do not upload
 
 The Steam account, app and depot ids are in tools/steam/steam.json; a depot left at 0 is skipped, and a dry run before
@@ -24,6 +25,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = Path(__file__).with_name("steam.json")
+# The game reads the full game's App ID from here, for the demo's wishlist button and its achievements.
+BALANCE = ROOT / "game" / "data" / "balance.json"
 sys.path.insert(0, str(ROOT / "tools"))
 import export as builder  # noqa: E402
 
@@ -68,12 +71,17 @@ def vdf(target, note, content, output):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("target", choices=["playtest", "game"])
+    parser.add_argument("target", choices=["playtest", "game", "demo"])
     parser.add_argument("--note", default="")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     config = json.loads(CONFIG.read_text())
     target = config["targets"][args.target]
+    game_id = config["targets"]["game"]["app_id"]
+    in_game = json.loads(BALANCE.read_text(encoding="utf-8"))["steam"]["app_id"]
+    if game_id and in_game != game_id:
+        fail(f"set steam.app_id in {BALANCE} to the game's App ID, {game_id}, so the demo's wishlist button opens its page")
+    demo = args.target == "demo"
     platforms = [p for p, depot in target["depots"].items() if depot]
     if not target["app_id"] or not platforms:
         if not args.dry_run:
@@ -89,7 +97,7 @@ def main():
         shutil.rmtree(stage)
     builder.godot("--import")
     for platform in platforms:
-        print(f"built {platform}: {builder.export(platform, stage / platform)}")
+        print(f"built {platform}: {builder.export(platform, stage / platform, demo)}")
         # The everything-unlocked launcher is for local checks, never for players.
         (stage / platform / builder.LAUNCHER_NAME).unlink(missing_ok=True)
     work = f"{home}/fishus-steam/{args.target}"

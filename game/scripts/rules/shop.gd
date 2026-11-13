@@ -17,6 +17,25 @@ static func on_sale(state: Dictionary, id: String) -> bool:
 	return false
 
 
+## The chapter whose opening puts this on sale, or 0 for what is sold from the start or never by chapter.
+static func chapter_of(id: String) -> int:
+	for c in Data.chapters:
+		for key in ["bait", "gear", "boats"]:
+			if id in c[key]:
+				return int(c["chapter"])
+	return 0
+
+
+## Whether the demo would sell this only in a chapter it never opens. A boat always says so; bait and gear only once
+## the demo's last chapter is open, as until then the next chapter's are not shown either, and of the pots only the next.
+static func full_game_only(state: Dictionary, id: String) -> bool:
+	if Data.gear.has(id) and Data.gear[id]["kind"] == "trap" and int(Data.gear[id]["count"]) != int(state["gear"].get("traps", 2)) + 1:
+		return false
+	if not Data.boats.has(id) and int(state["chapter"]) < Game.demo_last_chapter():
+		return false
+	return Game.in_full_game(chapter_of(id)) and not owned(state, id)
+
+
 static func price(id: String) -> int:
 	for table in [Data.bait, Data.gear, Data.boats]:
 		if table.has(id):

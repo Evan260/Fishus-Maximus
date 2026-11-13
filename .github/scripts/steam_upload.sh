@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Uploads the release builds in artifacts/ to Steam with steamcmd, live on the testing branch, using the depots in
 # tools/steam/steam.json and tools/steam/publish.py's build script layout:
-#   bash .github/scripts/steam_upload.sh <playtest|game>
+#   bash .github/scripts/steam_upload.sh <playtest|game|demo>
 set -euo pipefail
 
 TARGET="$1"
 case "$TARGET" in
-  playtest|game) ;;
-  *) echo "::error::Unknown Steam target '$TARGET'; use playtest or game"; exit 1 ;;
+  playtest|game) EDITION=full ;;
+  demo) EDITION=demo ;;
+  *) echo "::error::Unknown Steam target '$TARGET'; use playtest, game or demo"; exit 1 ;;
 esac
 ROOT="$(pwd)"
 source "$ROOT/.github/scripts/names.sh"
@@ -32,6 +33,9 @@ target = json.loads(open("tools/steam/steam.json", encoding="utf-8").read())["ta
 depots = [platform for platform, depot in target["depots"].items() if depot]
 if not target["app_id"] or not depots:
     sys.exit(f"Set the {name} app id and depot ids in tools/steam/steam.json first (docs/Steam-publishing.md)")
+game_id = json.loads(open("tools/steam/steam.json", encoding="utf-8").read())["targets"]["game"]["app_id"]
+if game_id and json.loads(open("game/data/balance.json", encoding="utf-8").read())["steam"]["app_id"] != game_id:
+    sys.exit(f"Set steam.app_id in game/data/balance.json to the game's App ID, {game_id}")
 if target["branch"] != "testing":
     sys.exit("A build only goes live on the testing branch; set its branch to testing in tools/steam/steam.json")
 note = f"{label} built on GitHub".replace('"', "'")

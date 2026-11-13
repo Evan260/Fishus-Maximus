@@ -4,6 +4,7 @@ How builds get onto Steam and to players. Once the steps below are done, every u
 
 ## What is already set up
 
+- `tools/export.py --demo` exports the free demo the same way into `builds/<platform>-demo/`, without the launcher.
 - `tools/export.py` exports the game for Windows, macOS and Linux into `builds/<platform>/`, each with `Credits and licences.txt` beside it, and the Windows one with the launcher that opens a game with everything unlocked. `python tools/export.py` builds all three; `python tools/export.py windows` builds one. The macOS build is Godot's `.zip` with the app inside, unsigned, and it is also copied to `C:\Users\evand\MacShare\Fishus Maximus\` for testing on the Mac.
 - `tools/steam/publish.py` exports the game for each platform with a depot through `tools/export.py`, then hands over to WSL (the Linux that runs inside Windows), which lays out the builds, signs and notarizes the Mac app, and uploads everything. It leaves the everything-unlocked launcher out of every depot, so players never get it; it stays in local builds and the GitHub release.
 - The upload runs in WSL because a Mac app copied through Windows loses its file permissions and will not open, and the Linux game needs its "executable" permission too. `tools/steam/wsl_build.sh` does that half.
@@ -41,7 +42,8 @@ These steps need you, because they involve your Steam account, payment and tax d
 8. **Fill in the numbers.** Put the account name and the numbers into `tools/steam/steam.json`:
    - `account`: the Steam account that uploads builds. Valve recommends a separate Steam account that has only the permission to upload builds, so your own account is never used by a script.
    - `targets.playtest`: the Playtest's App ID and its depots (`windows`, and `macos` and `linux` if it has them).
-   - `targets.game`: the main game's App ID and its three depots.
+   - `targets.game`: the main game's App ID and its three depots. The same App ID also goes in `steam.app_id` in `game/data/balance.json`, where the game reads it for the demo's Wishlist on Steam button; `publish.py` refuses to upload until the two match.
+   - `targets.demo`: the demo's App ID and its three depots (`Steam-setup.md`, section 6).
 9. **Log in to steamcmd once.** In PowerShell, run:
 
    ```
@@ -98,4 +100,4 @@ The script builds the game for every platform with a depot, signs and notarizes 
 
 ## The default branch and release
 
-Steam only lets a script make a build live on a branch such as `testing`. For the default branch, the one every buyer gets, go to SteamPipe, Builds in Steamworks and set the build live there yourself. This is Valve's safeguard against a script releasing a broken build to everyone. When the game launches, the same command uploads with `game` instead of `playtest`, and you set each release live on the default branch by hand.
+Steam only lets a script make a build live on a branch such as `testing`. For the default branch, the one every buyer gets, go to SteamPipe, Builds in Steamworks and set the build live there yourself. This is Valve's safeguard against a script releasing a broken build to everyone. When the game launches, the same command uploads with `game` instead of `playtest`, and you set each release live on the default branch by hand. The free demo works the same way with `demo`, which builds through `tools/export.py --demo`; its Steamworks setup is in `Steam-setup.md`.

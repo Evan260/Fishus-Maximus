@@ -24,6 +24,8 @@ static func open(view: PondView) -> void:
 					Game.changed.emit()
 					view.sync()
 				open(view), int(Game.state["denarii"]) >= price)
+		elif Game.in_full_game(int(Game.state["chapter"]) + 1):
+			Ui.label(list, view.tr("A wider pond comes in the full game."), "MutedLabel")
 		else:
 			Ui.label(list, view.tr("You may widen it further as your name grows."), "MutedLabel")
 	var actions := HBoxContainer.new()

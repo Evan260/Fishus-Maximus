@@ -7,7 +7,23 @@ signal changed
 const VERSION := 2
 
 var state := {}
+## Plays by the demo's limits without a demo build, for the tests.
+var acts_as_demo := false
 var _check_left := 2.0
+
+
+## Whether this is the free demo, the same project exported with the `demo` feature, which stops after chapter 2.
+func is_demo() -> bool:
+	return OS.has_feature("demo") or acts_as_demo
+
+
+func demo_last_chapter() -> int:
+	return int(Data.num("demo.last_chapter", 2))
+
+
+## Whether something opening in this chapter belongs to the full game, so the demo never opens it.
+func in_full_game(chapter: int) -> bool:
+	return is_demo() and chapter > demo_last_chapter()
 
 
 func new_game(name: String, dog: String, coat := "golden", dog_name := Dogs.DEFAULT_NAME) -> void:
@@ -53,6 +69,12 @@ func from_dict(d: Dictionary) -> void:
 	# A save from before the guide that has fish in its logbook belongs to someone who already knows how to fish.
 	if not d.has("guide"):
 		state["guide"]["finished"] = not state["logbook"].is_empty()
+	# A game carried over from the demo opens at once the chapters its name earned while the demo held them back.
+	if not is_demo():
+		state.erase("demo_done")
+	var was := int(state["chapter"])
+	if Story.add_reputation(state, 0) > 0:
+		state["_chapter_seen"] = was
 	changed.emit()
 
 
@@ -123,6 +145,15 @@ func max_state() -> void:
 	changed.emit()
 
 
+## Opens the demo's end card once, when chapter 3 would have opened; says whether it did.
+func show_demo_end() -> bool:
+	if not is_demo() or not state.get("demo_done", false) or state.get("demo_card_seen", false):
+		return false
+	state["demo_card_seen"] = true
+	DemoEnd.open()
+	return true
+
+
 ## Lets the time since the game was last saved pass, up to the cap; says how many minutes of game time that was.
 func catch_up() -> float:
 	var now := Time.get_unix_time_from_system()
@@ -179,6 +210,7 @@ func _process(delta: float) -> void:
 		Toast.say(tr("Chapter %d: %s. %s") % [int(c["chapter"]), tr(c["name"]), tr(c["text"])])
 		Audio.play("market_bell")
 	state["_chapter_seen"] = int(state["chapter"])
+	show_demo_end()
 	if state.has("_contest"):
 		var c: Dictionary = state["_contest"]
 		if c["won"]:

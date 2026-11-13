@@ -25,6 +25,8 @@ static func open() -> void:
 			Ui.row(list, TranslationServer.translate("Tank %d: a ruin. Restore it for %s") % [i + 1, Ui.coins_text(price)], "Restore", func():
 				if Garum.restore(Game.state, ti):
 					Game.changed.emit()
+				elif Game.in_full_game(int(Game.state["chapter"]) + 1):
+					Toast.say("More tanks are restored in the full game.")
 				else:
 					Toast.say("More tanks can be restored as your name grows.")
 				open(), int(Game.state["denarii"]) >= price)

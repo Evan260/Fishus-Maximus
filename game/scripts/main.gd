@@ -4,6 +4,8 @@ extends Node
 
 
 func _ready() -> void:
+	# --as-demo plays by the demo's limits without exporting it, for checking the demo's screens.
+	Game.acts_as_demo = Dev.has("as-demo")
 	if Dev.has("run-tests"):
 		add_child(load("res://tests/run_tests.gd").new())
 		return
@@ -38,6 +40,12 @@ func _ready() -> void:
 			if s["id"] == Dev.get_arg("guide"):
 				break
 			Guide.progress(Game.state)["done"].append(s["id"])
+	if Dev.has("reputation"):
+		# Raises the name of a new game, or the one made up, to N through the chapters as play would, as for the demo's end card.
+		if Game.state.is_empty():
+			Game.new_game("Marcus", "mutt")
+			Game.state["guide"]["finished"] = true
+		Story.add_reputation(Game.state, int(Dev.get_arg("reputation")) - int(Game.state["reputation"]))
 	Nav.go.call_deferred(Dev.get_arg("screen", "title"), Dev.args)
 	if Dev.has("strip"):
 		Windowing.set_strip.call_deferred(true)

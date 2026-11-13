@@ -144,6 +144,7 @@ The first thing made is one finished scene, in the game, with real PixelLab art:
 ## Platform and controls
 
 - **Where:** Steam, on Windows, Mac, Linux and Steam Deck.
+- **Demo:** free, with chapters 1 and 2, the harbour and the rocky shore. It ends with a thank you, a glimpse of Capri, Misenum, the legends and the big boat, and a button to wishlist the full game, and its game carries over to the full game.
 - **Controls:** played with the mouse, with full controller support.
 - **Built with:** Godot 4 in 2D, on Farmus Maximus's systems: time passing while the game is closed, the desktop strip, saving and the trimmed engine.
 

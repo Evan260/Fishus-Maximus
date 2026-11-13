@@ -91,5 +91,11 @@
 		"breed_happiness": 0.7,
 		"settled_days": 3,
 		"settled_bonus": 1.5
+	},
+	"demo": {
+		"last_chapter": 2
+	},
+	"steam": {
+		"app_id": 0
 	}
 }

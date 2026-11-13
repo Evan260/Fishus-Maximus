@@ -32,6 +32,8 @@ var _dog_picture: TextureRect
 var _dog_labels := {}
 var _dog_name: LineEdit
 var _heading: Label
+## "Demo" under the name, in the demo only.
+var _demo: Label
 var _sub: Label
 var _version: Label
 
@@ -105,6 +107,9 @@ func _place() -> void:
 		# Each line keeps its place on the scene, but a larger interface pushes the next one down rather than overlap it.
 		var heading := roundf(_row(26))
 		var sub := maxf(roundf(_row(46)), heading + 20)
+		if is_instance_valid(_demo):
+			Ui.hang(_demo, "top", Vector2(0, heading + 19), Vector2(0, 12))
+			sub = maxf(sub, heading + 33)
 		var menu := maxf(roundf(_row(120)), sub + 24)
 		menu = maxf(sub + 16, minf(menu, Nav.ui_view().y - _menu.get_combined_minimum_size().y - 6))
 		Ui.hang(_heading, "top", Vector2(0, heading), Vector2(0, 20))
@@ -150,6 +155,14 @@ func _show_menu() -> void:
 	_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_heading.add_theme_color_override("font_outline_color", UiTheme.INK)
 	_heading.add_theme_constant_override("outline_size", 4)
+	_demo = null
+	if Game.is_demo():
+		_demo = Ui.label(Nav.ui, Ui.upper("Demo"), "Heading")
+		_demo.name = "Demo"
+		_demo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_demo.add_theme_color_override("font_color", UiTheme.GOLD)
+		_demo.add_theme_color_override("font_outline_color", UiTheme.INK)
+		_demo.add_theme_constant_override("outline_size", 3)
 	_sub = Ui.label(Nav.ui, "A fishing life on the Bay of Naples, AD 72", "LightLabel")
 	_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_sub.add_theme_color_override("font_outline_color", UiTheme.INK)
@@ -174,6 +187,8 @@ func _show_menu() -> void:
 		Ui.tip_on(fresh, "You already keep three games. Delete one to start another.")
 	if last > 0:
 		Ui.button(_menu, "Load", _load)
+	if Game.is_demo():
+		DemoEnd.wishlist_button(_menu)
 	Ui.button(_menu, "Settings", func(): SettingsPanel.open())
 	# The close notification goes out first, so the window's size and the settings are kept as when closing the window.
 	Ui.button(_menu, "Quit", func(): get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST))

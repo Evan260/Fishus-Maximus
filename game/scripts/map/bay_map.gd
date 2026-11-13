@@ -41,6 +41,8 @@ static func locked_reason(state: Dictionary, place: String) -> String:
 	if not place in open:
 		for c in Data.chapters:
 			if place in c["places"]:
+				if Game.in_full_game(int(c["chapter"])):
+					return TranslationServer.translate("In the full game")
 				return TranslationServer.translate("Opens in chapter %d") % int(c["chapter"])
 	var boat: String = Data.places[place]["boat"]
 	if Story.boat_rank(boat) > Story.boat_rank(str(state["boat"])):

@@ -48,11 +48,17 @@ static func netmaker() -> void:
 			var b: Dictionary = Data.bait[id]
 			_buy_tile(baits, id, Ui.text([TranslationServer.translate("%s, %d for %s. You have %d.") % [Data.name_of(b), int(b["per"]), Ui.coins_text(int(b["price"])),
 				int(Game.state["bait"].get(id, 0))], str(b.get("text", ""))]), netmaker)
+		elif Shop.full_game_only(Game.state, id):
+			_full_game_tile(baits, id, Ui.text([TranslationServer.translate("%s.") % Data.name_of(Data.bait[id]), str(Data.bait[id].get("text", ""))]))
 	Ui.label(list, Ui.upper("Gear"), "Heading")
 	var gear := _grid(list, TILE)
 	for id in Data.gear:
 		var g: Dictionary = Data.gear[id]
-		if g["kind"] == "finery" or int(g["price"]) == 0 or not Shop.on_sale(Game.state, id):
+		if g["kind"] == "finery" or int(g["price"]) == 0:
+			continue
+		if not Shop.on_sale(Game.state, id):
+			if Shop.full_game_only(Game.state, id):
+				_full_game_tile(gear, id, Ui.text([TranslationServer.translate("%s.") % Data.name_of(g), gear_text(id)]))
 			continue
 		if Shop.owned(Game.state, id):
 			Ui.tile(gear, ItemArt.of(id), "Yours", Ui.text([TranslationServer.translate("%s.") % Data.name_of(g), gear_text(id), "Yours."]), func(): pass, true, true, TILE)
@@ -96,6 +102,8 @@ static func hire_row(list: Control) -> void:
 				if Helpers.hire(Game.state, hid):
 					Game.changed.emit()
 				market(), int(Game.state["denarii"]) >= int(h["price"]), TILE)
+		elif Game.in_full_game(int(h["chapter"])) and int(Game.state["chapter"]) >= Game.demo_last_chapter():
+			_full_game_tile(help, "help_" + id, tip)
 
 
 static func boatwright() -> void:
@@ -108,6 +116,8 @@ static func boatwright() -> void:
 			Ui.tile(boats, ItemArt.of(id), "Yours", tip, func(): pass, true, id == Game.state["boat"], BOAT_TILE)
 		elif Shop.on_sale(Game.state, id):
 			_buy_tile(boats, id, Ui.text([tip, TranslationServer.translate("%s.") % Ui.coins_text(int(b["price"]))]), boatwright, BOAT_TILE)
+		elif Shop.full_game_only(Game.state, id):
+			_full_game_tile(boats, id, tip, "Full game", BOAT_TILE)
 		else:
 			Ui.tile(boats, ItemArt.of(id), "Not yet", tip, func(): pass, false, false, BOAT_TILE)
 
@@ -130,6 +140,12 @@ static func _grid(list: Control, tile: Vector2) -> GridContainer:
 	g.add_theme_constant_override("v_separation", 2)
 	list.add_child(g)
 	return g
+
+
+## Something the demo never sells, shown faded with "In the full game" in its tip; only a tile wide enough says so on it.
+static func _full_game_tile(grid: Control, id: String, tip: String, caption := "", size := TILE) -> void:
+	var t := Ui.tile(grid, ItemArt.of(id), caption, Ui.text([tip, "In the full game."]), func(): pass, false, false, size)
+	t.name = "FullGame_" + id
 
 
 static func _buy_tile(grid: Control, id: String, tip: String, reopen: Callable, size := TILE) -> void:

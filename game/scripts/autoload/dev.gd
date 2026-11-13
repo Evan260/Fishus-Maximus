@@ -6,6 +6,8 @@ extends Node
 ## slides in an achievement's card; --ui-size=N sets the interface size for the run; --no-save writes nothing anywhere.
 
 const BENCH := "res://tools/bench.gd"
+## Options that make up a game or go somewhere past the demo, which a demo build ignores.
+const PAST_THE_DEMO := ["max-state", "demo-state", "place", "boat", "hook", "trailer-shot", "pacing", "flow", "bench"]
 
 var args := {}
 var time := 0.0
@@ -16,6 +18,9 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		var kv: PackedStringArray = a.trim_prefix("--").split("=", true, 1)
 		args[kv[0]] = kv[1] if kv.size() > 1 else ""
+	if OS.has_feature("demo"):
+		for key in PAST_THE_DEMO:
+			args.erase(key)
 	if args.has("window"):
 		var wh: PackedStringArray = args["window"].split("x")
 		DisplayServer.window_set_size(Vector2i(int(wh[0]), int(wh[1])))

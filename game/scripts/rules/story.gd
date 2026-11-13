@@ -25,10 +25,14 @@ static func unlocks(chapter: int) -> Dictionary:
 	return out
 
 
-## Raises your name and opens the next chapter when it is high enough; says the new chapter, or 0.
+## Raises your name and opens the next chapter when it is high enough; says the new chapter, or 0. The demo stops at
+## its last chapter and marks the game `demo_done` when the next one would have opened.
 static func add_reputation(state: Dictionary, amount: int) -> int:
 	state["reputation"] = int(state["reputation"]) + amount
 	var c := chapter_for(int(state["reputation"]))
+	if Game.in_full_game(c):
+		state["demo_done"] = true
+		c = Game.demo_last_chapter()
 	if c > int(state["chapter"]):
 		state["chapter"] = c
 		return c

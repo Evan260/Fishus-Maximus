@@ -69,7 +69,28 @@ func may_send() -> bool:
 		and not Game.state.get("_unlocked", false)
 
 
+## The full game's Steam App ID, kept only in `steam.app_id` in balance.json; 0 until Steamworks gives one.
+static func store_app_id() -> int:
+	return int(Data.num("steam.app_id", 0))
+
+
+## The demo sends achievements only when Steam runs it as the full game, so they reach the full game's page; otherwise
+## they stay in the save and the full game sends them when it first loads it.
+func sends_from_demo() -> bool:
+	return store_app_id() != 0 and _steam != null and int(_steam.call("getAppID")) == store_app_id()
+
+
+## Opens the full game's store page to wishlist it: in the Steam client when it runs, else in the browser.
+func wishlist() -> void:
+	var id := store_app_id()
+	if id == 0:
+		return
+	OS.shell_open(("steam://store/%d" % id) if _steam else ("https://store.steampowered.com/app/%d/" % id))
+
+
 func unlock(id: String) -> void:
+	if Game.is_demo() and not sends_from_demo():
+		return
 	if _steam and may_send():
 		_steam.call("setAchievement", id)
 		_steam.call("storeStats")
