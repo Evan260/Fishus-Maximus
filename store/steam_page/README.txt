@@ -69,9 +69,13 @@ has the one-time setup in Steamworks (the App ID, the three depots, the launch o
 the Mac app is signed and notarized. docs/Steam-setup.md covers GodotSteam, the achievements and Steam Cloud.
 
 
+DEVELOPER AND PUBLISHER (Basic Info)
+
+Slow Villa Games, in both the Developer and the Publisher fields.
+
+
 STILL TO DECIDE BEFORE SUBMITTING
 
-- Developer and publisher name (your own name or a studio name).
 - Release date: "Coming soon", or a season and year such as "Spring 2027".
 - Price in CAD, which Steamworks asks for separately and which Valve reviews.
 - Steam Cloud and achievements are set up as described in docs/Steam-setup.md.
