@@ -52,7 +52,7 @@ const LEGEND := [
 	{"shot": "legend", "from": 15.6, "beats": 6, "caption": "it's a legend", "caption_at": 0.0},
 	{"shot": "legend", "from": 20.7, "beats": 3, "caption": "older than\nthe town itself", "caption_at": 0.0},
 	{"shot": "legend", "from": 24.0, "beats": 6, "caption": "the only one\nin the whole bay", "caption_at": 0.0},
-	{"end": "endcard", "from": 1.0, "beats": 5, "dim": 0.45},
+	{"end": "endcard", "from": 1.0, "beats": 6, "dim": 0.45},
 ]
 ## The four boats, from the skiff to the big boat, each with the dog aboard.
 const BOATS := [
@@ -60,7 +60,7 @@ const BOATS := [
 	{"shot": "boat_fishing", "from": 1.5, "beats": 3, "caption": "my second", "caption_at": 0.0},
 	{"shot": "boat_sailing", "from": 1.5, "beats": 3, "caption": "then a sail", "caption_at": 0.0},
 	{"shot": "boat_big", "from": 1.5, "beats": 5, "caption": "and finally,\nthe big boat", "caption_at": 0.0},
-	{"end": "endcard", "from": 1.0, "beats": 5, "dim": 0.45},
+	{"end": "endcard", "from": 1.0, "beats": 6, "dim": 0.45},
 ]
 ## No music: the harbour at dawn, a cast and its reel, rain on the cliffs, the pond fed and the harbour at night.
 const ASMR := [
@@ -69,7 +69,7 @@ const ASMR := [
 	{"shot": "rain", "from": 1.5, "beats": 6},
 	{"shot": "pond", "from": 1.5, "beats": 5},
 	{"shot": "night_harbour", "from": 1.5, "beats": 5},
-	{"end": "endcard", "from": 1.0, "beats": 5, "dim": 0.45},
+	{"end": "endcard", "from": 1.0, "beats": 6, "dim": 0.45},
 ]
 ## Yes, you can pet the dog, and the other breeds, twice as large; the lapdog sits out of sight behind the boat's side.
 const PETS := [
@@ -77,7 +77,7 @@ const PETS := [
 	{"shot": "pet_molossian", "from": 1.4, "beats": 3, "zoom": 2.0, "centre": Vector2(740, 780), "caption": "and the mastiff", "caption_at": 0.0},
 	{"shot": "pet_sighthound", "from": 1.4, "beats": 3, "zoom": 2.0, "centre": Vector2(740, 780), "caption": "and the sighthound", "caption_at": 0.0},
 	{"shot": "pet_sheepdog", "from": 1.4, "beats": 4, "zoom": 2.0, "centre": Vector2(740, 780), "caption": "and the fluffy one", "caption_at": 0.0},
-	{"end": "endcard", "from": 1.0, "beats": 5, "dim": 0.45},
+	{"end": "endcard", "from": 1.0, "beats": 6, "dim": 0.45},
 ]
 ## The boat along the bottom of a desktop, then close up on what it gets up to while its owner works.
 const DESKTOP := [
@@ -85,7 +85,7 @@ const DESKTOP := [
 	{"shot": "idle", "from": 2.4, "beats": 4, "caption": "it fishes\nwhile I work", "caption_at": 0.0},
 	{"shot": "idle_dog", "from": 1.4, "beats": 4, "zoom": 2.0, "centre": Vector2(740, 780), "caption": "the dog sleeps\non the job", "caption_at": 0.0},
 	{"desk": "desk", "from": 6.2, "beats": 4, "caption": "my boss has\nnot noticed yet", "caption_at": 0.0},
-	{"end": "endcard", "from": 1.0, "beats": 5, "dim": 0.45},
+	{"end": "endcard", "from": 1.0, "beats": 6, "dim": 0.45},
 ]
 ## Down from the boat to the old wreck on the seabed, where a conger lives.
 const WRECK := [
@@ -93,14 +93,14 @@ const WRECK := [
 	{"shot": "wreck_dive", "from": 4.43, "beats": 4, "caption": "keep going", "caption_at": 0.0},
 	{"shot": "wreck_dive", "from": 7.86, "beats": 3, "caption": "a shipwreck", "caption_at": 0.0},
 	{"shot": "wreck_dive", "from": 10.43, "beats": 4, "caption": "and something\nlives in it", "caption_at": 0.0},
-	{"end": "endcard", "from": 1.0, "beats": 5, "dim": 0.45},
+	{"end": "endcard", "from": 1.0, "beats": 6, "dim": 0.45},
 ]
 ## The pond's named fish, which come to the front when the bell is rung, as the Romans' fish came to their names.
 const BY_NAME := [
 	{"shot": "pond_bell", "from": 1.0, "beats": 4, "caption": "Roman fish came\nwhen called by name", "caption_at": 0.0},
 	{"shot": "pond_bell", "from": 4.43, "beats": 3, "caption": "so I tried it", "caption_at": 0.0},
 	{"shot": "pond_bell", "from": 7.0, "beats": 5, "caption": "Hortensia, Aurata\nand Lupus", "caption_at": 0.0},
-	{"end": "endcard", "from": 1.0, "beats": 5, "dim": 0.45},
+	{"end": "endcard", "from": 1.0, "beats": 6, "dim": 0.45},
 ]
 ## Each cut's frame, overlay pixel, caption size, rows in overlay pixels and music start, clear of a phone app's bars.
 const CUTS := {

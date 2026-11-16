@@ -54,7 +54,7 @@ One beat is 0.857 seconds of "Adventure Begins" from the game's soundtrack, whic
 
 ## The shorts
 
-Seven vertical shorts for YouTube Shorts, Instagram Reels and TikTok, made the same way as the trailer and laid out like Mosaicus Maximus's and Farmus Maximus's: 1080 by 1920 at 30 frames a second, 15 to 31 seconds, a caption from the very first frame in the game's text font at three times its size, outlined in ink, and the same end card as the trailer, the logo and "Wishlist now on Steam" over the harbour at sunset. The captions sit below the top bar of a phone's video apps and the end card above their captions at the bottom. Each is `python tools/trailer/make_trailer.py --cut=NAME`.
+Seven vertical shorts for YouTube Shorts, Instagram Reels and TikTok, made the same way as the trailer and laid out like Mosaicus Maximus's and Farmus Maximus's: 1080 by 1920 at 30 frames a second, 15 to 32 seconds, a caption from the very first frame in the game's text font at three times its size, outlined in ink, and the same end card as the trailer, the logo and "Wishlist now on Steam" over the harbour at sunset. The captions sit below the top bar of a phone's video apps and the end card above their captions at the bottom. Each is `python tools/trailer/make_trailer.py --cut=NAME`.
 
 | Cut | Hook | Shots |
 |---|---|---|
