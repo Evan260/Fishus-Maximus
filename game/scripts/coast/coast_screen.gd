@@ -48,6 +48,18 @@ var _arc := 40.0
 ## A click on the water this frame, and whether the mouse is still held down after one; clicks on buttons never get here.
 var _click := false
 var _mouse_held := false
+## Where the last press on the water was and where the finger is now, in view pixels, off the scene until a first press,
+## and whether it lifted this frame.
+var _press_at := Vector2(-10000, -10000)
+var _finger_at := Vector2.ZERO
+var _lifted := false
+## Where a finger touched the water while the line was out, or INF; the bait's depth then; and whether it has slid.
+var _line_from := Vector2.INF
+var _line_depth := 0.0
+var _line_slid := false
+## The arrows a phone rows with, held down like the keys.
+var _row_left: Button
+var _row_right: Button
 var _weather_check := 0.0
 var _day := -1
 ## The fish at the hook, first nibbling and then with the bait taken, and how long is left to strike once it has it.
@@ -134,17 +146,24 @@ func enter(args: Dictionary) -> void:
 	if Nav.ui and not Dev.has("no-hud"):
 		GuideNote.add(self, "coast")
 	if args.get("first", false) and not Settings.guide:
-		Toast.say(tr("Your uncle's skiff. Hold %s or the mouse to cast, %s and %s to row.") % [Controls.key_name("cast"), Controls.key_name("row_left"), Controls.key_name("row_right")])
+		if Windowing.phone:
+			Toast.say("Your uncle's skiff. Hold a finger on the water to cast, and row with the arrows at the sides.")
+		else:
+			Toast.say(tr("Your uncle's skiff. Hold %s or the mouse to cast, %s and %s to row.") % [Controls.key_name("cast"), Controls.key_name("row_left"), Controls.key_name("row_right")])
 	if Nav.ui and not Dev.has("no-hud"):
 		_sail = Ui.tile(Nav.ui, ItemArt.of("bay_map"), "", "Bay map: sail to another fishing place.", func():
 			if fight == null:
 				prepare_to_leave()
-				Nav.go("map"), true, false, Hud.TILE)
+				Nav.go("map"), true, false, Hud.tile())
 		_sail.name = "BayMap"
-		Ui.hang(_sail, "bottom_left", Vector2(4, 4), Hud.TILE)
+		Ui.hang(_sail, "bottom_left", Vector2(4, 4), Hud.tile())
 	if place_id == "harbour" and Nav.ui and not Dev.has("no-hud"):
 		_ashore = Ui.button(Nav.ui, "Go ashore", go_ashore)
-		Ui.hang(_ashore, "bottom_right", Vector2(4, 4), Vector2(76, Hud.TILE.y))
+		Ui.hang(_ashore, "bottom_right", Vector2(4, 4), Vector2(76, Hud.tile().y))
+	# A phone has no keys to row with, so it rows with an arrow at each side, where the thumbs rest.
+	if Windowing.phone and Nav.ui and not Dev.has("no-hud"):
+		_row_left = _row_arrow("RowLeft", -1.0)
+		_row_right = _row_arrow("RowRight", 1.0)
 	relayout()
 	if Dev.has("tackle"):
 		TacklePanel.open(hud.method_buttons["line"] if hud else null)
@@ -152,8 +171,31 @@ func enter(args: Dictionary) -> void:
 
 ## Where a lesson of the guide points, in interface pixels: the button to press, or nothing while it is hidden.
 func guide_target(id: String) -> Rect2:
-	var b: Control = {"ashore": _ashore, "map": _sail, "pots": hud.method_buttons.get("trap") if hud else null}.get(id)
+	var b: Control = {"ashore": _ashore, "map": _sail, "pots": hud.method_buttons.get("trap") if hud else null, "row": _row_right}.get(id)
 	return b.get_global_rect() if is_instance_valid(b) and b.is_visible_in_tree() else Rect2()
+
+
+## An arrow held down to row one way, a fingertip square, over the bay map's picture at the left or going ashore at the right.
+func _row_arrow(name: String, dir: float) -> Button:
+	var b := Button.new()
+	b.name = name
+	b.focus_mode = Control.FOCUS_NONE
+	b.icon = Ui.arrow(dir)
+	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	b.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	Nav.ui.add_child(b)
+	Ui.hang(b, "bottom_left" if dir < 0.0 else "bottom_right", Vector2(4, 8 + Hud.tile().y), Hud.tile())
+	return b
+
+
+## Which way the phone's arrows are rowing: -1, 0 or 1.
+func _arrows_held() -> float:
+	var held := 0.0
+	for pair in [[_row_left, -1.0], [_row_right, 1.0]]:
+		var b: Button = pair[0]
+		if is_instance_valid(b) and b.is_visible_in_tree() and b.is_pressed():
+			held += pair[1]
+	return held
 
 
 func go_ashore() -> void:
@@ -712,7 +754,12 @@ func _process(delta: float) -> void:
 	_sounds(delta)
 	if _ashore:
 		_ashore.visible = boat_x < QUAY_REACH and _state == "reeled" and not Windowing.strip
+	# The arrows go while he cannot row: fishing on his own or with a fish on the line.
+	for b in [_row_left, _row_right]:
+		if is_instance_valid(b):
+			b.visible = not methods.idle and fight == null
 	_click = false
+	_lifted = false
 	relayout()
 
 
@@ -725,16 +772,36 @@ func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT and e.pressed:
 		_click = true
 		_mouse_held = true
+		_press_at = e.position
+		_finger_at = e.position
 
 
 func _input(e: InputEvent) -> void:
 	if e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT and not e.pressed:
+		_lifted = _mouse_held
 		_mouse_held = false
+		_finger_at = e.position
+	elif e is InputEventMouseMotion and _mouse_held:
+		_finger_at = e.position
+
+
+## A point in view pixels, as input events give it, on the scene, which the desktop strip shifts up.
+func _on_scene(p: Vector2) -> Vector2:
+	return get_global_transform_with_canvas().affine_inverse() * p
+
+
+## Where the net and the trident are aimed, on the scene: the mouse, or on a phone the finger.
+func pointer() -> Vector2:
+	return _on_scene(_finger_at) if Windowing.phone else get_global_mouse_position()
 
 
 ## The cast button just pressed: Space or the controller, or a click on the water.
 func _pressed() -> bool:
-	return (Input.is_action_just_pressed("cast") and not Pad.clicking) or _click
+	return _cast_key() or _click
+
+
+func _cast_key() -> bool:
+	return Input.is_action_just_pressed("cast") and not Pad.clicking
 
 
 func _held() -> bool:
@@ -748,11 +815,13 @@ func _reeling_input() -> bool:
 
 
 func _handle_input(delta: float) -> void:
+	if not _state in ["waiting", "sinking"]:
+		_line_from = Vector2.INF
 	if CatchCard.is_open() or Ui.window_open() or methods.method != "line":
 		charge = -1.0
 	if CatchCard.is_open() or Ui.window_open():
 		return
-	if _click and _pets_dog(get_global_mouse_position()):
+	if _click and _pets_dog(_on_scene(_press_at)):
 		dog.pet()
 		return
 	for m in CoastMethods.METHODS:
@@ -764,14 +833,17 @@ func _handle_input(delta: float) -> void:
 			cast(0.6)
 	if methods.idle:
 		return
-	var dir := Input.get_axis("row_left", "row_right")
+	var dir := clampf(Input.get_axis("row_left", "row_right") + _arrows_held(), -1.0, 1.0)
 	if Dev.has("row") and _time < Dev.num("row-for", 6.0):
 		dir = Dev.num("row", 1.0)
 	if dir != 0.0:
 		_pinned = false
 		row(dir, delta)
 	if methods.method != "line":
-		if _pressed():
+		# On a phone the net and the trident are aimed with a finger held on the water and thrown as it lifts.
+		var aimed := Windowing.phone and methods.method in ["net", "trident"]
+		methods.aiming = not aimed or _mouse_held
+		if (_lifted if aimed else _click) or _cast_key():
 			methods.use()
 		return
 	match _state:
@@ -791,8 +863,14 @@ func _handle_input(delta: float) -> void:
 			if _pressed():
 				strike()
 		"waiting", "sinking":
-			if _pressed():
+			if Windowing.phone and _click:
+				_line_from = _press_at
+				_line_depth = hook.y
+				_line_slid = false
+			elif _pressed():
 				reel_in()
+			elif _line_from.is_finite():
+				_line_touch()
 			else:
 				var v := Input.get_axis("reel_up", "let_out")
 				if v < 0.0:
@@ -800,6 +878,21 @@ func _handle_input(delta: float) -> void:
 					_state = "waiting"
 				elif v > 0.0 and _state == "waiting":
 					_state = "sinking"
+
+
+## On a phone a finger on the water sets the bait's depth as it slides up or down, and reels in when it lifts where it
+## touched, as a click does on a computer.
+func _line_touch() -> void:
+	var moved := _finger_at - _line_from
+	var gesture := Touch.line_gesture(moved * Nav.zoom, Windowing.touch_slop())
+	_line_slid = _line_slid or gesture != "tap"
+	if gesture == "depth" and flight <= 0.0:
+		hook.y = Touch.bait_depth(_line_depth, moved.y, minf(seabed.depth_at(hook.x) - 2.0, _line_length()))
+		_state = "waiting"
+	if not _mouse_held:
+		_line_from = Vector2.INF
+		if not _line_slid:
+			reel_in()
 
 
 ## The demo for screenshots and checks: cast, wait for a bite (or with --hook=ID have that fish take the bait at once),

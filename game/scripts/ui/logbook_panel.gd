@@ -77,13 +77,27 @@ static func open(at := -1) -> void:
 	row.add_theme_constant_override("separation", 3)
 	col.add_child(row)
 	var marks := VBoxContainer.new()
+	marks.name = "Bookmarks"
 	marks.add_theme_constant_override("separation", 1)
-	row.add_child(marks)
+	var tab_list: ScrollContainer = null
+	if Windowing.phone:
+		# A phone's bookmarks are a fingertip tall, more than the page's height holds, so they scroll beside the book.
+		tab_list = ScrollContainer.new()
+		tab_list.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		tab_list.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+		tab_list.custom_minimum_size = Vector2(0, PAGE_H + STACK)
+		row.add_child(tab_list)
+		tab_list.add_child(marks)
+		Ui.touch_scroll(tab_list)
+	else:
+		row.add_child(marks)
 	var gap := Control.new()
 	gap.custom_minimum_size = Vector2(0, 5)
 	marks.add_child(gap)
 	for i in sections.size():
-		_bookmark(marks, i, sections[i])
+		var mark := _bookmark(marks, i, sections[i])
+		if tab_list != null and i == section:
+			tab_list.ensure_control_visible.call_deferred(mark)
 	var book := Control.new()
 	book.custom_minimum_size = Vector2(STACK * 2 + PAGE_W * 2 + SPINE, PAGE_H + STACK)
 	book.draw.connect(_draw_book.bind(book))
@@ -235,12 +249,13 @@ static func _prepare() -> void:
 
 
 ## A divider tab beside the book; the open one is the colour of the page.
-static func _bookmark(parent: Node, i: int, id: String) -> void:
+static func _bookmark(parent: Node, i: int, id: String) -> Button:
 	var open_now := i == section
 	var b := Button.new()
 	b.text = TranslationServer.translate(SHORT.get(id, str(Data.places.get(id, {}).get("name", id))))
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.focus_mode = Control.FOCUS_NONE
+	b.custom_minimum_size.y = Windowing.touch_px()
 	for state in ["normal", "hover", "pressed", "hover_pressed"]:
 		var box := StyleBoxFlat.new()
 		box.bg_color = PAPER if open_now else (TAB.lightened(0.12) if state.begins_with("hover") else TAB)
@@ -256,6 +271,7 @@ static func _bookmark(parent: Node, i: int, id: String) -> void:
 	b.pressed.connect(func():
 		_bookmark_turn(i))
 	parent.add_child(b)
+	return b
 
 
 static func _page(book: Control, x: int) -> VBoxContainer:
@@ -295,6 +311,7 @@ static func _honours(pages: Array, all: Array) -> void:
 		scroll.custom_minimum_size = Vector2(ROW.x, LIST_H)
 		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 		pages[side].add_child(scroll)
+		Ui.touch_scroll(scroll)
 		var list := VBoxContainer.new()
 		list.add_theme_constant_override("separation", 1)
 		scroll.add_child(list)

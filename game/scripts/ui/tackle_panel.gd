@@ -29,7 +29,7 @@ static func open(under: Control = null) -> void:
 		Ui.tile(rods, ItemArt.of(id), "", Ui.text([TranslationServer.translate("%s.") % Data.name_of(Data.gear[id]), rod_tip(id, place)]), func():
 			use_rod(rod_id)
 			open(under), true, held, TILE)
-	var hint := Ui.label(list, "Hold the pointer over one to see which fish it suits.", "MutedLabel")
+	var hint := Ui.label(list, "Hold a finger on one to see which fish it suits." if Windowing.phone else "Hold the pointer over one to see which fish it suits.", "MutedLabel")
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.custom_minimum_size.x = 180
 	if is_instance_valid(under):

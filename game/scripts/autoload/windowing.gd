@@ -2,6 +2,8 @@ extends Node
 ## The desktop strip from Farmus Maximus: F10 turns the window into a borderless band along an edge of the screen,
 ## always on top, where the fisherman fishes on his own. Its size, width, place, dock, see-through sky and focus mode
 ## are kept in the [strip] section of user://settings.cfg, and the game draws fewer frames in the strip or in the background.
+## On a phone or tablet (`phone`, or `--phone` to preview one in a window) the game fills the screen with no strip, and the
+## interface is drawn as large as it fits, clear of the camera and rounded corners, with fingertip-sized targets.
 
 signal view_changed
 
@@ -37,6 +39,14 @@ var strip_min_width := 0
 var strip_dragging := false
 ## Screen pixels per game pixel while the window is the strip.
 var scale := 1
+## On a phone or tablet the game always fills the screen, with no desktop strip, window size or full screen to choose.
+var phone := OS.has_feature("mobile") or "--phone" in OS.get_cmdline_user_args()
+## True for `--phone` on a computer, which lays the game out in its window as a phone would and feels a click as a touch.
+var phone_preview := phone and not OS.has_feature("mobile")
+## How far the interface keeps in from the top left and the bottom right on a phone, in interface pixels, clear of its
+## rounded corners and camera; zero on a computer.
+var safe_top_left := Vector2.ZERO
+var safe_bottom_right := Vector2.ZERO
 var _focused := true
 var _size_before := Vector2i.ZERO
 var _pos_before := Vector2i.ZERO
@@ -54,6 +64,9 @@ var _fitted_ui := 0
 
 func _ready() -> void:
 	_load()
+	# The preview feels a click as a touch, so lists scroll by dragging as they do on a phone.
+	if phone_preview:
+		Input.emulate_touch_from_mouse = true
 	if Dev.has("strip") and Dev.has("solid"):
 		transparent = false
 	strip_scale = int(Dev.num("strip-scale", strip_scale))
@@ -75,11 +88,11 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	match what:
-		NOTIFICATION_APPLICATION_FOCUS_IN:
+		NOTIFICATION_APPLICATION_FOCUS_IN, NOTIFICATION_APPLICATION_RESUMED:
 			_focused = true
 			_update_fps()
 			_apply_volume()
-		NOTIFICATION_APPLICATION_FOCUS_OUT:
+		NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED:
 			_focused = false
 			_update_fps()
 			_apply_volume()
@@ -119,6 +132,8 @@ func _process(delta: float) -> void:
 	# The view keeps its size when the window is maximised, so Godot sends no resize signal and the window is watched here.
 	if get_window().size != _fitted:
 		_fit()
+	if phone:
+		Ui.lift_for_keyboard(Ui.keyboard_top())
 	if not (strip and transparent) or strip_dragging or not _windowed():
 		return
 	_click_wait -= delta
@@ -142,11 +157,71 @@ func _fit() -> void:
 		s -= 1
 	# The view is rounded up, so the game covers the window to its edges and loses under a game pixel at each side.
 	Nav.fit(Vector2i(maxi(400, ceili(size.x / float(s))), maxi(BASE.y, ceili(size.y / float(s)))), s)
+	safe_top_left = Vector2.ZERO
+	safe_bottom_right = Vector2.ZERO
+	if phone:
+		var insets := phone_insets(size, _safe_area(size), Nav.ui_zoom)
+		safe_top_left = insets[0]
+		safe_bottom_right = insets[1]
+	UiTheme.fit_touch(touch_px())
 	view_changed.emit()
 
 
+## The interface's zoom on a phone: as large as it can be drawn while it keeps the game's own 480 by 270 pixels, since a
+## phone is held close but its screen is small; the player's size setting can only make it smaller.
+static func phone_ui_zoom(size: Vector2i, step: int) -> int:
+	var most := maxi(1, mini(size.x / BASE.x, size.y / BASE.y))
+	return clampi(most + mini(step, 0), 1, most)
+
+
+## The interface's insets from the top left and the bottom right, in interface pixels: the screen's safe area, which
+## leaves out the camera, and at least enough to clear rounded corners, which the safe area does not cover.
+static func phone_insets(size: Vector2i, safe: Rect2i, ui: int) -> Array[Vector2]:
+	var corner := ceili(mini(size.x, size.y) * 0.035)
+	var tl := Vector2(maxi(safe.position.x, corner), maxi(safe.position.y, corner))
+	var br := Vector2(maxi(size.x - safe.end.x, corner), maxi(size.y - safe.end.y, corner))
+	return [(tl / ui).ceil(), (br / ui).ceil()]
+
+
+## The part of the screen clear of the camera, in screen pixels; the preview takes it from `--phone-insets=L,T,R,B`.
+func _safe_area(size: Vector2i) -> Rect2i:
+	if not phone_preview:
+		return DisplayServer.get_display_safe_area()
+	var cut := [0, 0, 0, 0]
+	var parts := Dev.get_arg("phone-insets").split(",", false)
+	for i in mini(4, parts.size()):
+		cut[i] = int(parts[i])
+	return Rect2i(cut[0], cut[1], size.x - cut[0] - cut[2], size.y - cut[1] - cut[3])
+
+
+## The screen's pixels per inch; the preview counts its window as a Pixel 9a's screen at the same interface zoom.
+func phone_dpi() -> float:
+	if phone_preview:
+		return 105.0 * Nav.ui_zoom
+	return float(DisplayServer.screen_get_dpi())
+
+
+## How many interface pixels a fingertip needs across, about 7 mm, so a button that size is easy to tap; 0 on a computer.
+func touch_px() -> int:
+	return touch_px_for(phone_dpi(), Nav.ui_zoom) if phone else 0
+
+
+static func touch_px_for(dpi: float, ui: int, mm := 7.0) -> int:
+	return ceili(mm / 25.4 * dpi / maxi(1, ui))
+
+
+## A fingertip in game pixels, for what is tapped in the scene itself; 0 on a computer.
+func finger_game_px() -> float:
+	return touch_px() * Nav.ui_zoom / float(Nav.zoom)
+
+
+## How far a finger may wander, in screen pixels, while it still counts as resting in one place: about 2 mm.
+func touch_slop() -> float:
+	return 2.0 / 25.4 * phone_dpi() if phone else 4.0
+
+
 func set_strip(on: bool) -> void:
-	if on == strip:
+	if on == strip or (on and phone):
 		return
 	if on and Nav.current_name != "coast" and not Dev.has("run-tests"):
 		# The first screen of a run started with --strip has not opened yet, so the strip waits for the coast.
@@ -393,9 +468,10 @@ func _set_click_area() -> void:
 
 func _apply_volume() -> void:
 	var whole := Settings.master
-	# A recording is made while other windows have the focus, so it always keeps its sound.
+	# A recording is made while other windows have the focus, so it always keeps its sound; a phone game put away is
+	# silent, as phone apps are.
 	if not _focused and Engine.get_write_movie_path() == "":
-		whole *= float({"quieter": 0.25, "muted": 0.0}.get(Settings.background_sound, 1.0))
+		whole *= 0.0 if phone else float({"quieter": 0.25, "muted": 0.0}.get(Settings.background_sound, 1.0))
 	# Focus mode turns everything down a little, so a strip left running all day stays in the background.
 	var quiet := -8.0 if strip and focus_mode else 0.0
 	var bus := AudioServer.get_bus_index("Master")
@@ -427,9 +503,10 @@ func _windowed() -> bool:
 	return DisplayServer.get_name() != "headless"
 
 
-## Test runs and runs with --no-save neither read nor write the player's strip, so they always start the same way.
+## Test runs and runs with --no-save neither read nor write the player's strip, so they always start the same way, and a
+## phone has no strip.
 func _persist() -> bool:
-	return not Dev.has("no-save") and not Dev.has("run-tests")
+	return not Dev.has("no-save") and not Dev.has("run-tests") and not phone
 
 
 func _load() -> void:

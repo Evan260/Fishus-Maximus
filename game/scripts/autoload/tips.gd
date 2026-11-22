@@ -1,11 +1,17 @@
 extends Node
 ## Tips drawn in the interface's own pixels, so they grow with the interface size like everything else, as Mosaicus
 ## Maximus draws them. A control asks for one with `Ui.tip_on(control, text)`; the text is read and translated each
-## frame, so it can change while shown. The settings can turn them off.
+## frame, so it can change while shown. The settings can turn them off. A phone has no pointer resting anywhere, so
+## there a finger held still on a control shows its tip instead, as in Farmus Maximus.
 
 const DELAY := 0.4
 ## The widest a tip runs before it breaks onto another line, in interface pixels.
 const WRAP := 200.0
+## How long a tip shown by a held finger stays after the finger lifts, in seconds.
+const SHOW_FOR := 4.0
+
+## True from a finger resting still long enough to ask what is under it until the next touch, so the lift does not act.
+var long_press := false
 
 var _layer: CanvasLayer
 var _panel: PanelContainer
@@ -14,6 +20,12 @@ var _owner: Control
 var _wait := 0.0
 ## Where the pointer last was, in window pixels, read from its own events so a scripted pointer is followed too.
 var _pointer := Vector2.ZERO
+## Where the finger touched down in window pixels, or INF while none rests; how far it has wandered and how long it has
+## rested; and how long a tip it asked for has left.
+var _press_at := Vector2.INF
+var _moved := 0.0
+var _pressed_for := 0.0
+var _shown_left := 0.0
 
 
 func _ready() -> void:
@@ -37,10 +49,27 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouse:
 		_pointer = event.position
+	if not Windowing.phone:
+		return
+	if event is InputEventMouseMotion and _press_at != Vector2.INF:
+		_moved = maxf(_moved, event.position.distance_to(_press_at))
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			long_press = false
+			_press_at = event.position
+			_moved = 0.0
+			_pressed_for = 0.0
+			_owner = null
+			_panel.visible = false
+		else:
+			_press_at = Vector2.INF
 
 
 func _process(delta: float) -> void:
 	_layer.transform = Nav.ui_layer.transform
+	if Windowing.phone:
+		_process_touch(delta)
+		return
 	var owner := _tip_owner(Nav.port.gui_get_hovered_control()) if Settings.tooltips else null
 	if owner == null or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		_owner = null
@@ -54,6 +83,40 @@ func _process(delta: float) -> void:
 	_wait += delta
 	if _wait >= DELAY:
 		show_for(owner, Nav.window_to_ui(_pointer))
+
+
+func _process_touch(delta: float) -> void:
+	if _press_at != Vector2.INF and not long_press:
+		_pressed_for += delta
+		if Touch.is_hold(_pressed_for, _moved, Windowing.touch_slop()):
+			long_press = true
+			var under := Nav.port.gui_get_hovered_control()
+			var owner := _tip_owner(under)
+			if owner != null and Settings.tooltips:
+				_cancel_press(under)
+				_owner = owner
+				_shown_left = SHOW_FOR
+	if _owner != null and is_instance_valid(_owner) and _owner.is_visible_in_tree() and _shown_left > 0.0:
+		if _press_at == Vector2.INF:
+			_shown_left -= delta
+		show_for(_owner, Nav.window_to_ui(_pointer))
+	else:
+		_owner = null
+		_panel.visible = false
+
+
+## A button whose tip was asked for forgets its press, as disabling it for a moment makes it do.
+func _cancel_press(c: Control) -> void:
+	var n: Node = c
+	for i in 4:
+		if n is BaseButton:
+			if not n.disabled:
+				n.disabled = true
+				n.disabled = false
+			return
+		if not n is Control:
+			return
+		n = n.get_parent()
 
 
 ## The control under the pointer that has a tip: it or one of the few controls round it, as a picture's tile has.
@@ -76,7 +139,8 @@ func show_for(owner: Control, at: Vector2) -> void:
 		_label.text = lines
 		_panel.visible = true
 		_panel.reset_size()
-	_panel.position = Nav.tip_at(at, _panel.size, Rect2(Vector2.ZERO, Nav.ui_view())).floor()
+	var room := Rect2(Vector2.ZERO, Nav.ui_view())
+	_panel.position = (Nav.tip_above(at, _panel.size, room) if Windowing.phone else Nav.tip_at(at, _panel.size, room)).floor()
 
 
 func shown() -> bool:

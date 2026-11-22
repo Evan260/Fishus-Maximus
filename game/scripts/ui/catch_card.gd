@@ -45,6 +45,15 @@ static func is_open() -> bool:
 	return is_instance_valid(_open)
 
 
+## Takes the banner down at once, as a click on it does; false when none is hung out.
+static func close() -> bool:
+	if not is_open():
+		return false
+	_open.queue_free()
+	_open = null
+	return true
+
+
 static func show_catch(fish: String, pounds: float, is_new: bool) -> void:
 	if Nav.ui == null:
 		return

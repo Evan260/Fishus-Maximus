@@ -1,7 +1,9 @@
 """Builds the game's icon: the game's own gilt-head bream, big and bold, leaping clear of the sea at sunset on a
 rounded tile, so it still reads at the taskbar's tiny sizes, where a whole painted scene turns to mush. The tile is
 drawn at 64 pixels; the big sizes are whole multiples of it and the small ones averaged down from it. Writes
-game/icon.png and game/icon.ico with every size Windows asks for, and marketing/profile_picture.png.
+game/icon.png and game/icon.ico with every size Windows asks for, marketing/profile_picture.png, and Android's
+launcher icons in game/assets/art/ui/: the tile at three times, and the adaptive icon's two layers and its themed
+shape at four.
 Usage: python tools/art/make_icon.py"""
 from pathlib import Path
 
@@ -12,6 +14,9 @@ ROOT = Path(__file__).resolve().parents[2]
 FISH = ROOT / "game" / "assets" / "art" / "fish" / "bream.png"
 SIZES = [16, 24, 32, 48, 64, 128, 256]
 TILE = 64
+# Android's adaptive icon square, drawn at four times to its 432 pixels, and where its pictures go.
+ANDROID = 108
+UI = ROOT / "game" / "assets" / "art" / "ui"
 # The tile's corner rounding, the row of the horizon, and the colours of the sky, the ripples and the sea.
 CORNER = 11
 HORIZON = 40
@@ -78,6 +83,31 @@ def leaping_fish(canvas: np.ndarray) -> None:
             canvas[HORIZON + 1, TILE // 2 + dx, :3] = SPRAY
 
 
+def android_layers() -> tuple:
+    """Android's adaptive icon: the sea at sunset carried out to the square's edges as the background and the leaping
+    fish as the foreground, drawn on a 108 pixel square whose middle 72 the launcher's mask always shows."""
+    pad = (ANDROID - TILE) // 2
+    back = np.zeros((ANDROID, ANDROID, 4), np.uint8)
+    for y in range(ANDROID):
+        row = y - pad
+        if row < HORIZON:
+            c = mix(SKY[0], SKY[1], max(0, row) / HORIZON)
+        else:
+            c = mix(SEA[0], SEA[1], min(1.0, (row - HORIZON) / (TILE - HORIZON)))
+        back[y, :] = (*c, 255)
+    for row, half in ((HORIZON + 6, 14), (HORIZON + 12, 20)):
+        for x in range(ANDROID):
+            if 3 <= abs(x - pad - 32) <= half and abs(x - pad - 32) % 7 < 4:
+                back[row + pad, x, :3] = RIPPLE
+    fish = np.zeros((TILE, TILE, 4), np.uint8)
+    leaping_fish(fish)
+    # The spray is drawn into the colour alone, so it is made solid here like the fish.
+    fish[:, :, 3] = np.where(fish[:, :, :3].any(axis=2), 255, 0)
+    front = np.zeros((ANDROID, ANDROID, 4), np.uint8)
+    front[pad:pad + TILE, pad:pad + TILE] = fish
+    return Image.fromarray(back), Image.fromarray(front)
+
+
 def main():
     canvas = tile()
     leaping_fish(canvas)
@@ -86,7 +116,15 @@ def main():
     frames[-1].save(ROOT / "game" / "icon.png")
     frames[-1].save(ROOT / "game" / "icon.ico", sizes=[(s, s) for s in SIZES], append_images=frames[:-1])
     art.resize((TILE * 16, TILE * 16), Image.NEAREST).save(ROOT / "marketing" / "profile_picture.png")
-    print("icon written", SIZES)
+    art.resize((TILE * 3, TILE * 3), Image.NEAREST).save(UI / "android_icon.png")
+    back, front = android_layers()
+    back.resize((ANDROID * 4, ANDROID * 4), Image.NEAREST).save(UI / "android_background.png")
+    front.resize((ANDROID * 4, ANDROID * 4), Image.NEAREST).save(UI / "android_foreground.png")
+    # Android draws a themed icon in the phone's own colour from the fish's shape alone.
+    shape = np.array(front)
+    shape[:, :, :3] = 255
+    Image.fromarray(shape).resize((ANDROID * 4, ANDROID * 4), Image.NEAREST).save(UI / "android_monochrome.png")
+    print("icon written", SIZES, "and Android's launcher icons")
 
 
 if __name__ == "__main__":

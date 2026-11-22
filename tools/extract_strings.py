@@ -17,14 +17,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1] / "game"
 OUT = ROOT / "translations" / "strings.csv"
 # Fields of game/data/*.json that the player reads. "look" describes a portrait for the art tools and is never shown.
-DATA_FIELDS = {"name", "short", "lower", "where", "title", "text", "thanks", "clue", "lines", "praise", "farewell"}
+DATA_FIELDS = {"name", "short", "lower", "where", "title", "text", "thanks", "clue", "lines", "praise", "farewell", "touch"}
 # Fields that are in the data but never shown: a place's own description, the townsfolk's names and the credits.
 UNSHOWN = {"places.json": {"text"}, "townsfolk.json": {"name"}, "credits.json": DATA_FIELDS}
 
 LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
 # Lines that pass strings to the engine rather than to the player.
 ENGINE_LINE = re.compile(r"Audio\.|AudioServer|get_node|res://|user://|push_|print|has_method|connect\(|add_theme|"
-                         r"set_stylebox|set_color|set_constant|set_icon|set_font|set_type_variation|find_children|Engine\.|"
+                         r"set_stylebox|get_stylebox|set_color|set_constant|set_icon|set_font|set_type_variation|find_children|Engine\.|"
                          r"\.bus\b|path_join|InputMap|is_action|load\(|\.name = |Dev\.|has_node|has_meta|set_meta|get_meta|"
                          r"find_child|Seeds\.rng")
 # Names that stay as they are in every language: the game's own, the default names, theme names and buses.

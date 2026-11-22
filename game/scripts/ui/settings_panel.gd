@@ -1,6 +1,7 @@
 class_name SettingsPanel
 ## Settings in four tabs, Sound, Display, Gameplay and Keys, opened from the title and the boat. Each row names a
 ## setting on the left and has one button on the right: On or Off, or the choice it is at, which a click steps on.
+## A phone leaves out what only a computer has: the keys, the window, the strip, a music folder and a taskbar.
 
 const TABS := ["Sound", "Display", "Gameplay", "Keys"]
 const UI_SIZES := {-1: "Smaller", 0: "Normal", 1: "Larger", 2: "Largest"}
@@ -22,8 +23,10 @@ static func open() -> void:
 	var kept := _scroll.scroll_vertical if is_instance_valid(_scroll) and Ui.window_open() and is_settings_open() else 0
 	var col := Ui.frame("Settings", WIDTH + 24.0, PAGE + 52.0)
 	Nav.ui.get_node("Window").set_meta("settings", true)
+	if not tab in tabs():
+		tab = "Sound"
 	var tabs := Ui.tab_row(col)
-	for t in TABS:
+	for t in tabs():
 		Ui.tab_button(tabs, t, t == tab, func():
 			tab = t
 			_waiting = ""
@@ -32,6 +35,7 @@ static func open() -> void:
 	_scroll.custom_minimum_size = Vector2(WIDTH + 8.0, PAGE)
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	col.add_child(_scroll)
+	Ui.touch_scroll(_scroll)
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_top", 3)
 	margin.add_theme_constant_override("margin_right", 6)
@@ -51,6 +55,11 @@ static func open() -> void:
 		_:
 			_keys(page)
 	_scroll.set_deferred("scroll_vertical", kept)
+
+
+## The tabs shown: a phone has no keyboard to change keys on.
+static func tabs() -> Array:
+	return TABS.slice(0, 3) if Windowing.phone else TABS
 
 
 static func is_settings_open() -> bool:
@@ -81,6 +90,7 @@ static func _sound(page: VBoxContainer) -> void:
 		slider.focus_mode = Control.FOCUS_NONE
 		slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		slider.custom_minimum_size.y = Windowing.touch_px()
 		r.add_child(slider)
 		var amount := Ui.label(r, _percent(slider.value), "MutedLabel")
 		amount.custom_minimum_size = Vector2(30, 0)
@@ -89,6 +99,9 @@ static func _sound(page: VBoxContainer) -> void:
 		slider.value_changed.connect(func(v):
 			amount.text = _percent(v)
 			Settings.set_value(key, v))
+	# A phone keeps the game's folders out of the player's reach, and its game is silent while put away.
+	if Windowing.phone:
+		return
 	var own := Ui.setting(page, TranslationServer.translate("Your own music"), TranslationServer.translate("Open folder"), func(): Audio.open_music_folder(), WIDTH)
 	own.get_parent().name = "OwnMusic"
 	Ui.tip_on(own, "Music you put in this folder (.ogg, .mp3 or .wav) plays between the game's own tracks.")
@@ -100,13 +113,16 @@ static func _sound(page: VBoxContainer) -> void:
 
 static func _display(page: VBoxContainer) -> void:
 	Ui.setting(page, "Interface size", UI_SIZES.get(Settings.ui_scale_step, "Normal"), func():
-		Settings.set_value("ui_scale_step", Settings.next_ui_step(Settings.ui_scale_step))
+		Settings.set_value("ui_scale_step", Settings.next_ui_step(Settings.ui_scale_step, Windowing.phone))
 		open(), WIDTH).get_parent().name = "InterfaceSize"
-	Ui.on_off(page, "Full screen (F11)", DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN,
-		func(): Settings.toggle_fullscreen(), WIDTH)
+	if not Windowing.phone:
+		Ui.on_off(page, "Full screen (F11)", DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN,
+			func(): Settings.toggle_fullscreen(), WIDTH)
 	Ui.setting(page, "Weights", "Kilograms" if Settings.units == "metric" else "Pounds", func():
 		Settings.set_value("units", "imperial" if Settings.units == "metric" else "metric")
 		open(), WIDTH).get_parent().name = "Weights"
+	if Windowing.phone:
+		return
 	var strip := Ui.on_off(page, TranslationServer.translate("Desktop strip (%s)") % Controls.key_name("toggle_strip"), Windowing.strip, func():
 		Ui.close_window()
 		Windowing.set_strip(not Windowing.strip), WIDTH)
@@ -116,11 +132,12 @@ static func _display(page: VBoxContainer) -> void:
 static func _gameplay(page: VBoxContainer) -> void:
 	_languages(page)
 	_toggle(page, "Old Rufus's advice for new players", "guide")
-	_toggle(page, "Tips when you point at a button", "tooltips")
+	_toggle(page, "Tips when you hold a finger on a button" if Windowing.phone else "Tips when you point at a button", "tooltips")
 	_toggle(page, "Larger text for messages", "large_text")
 	_toggle(page, "Reduced motion", "reduced_motion")
 	_toggle(page, "Gentle fishing: lines never snap", "gentle")
-	_toggle(page, "Flash the taskbar when something needs you", "notifications")
+	if not Windowing.phone:
+		_toggle(page, "Flash the taskbar when something needs you", "notifications")
 
 
 ## Every translated language, named in its own words and letters, so a player can find theirs whatever is showing.

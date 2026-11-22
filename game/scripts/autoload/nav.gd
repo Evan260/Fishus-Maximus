@@ -14,6 +14,8 @@ const STRIP_UI_LEAST := Vector2(0, 60)
 ## The game's zoom at and under which every interface size is drawn a step larger: a window about 800 pixels tall or
 ## less, such as 1280 by 720 or the Steam Deck's 1280 by 800, where a step under the game's zoom is one window pixel.
 const SMALL_ZOOM := 2
+## The share of the rows `cover` crops from a screen's picture that comes off its top, the sky, rather than its ground.
+const CROP_TOP := 0.85
 const SCREENS := {
 	"title": "res://scripts/screens/title.gd",
 	"coast": "res://scripts/coast/coast_screen.gd",
@@ -40,6 +42,8 @@ var current_name := ""
 var _args := {}
 var _fade: ColorRect
 var _busy := false
+## When the last back gesture was answered, in milliseconds since the game started.
+var _back_at := -1000
 
 
 func _ready() -> void:
@@ -89,6 +93,38 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 
+func _notification(what: int) -> void:
+	# Android reports each back gesture twice, so a second report straight after the first is ignored.
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and Windowing.phone and Time.get_ticks_msec() - _back_at > 300:
+		_back_at = Time.get_ticks_msec()
+		back_gesture()
+
+
+## A phone's back gesture steps back one place at a time: it closes what is open, then leaves the town, the pond or the
+## bay map, goes from the boat to the title, and on the title puts the game away as the home button would. Returns
+## what it did.
+func back_gesture() -> String:
+	if _busy:
+		return "busy"
+	var open := Ui.window_open() or CatchCard.is_open() or AchievementCard.on_screen() != null
+	var fighting: bool = current_name == "coast" and current != null and current.line_state() == "fighting"
+	var step := Touch.back_step(open, current_name, fighting)
+	match step:
+		"close":
+			if not Ui.close_top() and not CatchCard.close():
+				AchievementCard.dismiss()
+		"leave":
+			if current != null and current.has_method("go_back"):
+				current.go_back()
+		"title":
+			Saves.save()
+			go("title")
+		"background":
+			if Engine.has_singleton("AndroidRuntime"):
+				Engine.get_singleton("AndroidRuntime").getActivity().moveTaskToBack(true)
+	return step
+
+
 ## Escape and the pad's B close the open window, or else step back out of the screen, never out of the game.
 func back_out() -> bool:
 	if _busy:
@@ -107,6 +143,14 @@ func tip_at(at: Vector2, size: Vector2, room: Rect2) -> Vector2:
 		to.y = at.y - gap.y - size.y
 	return to.clamp(room.position, (room.end - size).max(room.position))
 
+
+## Where a tip goes for a finger at `at` on a phone: centred above it, since a finger hides what is under it and below,
+## or under it where there is no room above.
+func tip_above(at: Vector2, size: Vector2, room: Rect2) -> Vector2:
+	var to := Vector2(at.x - size.x / 2.0, at.y - size.y - 16.0)
+	if to.y < room.position.y + 2.0:
+		to.y = at.y + 20.0
+	return to.clamp(room.position + Vector2(2, 2), (room.end - size - Vector2(2, 2)).max(room.position))
 
 ## The view's size in game pixels: at least 480 by 270 tall, and as wide or tall as the window's shape allows.
 func view() -> Vector2:
@@ -143,6 +187,8 @@ func _fit_ui() -> void:
 ## Window pixels per interface pixel for `shown` window pixels at `scale`: the settings' step from the game's zoom, a
 ## step larger on a small screen, never under one, and a larger interface only while it keeps the room its bars need.
 func ui_zoom_for(shown: Vector2, scale: int) -> int:
+	if Windowing.phone:
+		return Windowing.phone_ui_zoom(Vector2i(shown), Settings.ui_scale_step)
 	var least := STRIP_UI_LEAST if Windowing.strip else UI_LEAST
 	var lift := 1 if scale <= SMALL_ZOOM and not Windowing.strip else 0
 	var z := maxi(1, scale - 1 + lift + Settings.ui_scale_step)
@@ -188,14 +234,16 @@ func offset() -> Vector2:
 
 ## How a screen's picture is laid over the whole view, its 480 by 270 scene centred: each of its pixels is a whole number
 ## of window pixels, the most that keep the scene in view when the picture is painted `margin` pixels past the scene on
-## every side and still reaches the view's edges, or else the fewest that cover the view, cropping the scene evenly.
+## every side and still reaches the view's edges, or else the fewest that cover the view, cropping the scene evenly
+## across and mostly from the top, so a window as wide as a phone's keeps the ground where people walk.
 func cover(margin := Vector2.ZERO) -> Transform2D:
 	var shown := view() * zoom
 	var px := maxf(1.0, floorf(minf(shown.x / SIZE.x, shown.y / SIZE.y)))
 	var painted := SIZE + margin * 2.0
 	if painted.x * px < shown.x or painted.y * px < shown.y:
 		px = ceilf(maxf(shown.x / painted.x, shown.y / painted.y))
-	var at := ((shown - SIZE * px) / 2.0).round() / zoom
+	var spare := shown - SIZE * px
+	var at := Vector2(spare.x / 2.0, spare.y * (CROP_TOP if spare.y < 0.0 else 0.5)).round() / zoom
 	return Transform2D(0.0, Vector2(px, px) / zoom, 0.0, at)
 
 

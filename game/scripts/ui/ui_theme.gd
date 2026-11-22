@@ -18,6 +18,8 @@ const HAN := {"ja": "ja", "ko": "ko", "zh_CN": "zh_hans", "zh_TW": "zh_tw"}
 const FONTS := "res://assets/fonts/"
 
 static var _theme: Theme
+## The fingertip, in interface pixels, that buttons, text fields and sliders are sized for on a phone; 0 on a computer.
+static var _touch := 0
 ## Each language's fonts, made once and kept, since text drawn with a font that is then thrown away shows as blocks.
 static var _bodies := {}
 static var _titles := {}
@@ -89,6 +91,36 @@ static func _locale(locale: String) -> String:
 static func use_language() -> void:
 	if _theme:
 		_set_fonts(_theme)
+		_size_for_touch(_theme)
+
+
+## Sizes every button, text field and slider for a fingertip `px` interface pixels across on a phone, or for the mouse
+## with 0; every control drawn with the shared theme follows.
+static func fit_touch(px: int) -> void:
+	if px == _touch:
+		return
+	_touch = px
+	if _theme:
+		_size_for_touch(_theme)
+
+
+## The room above and below a button's words: enough on a phone to make one line of them a fingertip tall.
+static func button_pad(touch: int, line: int) -> int:
+	return maxi(4, ceili((touch - line) / 2.0))
+
+
+static func _size_for_touch(t: Theme) -> void:
+	var line := ceili(body_font().get_height(text_size()))
+	var pad := button_pad(_touch, line)
+	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+		var box := t.get_stylebox(state, "Button")
+		box.content_margin_top = pad
+		box.content_margin_bottom = pad
+	for state in ["normal", "focus"]:
+		var field := t.get_stylebox(state, "LineEdit")
+		field.content_margin_top = maxi(3, pad - 1)
+		field.content_margin_bottom = maxi(3, pad - 1)
+	_slider(t, 2 if _touch > 0 else 1)
 
 
 static func _set_fonts(t: Theme) -> void:
@@ -138,6 +170,7 @@ static func build() -> Theme:
 	_slider(t)
 	_scroll_bars(t)
 	_theme = t
+	_size_for_touch(t)
 	return t
 
 
@@ -175,27 +208,28 @@ static func _check_box(t: Theme) -> void:
 		t.set_icon(kind[0] + "_disabled", "CheckBox", _pixels(kind[1], faded))
 
 
-## A volume slider: a groove cut into the parchment that fills with brass, and a small wooden knob like the buttons.
-static func _slider(t: Theme) -> void:
+## A volume slider: a groove cut into the parchment that fills with brass, and a small wooden knob like the buttons,
+## drawn `px` screen pixels to its pixel, which a phone doubles so a thumb can find the knob.
+static func _slider(t: Theme, px := 1) -> void:
 	# A pale lower edge vanishes into the parchment and the track looks cut off, so it is edged in dark brown all round.
 	var groove := [".dddd.", "dssssd", "dmmmmd", "dmmmmd", ".dddd."]
 	var paper := {"d": Color8(85, 53, 41), "s": Color8(122, 88, 62)}
-	t.set_stylebox("slider", "HSlider", _strip(groove, paper.merged({"m": Color8(150, 112, 78)})))
+	t.set_stylebox("slider", "HSlider", _strip(groove, paper.merged({"m": Color8(150, 112, 78)}), px))
 	var brass := [".dddd.", "dbbbbd", "dBBBBd", "dBBBBd", ".dddd."]
-	t.set_stylebox("grabber_area", "HSlider", _strip(brass, paper.merged({"b": Color8(226, 180, 98), "B": Color8(194, 139, 58)})))
-	t.set_stylebox("grabber_area_highlight", "HSlider", _strip(brass, paper.merged({"b": Color8(240, 204, 128), "B": Color8(214, 160, 74)})))
+	t.set_stylebox("grabber_area", "HSlider", _strip(brass, paper.merged({"b": Color8(226, 180, 98), "B": Color8(194, 139, 58)}), px))
+	t.set_stylebox("grabber_area_highlight", "HSlider", _strip(brass, paper.merged({"b": Color8(240, 204, 128), "B": Color8(214, 160, 74)}), px))
 	t.set_stylebox("focus", "HSlider", StyleBoxEmpty.new())
 	var knob := [".dddddd.", "dhhhhhhd", "dhffffsd", "dhffffsd", "dhfggfsd", "dhffffsd", "dhfggfsd", "dhffffsd", "dhffffsd", "dssssssd", ".dddddd."]
 	var wood := {"d": Color8(54, 26, 14), "h": Color8(249, 223, 182), "f": Color8(239, 204, 144), "s": Color8(207, 157, 100), "g": Color8(170, 118, 76)}
 	var lit := wood.duplicate()
 	lit["f"] = Color8(250, 222, 172)
 	lit["s"] = Color8(226, 180, 120)
-	t.set_icon("grabber", "HSlider", _pixels(knob, wood))
-	t.set_icon("grabber_highlight", "HSlider", _pixels(knob, lit))
+	t.set_icon("grabber", "HSlider", _pixels(knob, wood, px))
+	t.set_icon("grabber_highlight", "HSlider", _pixels(knob, lit, px))
 	var dull := {}
 	for k in wood:
 		dull[k] = wood[k].lerp(MUTED, 0.5)
-	t.set_icon("grabber_disabled", "HSlider", _pixels(knob, dull))
+	t.set_icon("grabber_disabled", "HSlider", _pixels(knob, dull, px))
 	t.set_constant("center_grabber", "HSlider", 0)
 
 
@@ -214,27 +248,30 @@ static func _scroll_bars(t: Theme) -> void:
 			t.set_stylebox(state[0], bar[0], g)
 
 
-## A small picture drawn from rows of letters, each letter standing for a colour and a dot for a clear pixel.
-static func _pixels(rows: Array, colours: Dictionary) -> ImageTexture:
+## A small picture drawn from rows of letters, each letter standing for a colour and a dot for a clear pixel, each
+## letter `px` pixels square.
+static func _pixels(rows: Array, colours: Dictionary, px := 1) -> ImageTexture:
 	var img := Image.create(String(rows[0]).length(), rows.size(), false, Image.FORMAT_RGBA8)
 	for y in rows.size():
 		for x in String(rows[y]).length():
 			var c := String(rows[y])[x]
 			if colours.has(c):
 				img.set_pixel(x, y, colours[c])
+	if px > 1:
+		img.resize(img.get_width() * px, img.get_height() * px, Image.INTERPOLATE_NEAREST)
 	return ImageTexture.create_from_image(img)
 
 
 ## A strip drawn from rows of letters that stretches along its middle, keeping its rounded ends.
-static func _strip(rows: Array, colours: Dictionary) -> StyleBoxTexture:
+static func _strip(rows: Array, colours: Dictionary, px := 1) -> StyleBoxTexture:
 	var s := StyleBoxTexture.new()
-	s.texture = _pixels(rows, colours)
-	s.texture_margin_left = 2
-	s.texture_margin_right = 2
-	s.texture_margin_top = 2
-	s.texture_margin_bottom = 2
-	s.content_margin_top = 2
-	s.content_margin_bottom = 3
+	s.texture = _pixels(rows, colours, px)
+	s.texture_margin_left = 2 * px
+	s.texture_margin_right = 2 * px
+	s.texture_margin_top = 2 * px
+	s.texture_margin_bottom = 2 * px
+	s.content_margin_top = 2 * px
+	s.content_margin_bottom = 3 * px
 	return s
 
 

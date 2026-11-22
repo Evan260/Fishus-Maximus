@@ -14,6 +14,9 @@ const RECAST_AFTER := 1.5
 var screen: Node
 var method := "line"
 var idle := false
+## Whether the net's ring or the trident's mark shows where it would land: always with a mouse, and on a phone only
+## while a finger aims it.
+var aiming := true
 var traps_view: TrapView
 var net_view: NetView
 var trident_view: TridentView
@@ -119,7 +122,7 @@ func tick(delta: float) -> void:
 		t["_told"] = maxf(0.0, float(t.get("_told", 0.0)) - delta / 20.0)
 	traps_view.step(delta)
 	_pull_traps_under_boat()
-	var mouse: Vector2 = screen.get_global_mouse_position() + screen.camera.cam
+	var mouse: Vector2 = screen.pointer() + screen.camera.cam
 	net_view.aim = mouse
 	trident_view.aim = mouse
 	net_view.thrown_left = maxf(0.0, net_view.thrown_left - delta)

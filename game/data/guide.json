@@ -4,6 +4,8 @@
 			"id": "row",
 			"screen": "coast",
 			"text": "Salve! I'm Rufus, I mended your uncle's nets. Row with {row_left} and {row_right}, or the arrow keys, to look for fish.",
+			"touch": "Salve! I'm Rufus, I mended your uncle's nets. Row with the arrows at the sides of the screen to look for fish.",
+			"target": "row",
 			"done": {
 				"stat": "rowed"
 			}
@@ -12,6 +14,7 @@
 			"id": "cast",
 			"screen": "coast",
 			"text": "Good. Now hold {cast} or the mouse over the water, then let go to cast your line. Then {reel_up} and {let_out}, or the Up and Down arrows, raise and lower the bait.",
+			"touch": "Good. Now hold a finger on the water, then lift it to cast your line. Then slide a finger up or down the water to raise and lower the bait.",
 			"done": {
 				"stat": "casts"
 			}
@@ -37,6 +40,7 @@
 			"id": "ashore",
 			"screen": "coast",
 			"text": "Catch a few more, then row back to the jetty with the arrow keys and go ashore to sell them.",
+			"touch": "Catch a few more, then row back to the jetty with the arrows and go ashore to sell them.",
 			"done": {
 				"stat": "town_visits"
 			},
@@ -46,6 +50,7 @@
 			"id": "sell",
 			"screen": "town",
 			"text": "Click the fish market to sell your catch. Sell too many of one kind and the price drops.",
+			"touch": "Tap the fish market to sell your catch. Sell too many of one kind and the price drops.",
 			"done": {
 				"stat": "sold"
 			},
@@ -55,6 +60,7 @@
 			"id": "bait",
 			"screen": "town",
 			"text": "Each fish likes its own bait. The netmaker sells shrimp and bread too. Buy some, then click the float on the boat's bar to put it on the hook.",
+			"touch": "Each fish likes its own bait. The netmaker sells shrimp and bread too. Buy some, then tap the float on the boat's bar to put it on the hook.",
 			"done": {
 				"stat": "bought"
 			},
@@ -73,6 +79,7 @@
 			"id": "pots",
 			"screen": "coast",
 			"text": "Pots fish while you do. Pick the pot down below, then press {cast} to sink one. Row over it later to lift it.",
+			"touch": "Pots fish while you do. Pick the pot down below, then tap the water to sink one. Row over it later to lift it.",
 			"done": {
 				"stat": "pots_set"
 			},

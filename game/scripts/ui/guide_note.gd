@@ -127,7 +127,9 @@ func refresh() -> void:
 			say = tr(_praise)
 			id = "praise " + _praise
 		elif not step.is_empty() and step["screen"] == screen_name:
-			say = Controls.fill_pad(tr(step["text"])) if Pad.active else Controls.fill(tr(step["text"]))
+			# A phone's lessons name the finger and the arrows on the screen rather than keys.
+			var words := str(step["touch"]) if Windowing.phone and not Pad.active and step.has("touch") else str(step["text"])
+			say = Controls.fill_pad(tr(words)) if Pad.active else Controls.fill(tr(words))
 			id = now
 		elif Guide.farewell_due(Game.state):
 			say = tr(str(Data.guide.get("farewell", "")))
@@ -161,12 +163,14 @@ func refresh() -> void:
 ## How far down he stands: under the pictures in the top right corner, or under the panel in the top left corner too
 ## when the interface is too narrow for him beside it.
 func _top() -> float:
-	var y := 38.0
-	var mine := Rect2(Nav.ui_view().x - 4.0 - size.x, y, size.x, size.y)
+	var y := 8.0 + Hud.tile().y
+	# On a phone the corners' panels stand in from the edges, and `Ui.hang` adds the same inset to what this returns.
+	var inset := Windowing.safe_top_left
+	var mine := Rect2(Nav.ui_view().x - 4.0 - Windowing.safe_bottom_right.x - size.x, y + inset.y, size.x, size.y)
 	for p in Nav.ui.find_children("*", "PanelContainer", true, false):
 		var r: Rect2 = p.get_global_rect()
-		if p != self and r.position == Vector2(4, 4) and p.is_visible_in_tree() and r.intersects(mine):
-			y = maxf(y, r.end.y + 3.0)
+		if p != self and r.position == Vector2(4, 4) + inset and p.is_visible_in_tree() and r.intersects(mine):
+			y = maxf(y, r.end.y + 3.0 - inset.y)
 	return y
 
 

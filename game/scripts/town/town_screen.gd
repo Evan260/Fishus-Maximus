@@ -22,6 +22,7 @@ const LAMPS := [Vector2(394.5, 175.5), Vector2(40.5, 159.5), Vector2(103.5, 153.
 const NIGHT_GREEN := 0.5
 
 var hovered := ""
+var _finger := FingerPress.new()
 var _masks := {}
 var _outlines := {}
 var _folk: Array = []
@@ -124,7 +125,7 @@ func enter(args: Dictionary) -> void:
 
 func _build_ui() -> void:
 	var bar := PanelContainer.new()
-	bar.position = Vector2(4, 4)
+	bar.position = Vector2(4, 4) + Windowing.safe_top_left
 	Nav.ui.add_child(bar)
 	_top = Ui.label(bar, "")
 	# Each button is as wide as its words need, and the next one stands to its left.
@@ -304,7 +305,15 @@ func _pointer() -> Vector2:
 	if Dev.has("outline"):
 		var id := Dev.get_arg("outline")
 		return _masks[id]["rect"].get_center() if _masks.has(id) else Vector2(-100, -100)
+	# A phone has no pointer resting anywhere, so a building is named only while a finger is held on it.
+	if Windowing.phone:
+		return _on_street(_finger.at) if _finger.naming() else Vector2(-100, -100)
 	return _stage.get_local_mouse_position()
+
+
+## A point in view pixels, as input events give it, on the street.
+func _on_street(p: Vector2) -> Vector2:
+	return _stage.get_global_transform_with_canvas().affine_inverse() * p
 
 
 func _building_at(at: Vector2) -> String:
@@ -322,7 +331,8 @@ func _draw_over() -> void:
 			_painter.draw_rect(Rect2(p, Vector2.ONE), UiTheme.GOLD)
 		var name := tr(BUILDINGS[hovered])
 		var w := Ui.tag_width(name)
-		var at := _pointer() + Vector2(-w / 2.0, -10)
+		# A finger covers what it rests on, so on a phone the name stands clear above it.
+		var at := _pointer() + Vector2(-w / 2.0, -10.0 - Windowing.finger_game_px() / 2.0 / _stage.scale.x)
 		# Kept inside the scene, which every window shows whole, so the name of the board at its edge is not cut off.
 		at.x = clampf(at.x, 3.0, Nav.SIZE.x - w - 3.0)
 		Ui.draw_tag(_painter, at, name)
@@ -338,17 +348,28 @@ func _draw_marks() -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
+	# On a phone a building answers when the finger lifts, so a finger held on it can first read its name.
+	if Windowing.phone:
+		if _finger.follow(e) and not Ui.window_open():
+			_tap(_on_street(_finger.at))
+		return
 	if not (e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT) or Ui.window_open():
 		return
-	var at: Vector2 = _stage.get_local_mouse_position()
+	_tap(_stage.get_local_mouse_position())
+
+
+## A click on a client hears what they ask, on a townsperson their gossip, and on a building opens it.
+func _tap(at: Vector2) -> void:
+	# A person is a fingertip wide on a phone, though narrower on the street.
+	var finger := Windowing.finger_game_px() / _stage.scale.x
 	for c in _clients:
-		if Rect2(Vector2(c["x"] - 12.0, STREET_Y - 40.0), Vector2(24, 40)).has_point(at):
+		if Touch.finger_rect(Rect2(Vector2(c["x"] - 12.0, STREET_Y - 40.0), Vector2(24, 40)), finger).has_point(at):
 			ClientVisit.open(c["id"])
 			return
 	for f in _folk:
 		var s: Sprite2D = f["sprite"]
 		var foot := s.position + _foot(s.texture, s.flip_h)
-		if Rect2(foot + Vector2(-12, -44), Vector2(24, 44)).has_point(at):
+		if Touch.finger_rect(Rect2(foot + Vector2(-12, -44), Vector2(24, 44)), finger).has_point(at):
 			_gossip(f)
 			return
 	match _building_at(at):

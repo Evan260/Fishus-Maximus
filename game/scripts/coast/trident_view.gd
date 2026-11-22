@@ -39,7 +39,7 @@ func _draw() -> void:
 		Pixels.disc(self, bow, 4.0, Color(1.0, 0.85, 0.5, 0.5 * flicker))
 		if _lamp:
 			draw_texture(_lamp, bow - (_lamp.get_size() / 2.0).floor() - Vector2(0, 4), Color(1, 1, 1, 0.9))
-	if screen.methods.method == "trident" and lit and thrown_left <= 0.0:
+	if screen.methods.method == "trident" and screen.methods.aiming and lit and thrown_left <= 0.0:
 		var c := aim - cam
 		Pixels.line(self, c - Vector2(4, 0), c + Vector2(4, 0), Color(1, 0.9, 0.7, 0.6))
 		Pixels.line(self, c - Vector2(0, 4), c + Vector2(0, 4), Color(1, 0.9, 0.7, 0.6))

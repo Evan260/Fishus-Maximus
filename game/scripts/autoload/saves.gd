@@ -31,8 +31,15 @@ func _process(delta: float) -> void:
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_CLOSE_REQUEST and slot > 0 and not Game.state.is_empty():
+	if what in [NOTIFICATION_WM_CLOSE_REQUEST, NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_APPLICATION_FOCUS_OUT] and saves_when(what, Windowing.phone) \
+			and slot > 0 and not Game.state.is_empty():
 		save()
+
+
+## Whether a notification saves the game: the window closing, and on a phone the game being put away, since a phone may
+## close a game in the background without warning.
+static func saves_when(what: int, phone: bool) -> bool:
+	return what == NOTIFICATION_WM_CLOSE_REQUEST or (phone and what in [NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_APPLICATION_FOCUS_OUT])
 
 
 func path_for(n: int) -> String:

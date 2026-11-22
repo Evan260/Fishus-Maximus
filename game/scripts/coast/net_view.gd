@@ -23,7 +23,7 @@ func _ready() -> void:
 
 func _draw() -> void:
 	var cam: Vector2 = screen.camera.cam
-	if screen.methods.method == "net" and thrown_left <= 0.0:
+	if screen.methods.method == "net" and screen.methods.aiming and thrown_left <= 0.0:
 		var c := aim - cam
 		Pixels.ring(self, c, RADIUS, Color(1.0, 0.95, 0.8, 0.7))
 		draw_rect(Rect2(c - Vector2(1, 1), Vector2(2, 2)), Color(1.0, 0.95, 0.8, 0.7))

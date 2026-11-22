@@ -41,7 +41,8 @@ static func show_earned(id: String) -> void:
 		name.add_theme_font_size_override("font_size", UiTheme.text_size() * 2)
 	card.reset_size()
 	var view := Nav.ui_view()
-	var rest := Vector2(view.x - 4.0 - card.size.x, view.y - ABOVE - card.size.y).round()
+	var corner := Windowing.safe_bottom_right
+	var rest := Vector2(view.x - 4.0 - corner.x - card.size.x, view.y - Hud.bottom_room() - corner.y - card.size.y).round()
 	card.position = Vector2(view.x + 2.0, rest.y)
 	card.set_meta("rest", rest)
 	_queue.append(card)
@@ -78,6 +79,25 @@ static func _next() -> void:
 		if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
 			card.accept_event()
 			click_away(card))
+
+
+## The card on screen now, or null.
+static func on_screen() -> Control:
+	if Nav.ui == null:
+		return null
+	for c in Nav.ui.get_children():
+		if c.has_meta("achievement") and c.get_meta("shown", false) and c.has_meta("tween") and not c.is_queued_for_deletion():
+			return c
+	return null
+
+
+## Sends the card on screen on its way, as a click on it does; false when none is showing.
+static func dismiss() -> bool:
+	var card := on_screen()
+	if card == null:
+		return false
+	click_away(card)
+	return true
 
 
 ## Takes a card away at once, as a click on it does.

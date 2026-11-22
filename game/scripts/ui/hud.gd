@@ -13,6 +13,13 @@ const METHOD_TIPS := {
 	"net": "Cast net (key %s). Throw it over a shoal swimming near the surface. The netmaker in town sells them.",
 	"trident": "Trident (key %s). At night, with a lamp, spear the fish that come up to its light.",
 }
+## The same for a phone, which has a finger rather than keys.
+const TOUCH_TIPS := {
+	"line": "Line. Tap to choose the bait and the rod. Hold a finger on the water to cast, wait for the float to go under, then tap to strike and hold to reel in.",
+	"trap": "Pots. Sink a pot to the seabed for crabs, lobsters and octopus, then row back over it later to haul it up.",
+	"net": "Cast net. Hold a finger on a shoal swimming near the surface and lift it to throw. The netmaker in town sells them.",
+	"trident": "Trident. At night, with a lamp, hold a finger on a fish that comes up to its light and lift it to throw.",
+}
 
 var screen: Node
 var _info: Label
@@ -31,7 +38,7 @@ func setup(s: Node) -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var top := PanelContainer.new()
 	top.name = "InfoPanel"
-	top.position = Vector2(4, 4)
+	top.position = Vector2(4, 4) + Windowing.safe_top_left
 	add_child(top)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 0)
@@ -43,7 +50,7 @@ func setup(s: Node) -> void:
 	add_child(bar)
 	for m in CoastMethods.METHODS:
 		var id: String = m
-		method_buttons[id] = Ui.tile(bar, ItemArt.of(id), "", method_tip(id), func(): screen.methods.set_method(id), true, false, TILE)
+		method_buttons[id] = Ui.tile(bar, ItemArt.of(id), "", method_tip(id), func(): screen.methods.set_method(id), true, false, tile())
 	var line: Button = method_buttons["line"]
 	line.pressed.connect(func():
 		if screen.methods.method == "line":
@@ -53,7 +60,7 @@ func setup(s: Node) -> void:
 		if screen.methods.idle and screen.line_state() == "reeled":
 			screen.cast(0.6))
 	# It starts just past the bay map's picture, which the coast hangs in the corner.
-	Ui.hang(bar, "bottom_left", Vector2(8 + TILE.x, 4))
+	Ui.hang(bar, "bottom_left", Vector2(8 + tile().x, 4))
 	for b in [[method_buttons["line"], "method_line"], [method_buttons["net"], "method_net"], [_idle, "idle"]]:
 		_badge(b[0], b[1])
 	var right := HBoxContainer.new()
@@ -66,7 +73,19 @@ func setup(s: Node) -> void:
 	refresh()
 
 
+## The size of the pictures on the boat's bar: a fingertip on a phone.
+static func tile() -> Vector2:
+	return Vector2.ONE * maxf(TILE.x, Windowing.touch_px())
+
+
+## How far up from the bottom edge the buttons along it reach: the bar, and on a phone the arrows it rows with above it.
+static func bottom_room() -> float:
+	return 4.0 + tile().y + 4.0 + (tile().y + 4.0 if Windowing.phone else 0.0)
+
+
 static func method_tip(id: String) -> String:
+	if Windowing.phone:
+		return TranslationServer.translate(TOUCH_TIPS[id])
 	var keys := [Controls.key_name("method_" + id)]
 	if id == "line":
 		keys.append(Controls.key_name("cast"))
@@ -86,7 +105,7 @@ func _badge(on: Control, action: String) -> void:
 
 
 func _corner_tile(row: HBoxContainer, id: String, tip: String, action: Callable) -> void:
-	Ui.tile(row, ItemArt.of(id.to_lower()), "", tip, action, true, false, TILE).name = id
+	Ui.tile(row, ItemArt.of(id.to_lower()), "", tip, action, true, false, tile()).name = id
 
 
 func _to_title() -> void:

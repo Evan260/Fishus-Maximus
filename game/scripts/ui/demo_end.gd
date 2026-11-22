@@ -23,9 +23,10 @@ static func open() -> void:
 	Ui.button(row, "Keep fishing", Ui.close_window)
 
 
-## The button that opens the full game's store page, hidden until the game has a Steam App ID.
+## The button that opens the full game's store page, hidden until the game has a Steam App ID, and on a phone, which
+## has no Steam.
 static func wishlist_button(parent: Node) -> Button:
 	var b := Ui.button(parent, "Wishlist on Steam", func(): Awards.wishlist())
 	b.name = "Wishlist"
-	b.visible = Awards.store_app_id() != 0
+	b.visible = Awards.store_app_id() != 0 and not Windowing.phone
 	return b

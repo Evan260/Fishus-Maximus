@@ -91,6 +91,7 @@ var cam := Vector2.ZERO
 var pond_cam := Vector2.ZERO
 ## Where the mouse last was in view pixels, from its own events, so a click sent by a script finds what it is on too.
 var _mouse := Vector2(-100, -100)
+var _finger := FingerPress.new()
 
 
 ## Escape and the pad's B go back to town, as Back to town does.
@@ -114,7 +115,7 @@ func enter(_args: Dictionary) -> void:
 	_rng = Seeds.rng(int(Game.state["seed"]), "shore", Clock.day_of(float(Game.state["time"])))
 	_build()
 	var bar := PanelContainer.new()
-	bar.position = Vector2(4, 4)
+	bar.position = Vector2(4, 4) + Windowing.safe_top_left
 	Nav.ui.add_child(bar)
 	_top = Ui.label(bar, "")
 	_names = Control.new()
@@ -383,6 +384,9 @@ func _show_frame() -> void:
 		if (s.material as ShaderMaterial).shader == ParallaxLayers.SWAY:
 			s.material.set_shader_parameter("time", _time)
 	hovered = "" if Ui.window_open() else _thing_at(_mouse)
+	# A phone has no pointer resting anywhere, so the pond and the garum works are named only while a finger is held there.
+	if Windowing.phone and not _finger.naming():
+		hovered = ""
 	_water.queue_redraw()
 	_back.queue_redraw()
 	_spill.queue_redraw()
@@ -505,8 +509,9 @@ func _draw_over() -> void:
 		_tip(_pointer(), tr("The fish pond") if Ponds.dug(Game.state) else tr("Dig a fish pond here"))
 
 
+## Where the name of what the pointer is on goes: above it, and on a phone clear of the finger.
 func _pointer() -> Vector2:
-	return _mouse + Vector2(0, -10)
+	return _mouse + Vector2(0, -10.0 - Windowing.finger_game_px() / 2.0)
 
 
 func _tip(at: Vector2, text: String) -> void:
@@ -544,9 +549,17 @@ func _input(e: InputEvent) -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
+	# On a phone the pond and the garum works answer when the finger lifts, so a finger held there can first read the name.
+	if Windowing.phone:
+		if _finger.follow(e) and not Ui.window_open():
+			_open(_thing_at(_finger.at))
+		return
 	if not (e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT) or Ui.window_open():
 		return
-	var thing := _thing_at(e.position)
+	_open(_thing_at(e.position))
+
+
+func _open(thing: String) -> void:
 	if thing == "garum":
 		GarumPanel.open()
 	elif thing == "pond":

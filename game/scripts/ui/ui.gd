@@ -102,7 +102,7 @@ static func button(parent: Node, text: String, action: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.focus_mode = Control.FOCUS_NONE
-	b.custom_minimum_size.x = BUTTON_MIN_WIDTH
+	b.custom_minimum_size.x = maxf(BUTTON_MIN_WIDTH, Windowing.touch_px())
 	b.pressed.connect(Audio.play.bind("click", -6.0))
 	b.pressed.connect(action)
 	parent.add_child(b)
@@ -112,6 +112,7 @@ static func button(parent: Node, text: String, action: Callable) -> Button:
 ## Hangs a control from one corner or edge of the view, `at` pixels in from it, so it stays there whatever the
 ## window's shape: "top_left", "top_right", "bottom_left", "bottom_right", "top" or "bottom" (centred across).
 static func hang(c: Control, where: String, at: Vector2, size := Vector2.ZERO) -> void:
+	at += inset_for(where, Windowing.safe_top_left, Windowing.safe_bottom_right)
 	var right := where.ends_with("right")
 	var bottom := where.begins_with("bottom")
 	var across := where == "top" or where == "bottom"
@@ -128,6 +129,14 @@ static func hang(c: Control, where: String, at: Vector2, size := Vector2.ZERO) -
 	c.offset_right = x0 + w
 	c.offset_top = y0
 	c.offset_bottom = y0 + h
+
+
+## How much further in a control hung at `where` sits on a phone, clear of the rounded corners and the camera given by
+## the insets from the top left and the bottom right; a control centred across is away from the corners already.
+static func inset_for(where: String, top_left: Vector2, bottom_right: Vector2) -> Vector2:
+	if where == "top" or where == "bottom":
+		return Vector2.ZERO
+	return Vector2(bottom_right.x if where.ends_with("right") else top_left.x, bottom_right.y if where.begins_with("bottom") else top_left.y)
 
 
 ## A centred window with a heading, for panels.
@@ -149,13 +158,21 @@ static func panel(parent: Node, title: String) -> VBoxContainer:
 static func window(title: String, width := 300.0, height := 200.0) -> VBoxContainer:
 	var col := frame(title, width, height)
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(width - 12, height - 28)
+	# The heading's close button is a fingertip tall on a phone, so the list gives up the extra height.
+	var heading := maxf(BUTTON_MIN_WIDTH, Windowing.touch_px()) - BUTTON_MIN_WIDTH
+	scroll.custom_minimum_size = Vector2(width - 12, minf(height, tallest_window()) - 28 - heading)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	col.add_child(scroll)
+	touch_scroll(scroll)
+	col.get_parent().set_meta("list", scroll)
 	var list := VBoxContainer.new()
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	list.add_theme_constant_override("separation", 2)
 	scroll.add_child(list)
+	# Wrapped words find their height only once laid out, so a phone's window grows again when they do.
+	if Windowing.phone:
+		var window := col.get_parent()
+		list.minimum_size_changed.connect(func(): fit_window(window))
 	return list
 
 
@@ -181,6 +198,7 @@ static func frame(title: String, width := 300.0, height := 200.0) -> VBoxContain
 	p.set_anchors_preset(Control.PRESET_CENTER)
 	p.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	p.grow_vertical = Control.GROW_DIRECTION_BOTH
+	height = minf(height, tallest_window())
 	p.offset_left = -roundf(width / 2.0)
 	p.offset_right = p.offset_left + width
 	p.offset_top = -roundf(height / 2.0)
@@ -193,7 +211,8 @@ static func frame(title: String, width := 300.0, height := 200.0) -> VBoxContain
 	var head := label(top, upper(title), "Heading")
 	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var close := button(top, "", func(): close_top())
-	close.custom_minimum_size = Vector2(BUTTON_MIN_WIDTH, BUTTON_MIN_WIDTH)
+	close.name = "Close"
+	close.custom_minimum_size = Vector2.ONE * maxf(BUTTON_MIN_WIDTH, Windowing.touch_px())
 	close.icon = _close_texture()
 	close.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	close.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -204,6 +223,57 @@ static func frame(title: String, width := 300.0, height := 200.0) -> VBoxContain
 	# A window whose contents never grow it past the size it opened at is fitted once they are in.
 	p.call_deferred("emit_signal", "resized")
 	return col
+
+
+## The most a window's `height` may be: any on a computer, and on a phone what its short screen holds beside the frame
+## round the window.
+static func tallest_window() -> float:
+	return Nav.ui_view().y - 17.0 if Windowing.phone else INF
+
+
+## The top of a phone's on-screen keyboard in interface pixels, or INF while it is hidden or on a computer.
+static func keyboard_top() -> float:
+	var tall := DisplayServer.virtual_keyboard_get_height() if DisplayServer.has_feature(DisplayServer.FEATURE_VIRTUAL_KEYBOARD) else 0
+	if tall <= 0:
+		return INF
+	return Nav.window_to_ui(Vector2(0, DisplayServer.window_get_size().y - tall)).y
+
+
+## While a phone's keyboard is up, the open window rises until the text field being typed in shows above it, and it
+## settles back once the keyboard goes.
+static func lift_for_keyboard(keyboard: float) -> void:
+	if not window_open():
+		return
+	var w: Control = Nav.ui.get_node("Window")
+	var lifted := float(w.get_meta("lifted", 0.0))
+	var focus := w.get_viewport().gui_get_focus_owner()
+	var lift := 0.0
+	if focus is LineEdit and w.is_ancestor_of(focus):
+		lift = Touch.keyboard_lift(focus.get_global_rect().end.y + lifted, keyboard, w.get_global_rect().position.y + lifted)
+	if lift != lifted:
+		w.offset_top += lifted - lift
+		w.offset_bottom += lifted - lift
+		w.set_meta("lifted", lift)
+
+
+## Lets a finger drag a list up and down on a touch screen, even from a button in it.
+static func touch_scroll(s: ScrollContainer) -> void:
+	var t: Node = load("res://scripts/ui/touch_scroll.gd").new()
+	t.scroll = s
+	s.add_child(t)
+
+
+## A chunky arrow pointing left for `dir` below zero and right otherwise, for the buttons a phone rows with.
+static func arrow(dir: float) -> ImageTexture:
+	var rows := ["....k.....", "...kk.....", "..kkkkkkkk", ".kkkkkkkkk", "kkkkkkkkkk", ".kkkkkkkkk", "..kkkkkkkk", "...kk.....", "....k....."]
+	var img := Image.create(10, rows.size(), false, Image.FORMAT_RGBA8)
+	var ink := UiTheme.INK if ResourceLoader.exists(UiTheme.DIR + "button.png") else UiTheme.CREAM
+	for y in rows.size():
+		for x in 10:
+			if rows[y][x] == "k":
+				img.set_pixel(x if dir < 0.0 else 9 - x, y, ink)
+	img.resize(20, rows.size() * 2, Image.INTERPOLATE_NEAREST)
+	return ImageTexture.create_from_image(img)
 
 
 ## A small pixel X used as the centered icon on every window's close button.
@@ -223,12 +293,30 @@ static func _close_texture() -> ImageTexture:
 static func fit_window(w: Control) -> void:
 	if not is_instance_valid(w):
 		return
+	_grow_list(w)
 	var room := Nav.ui_view() - Vector2(4, 4)
 	var px := Nav.ui_zoom
 	while px > 1 and (w.size.x * px / Nav.ui_zoom > room.x or w.size.y * px / Nav.ui_zoom > room.y):
 		px -= 1
 	w.pivot_offset = (w.size / 2.0).round()
 	w.scale = Vector2.ONE * px / Nav.ui_zoom
+
+
+## On a phone a window's list grows to show all it holds, as far as the short screen allows, so its last buttons are not
+## left out of sight below the fold.
+static func _grow_list(w: Control) -> void:
+	if not Windowing.phone or not w.has_meta("list"):
+		return
+	var s: ScrollContainer = w.get_meta("list")
+	var lists := s.get_children().filter(func(c: Node) -> bool: return c is Control) if is_instance_valid(s) else []
+	if lists.is_empty():
+		return
+	if not s.has_meta("base"):
+		s.set_meta("base", s.custom_minimum_size.y)
+	var room := Nav.ui_view().y - 6.0 - (w.size.y - s.size.y)
+	var tall := clampf((lists[0] as Control).get_combined_minimum_size().y, float(s.get_meta("base")), maxf(float(s.get_meta("base")), room))
+	if tall != s.custom_minimum_size.y:
+		s.custom_minimum_size.y = tall
 
 
 static func close_window() -> void:
@@ -340,6 +428,8 @@ static func tab_button(parent: Node, text: String, open: bool, action: Callable)
 	b.toggle_mode = true
 	b.set_pressed_no_signal(open)
 	b.size_flags_vertical = Control.SIZE_SHRINK_END
+	# On a phone the closed tabs grow to a fingertip's height, and the open one stands as much taller as before.
+	var grow := maxi(0, ceili((Windowing.touch_px() - UiTheme.body_font().get_height(UiTheme.text_size()) - 4.0) / 2.0))
 	for state in ["normal", "hover", "pressed", "hover_pressed"]:
 		var shown: bool = state.ends_with("pressed")
 		var box := StyleBoxFlat.new()
@@ -354,8 +444,8 @@ static func tab_button(parent: Node, text: String, open: bool, action: Callable)
 		box.corner_radius_top_right = 2
 		box.content_margin_left = 7
 		box.content_margin_right = 7
-		box.content_margin_top = 4 if shown else 2
-		box.content_margin_bottom = 3 if shown else 2
+		box.content_margin_top = (4 if shown else 2) + grow
+		box.content_margin_bottom = (3 if shown else 2) + grow
 		b.add_theme_stylebox_override(state, box)
 	for c in ["font_color", "font_hover_color"]:
 		b.add_theme_color_override(c, UiTheme.MUTED)

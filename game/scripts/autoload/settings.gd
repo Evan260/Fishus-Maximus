@@ -109,7 +109,7 @@ func message_scale() -> int:
 
 ## Flashes the taskbar for something that needs the player while another window has the focus.
 func alert() -> void:
-	if notifications and DisplayServer.get_name() != "headless" and not get_window().has_focus():
+	if notifications and not Windowing.phone and DisplayServer.get_name() != "headless" and not get_window().has_focus():
 		DisplayServer.window_request_attention()
 
 
@@ -120,7 +120,7 @@ func set_value(key: String, value) -> void:
 
 
 func _restore_window() -> void:
-	if Dev.has("window"):
+	if Dev.has("window") or Windowing.phone:
 		return
 	if maximized:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MAXIMIZED)
@@ -131,8 +131,9 @@ func _restore_window() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		var mode := Windowing.normal_mode()
-		maximized = mode == DisplayServer.WINDOW_MODE_MAXIMIZED or (mode == DisplayServer.WINDOW_MODE_FULLSCREEN and _before == DisplayServer.WINDOW_MODE_MAXIMIZED)
+		if not Windowing.phone:
+			var mode := Windowing.normal_mode()
+			maximized = mode == DisplayServer.WINDOW_MODE_MAXIMIZED or (mode == DisplayServer.WINDOW_MODE_FULLSCREEN and _before == DisplayServer.WINDOW_MODE_MAXIMIZED)
 		save()
 
 
@@ -203,12 +204,17 @@ func set_language(code: String) -> void:
 	Nav.reopen()
 
 
-## The interface size after `step`: Normal, Larger, Largest, Smaller, then Normal again.
-static func next_ui_step(step: int) -> int:
+## The interface size after `step`: Normal, Larger, Largest, Smaller, then Normal again; a phone already draws it as
+## large as it fits, so there it only goes between Normal and Smaller.
+static func next_ui_step(step: int, phone := false) -> int:
+	if phone:
+		return -1 if step >= 0 else 0
 	return (step + 2) % 4 - 1
 
 
 func toggle_fullscreen() -> void:
+	if Windowing.phone:
+		return
 	var mode := DisplayServer.window_get_mode()
 	fullscreen = mode != DisplayServer.WINDOW_MODE_FULLSCREEN
 	if fullscreen:
