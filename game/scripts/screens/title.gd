@@ -32,7 +32,7 @@ var _dog_picture: TextureRect
 var _dog_labels := {}
 var _dog_name: LineEdit
 var _heading: Label
-## "Demo" under the name, in the demo only.
+## "Demo" under the name, in the demo and on a phone that sells the full game, where it shows until it is bought.
 var _demo: Label
 var _sub: Label
 var _version: Label
@@ -47,6 +47,7 @@ func enter(_args: Dictionary) -> void:
 	swimmers.populate()
 	Audio.set_ambience({"gulls": 0.15, "cicadas": 0.2})
 	_show_menu()
+	FullGame.changed.connect(_on_store_changed)
 
 
 func _exit_tree() -> void:
@@ -107,7 +108,7 @@ func _place() -> void:
 		# Each line keeps its place on the scene, but a larger interface pushes the next one down rather than overlap it.
 		var heading := roundf(_row(26))
 		var sub := maxf(roundf(_row(46)), heading + 20)
-		if is_instance_valid(_demo):
+		if is_instance_valid(_demo) and _demo.visible:
 			Ui.hang(_demo, "top", Vector2(0, heading + 19), Vector2(0, 12))
 			sub = maxf(sub, heading + 33)
 		var menu := maxf(roundf(_row(120)), sub + 24)
@@ -156,9 +157,10 @@ func _show_menu() -> void:
 	_heading.add_theme_color_override("font_outline_color", UiTheme.INK)
 	_heading.add_theme_constant_override("outline_size", 4)
 	_demo = null
-	if Game.is_demo():
+	if Game.is_demo() or FullGame.sold_here():
 		_demo = Ui.label(Nav.ui, Ui.upper("Demo"), "Heading")
 		_demo.name = "Demo"
+		_demo.visible = Game.is_demo()
 		_demo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_demo.add_theme_color_override("font_color", UiTheme.GOLD)
 		_demo.add_theme_color_override("font_outline_color", UiTheme.INK)
@@ -187,14 +189,21 @@ func _show_menu() -> void:
 		Ui.tip_on(fresh, "You already keep three games. Delete one to start another.")
 	if last > 0:
 		Ui.button(_menu, "Load", _load)
-	if Game.is_demo():
-		DemoEnd.wishlist_button(_menu)
+	DemoEnd.full_game_button(_menu)
 	Ui.button(_menu, "Settings", func(): SettingsPanel.open())
 	# A phone game is put away rather than quit, so a phone has no Quit.
 	if not Windowing.phone:
 		# The close notification goes out first, so the window's size and the settings are kept as when closing the window.
 		Ui.button(_menu, "Quit", func(): get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST))
 	_place()
+
+
+## The store's price arrived or the full game was bought, which changes the unlock button and the word Demo.
+func _on_store_changed() -> void:
+	if is_instance_valid(_demo):
+		_demo.visible = Game.is_demo()
+	# Deferred, so the menu has given up the hidden button's room before it is hung again.
+	_place.call_deferred()
 
 
 ## The slot played most recently, or 0 when there are no saves.

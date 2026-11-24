@@ -12,9 +12,14 @@ var acts_as_demo := false
 var _check_left := 2.0
 
 
-## Whether this is the free demo, the same project exported with the `demo` feature, which stops after chapter 2.
+func _ready() -> void:
+	FullGame.changed.connect(_on_full_game_changed)
+	FullGame.finished.connect(func(result: String) -> void: DemoEnd.store_result(result))
+
+
+## Whether this is the free demo, exported with the `demo` feature, or a phone that has not bought the full game.
 func is_demo() -> bool:
-	return OS.has_feature("demo") or acts_as_demo
+	return OS.has_feature("demo") or acts_as_demo or FullGame.locked()
 
 
 func demo_last_chapter() -> int:
@@ -69,12 +74,26 @@ func from_dict(d: Dictionary) -> void:
 	# A save from before the guide that has fish in its logbook belongs to someone who already knows how to fish.
 	if not d.has("guide"):
 		state["guide"]["finished"] = not state["logbook"].is_empty()
-	# A game carried over from the demo opens at once the chapters its name earned while the demo held them back.
+	_open_earned_chapters()
+	changed.emit()
+
+
+## A game carried over from the demo opens at once the chapters its name earned while the demo held them back.
+func _open_earned_chapters() -> void:
 	if not is_demo():
 		state.erase("demo_done")
 	var was := int(state["chapter"])
 	if Story.add_reputation(state, 0) > 0:
 		state["_chapter_seen"] = was
+
+
+## Buying the full game on a phone carries the game being played straight over, there and then.
+func _on_full_game_changed() -> void:
+	DemoEnd.refresh()
+	SettingsPanel.refresh()
+	if is_demo() or not state.has("demo_done"):
+		return
+	_open_earned_chapters()
 	changed.emit()
 
 

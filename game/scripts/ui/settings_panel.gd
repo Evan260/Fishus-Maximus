@@ -138,6 +138,9 @@ static func _gameplay(page: VBoxContainer) -> void:
 	_toggle(page, "Gentle fishing: lines never snap", "gentle")
 	if not Windowing.phone:
 		_toggle(page, "Flash the taskbar when something needs you", "notifications")
+	# A new phone, or the game installed again, learns of the purchase from the store.
+	if FullGame.locked():
+		Ui.setting(page, "Already bought the full game?", "Restore purchase", func(): FullGame.restore(), WIDTH)
 
 
 ## Every translated language, named in its own words and letters, so a player can find theirs whatever is showing.
