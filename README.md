@@ -1,6 +1,6 @@
 # Fishus Maximus
 
-A cozy fishing game set on the Bay of Naples in AD 72, made for Steam (Windows, Mac, Linux and Steam Deck), in 14 languages.
+A cozy fishing game set on the Bay of Naples in AD 72, made for Steam (Windows, Mac, Linux and Steam Deck) and phones, in 14 languages.
 
 Fish from a small boat with a line, traps, a cast net, or a trident by lamplight. The Romans were mad about fish, so the catch is only the start: the best fish are kept alive in the estate's fish pond for rich villa owners, the town's orders pay far better than the market, and everything else goes into your uncle's garum works to ferment. Fish by hand, or leave the boat fishing on its own in a strip along the edge of the desktop.
 
@@ -23,12 +23,12 @@ Add `-- --demo-state` for a game some way in, or `-- --max-state` for one with e
 | `game/` | The Godot project: scenes, GDScript, art, sound and the data files |
 | `game/data/` | Every number and name in the game, from `fish.json` to `balance.json` |
 | `game/tests/` | Automated checks |
-| `docs/` | The build plan, the trailer plan, the Steam setup and publishing, and the release builds |
+| `docs/` | The game's rules, the trailer plan, the Steam setup and publishing, and the release builds |
 | `tools/` | Scripts for art, sound, translations, exporting and publishing |
 | `store/`, `marketing/` | The Steam page, the achievements and the pictures |
 | `builds/` | Exported builds (not kept in git) |
 
-The whole game is described in [Overview.md](Overview.md), and the detailed rules in [Mechanics.md](Mechanics.md).
+The whole game and its detailed rules are described in [Mechanics.md](docs/Mechanics.md).
 
 ## Checking changes
 

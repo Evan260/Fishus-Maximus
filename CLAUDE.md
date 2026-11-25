@@ -1,6 +1,6 @@
 # Fishus Maximus: Claude Code Guide
 
-A cozy Roman fishing game in Godot 4.7 (GDScript, 2D, GL Compatibility), set on the Bay of Naples in AD 72. The design is in `Overview.md`, the detailed rules in `Mechanics.md`, and the build plan in `docs/2026-11-06-full-game.md`.
+A cozy Roman fishing game in Godot 4.7 (GDScript, 2D, GL Compatibility), set on the Bay of Naples in AD 72. The design and its detailed rules are in `docs/Mechanics.md`.
 
 ## Where things are
 

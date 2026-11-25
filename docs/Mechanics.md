@@ -1,6 +1,19 @@
 # Fishus Maximus: mechanics and features
 
-The rules of the game in detail, building on `Overview.md`. Money in the game is in denarii.
+A cozy fishing game set on the Bay of Naples in AD 72. You fish from a small boat, but the Romans were mad about fish, and the catch is only the start: the best fish are kept alive in the estate's fish pond for rich villa owners, the rest go to the market or into your garum works, and the whole town orders fish for its dinners and banquets. Fish by hand, or leave the boat fishing on its own in a strip along your desktop.
+
+This is the whole game in detail. Money in the game is in denarii.
+
+## The setting
+
+Your uncle has left you his skiff and his estate on the shore: a tumbledown garum works with one tank still working, and the rock by the beach where a fish pond is still to be dug. Restoring the works tank by tank and widening the pond stage by stage are the long projects of the game. It is the same harbour town as Mosaicus Maximus, with Vesuvius green and quiet behind it, seven years before it erupts.
+
+The tone is warm and a little funny, and the jokes are true:
+
+- A three-pound red mullet sells for more than a slave.
+- Antonia, the emperor's grandmother, hung earrings on her favourite moray eel.
+- The orator Crassus wore mourning when his pet moray died.
+- The fish in the emperor's ponds came when they were called by name.
 
 ## Time
 
@@ -230,11 +243,13 @@ Your name in town rises with orders, the pond show and legends caught. Five chap
 
 - The logbook, its records and the twelve legends.
 - The pond, and the named fish in it.
-- About 40 Steam achievements: every chapter, every legend, a full logbook, a prize fish of every kind, the pond widened fully and every tank restored, a win at the pond show and at the Neptunalia, and a named moray in earrings.
+- 42 Steam achievements: every chapter, every legend, a full logbook, a prize fish of every kind, the pond widened fully and every tank restored, a win at the pond show and at the Neptunalia, and a named moray in earrings.
 
 ## The look
 
-- Pixel art at 480 by 270, scaled up by whole numbers. The art is painted with PixelLab.
+- Warm pixel art at 480 by 270 in the series' style, scaled up by whole numbers. The art is painted with PixelLab.
+- **Side on, cut through at the waterline.** Above the water are the boat, the coast and Vesuvius; below it the fish themselves swim over sand, rock and weed, so you see what you are fishing for.
+- **The scenes:** each fishing place is one long stretch of coast; the town is a street of its own; and the estate is a scene on the shore, its pond seen side on like the coast, with the villa and the garum works on the far bank.
 - **No edge ever shows.** No picture's edge is ever visible as a straight line where land, rock or a wall stops:
   - each piece is painted to end in a natural shape, or blended into its neighbour with inpainting;
   - rock and sand run down to the bottom of the world;
@@ -257,7 +272,8 @@ Your name in town rises with orders, the pond show and legends caught. Five chap
 
 ## Platform, controls and saving
 
-- **Platform:** Steam, on Windows, Mac, Linux and Steam Deck. Built in Godot 4 on Farmus Maximus's systems.
+- **Platform:** Steam (Windows, Mac, Linux and Steam Deck) and phones (Google Play now, with the App Store being prepared). On a phone the game is a free download that plays like the Steam demo, and one purchase, `full_game`, unlocks the whole game. Built in Godot 4 on Farmus Maximus's systems.
+- **Demo:** free on Steam, with chapters 1 and 2, the harbour and the rocky shore. It ends with a thank you, a word on what the full game holds (the Lucrine Lake, the open bay, Capri, Misenum, the legends and the big boat) and a button to wishlist it, and its game carries over to the full game.
 - **Controls:**
   - **Mouse:** click to cast, strike and reel. A and D row.
   - **Controller:** full support. The left stick or D-pad rows, A casts, strikes and reels, up and down on the D-pad raise and lower the bait, LB and RB pick the line and the net, Y fishes on his own and B closes a window. A stick moves the pointer for everything else. In a window the right stick scrolls, and LB and RB turn a page. While the controller is in use, its buttons are pictured beside the hints. On a screen about 800 pixels tall, such as the Steam Deck's, the interface is drawn a size larger.
@@ -273,4 +289,4 @@ Your name in town rises with orders, the pond show and legends caught. Five chap
 - The pond with its features, and eight garum tanks.
 - Six named clients and about fifteen townsfolk.
 - Five chapters.
-- About 40 achievements.
+- 42 achievements.

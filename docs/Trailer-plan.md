@@ -50,7 +50,7 @@ One beat is 0.857 seconds of "Adventure Begins" from the game's soundtrack, whic
 - The finished trailer, `steam_trailer.avi` and an `.mp4` copy with its sound brought to -16 LUFS, goes to `marketing/recordings/videos/steam_trailer/`, beside its `title.txt`, `description.txt` and `thumbnail.png`, a frame of the end card. Git ignores it for its size.
 - `marketing/desktop.png` is Farmus Maximus's desktop screenshot with the Fishus Maximus icon in place of the Farmus one, on the desktop and the taskbar.
 - The logo and the end card's scroll are drawn by `tools/trailer/make_logo.py`.
-- The music is "Adventure Begins" from Bard's Tales: Peaceful Harp Music Pack by Amos Cháb (Mythago Music), the game's own soundtrack, which asks for no credit; the description credits it anyway. Before uploading, confirm with Mythago Music that the free edition may be used in a trailer, as for the other two games.
+- The music is "Adventure Begins" from Bard's Tales: Peaceful Harp Music Pack by Amos Cháb (Mythago Music), the game's own soundtrack, which asks for no credit; the description credits it anyway.
 
 ## The shorts
 
