@@ -1,0 +1,157 @@
+FISHUS MAXIMUS: ANSWERS FOR PLAY CONSOLE'S APP CONTENT FORMS
+
+Play Console > Policy and programs > App content (some help pages call it Policy > App content). The forms are below
+in the order Play Console lists them, each with the answer to click and why. They were checked against Google's help
+pages on 24 November 2026. Play Console words some questions differently from the help pages, and it changes them now
+and then, so where a form reads differently, answer by the meaning given here.
+
+What the answers rest on, from the code and the built bundle (builds/android/Fishus Maximus.aab):
+- The game itself sends nothing anywhere: no HTTP, sockets, analytics, crash reporting or ads anywhere in its code.
+- Saves, settings and whether the full game is owned are files on the phone (user://).
+- Google Play Billing sells the one product, full_game. The game asks Play only for the price and whether it is owned.
+- The SlowSunday phone plugin carries the Play Games library and notifications for Farmus Maximus, but this game
+  never calls either: its Play Games app id is blank, so Play Games never starts (the plugin removes its start-up
+  provider from the manifest), and it schedules no notifications.
+- Permissions in the bundle's manifest: INTERNET and ACCESS_NETWORK_STATE (from the Play Billing Library),
+  com.android.vending.BILLING, POST_NOTIFICATIONS and RECEIVE_BOOT_COMPLETED (from the plugin, unused here), and the
+  app's own DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION (from AndroidX). No AD_ID.
+
+
+1. PRIVACY POLICY
+
+Answer: the address of privacy.html once it is published. Fill it in later.
+Why: every app needs one, even one that collects nothing. It must be a public web page, not a PDF, and must name the
+developer shown on the listing; the page names Slow Sunday Games.
+Also needed: Google wants the policy linked inside the game too, and the game has no such link yet. A "Privacy
+policy" button in Settings that opens the page meets Google's rule and Apple's.
+
+
+2. APP ACCESS (the help pages now call this "Sign-in details")
+
+Answer: All functionality in my app is available without any special access.
+Why: there is no login. The full game is unlocked by an ordinary Google Play purchase, which is not an account.
+
+
+3. ADS
+
+Answer: No, my app does not contain ads.
+Why: no ads of any kind, and no ad library in the bundle.
+
+
+4. CONTENT RATING
+
+Email address: the address IARC should send the rating certificate to.
+Category: Game.
+
+Violence: No.
+  Fishing only: fish are hooked, caught in pots or a net, or taken with the trident, then landed with no blood or
+  injury shown, and sold or kept alive in the pond. If the form asks specifically about hunting or fishing, answer
+  Yes there; it is bloodless and cartoon-like.
+Blood: No.
+Fear (content that may frighten young children): No.
+  Storms and night fishing are calm, and the legends are big fish from old stories.
+Sexuality (nudity, sexual content, suggestive themes): No.
+Language (profanity, crude or offensive words): No.
+Controlled substances: No.
+  An innkeeper and a tavern cook are among the townsfolk, but no drink is named or shown, and there are no drugs or
+  tobacco.
+Crude humour: No.
+Gambling: No, neither simulated gambling nor real money.
+  The Neptunalia fishing contest and the pond show are won by the catch, with nothing staked.
+Users can interact or exchange content (chat, voice, sharing pictures): No.
+  Single player.
+Shares the user's location with other users: No.
+Digital purchases: Yes.
+  One in-app purchase, full_game, unlocks the whole game. If asked about random items such as loot boxes: No.
+Swastikas or other hate symbols, if asked: No.
+Web browser or search engine, if asked: No.
+
+Expected result (IARC and each authority decide): ESRB Everyone; PEGI 3; USK 0; IARC 3+; GRAC All; ClassInd L;
+ACB G; all with an In-Game Purchases notice.
+
+
+5. TARGET AUDIENCE AND CONTENT
+
+Target age groups: 13-15, 16-17 and 18 and over.
+Why: a relaxed fishing and trading game with a lot of reading, built for teenagers and adults. Leaving out the
+under-13 groups keeps the game outside Google's Families policy, which binds every app with any child age group
+selected.
+If Play asks whether the store listing could unintentionally appeal to children: No.
+  Its people are adults in a Roman harbour town. If a reviewer still finds the dog or the art aimed at children,
+  Google's help page says the way out is to change those store pictures or to add the child age groups and follow
+  the Families policy.
+
+What choosing an under-13 group would bring in, under the Families policy:
+- The game and every library in it must meet COPPA, GDPR and the other children's privacy laws.
+- Only APIs and SDKs approved for child-directed use. Google Play Billing is fine; the unused Play Games library in
+  the plugin would be worth leaving out of this game's build first.
+- No advertising ID, device identifiers or location from children (the game already sends none).
+- Purchases must make clear that they cost real money (the Unlock button already shows the store's own price).
+- Ads would have to come from a Families self-certified ads SDK (moot, as there are none).
+- The content must suit the youngest group chosen, the privacy policy must cover children, and the Data safety form
+  must say what is collected from them.
+- Google reviews the audience claim, which can take 7 days or longer, and checks every update against these rules.
+- In return the game could be considered for the Teacher Approved program and the Kids tab. Of the four games, this
+  one would have the least to change.
+
+
+6. NEWS APPS
+
+Answer: No, my app is not a news app.
+
+
+7. COVID-19 CONTACT TRACING AND STATUS APPS (only if Play still lists it)
+
+Answer: My app is not a publicly available COVID-19 contact tracing or status app.
+
+
+8. DATA SAFETY
+
+Does your app collect or share any of the required user data types? No.
+Why: the game sends nothing off the phone, and what it knows about the purchase stays in a file on the phone, which
+is not "collection" in Google's sense. The Play Billing Library talks to Google itself, and Google's Data safety help
+says that for a payment service such as Google Play's billing system "you don't need to declare collection of the
+data that the payment service collects in connection with its processing of financial transactions", as long as the
+app never sees that data and the service collects it under its own terms, which is the case here. The Play Games
+library never starts, so it sends nothing.
+Play then skips the other questions, and the listing reads "No data collected" and "No data shared with third
+parties".
+
+
+9. GOVERNMENT APPS
+
+Answer: No, my app is not developed by or on behalf of a government.
+
+
+10. FINANCIAL FEATURES
+
+Answer: My app doesn't provide any financial features.
+Why: selling the full game through Google Play is not a financial feature; the list is banking, loans, payments,
+crypto and the like.
+
+
+11. HEALTH
+
+Answer: My app doesn't provide any health features. (Some versions of the form say "My app does not have any
+health features".)
+
+
+12. ADVERTISING ID
+
+Answer: No, my app does not use advertising ID.
+Why: the bundle's manifest has no com.google.android.gms.permission.AD_ID and nothing reads the ID. Play checks the
+uploaded bundle's manifest against this answer.
+
+
+FORMS PLAY ONLY SHOWS WHEN THEY APPLY (none apply)
+
+- Permissions declaration: not needed. POST_NOTIFICATIONS, RECEIVE_BOOT_COMPLETED, INTERNET and BILLING are not on
+  Google's list of restricted permissions.
+- Exact alarms, foreground services, full-screen intents, photo and video access: none in the bundle.
+
+
+HOW FISHUS DIFFERS FROM THE OTHER THREE
+
+- The plainest rating of the four: no alcohol references (Farmus and Mosaicus have wine) and no combat (Legionus).
+- Like Mosaicus and Legionus, no notifications and no Play Games, so Data safety is always "No data collected".
+  Farmus changes once its Play Games app id is set.
