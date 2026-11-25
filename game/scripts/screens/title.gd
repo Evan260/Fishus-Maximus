@@ -160,7 +160,8 @@ func _show_menu() -> void:
 	if Game.is_demo() or FullGame.sold_here():
 		_demo = Ui.label(Nav.ui, Ui.upper("Demo"), "Heading")
 		_demo.name = "Demo"
-		_demo.visible = Game.is_demo()
+		# A phone selling the full game shows its limits without calling itself a demo, which App Review refuses.
+		_demo.visible = Game.is_demo() and not FullGame.sold_here()
 		_demo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_demo.add_theme_color_override("font_color", UiTheme.GOLD)
 		_demo.add_theme_color_override("font_outline_color", UiTheme.INK)
@@ -201,7 +202,7 @@ func _show_menu() -> void:
 ## The store's price arrived or the full game was bought, which changes the unlock button and the word Demo.
 func _on_store_changed() -> void:
 	if is_instance_valid(_demo):
-		_demo.visible = Game.is_demo()
+		_demo.visible = Game.is_demo() and not FullGame.sold_here()
 	# Deferred, so the menu has given up the hidden button's room before it is hung again.
 	_place.call_deferred()
 

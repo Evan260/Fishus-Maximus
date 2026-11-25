@@ -322,7 +322,8 @@ func test_the_title_offers_the_unlock_and_says_thank_you() -> void:
 	Nav.port.add_child(title)
 	title.enter({})
 	var demo: Label = Nav.ui.find_child("Demo", true, false)
-	check(demo != null and demo.visible, "the title says Demo")
+	# App Review refuses a game that calls itself a demo, so a phone selling the full game never shows the word.
+	check(demo == null or not demo.visible, "the title does not say Demo where the full game is sold")
 	check(_button("Unlock the full game: %s" % PRICE) != null, "and offers the full game with its price")
 	check(Nav.ui.find_child("Wishlist", true, false) == null, "in place of the wishlist button")
 	_full().buy()

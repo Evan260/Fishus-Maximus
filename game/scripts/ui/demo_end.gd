@@ -14,7 +14,10 @@ static func open() -> void:
 	boat.texture = ItemArt.of("big_boat")
 	boat.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	list.add_child(boat)
-	for line in [["That is the end of the demo. Your name in town has grown enough to open the next chapter.", ""],
+	# A phone selling the full game shows its limits without calling itself a demo, which App Review refuses.
+	var opening := "Your name in town has grown enough to open the next chapter." if FullGame.sold_here() \
+		else "That is the end of the demo. Your name in town has grown enough to open the next chapter."
+	for line in [[opening, ""],
 			["The full game sails on to the Lucrine Lake and the open bay, the sea caves of Capri and the deep water off Misenum, with the legends of the bay to catch and the big boat to sail.", "MutedLabel"],
 			["Your game carries over to the full game.", "MutedLabel"]]:
 		var l := Ui.label(list, line[0], line[1])
