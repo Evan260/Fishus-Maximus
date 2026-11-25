@@ -27,9 +27,11 @@ ENGINE_LINE = re.compile(r"Audio\.|AudioServer|get_node|res://|user://|push_|pri
                          r"set_stylebox|get_stylebox|set_color|set_constant|set_icon|set_font|set_type_variation|find_children|Engine\.|"
                          r"\.bus\b|path_join|InputMap|is_action|load\(|\.name = |Dev\.|has_node|has_meta|set_meta|get_meta|"
                          r"find_child|Seeds\.rng")
-# Names that stay as they are in every language: the game's own, the default names, theme names and buses.
+# Names that stay as they are in every language: the game's own, the default names, theme names and buses, and the
+# words of the title's box for Google Play's reviewer code, which only the reviewers see.
 KEEP = {"Fishus Maximus", "FISHUS MAXIMUS", "Steam", "Marcus", "Fidus", "Aurata", "Hortensia", "Heading", "Title",
-        "LightHeading", "LightLabel", "MutedLabel", "InfoPanel", "Master", "Window", "Closing", "Hant"}
+        "LightHeading", "LightLabel", "MutedLabel", "InfoPanel", "Master", "Window", "Closing", "Hant", "Reviewer code",
+        "That code isn't right."}
 # Scripts whose text only the developer sees.
 DEV_SCRIPTS = {"dev.gd"}
 

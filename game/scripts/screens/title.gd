@@ -116,7 +116,8 @@ func _place() -> void:
 		Ui.hang(_heading, "top", Vector2(0, heading), Vector2(0, 20))
 		Ui.hang(_sub, "top", Vector2(0, sub), Vector2(0, 14))
 		Ui.hang(_menu, "top", Vector2(0, menu), Vector2(100, 0))
-		Ui.hang(_version, "bottom_right", Vector2(4, 2))
+		# The version takes a fingertip's taps, reaching up and left from where it is drawn.
+		Ui.hang(_version, "bottom_right", Vector2(4, 2), Vector2.ONE * Windowing.touch_px())
 
 
 ## A row of the 480 by 270 scene in interface pixels.
@@ -176,6 +177,10 @@ func _show_menu() -> void:
 	_version.modulate.a = 0.7
 	_version.add_theme_color_override("font_outline_color", UiTheme.INK)
 	_version.add_theme_constant_override("outline_size", 2)
+	_version.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_version.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	_version.mouse_filter = Control.MOUSE_FILTER_STOP
+	_version.gui_input.connect(_on_version_input)
 	_menu = VBoxContainer.new()
 	_menu.custom_minimum_size = Vector2(100, 0)
 	_menu.add_theme_constant_override("separation", 4)
@@ -205,6 +210,41 @@ func _on_store_changed() -> void:
 		_demo.visible = Game.is_demo() and not FullGame.sold_here()
 	# Deferred, so the menu has given up the hidden button's room before it is hung again.
 	_place.call_deferred()
+
+
+## Five quick taps on the version open the box for Google Play's reviewer code while the full game is locked.
+func _on_version_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if FullGame.review_tap(Time.get_ticks_msec() / 1000.0):
+			_review_code()
+
+
+## The window for the code that opens the full game for Google Play's reviewers, in English since only they see it.
+func _review_code() -> void:
+	var list := Ui.window("Reviewer code", 260, 84)
+	Nav.ui.get_node("Window").auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	# The message and the buttons sit above and beside the field, which a phone's keyboard stops just below.
+	var wrong := Ui.label(list, "That code isn't right.")
+	wrong.add_theme_color_override("font_color", UiTheme.RED)
+	wrong.visible = false
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	list.add_child(row)
+	var field := LineEdit.new()
+	field.name = "ReviewCode"
+	field.placeholder_text = "XXXX-XXXX-XXXX"
+	field.max_length = 20
+	field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(field)
+	var enter := func():
+		if FullGame.redeem(field.text):
+			Ui.close_window()
+		else:
+			wrong.visible = true
+	field.text_submitted.connect(func(_t): enter.call())
+	Ui.button(row, "OK", enter)
+	Ui.button(row, "Cancel", func(): Ui.close_window())
+	field.grab_focus.call_deferred()
 
 
 ## The slot played most recently, or 0 when there are no saves.

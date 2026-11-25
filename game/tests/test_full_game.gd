@@ -4,6 +4,8 @@ extends "res://tests/test_case.gd"
 
 const CACHE := "user://test_store.cfg"
 const PRICE := "CA$4.99"
+## A reviewer's code of the tests' own, since the game's real one is kept only as a hash.
+const REVIEW_CODE := "QX7P-29HD-MM4F"
 
 ## What each test listens to on FullGame, let go of when the test is done.
 var _listening: Array[Callable] = []
@@ -25,6 +27,13 @@ func _shop() -> FakeStore:
 	return store
 
 
+## FullGame with a fake store, taking the tests' own reviewer code.
+func _reviewer_shop() -> FakeStore:
+	var store := _shop()
+	_full().review_hash = (_full().package_name + ":" + REVIEW_CODE.replace("-", "")).sha256_text()
+	return store
+
+
 func _forget() -> void:
 	if FileAccess.file_exists(CACHE):
 		DirAccess.remove_absolute(CACHE)
@@ -37,6 +46,7 @@ func _done() -> void:
 	_listening.clear()
 	full.use_store(null)
 	full.cache_path = "user://store.cfg"
+	full.review_hash = str(ProjectSettings.get_setting("slowsunday/review_code_sha256", ""))
 	_forget()
 	_clear()
 	Game.state = _kept
@@ -334,6 +344,174 @@ func test_the_title_offers_the_unlock_and_says_thank_you() -> void:
 	check(_shown("Thank you for buying the full game!"), "and a card thanks the player")
 	title.free()
 	_done()
+
+
+func test_the_game_keeps_only_a_hash_of_its_reviewer_code() -> void:
+	var hash := str(ProjectSettings.get_setting("slowsunday/review_code_sha256", ""))
+	check(hash.length() == 64 and hash.is_valid_hex_number(), "project.godot holds the SHA-256 of Google Play's reviewer code (%s)" % hash)
+	var presets := ConfigFile.new()
+	presets.load("res://export_presets.cfg")
+	var package := ""
+	for section in presets.get_sections():
+		if presets.get_value(section, "name", "") == "Android release":
+			package = str(presets.get_value(section + ".options", "package/unique_name", ""))
+	check(package != "" and _full().package_name == package, "hashed after the package name Google Play knows (%s, %s)" % [_full().package_name, package])
+
+
+func test_the_reviewer_code_opens_the_full_game_and_is_kept() -> void:
+	var store := _reviewer_shop()
+	var s := _through_the_demo()
+	s["denarii"] = 1234
+	var before := Game.to_dict()
+	check(_full().locked() and int(s["chapter"]) == 2, "a phone that has not bought the full game stops at the demo's last chapter")
+	check(_full().redeem(REVIEW_CODE), "Google Play's reviewer code is taken")
+	check(not _full().locked() and not Game.is_demo(), "and opens the full game at once, as buying it does")
+	check(int(Game.state["chapter"]) == 3, "so the chapter the name has earned opens, chapter %d" % int(Game.state["chapter"]))
+	var after := Game.to_dict()
+	for key in before:
+		if key != "chapter" and key != "demo_done":
+			check(JSON.stringify(after.get(key)) == JSON.stringify(before[key]), "with the game's %s as it was" % key)
+	check(not store.calls.any(func(c: Array) -> bool: return c[0] == "buy"), "and nothing bought")
+	_full().use_store(FakeStore.new())
+	check(not _full().locked(), "a later start keeps the full game open before the store has said anything")
+	_done()
+
+
+func test_the_reviewer_code_may_be_typed_in_lower_case_with_spaces_or_dashes() -> void:
+	for typed in ["qx7p-29hd-mm4f", "QX7P 29HD MM4F", "qx7p29hdmm4f", " Qx7P - 29hD - mM4f "]:
+		_reviewer_shop()
+		check(_full().redeem(typed) and not _full().locked(), "\"%s\" is taken" % typed)
+		_done()
+
+
+func test_a_wrong_reviewer_code_opens_nothing() -> void:
+	_reviewer_shop()
+	for typed in ["", "QX7P-29HD-MM4G", "QX7P-29HD", "QX7P-29HD-MM4F-2", "QX7P_29HD_MM4F"]:
+		check(not _full().redeem(typed), "\"%s\" is not taken" % typed)
+	check(_full().locked() and not FileAccess.file_exists(CACHE), "the game stays locked with nothing written down")
+	_full().review_hash = ("com.slowsunday.othergame:" + REVIEW_CODE.replace("-", "")).sha256_text()
+	check(not _full().redeem(REVIEW_CODE), "and another game's code is not taken here")
+	_done()
+
+
+func test_the_store_saying_not_owned_never_locks_a_reviewers_phone_again() -> void:
+	var store := _reviewer_shop()
+	_full().redeem(REVIEW_CODE)
+	store.owned_found.emit(PackedStringArray())
+	check(not _full().locked(), "the store listing nothing owned, since the reviewer bought nothing, leaves the full game open")
+	var later := FakeStore.new()
+	_full().use_store(later)
+	later.owned_found.emit(PackedStringArray())
+	check(not _full().locked() and not Game.is_demo(), "and so does its answer at the next start")
+	_done()
+
+
+func test_only_five_quick_taps_open_the_reviewer_box() -> void:
+	_reviewer_shop()
+	var full := _full()
+	var opened := []
+	for i in 5:
+		opened.append(full.review_tap(i * 1.0))
+	check(not opened.has(true), "five taps a second apart open nothing (%s)" % str(opened))
+	opened.clear()
+	for t in [10.0, 10.5, 11.0, 11.5]:
+		opened.append(full.review_tap(t))
+	check(not opened.has(true), "nor do four quick ones (%s)" % str(opened))
+	check(full.review_tap(12.5), "a fifth within three seconds opens it")
+	check(not full.review_tap(12.6), "and the count starts again after it")
+	_done()
+
+
+func test_five_quick_taps_on_the_version_open_the_reviewer_box() -> void:
+	_reviewer_shop()
+	var title: Node = await _title()
+	_tap_version(4)
+	check(_review_box() == null, "four taps on the version number open nothing")
+	_tap_version(1)
+	await Engine.get_main_loop().process_frame
+	var field := _review_box()
+	check(field != null, "a fifth within three seconds opens the box for Google Play's reviewer code")
+	check(field != null and field.has_focus(), "with the field ready to type in, which brings up a phone's keyboard")
+	check(_button("OK") != null and _button("Cancel") != null, "with OK and Cancel")
+	_button("Cancel").pressed.emit()
+	check(_review_box() == null and _button("Unlock the full game") != null, "Cancel closes it, leaving the title")
+	title.free()
+	_done()
+
+
+func test_the_version_opens_no_box_on_a_computer_or_once_the_full_game_is_owned() -> void:
+	var store := _reviewer_shop()
+	_full().use_store(null)
+	var title: Node = await _title()
+	_tap_version(5)
+	await Engine.get_main_loop().process_frame
+	check(_review_box() == null, "a computer, which sells nothing, opens no box")
+	title.free()
+	store = FakeStore.new()
+	_full().use_store(store)
+	store.owned_found.emit(PackedStringArray(["full_game"]))
+	title = await _title()
+	_tap_version(5)
+	await Engine.get_main_loop().process_frame
+	check(_review_box() == null, "nor does a phone that owns the full game")
+	title.free()
+	_done()
+
+
+func test_the_reviewer_box_takes_the_right_code_and_refuses_a_wrong_one() -> void:
+	_reviewer_shop()
+	var title: Node = await _title()
+	_tap_version(5)
+	await Engine.get_main_loop().process_frame
+	var field := _review_box()
+	if field == null:
+		check(false, "the box opens")
+		title.free()
+		_done()
+		return
+	field.text = "QX7P-29HD-MM4G"
+	_button("OK").pressed.emit()
+	check(_shown("That code isn't right."), "a wrong code says so")
+	check(_full().locked() and _review_box() != null, "and leaves the box open and the game locked")
+	field.text = "qx7p 29hd mm4f"
+	_button("OK").pressed.emit()
+	check(not _full().locked() and not Game.is_demo(), "the right code opens the full game at once")
+	check(_review_box() == null and _button("Unlock the full game") == null, "the box closes and the title no longer offers the unlock")
+	title.free()
+	_done()
+
+
+## The title on its own, as the game opens it before any game is loaded.
+func _title() -> Node:
+	Game.state = {}
+	_clear()
+	var title: Node = load("res://scripts/screens/title.gd").new()
+	Nav.port.add_child(title)
+	title.enter({})
+	await Engine.get_main_loop().process_frame
+	return title
+
+
+## Taps the title's version number `n` times, each pressed and lifted where it shows, as a finger does.
+func _tap_version(n: int) -> void:
+	var version: Control = Nav.ui.find_child("Version", true, false)
+	for i in n:
+		var e := InputEventMouseButton.new()
+		e.button_index = MOUSE_BUTTON_LEFT
+		e.pressed = true
+		e.position = Nav.ui_to_window(version.get_rect().get_center())
+		e.global_position = e.position
+		Nav.get_viewport().push_input(e)
+		var up: InputEventMouseButton = e.duplicate()
+		up.pressed = false
+		Nav.get_viewport().push_input(up)
+
+
+func _review_box() -> LineEdit:
+	for f in Nav.ui.find_children("ReviewCode", "LineEdit", true, false):
+		if _live(f):
+			return f
+	return null
 
 
 ## A row of its own in the interface, as a window's or the title's.

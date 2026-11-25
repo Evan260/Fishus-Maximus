@@ -63,3 +63,8 @@ renderer/rendering_method.mobile="gl_compatibility"
 textures/canvas_textures/default_texture_filter=0
 textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0.1, 0.07, 0.09, 1)
+
+[slowsunday]
+
+package_name="com.slowsunday.fishusmaximus"
+review_code_sha256="6f910c2d0527dfdd742bf1194dbcde2f8f2d84aa9c8563a5a74192d7b612d347"
