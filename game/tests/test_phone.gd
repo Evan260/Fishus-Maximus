@@ -289,6 +289,37 @@ func test_a_phone_leaves_out_the_computers_settings() -> void:
 	_phone(false)
 
 
+func test_a_phone_links_the_privacy_policy_in_the_settings() -> void:
+	_clear()
+	var kept: String = SettingsPanel.tab
+	var opener: Callable = SettingsPanel.open_url
+	var opened := []
+	SettingsPanel.open_url = func(url: String) -> void: opened.append(url)
+	SettingsPanel.tab = "Gameplay"
+	SettingsPanel.open()
+	check(_privacy_link() == null, "a computer's settings look as they always have, with no privacy policy")
+	_phone(true)
+	_clear()
+	SettingsPanel.open()
+	var link := _privacy_link()
+	check(link != null and link.text == "Open", "a phone's gameplay settings link the privacy policy, as the stores ask")
+	if link:
+		link.pressed.emit()
+	check(opened == ["https://evan260.github.io/slowsunday/privacy.html"], "which opens the policy's page: %s" % [opened])
+	SettingsPanel.open_url = opener
+	SettingsPanel.tab = kept
+	_clear()
+	_phone(false)
+
+
+## The button on the settings row named Privacy policy, or null without one.
+func _privacy_link() -> Button:
+	for r in Nav.ui.get_node("Window").find_child("Gameplay", true, false).get_children():
+		if r is HBoxContainer and r.get_child(0) is Label and r.get_child(0).text == "Privacy policy":
+			return r.get_child(1)
+	return null
+
+
 func test_a_phone_title_has_no_quit() -> void:
 	_phone(true)
 	_clear()

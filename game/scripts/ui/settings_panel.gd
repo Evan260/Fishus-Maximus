@@ -17,6 +17,8 @@ static var tab := "Sound"
 ## The action waiting for a new key on the Keys tab, or "".
 static var _waiting := ""
 static var _scroll: ScrollContainer
+## Opens a web page; the tests replace it so no browser starts.
+static var open_url := func(url: String) -> void: OS.shell_open(url)
 
 
 static func open() -> void:
@@ -141,6 +143,9 @@ static func _gameplay(page: VBoxContainer) -> void:
 	# A new phone, or the game installed again, learns of the purchase from the store.
 	if FullGame.locked():
 		Ui.setting(page, "Already bought the full game?", "Restore purchase", func(): FullGame.restore(), WIDTH)
+	# Google Play and the App Store ask for the privacy policy to be reachable from inside the game.
+	if Windowing.phone:
+		Ui.setting(page, "Privacy policy", "Open", func(): open_url.call(String(Data.value("privacy_policy", ""))), WIDTH)
 
 
 ## Every translated language, named in its own words and letters, so a player can find theirs whatever is showing.
