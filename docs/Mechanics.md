@@ -140,7 +140,7 @@ A legend's great price is had once. Once caught it stays in the logbook and does
 
 The heart of the game: a living collection you build, breed and show off.
 
-- **Building.** One large fish pond is cut into the rock by the shore on the estate, its far wall along the beach the sea washes up. It is dug first, then widened in six stages as the chapters open, each stage giving room for more fish. It holds sea water; a freshwater spring led in at its far end gives the brackish water grey mullet and eels need.
+- **Building.** One large fish pond is cut into the rock by the shore on the estate, its far wall along the beach the sea washes up. It is dug first, then widened five times as the chapters open, each time giving room for more fish. It holds sea water; a freshwater spring led in at its far end gives the brackish water grey mullet and eels need.
 - **Features** the pond can be given:
   - rocks;
   - caves for morays;
