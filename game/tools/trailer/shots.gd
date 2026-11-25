@@ -60,8 +60,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_fit_tall()
 	_without_cicadas()
-	# The shorts carry their own captions, so the game's passing messages would cover them.
-	if _tall() and is_instance_valid(Toast._box):
+	# The shorts carry their own captions and a store still shows the scene, so passing messages would cover them.
+	if (_tall() or shot == "store") and is_instance_valid(Toast._box):
 		Toast._box.visible = false
 	if _row != 0.0 and Nav.current and Nav.current.has_method("row"):
 		Nav.current.row(_row, delta)
@@ -109,6 +109,8 @@ func _late_game() -> void:
 
 
 func _open(screen: String, flags: Dictionary) -> void:
+	if shot == "store":
+		_for_the_store(flags)
 	Dev.args.merge(flags, true)
 	# The window takes its size in the first frames, and the screen lays itself out for the view it opens in.
 	for i in 3:
@@ -432,6 +434,132 @@ func _shot_night_harbour() -> void:
 	_late_game()
 	Game.state["boat"] = "fishing_boat"
 	await _open("coast", {"place": "harbour", "hour": "21.5", "weather": "clear", "no-hud": "", "at": "330", "aurora": ""})
+
+
+# The phone stores' screenshots ---------------------------------------------
+
+## A still for tools/phone/make_store_art.py, with the interface: the late game opened on the screen and place the
+## command line names, or with --like=NAME that trailer shot. In town --folk=X,X,... stands the townsfolk where the
+## street is clear of the buttons, and --clear=N waits for a clear view of N fish.
+func _shot_store() -> void:
+	# The picture is taken here rather than by Dev, so fish cut off at its edges can be left out first.
+	Dev._shots.clear()
+	if Dev.has("like"):
+		call("_shot_" + Dev.get_arg("like"))
+		_shoot_when_clear()
+		return
+	_late_game()
+	for f in [["mullet", 1.9], ["bream", 3.4], ["sardine", 0.2], ["octopus", 4.1], ["sea_bass", 6.8]]:
+		Catches.record(Game.state, f[0], f[1])
+	# One fish of each kind, or of the first --pond-fish=N kinds, keeps the pond's fish from crowding each other.
+	var kinds := {}
+	for f in Game.state["pond"]["fish"].duplicate():
+		if kinds.has(f["fish"]) or kinds.size() >= int(Dev.get_arg("pond-fish", "99")):
+			Game.state["pond"]["fish"].erase(f)
+		else:
+			kinds[f["fish"]] = true
+	await _open(Dev.get_arg("screen", "coast"), {})
+	if Dev.has("folk"):
+		_place_folk(Dev.get_arg("folk").split(","))
+	if "pond" in Nav.current:
+		# The pond sets its fish out at random, so they are set out again from the seed for the same picture each time.
+		var pond: PondView = Nav.current.pond
+		for one in pond.fish():
+			one["sprite"].queue_free()
+		pond.fish().clear()
+		pond._rng.seed = int(Game.state["seed"])
+		pond.sync()
+	_shoot_when_clear()
+
+
+## Takes the picture at --shot-at seconds, or after --clear-from seconds at the first moment the view is clear (see
+## `_clear_view`). A fish cut off by the picture's edge, behind a button or crossing a larger one is left out of it.
+func _shoot_when_clear() -> void:
+	while Dev.time < Dev.num("shot-at", 4.0):
+		await get_tree().process_frame
+		if Dev.has("clear") and Dev.time >= Dev.num("clear-from", 2.5) and _clear_view(int(Dev.get_arg("clear"))):
+			break
+	var frame := Rect2(Vector2.ZERO, Nav.ui_view()).grow(-6.0)
+	var kept := []
+	var shown := _fish_in_view()
+	shown.sort_custom(func(a, b): return a[1].get_area() > b[1].get_area())
+	for one in shown:
+		if not frame.encloses(one[1]) or _behind_a_button(one[1]) or kept.any(func(o): return _crossing(one, o)):
+			one[0]["sprite"].visible = false
+		else:
+			kept.append(one)
+	await get_tree().process_frame
+	Dev._take_shot(Dev.get_arg("shot"), true)
+
+
+## Whether the view is clear for a picture: no plant in front caught breaking away, and with --leaping the fish on the
+## line high in its leap, or else at least `wanted` fish wholly in view with none turning (drawn narrowed, a crumpled
+## shape in a still) or crossing another.
+func _clear_view(wanted: int) -> bool:
+	var layers = Nav.current.get("_layers")
+	if layers is ParallaxLayers and layers._fronts.any(func(f): return f["progress"] > 0.0 and f["progress"] < 1.0):
+		return false
+	if Dev.has("leaping"):
+		return Nav.current._line._leap > 0.4 and Nav.current._line._leap < 0.6
+	var frame := Rect2(Vector2.ZERO, Nav.ui_view()).grow(-6.0)
+	var whole: Array = _fish_in_view().filter(func(one): return frame.encloses(one[1]) and not _behind_a_button(one[1]))
+	for i in whole.size():
+		if float(whole[i][0].get("width", 1.0)) < 0.99 or whole.slice(0, i).any(func(o): return _crossing(whole[i], o)):
+			return false
+	return whole.size() >= wanted
+
+
+## Whether two fish in view cross each other, which fish of one shoal may.
+func _crossing(a: Array, b: Array) -> bool:
+	var kind := str(a[0]["id"])
+	return a[1].intersects(b[1]) and not (Data.fish[kind].get("shoal", false) and b[0]["id"] == kind)
+
+
+## The fish of the coast or the pond that show in the picture, each with where it is in interface pixels.
+func _fish_in_view() -> Array:
+	var fish: Array = Nav.current.pond.fish() if "pond" in Nav.current else (Nav.current.swimmers.fish if "swimmers" in Nav.current else [])
+	var frame := Rect2(Vector2.ZERO, Nav.ui_view())
+	var out := []
+	for one in fish:
+		var s: Sprite2D = one["sprite"]
+		if is_instance_valid(s) and s.is_visible_in_tree():
+			var r := Nav.rect_to_ui(s.get_global_transform_with_canvas() * s.get_rect())
+			if r.intersects(frame):
+				out.append([one, r])
+	return out
+
+
+func _behind_a_button(r: Rect2) -> bool:
+	return Nav.ui.find_children("*", "BaseButton", true, false).any(func(b): return b.is_visible_in_tree() and r.intersects(b.get_global_rect()))
+
+
+## Stands the first townsfolk at these places along the street, in game pixels, and leaves the rest out of the picture.
+func _place_folk(xs: PackedStringArray) -> void:
+	var folk: Array = Nav.current._folk
+	for i in folk.size():
+		folk[i]["sprite"].visible = i < xs.size()
+		if i < xs.size():
+			folk[i]["x"] = float(xs[i])
+			folk[i]["pause"] = 600.0
+
+
+## A store still's game, some weeks in: on day --day in the weather the scene shows, with --seed laying out other fish
+## and townsfolk, --boat another boat and --clients=N only N clients still to visit, and every achievement already
+## earned, so no card slides in over the picture.
+func _for_the_store(flags: Dictionary) -> void:
+	flags.erase("no-hud")
+	Game.state["achievements"] = Data.achievements.map(func(a): return a["id"])
+	Game.state["time"] = Dev.num("day", 0.0) * Clock.minutes_per_day()
+	Game.state["weather"] = str(flags.get("weather", Dev.get_arg("weather", "clear")))
+	if Dev.has("seed"):
+		Game.state["seed"] = int(Dev.get_arg("seed"))
+	# The townsfolk are chosen with the engine's own random numbers, so they are seeded too for the same picture each time.
+	seed(int(Game.state["seed"]))
+	if Dev.has("boat"):
+		Game.state["boat"] = Dev.get_arg("boat")
+	if Dev.has("clients"):
+		for c in Data.clients.keys().slice(int(Dev.get_arg("clients"))):
+			Game.state["clients"][c] = (Data.clients[c]["steps"] as Array).size()
 
 
 # Helpers -----------------------------------------------------------------
