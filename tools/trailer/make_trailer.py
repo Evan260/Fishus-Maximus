@@ -1,6 +1,6 @@
-"""Make the Steam trailer and the vertical shorts for YouTube Shorts, Reels and TikTok: record each scripted shot in
-movie mode, then cut them together with the cards, captions, the end card and the music, all in Godot, and keep an .mp4
-copy beside each .avi.
+"""Make the Steam trailer, the Google Play listing's video and the vertical shorts for YouTube Shorts, Reels and TikTok:
+record each scripted shot in movie mode, then cut them together with the cards, captions, the end card and the music,
+all in Godot, and keep an .mp4 copy beside each .avi.
 
 Usage:
   python tools/trailer/make_trailer.py              records any shot not yet recorded, then renders the trailer
@@ -8,13 +8,14 @@ Usage:
   python tools/trailer/make_trailer.py render       renders from the shots already recorded
   python tools/trailer/make_trailer.py render 40    renders a preview from 40 seconds in, into recordings/content/
   Add --cut=NAME to any of these for one of the shorts named in SHORTS below, whose shots are recorded in a tall
-  1080x1920 frame, the game drawn six screen pixels to the game pixel.
+  1080x1920 frame, the game drawn six screen pixels to the game pixel, or --cut=play_store for the Google Play video,
+  recorded at 1920x1080 with the phone's interface (--phone), its taps shown as a fingertip.
 
 Each finished video goes to its own folder in marketing/recordings/videos/, beside its title, description and
-thumbnail; the shot frames it is cut from are kept in marketing/recordings/content/, the trailer's in trailer_shots/ and
-the shorts' in short_shots/, so a change to an edit renders again in a minute or two. Both are kept out of git. The
-shots are scripted in game/tools/trailer/shots.gd and the edits, with their cards, captions and music, in
-game/tools/trailer/edit.gd. Every shot plays a made-up game that is never saved.
+thumbnail; the shot frames it is cut from are kept in marketing/recordings/content/, the trailer's in trailer_shots/,
+the Google Play video's in phone_shots/ and the shorts' in short_shots/, so a change to an edit renders again in a
+minute or two. Both are kept out of git. The shots are scripted in game/tools/trailer/shots.gd and the edits, with their
+cards, captions and music, in game/tools/trailer/edit.gd. Every shot plays a made-up game that is never saved.
 """
 import shutil
 import subprocess
@@ -74,6 +75,10 @@ CUTS = {
     "trailer": {"shots": ["dawn", "cast", "rocky", "capri", "misenum", "wreck", "night", "logbook", "town", "boatwright", "sail",
                           "dog", "pond", "strip", "endcard"],
                 "size": (1920, 1080), "dir": WORK / "trailer_shots", "out": VIDEOS / "steam_trailer" / "steam_trailer.avi"},
+    # The Google Play listing's video shows the game as a phone gives it, and nothing a phone does not have.
+    "play_store": {"shots": ["cast", "capri", "night", "logbook", "town", "boatwright", "dog", "pond", "endcard"],
+                   "size": (1920, 1080), "dir": WORK / "phone_shots", "flags": ["--phone"],
+                   "out": VIDEOS / "play_store_trailer" / "play_store_trailer.avi"},
 }
 # The shorts are all recorded in the tall frame and share their shots: cut name, its folder and its shots.
 SHORTS = {
@@ -113,7 +118,7 @@ def record(name, cut):
     shape = [f"--strip-scale={STRIP_SCALE}", f"--strip-width={size[0] // STRIP_SCALE}"] if strip else [f"--window={size[0]}x{size[1]}"]
     # A .png movie is written as numbered frames with the sound beside them in a .wav of the same name.
     godot(["--write-movie", str(folder / "f.png"), "--fixed-fps", str(FPS), "--quit-after", str(SHOTS[name] * FPS),
-           "--", *shape, "--no-save", f"--trailer-shot={name}"], size)
+           "--", *shape, *cut.get("flags", []), "--no-save", f"--trailer-shot={name}"], size)
 
 
 def render(name, cut, start=0.0):

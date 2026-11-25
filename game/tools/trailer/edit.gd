@@ -1,5 +1,5 @@
 extends Node
-## The trailer's and the shorts' edits, cut from the recorded shots under the music; make_trailer.py renders one at a time.
+## Every video's edit, cut from the recorded shots under the music; make_trailer.py renders one at a time.
 
 const FPS := 30.0
 ## One beat of the music, in seconds; every cut lands on a beat.
@@ -43,6 +43,19 @@ in your own pond.", "beats": 3},
 	{"card": "Or let him fish on his own,
 along the bottom of your screen.", "beats": 3},
 	{"desk": "strip", "from": 2.0, "beats": 5},
+	{"end": "endcard", "from": 1.0, "beats": 6, "dim": 0.45},
+]
+
+## The Google Play video, with the phone's interface; its 48 beats start 48 into the music and end with it.
+const PLAY_STORE := [
+	{"shot": "cast", "from": 0.35, "beats": 17},
+	{"shot": "capri", "from": 1.0, "beats": 4, "caption": "Sixty kinds of fish,\nall ones the Romans knew.", "caption_at": 0.3},
+	{"shot": "night", "from": 1.5, "beats": 4},
+	{"shot": "logbook", "from": 1.8, "beats": 3},
+	{"shot": "town", "from": 2.0, "beats": 4, "caption": "Sell your catch in town,\nand save for a bigger boat.", "caption_at": 0.3},
+	{"shot": "boatwright", "from": 1.0, "beats": 3},
+	{"shot": "dog", "from": 1.0, "beats": 3, "zoom": 2.0, "centre": Vector2(1000, 480)},
+	{"shot": "pond", "from": 1.6, "beats": 4, "caption": "Keep the best alive\nin your own pond.", "caption_at": 0.3},
 	{"end": "endcard", "from": 1.0, "beats": 6, "dim": 0.45},
 ]
 
@@ -102,9 +115,10 @@ const BY_NAME := [
 	{"shot": "pond_bell", "from": 7.0, "beats": 5, "caption": "Hortensia, Aurata\nand Lupus", "caption_at": 0.0},
 	{"end": "endcard", "from": 1.0, "beats": 6, "dim": 0.45},
 ]
-## Each cut's frame, overlay pixel, caption size, rows in overlay pixels and music start, clear of a phone app's bars.
+## Each cut's frame, overlay pixel, caption size, overlay rows clear of a phone app's bars, music start and end line.
 const CUTS := {
 	"trailer": {"edit": TRAILER, "size": Vector2i(1920, 1080), "pixel": 4, "caption_size": 20, "caption_y": 20, "logo_y": 40, "scroll_y": 164, "music_from": 0.0},
+	"play_store": {"edit": PLAY_STORE, "size": Vector2i(1920, 1080), "pixel": 4, "caption_size": 20, "caption_y": 20, "logo_y": 40, "scroll_y": 164, "music_from": 41.143, "line": "Fish the Bay of Naples"},
 	"legend": {"edit": LEGEND, "size": Vector2i(1080, 1920), "pixel": 3, "caption_size": 30, "caption_y": 70, "logo_y": 150, "scroll_y": 400, "music_from": 0.0},
 	"first_vs_last": {"edit": BOATS, "size": Vector2i(1080, 1920), "pixel": 3, "caption_size": 30, "caption_y": 70, "logo_y": 150, "scroll_y": 400, "music_from": 0.0},
 	"cozy_sounds": {"edit": ASMR, "size": Vector2i(1080, 1920), "pixel": 3, "caption_size": 30, "caption_y": 70, "logo_y": 150, "scroll_y": 400, "music_from": 0.0, "music": false, "sound_db": 6.0},
@@ -132,7 +146,7 @@ var _card_text: Label
 var _caption: Label
 var _logo: TextureRect
 var _scroll: TextureRect
-var _wishlist: Label
+var _line: Label
 var _music: AudioStreamPlayer
 var _sound: AudioStreamPlayer
 var _current := -1
@@ -237,9 +251,9 @@ func _build() -> void:
 	_scroll.texture = _outside("scroll.png")
 	_scroll.position = Vector2(roundf((area.x - _scroll.texture.get_width()) / 2.0), float(_cut["scroll_y"]))
 	_overlay.add_child(_scroll)
-	_wishlist = _label(_scroll.position + Vector2(0, SCROLL_TEXT_TOP), _scroll.texture.get_width(), SCROLL_TEXT_HEIGHT, UiTheme.text_size() * 2)
-	_wishlist.text = "Wishlist now on Steam"
-	_wishlist.add_theme_color_override("font_color", INK)
+	_line = _label(_scroll.position + Vector2(0, SCROLL_TEXT_TOP), _scroll.texture.get_width(), SCROLL_TEXT_HEIGHT, UiTheme.text_size() * 2)
+	_line.text = String(_cut.get("line", "Wishlist now on Steam"))
+	_line.add_theme_color_override("font_color", INK)
 
 
 func _label(at: Vector2, width: float, height: float, size: int) -> Label:
@@ -298,7 +312,7 @@ func _draw_segment(seg: Dictionary, local: float, length: float) -> void:
 	_card_text.visible = is_card
 	_logo.visible = is_end
 	_scroll.visible = is_end
-	_wishlist.visible = is_end
+	_line.visible = is_end
 	_shade.visible = is_end
 	_strip.visible = is_desk
 	_caption.visible = seg.has("caption")
@@ -344,6 +358,6 @@ func _draw_segment(seg: Dictionary, local: float, length: float) -> void:
 		_logo.position.y = float(_cut["logo_y"]) + roundf(4.0 * (1.0 - _logo.modulate.a))
 		var s := clampf((local - 1.6) / 0.6, 0.0, 1.0)
 		_scroll.modulate.a = s
-		_wishlist.modulate.a = s
+		_line.modulate.a = s
 	# Sound from each shot fades in and out quickly at its cuts, so cuts never click.
 	_sound.volume_db = float(_cut.get("sound_db", SOUND_DB)) + linear_to_db(clampf(minf(local / 0.08, (length - local) / 0.08), 0.0001, 1.0))

@@ -70,3 +70,24 @@ Seven vertical shorts for YouTube Shorts, Instagram Reels and TikTok, made the s
 - `dawn`, `cast`, `pond` and `endcard` are the trailer's own shots recorded again in the tall frame. The strip is recorded 1080 pixels wide at three screen pixels to the game pixel, over the middle of the desktop enlarged to fill the frame.
 - Every short but `cozy_sounds` plays "Adventure Begins" under the shots' own sounds. The dog's bark and yips and the cicadas are left out, as in the trailer.
 - Each finished short goes to `marketing/recordings/videos/short_<name>/` with an `.mp4` copy, beside its `title.txt`, `description.txt` and `thumbnail.png`, a frame of the short with its caption.
+
+## The Google Play video
+
+The video for the Google Play listing's Video field, 41 seconds at 1920 by 1080, made the same way and showing the game as a phone gives it: `python tools/trailer/make_trailer.py --cut=play_store`. Its shots are recorded with the phone's interface (`--phone`) into `marketing/recordings/content/phone_shots/`, and it goes to `marketing/recordings/videos/play_store_trailer/` beside its `title.txt`, `description.txt` and `thumbnail.png`, a frame of the end card.
+
+- A phone has no pointer, so each touch is drawn as a fingertip with a ring spreading from it a pixel at a time. In the first cast a thumb is held on the water and lifted to cast, taps to strike, and is held while the dentex rests so the reel turns; the logbook's bookmark, the big boat at the boatwright's and the dog are tapped, and the night cast off Misenum is held and lifted.
+- It shows nothing a phone does not have, so the desktop strip is left out, and it names no other store: the end card's scroll reads "Fish the Bay of Naples".
+- The first cast keeps the phone's panel and buttons. The town and the pond put theirs away for the captions, which sit over the shots in the cards' font, outlined in ink.
+- Its 48 beats start 48 beats into "Adventure Begins" and end with it, and the `.mp4` is brought to -16 LUFS like the trailer's.
+
+| # | Shot | Caption | Beats |
+|---|---|---|---|
+| 1 | `cast`: the thumb casts, the dentex comes to the bait, is struck, leaps and is reeled in onto the catch banner, with the phone's interface | | 17 |
+| 2 | `capri`: the sailing boat under Capri's cliffs | Sixty kinds of fish, all ones the Romans knew. | 4 |
+| 3 | `night`: off Misenum under the northern lights, the line cast into the dark | | 4 |
+| 4 | `logbook`: a bookmark tapped and the page turned | | 3 |
+| 5 | `town`: the street | Sell your catch in town, and save for a bigger boat. | 4 |
+| 6 | `boatwright`: the big boat tapped and bought | | 3 |
+| 7 | `dog`: the dog tapped and petted, twice as large | | 3 |
+| 8 | `pond`: the estate's pond, fed | Keep the best alive in your own pond. | 4 |
+| 9 | `endcard`: the harbour at sunset, the logo and the scroll | | 6 |

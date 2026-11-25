@@ -12,10 +12,20 @@ const TALL_ZOOM := 6
 ## How deep the line is held for the legend, and the Senator's weight.
 const LEGEND_DEPTH := 230.0
 const LEGEND_POUNDS := 172.0
+## Where a thumb rests on the water to cast and reel with the phone's interface, in window pixels, clear of the buttons.
+const WATER_TOUCH := Vector2(1560, 930)
 
 var shot := ""
 var _pointer: Sprite2D
 var _ring: Sprite2D
+## A phone has no mouse pointer, so with the phone's interface each tap shows as a fingertip on the glass instead.
+var _touch := false
+## The ring spreading from a tap on a phone, one picture for each whole pixel it grows.
+var _ripples: Array[Texture2D] = []
+var _fade: Tween
+## Whether the finger follows the fight, held on the water while the fish rests and lifted while it runs.
+var _reeling := false
+var _held := false
 ## The fish sent to the bait, and every other fish kept from taking it first.
 var _biter := {}
 ## Which way the boat is rowed or sailed each frame, as a player holding the key would.
@@ -28,6 +38,8 @@ var _pan_to := INF
 
 func _ready() -> void:
 	shot = Dev.get_arg("trailer-shot")
+	# A store still shows the game alone, so only the Google Play video's shots show a finger.
+	_touch = Windowing.phone and shot != "store"
 	Saves.enabled = false
 	Tips.process_mode = Node.PROCESS_MODE_DISABLED
 	# A made-up game meets achievements at once, and their cards would slide in on screen.
@@ -40,14 +52,18 @@ func _ready() -> void:
 	layer.layer = 128
 	add_child(layer)
 	_pointer = Sprite2D.new()
-	_pointer.texture = _arrow()
-	_pointer.centered = false
+	_pointer.texture = _fingertip() if _touch else _arrow()
+	_pointer.centered = _touch
 	_pointer.visible = false
 	layer.add_child(_pointer)
 	_ring = Sprite2D.new()
 	_ring.texture = _ring_texture()
 	_ring.modulate.a = 0.0
 	layer.add_child(_ring)
+	for radius in range(6, 12):
+		_ripples.append(_ripple_texture(radius))
+	if _touch:
+		_pointer.modulate.a = 0.0
 	# The real mouse plays no part: wherever it rests would light up what it is over.
 	get_tree().root.set_disable_input(true)
 	# The shots run after the screens and the sound after the shots, so the shots have the last word on the ambience.
@@ -60,9 +76,11 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_fit_tall()
 	_without_cicadas()
-	# The shorts carry their own captions and a store still shows the scene, so passing messages would cover them.
-	if (_tall() or shot == "store") and is_instance_valid(Toast._box):
+	# Passing messages would cover the captions of the shorts and the Google Play video, and a store still's scene.
+	if (_tall() or _touch or shot == "store") and is_instance_valid(Toast._box):
 		Toast._box.visible = false
+	if _reeling:
+		_follow_fight()
 	if _row != 0.0 and Nav.current and Nav.current.has_method("row"):
 		Nav.current.row(_row, delta)
 	if _pan != Vector2.ZERO and Nav.current and "camera" in Nav.current:
@@ -141,11 +159,23 @@ func _shot_cast() -> void:
 	_early_game()
 	# The best rod reels the dentex in at the game's own pace soon enough for the whole catch to fit one take.
 	Game.state["gear"]["rod"] = "masters_rod"
-	await _open("coast", {"place": "rocky_shore", "hour": "8.2", "weather": "clear", "no-hud": "", "at": "260", "demo-cast": "", "leap": ""})
+	var flags := {"place": "rocky_shore", "hour": "8.2", "weather": "clear", "no-hud": "", "at": "260", "demo-cast": "", "leap": ""}
+	# The Google Play video shows the phone's own panel and buttons around the catch, with no achievement card over it.
+	if _touch:
+		flags.erase("no-hud")
+		Game.state["achievements"] = Data.achievements.map(func(a): return a["id"])
+		Game.state["weather"] = "clear"
+	await _open("coast", flags)
 	var coast: Node = Nav.current
 	coast._time = -0.2
 	# The dentex swims in from past the right of the view before the part of the shot that is used.
 	_biter = coast.swimmers.bring_in(FIRST_FISH, FIRST_POUNDS, 70.0, 1.0)
+	# On a phone a thumb held on the water casts as it lifts.
+	if _touch:
+		_touch_down(WATER_TOUCH, true)
+		while coast.line_state() == "reeled":
+			await get_tree().process_frame
+		_lift()
 	while coast.line_state() != "sinking" or coast.flight > 0.0:
 		await get_tree().process_frame
 	# The line is held near the surface, as a player holding reel-up does, so the fight runs where the fish can leap.
@@ -156,6 +186,10 @@ func _shot_cast() -> void:
 	_biter["state"] = "approach"
 	while coast.fight == null:
 		await get_tree().process_frame
+	# A tap strikes, and the thumb is then held to reel while the fish rests.
+	if _touch:
+		_touch_down(WATER_TOUCH)
+		_reeling = true
 	# The trailer has a few seconds for the fight, so this dentex runs and leaps once and then tires.
 	coast.fight._energy = coast.fight._full_energy * 0.15
 
@@ -203,7 +237,14 @@ func _shot_wreck() -> void:
 func _shot_night() -> void:
 	_late_game()
 	await _open("coast", {"place": "misenum", "hour": "23.2", "weather": "clear", "no-hud": "", "at": "980", "aurora": ""})
-	await _wait(3.5)
+	# On a phone a thumb is held on the water for a full cast and lifted.
+	if _touch:
+		await _wait(2.0)
+		_touch_down(WATER_TOUCH, true)
+		await _wait(1.5)
+		_lift()
+	else:
+		await _wait(3.5)
 	Nav.current.cast(1.0)
 
 
@@ -215,13 +256,22 @@ func _shot_logbook() -> void:
 	LogbookPanel.open(0)
 	for k in 6:
 		await _wait(1.5)
-		LogbookPanel._bookmark_turn(LogbookPanel.section + 1)
+		var mark := _bookmark(LogbookPanel.section + 1) if _touch else null
+		if mark:
+			await _press(mark)
+		else:
+			LogbookPanel._bookmark_turn(LogbookPanel.section + 1)
 
 
 ## The harbour town's covered street in the morning, the townsfolk walking and talking.
 func _shot_town() -> void:
 	_early_game()
 	await _open("town", {"hour": "9.5", "weather": "clear", "no-hud": "", "talk": ""})
+	# The Google Play video's caption sits where the top bar would be, so the bar and buttons are put away.
+	if _touch:
+		for c in Nav.ui.get_children():
+			if not c.has_meta("speech"):
+				c.visible = false
 
 
 ## The boatwright's yard: the big boat is bought.
@@ -256,16 +306,24 @@ func _shot_dog() -> void:
 	Game.state["boat"] = "fishing_boat"
 	await _open("coast", {"place": "harbour", "hour": "16.5", "weather": "clear", "no-hud": "", "at": "420"})
 	await _wait(1.2)
-	Nav.current.dog.pet()
+	_pet_dog()
 	await _wait(1.6)
-	Nav.current.dog.pet()
+	_pet_dog()
+
+
+## The dog is petted, on a phone with a tap on it.
+func _pet_dog() -> void:
+	var dog: DogView = Nav.current.dog
+	if _touch:
+		_touch_down(_on_window(dog, Vector2(0, -16)))
+	dog.pet()
 
 
 ## The estate's pond in the late afternoon, its fish fed, and the sea washing up the beach beyond.
 func _shot_pond() -> void:
 	_late_game()
 	await _open("shore", {"hour": "16.8", "weather": "clear", "no-hud": ""})
-	if _tall():
+	if _tall() or _touch:
 		_hide_shore_hud()
 	await _wait(2.0)
 	Nav.current.pond.feed()
@@ -575,7 +633,7 @@ func _without_cicadas() -> void:
 	Audio.wanted = calm
 
 
-## Hides the shore's top bar and its button back to town, which the narrow frame cuts off, but keeps the fish's names.
+## Hides the shore's top bar and button back to town, which a short cuts off or a caption covers, but keeps the names.
 func _hide_shore_hud() -> void:
 	for c in Nav.ui.get_children():
 		if c != Nav.current._names:
@@ -631,12 +689,75 @@ func _glide(to: Vector2, seconds := 0.7) -> void:
 	await tw.finished
 
 
-## Moves the pointer onto a button and presses it, as a player would.
+## Moves the pointer onto a button and presses it, as a player would, or on a phone taps it with a finger.
 func _press(button: BaseButton) -> void:
+	if _touch:
+		await _wait(0.3)
+		_touch_down(_centre(button))
+		await _wait(0.08)
+		button.pressed.emit()
+		return
 	await _glide(_centre(button))
 	await _wait(0.3)
 	_tap()
 	button.pressed.emit()
+
+
+## The logbook's bookmark for a section, while it shows beside the book.
+func _bookmark(section: int) -> Button:
+	var marks := Nav.ui.find_child("Bookmarks", true, false)
+	if marks == null or section + 1 >= marks.get_child_count():
+		return null
+	var mark: Button = marks.get_child(section + 1)
+	var shown: Control = marks.get_parent() if marks.get_parent() is ScrollContainer else marks
+	return mark if shown.get_global_rect().encloses(mark.get_global_rect()) else null
+
+
+## A point on the scene, given in a node's own pixels, in window pixels.
+func _on_window(node: CanvasItem, at: Vector2) -> Vector2:
+	return (Nav._frame.position + (node.get_global_transform_with_canvas() * at) * float(Nav.zoom)).round()
+
+
+## A fingertip where the screen is touched, a ring spreading from it a pixel at a time; a held one stays until `_lift`.
+func _touch_down(at: Vector2, held := false) -> void:
+	if _fade:
+		_fade.kill()
+	_pointer.scale = Vector2.ONE * Nav.zoom
+	_pointer.position = at
+	_pointer.visible = true
+	_pointer.modulate.a = 1.0
+	_ring.position = at
+	_ring.scale = _pointer.scale
+	var spread := create_tween()
+	for k in _ripples.size():
+		spread.tween_callback(func() -> void:
+			_ring.texture = _ripples[k]
+			_ring.modulate.a = 1.0 - float(k) / _ripples.size())
+		spread.tween_interval(0.05)
+	spread.tween_callback(func() -> void: _ring.modulate.a = 0.0)
+	if not held:
+		_lift(0.15)
+
+
+func _lift(after := 0.0) -> void:
+	if _fade:
+		_fade.kill()
+	_fade = create_tween()
+	_fade.tween_property(_pointer, "modulate:a", 0.0, 0.2).set_delay(after)
+
+
+## The thumb is held on the water while the fish on the line rests and the reel turns, and lifts while it runs.
+func _follow_fight() -> void:
+	var fight: LineFight = Nav.current.get("fight")
+	var down := fight != null and fight.resting()
+	if down != _held:
+		_held = down
+		if down:
+			_touch_down(WATER_TOUCH, true)
+		else:
+			_lift()
+	if fight == null:
+		_reeling = false
 
 
 ## A small ring spreads from the pointer's tip, so a click reads on screen.
@@ -678,6 +799,35 @@ static func _arrow() -> Texture2D:
 				img.set_pixel(x, y, INK)
 			elif c == "o":
 				img.set_pixel(x, y, CREAM)
+	return ImageTexture.create_from_image(img)
+
+
+## A fingertip pressed on the glass: a pale disc ringed in cream and then ink, so it shows on light and dark alike.
+static func _fingertip() -> Texture2D:
+	var img := Image.create(11, 11, false, Image.FORMAT_RGBA8)
+	for y in 11:
+		for x in 11:
+			var d := Vector2(x - 5, y - 5).length()
+			if d < 3.5:
+				img.set_pixel(x, y, Color(CREAM, 0.45))
+			elif d < 4.5:
+				img.set_pixel(x, y, Color(CREAM, 0.95))
+			elif d < 5.5:
+				img.set_pixel(x, y, Color(INK, 0.6))
+	return ImageTexture.create_from_image(img)
+
+
+static func _ripple_texture(radius: int) -> Texture2D:
+	var side := radius * 2 + 3
+	var img := Image.create(side, side, false, Image.FORMAT_RGBA8)
+	var middle := float(radius + 1)
+	for y in side:
+		for x in side:
+			var d := Vector2(x - middle, y - middle).length()
+			if absf(d - radius) < 0.5:
+				img.set_pixel(x, y, Color(CREAM, 0.9))
+			elif absf(d - radius - 1.0) < 0.5:
+				img.set_pixel(x, y, Color(INK, 0.45))
 	return ImageTexture.create_from_image(img)
 
 
