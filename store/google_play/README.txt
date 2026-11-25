@@ -68,14 +68,18 @@ TABLET SCREENSHOTS
 tablet_7_inch_screenshots/    1920x1080 landscape (16:9), 24-bit PNG
 tablet_10_inch_screenshots/   2560x1440 landscape (16:9), 24-bit PNG
 
-Each folder holds the same four scenes, taken at that window size with the phone interface, so the layout is the one a
-tablet of that shape gets:
+Each folder holds the phone's eight scenes in the same order, taken at that window size with the phone interface, so
+the layout is the one a tablet of that shape gets. The 7-inch pictures have the phone's size and layout.
 
 01_the_harbour_at_sunset.png
 02_a_dentex_on_the_line.png
-03_the_harbour_town.png
-04_the_pond_at_home.png        On the 10-inch tablet the pond keeps six of its fish, since its wider view shows more
-                               of the pond and the fish in view are kept apart.
+03_the_catch_banner.png
+04_the_harbour_town.png
+05_the_pond_at_home.png                  On the 10-inch tablet the pond keeps six of its fish, since its wider view
+                                         shows more of the pond and the fish in view are kept apart.
+06_capri_under_sail.png
+07_rain_on_lake_lucrine.png
+08_northern_lights_over_the_harbour.png
 
 Meets: up to 8 screenshots for each tablet size, JPEG or 24-bit PNG without alpha, each side 320 to 3,840 px, the long
 side at most 2.3 times the short one. They are 16:9, as Google's large-screen guidance asks for a game to be featured

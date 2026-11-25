@@ -60,7 +60,6 @@ SCENES = {
 }
 PHONE_ORDER = ["the_harbour_at_sunset", "a_dentex_on_the_line", "the_catch_banner", "the_harbour_town",
                "the_pond_at_home", "capri_under_sail", "rain_on_lake_lucrine", "northern_lights_over_the_harbour"]
-TABLET_ORDER = ["the_harbour_at_sunset", "a_dentex_on_the_line", "the_harbour_town", "the_pond_at_home"]
 # An iPad's squarer screen shows deep, empty water under Capri, so the lake in the rain takes its place.
 IPAD_ORDER = ["the_harbour_at_sunset", "a_dentex_on_the_line", "the_harbour_town", "the_pond_at_home",
               "rain_on_lake_lucrine", "northern_lights_over_the_harbour"]
@@ -70,8 +69,8 @@ WIDEST_POND = ["--seed=1", "--pond-fish=5"]
 # folder: (window size, scenes in upload order, extra flags per scene for that screen's shape).
 SETS = {
     PLAY / "phone_screenshots": ((1920, 1080), PHONE_ORDER, {}),
-    PLAY / "tablet_7_inch_screenshots": ((1920, 1080), TABLET_ORDER, {}),
-    PLAY / "tablet_10_inch_screenshots": ((2560, 1440), TABLET_ORDER, {"the_pond_at_home": WIDE_POND}),
+    PLAY / "tablet_7_inch_screenshots": ((1920, 1080), PHONE_ORDER, {}),
+    PLAY / "tablet_10_inch_screenshots": ((2560, 1440), PHONE_ORDER, {"the_pond_at_home": WIDE_POND}),
     APPLE / "iphone_6.9_inch_screenshots": ((2868, 1320), PHONE_ORDER, {"the_pond_at_home": WIDEST_POND}),
     APPLE / "ipad_13_inch_screenshots": ((2752, 2064), IPAD_ORDER, {}),
 }

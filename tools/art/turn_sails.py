@@ -1,14 +1,16 @@
-"""Turns a sailing boat's square sail from facing us to set across the hull, as a sail running before the wind is.
-Seen from the side it is turned well away from us: a narrow sheet hanging from a short yard angled towards the bow, its
-belly filled and bulging out towards the bow, the way the boat goes. The old sail, its yards and the ropes tied to them
-are cleared from the boat's picture as make_props.py and round_keels.py left it (kept in props_raw as
-<boat>_square_sail.png the first time), keeping the hull, the mast and its flag, and the new sail is drawn pixel by
-pixel in the old sail's own colours: the cloth shaded by how it faces the light from the upper left, its reinforcing
-bands following the curve of the cloth, the yard in the old yard's colours and the ropes drawn again to the masthead,
-the yard and the sail's lower corners. A flag painted streaming aft is turned round its masthead to stream towards the
-bow, as the wind behind the sail blows it. Prints the sail's corners for boats.json, the box the sail shader moves. Writes
-the boats to game/assets/art/props/; running it again gives the same pictures.
-Usage: python tools/art/turn_sails.py [--out DIR] [BOAT...]"""
+"""Turns a sailing boat's square sail from facing us to set across the hull, as a sail running before the wind is. Seen
+from the side it is turned well away from us: a narrow sheet hanging from a short yard angled towards the bow, its belly
+filled and bulging out towards the bow, the way the boat goes. The old sail, its yards and the ropes tied to them are
+cleared from the boat's picture as make_props.py and round_keels.py left it (kept in props_raw as <boat>_square_sail.png
+the first time), keeping the hull, the mast and its flag, and the new sail is drawn pixel by pixel in the old sail's own
+colours: the cloth shaded by how it faces the light from the upper left, its reinforcing bands following the curve of
+the cloth, the yard in the old yard's colours and the ropes drawn again to the masthead, the yard and the sail's lower
+corners. A flag painted streaming aft is turned round its masthead to stream towards the bow, as the wind behind the
+sail blows it. Prints the sail's corners for boats.json, the box the sail shader moves. Writes the boats to
+game/assets/art/props/; running it again gives the same pictures. With --icons it turns the two boats' achievement
+icons, painted small in tools/art/achievements_raw/ (their originals kept there as <boat>_square_sail.png), in the same
+way at their own size, for make_achievement_icons.py.
+Usage: python tools/art/turn_sails.py [--icons] [--out DIR] [BOAT...]"""
 import math
 import shutil
 import sys
@@ -19,6 +21,7 @@ from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[2]
 RAW = Path(__file__).with_name("props_raw")
+ICON_RAW = Path(__file__).with_name("achievements_raw")
 PROPS = ROOT / "game" / "assets" / "art" / "props"
 # The light, from the upper left and in front: x towards the bow, y up, z towards us.
 LIGHT = np.array([-0.62, 0.55, 0.56])
@@ -27,13 +30,14 @@ SS = 4
 
 # Per boat, from its old sail's own pixels: the cloth from lit to shaded, its bands and edges from light to dark, the
 # yard from its top row down and its ends, and a rope's shades, a rope `wide` being drawn three pixels across, dark,
-# light and dark. Then the mast's columns, the rows of it drawn again in the colours of a row it shows bare (`mast_rows`:
-# the first and the bare one), and the row its yard crosses it; the sail's width and height as if laid flat, how far it
-# is turned from pointing straight at us, how much lower its near end sits for every pixel nearer us, and how deep its
-# belly is; the cells of its bands across and down. What is cleared: either every column down to its solid run up from
-# the keel, with the boxes in `keep` kept, or the polygons in `clear` and the ropes inside the boxes in `clear_ropes`.
-# Last the ropes, each from a pixel of the hull to a point on the mast, a yardarm or a lower corner of the sail, and a
-# flag to turn round: its top and bottom rows and the first and last columns of the masthead it flies from.
+# light and dark. Then the mast's columns, the rows of it drawn again in the colours of a row it shows bare
+# (`mast_rows`: the first and the bare one), and the row its yard crosses it; the sail's width and height as if laid
+# flat, how far it is turned from pointing straight at us, how much lower its near end sits for every pixel nearer us,
+# and how deep its belly is; the cells of its bands across and down. What is cleared: either every column down to its
+# solid run up from the keel, with the boxes in `keep` kept, or the polygons in `clear` and the ropes inside the boxes
+# in `clear_ropes`. Last the ropes, each from a pixel of the hull to a point on the mast, a yardarm or a lower corner of
+# the sail, and a flag to turn round: its top and bottom rows and the first and last columns of the masthead it flies
+# from.
 BOATS = {
     "sailing_boat": {
         "cloth": [(238, 219, 192), (231, 209, 177), (221, 199, 162), (213, 190, 152), (205, 180, 142),
@@ -61,6 +65,37 @@ BOATS = {
         "ropes": [((41, 59), "mast", (68, 14)), ((102, 58), "mast", (75, 15)), ((108, 54), "mast", (91, 40)),
                   ((57, 70), "near_clew", None), ((88, 62), "far_clew", None)],
         "flag": (0, 4, 70, 73),
+    },
+}
+
+
+# The icons' boats are about half the game's size, so each sail is too, with fewer bands and thinner ropes.
+ICONS = {
+    "sailing_boat": {
+        "cloth": [(229, 199, 157), (224, 193, 149), (214, 179, 135), (203, 166, 121), (192, 153, 110)],
+        "band": [(192, 153, 110), (184, 143, 100), (173, 130, 90), (159, 114, 80), (144, 84, 56)],
+        "yard": [(141, 65, 40), (103, 47, 34)], "yard_end": (81, 37, 28),
+        "rope": [(159, 114, 80), (173, 130, 90)], "wide": False,
+        "mast": (28, 29), "mast_rows": (5, 15), "cross": 9.0,
+        "width": 35.0, "height": 16.0, "turn": 14.0, "tilt": 0.12, "belly": 9.0, "cells": (3, 4),
+        "clear": [[(6, 4), (27, 4), (27, 30), (13, 30), (13, 29), (6, 29)],
+                  [(30, 5), (48, 5), (48, 21), (46, 21), (46, 29), (44, 29), (44, 30), (30, 30)]],
+        "clear_ropes": [],
+        "ropes": [((18, 30), "mast", (27, 5)), ((11, 29), "near_arm", None), ((26, 30), "near_clew", None),
+                  ((38, 30), "far_clew", None)],
+    },
+    "big_boat": {
+        "cloth": [(249, 230, 191), (236, 213, 171), (221, 198, 153), (204, 178, 130), (190, 163, 119)],
+        "band": [(190, 163, 119), (178, 140, 92), (153, 124, 85), (126, 92, 54), (108, 58, 25)],
+        "yard": [(177, 111, 46), (108, 58, 25)], "yard_end": (68, 27, 7),
+        "rope": [(135, 131, 134), (164, 167, 175)], "wide": False,
+        "mast": (28, 29), "mast_rows": (5, 29), "cross": 8.0,
+        "width": 30.0, "height": 16.0, "turn": 14.0, "tilt": 0.12, "belly": 8.0, "cells": (3, 4),
+        "clear": [[(17, 5), (44, 5), (44, 26), (17, 26)], [(19, 27), (27, 27), (27, 30), (19, 30)],
+                  [(30, 27), (37, 27), (37, 30), (30, 30)]],
+        "clear_ropes": [(12, 5, 50, 30)],
+        "ropes": [((14, 24), "mast", (27, 7)), ((48, 25), "mast", (30, 7)), ((25, 30), "near_clew", None),
+                  ((39, 30), "far_clew", None)],
     },
 }
 
@@ -206,11 +241,11 @@ def line(a, b) -> list:
     return pts
 
 
-def turn(boat: str, out_dir: Path) -> dict:
-    spec = BOATS[boat]
-    raw = RAW / f"{boat}_square_sail.png"
+def turn(boat: str, out_dir: Path, icon: bool = False) -> dict:
+    spec, folder = (ICONS[boat], ICON_RAW) if icon else (BOATS[boat], RAW)
+    raw = folder / f"{boat}_square_sail.png"
     if not raw.exists():
-        shutil.copyfile(PROPS / f"{boat}.png", raw)
+        shutil.copyfile((ICON_RAW if icon else PROPS) / f"{boat}.png", raw)
     old = np.array(Image.open(raw).convert("RGBA"))
     h, w = old.shape[:2]
     pic = np.where(kept_part(old, spec)[:, :, None], old, 0).astype(np.uint8)
@@ -333,13 +368,15 @@ def corners(cloth: np.ndarray, near, far, mx: float) -> list:
 
 def main() -> None:
     args = sys.argv[1:]
-    out_dir = PROPS
+    icon = "--icons" in args
+    args = [a for a in args if a != "--icons"]
+    out_dir = ICON_RAW if icon else PROPS
     if "--out" in args:
         i = args.index("--out")
         out_dir = Path(args[i + 1])
         del args[i:i + 2]
     for boat in args or list(BOATS):
-        print(boat, turn(boat, out_dir))
+        print(boat, turn(boat, out_dir, icon))
 
 
 if __name__ == "__main__":

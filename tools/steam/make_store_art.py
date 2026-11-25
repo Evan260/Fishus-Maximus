@@ -155,7 +155,7 @@ def make_screenshots():
             # The strip is laid along the bottom of a desktop, above its taskbar, as it sits on a player's screen.
             from make_trailer import desktop_frame
             with tempfile.TemporaryDirectory() as tmp:
-                desk, taskbar = desktop_frame(Path(tmp) / "desktop.png")
+                desk, taskbar = desktop_frame((1920, 1080), Path(tmp) / "desktop.png")
                 picture = Image.open(desk).convert("RGBA")
             strip = frame.convert("RGBA")
             picture.alpha_composite(strip, ((picture.width - strip.width) // 2, picture.height - taskbar - strip.height))
