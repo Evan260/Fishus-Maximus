@@ -143,8 +143,9 @@ def mp4_copy(avi):
     if not FFMPEG.exists():
         print("no ffmpeg, so no .mp4 copy")
         return
+    # The AAC encoder overshoots sharp clicks by about 2 dB, so peaks are held at -3 dBTP to stay under 0 once encoded.
     subprocess.run([str(FFMPEG), "-y", "-loglevel", "error", "-i", str(avi), "-c:v", "libx264", "-preset", "slow", "-crf", "16",
-                    "-pix_fmt", "yuv420p", "-af", "loudnorm=I=-16:TP=-1.5:LRA=11", "-ar", "48000", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", str(avi.with_suffix(".mp4"))],
+                    "-pix_fmt", "yuv420p", "-af", "loudnorm=I=-16:TP=-3:LRA=11", "-ar", "48000", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", str(avi.with_suffix(".mp4"))],
                    check=True)
 
 
