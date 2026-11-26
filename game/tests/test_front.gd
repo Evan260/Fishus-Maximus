@@ -12,11 +12,15 @@ func _built(layers: Array) -> ParallaxLayers:
 
 
 ## Runs the layers for some seconds with the boat at a place on the coast and the camera following it.
-func _run(l: ParallaxLayers, boat_x: float, seconds: float, fight := false, cam_y := CoastCamera.HOME_Y) -> void:
+## `fish`, given the seconds run so far, says where in the view a fish being fought is.
+func _run(l: ParallaxLayers, boat_x: float, seconds: float, cam_y := CoastCamera.HOME_Y, fish := Callable()) -> void:
 	var cam := Vector2(boat_x + 52.0 - Nav.view().x / 2.0, cam_y)
 	for i in int(seconds * 30.0):
 		l.time += 1.0 / 30.0
-		l.keep_clear([Rect2(boat_x - cam.x, 0.0, 105.0, Nav.view().y)], fight)
+		var clear: Array = [Rect2(boat_x - cam.x, 0.0, 105.0, Nav.view().y)]
+		if fish.is_valid():
+			clear.append(Rect2(fish.call(i / 30.0), Vector2(24, 10)))
+		l.keep_clear(clear)
 		l.place(cam)
 
 
@@ -50,10 +54,29 @@ func test_a_piece_breaks_away_in_blocks_of_two_pixels() -> void:
 	l.free()
 
 
-func test_a_fight_clears_every_piece() -> void:
-	var l := _built([PIECE, PIECE.merged({"front": "top", "x": 300}, true)])
-	_run(l, 600.0, 1.0, true)
-	check(l.fronts().all(func(s): return _progress(s) == 1.0), "no plant hides a fish fight")
+func test_a_fight_breaks_away_only_the_piece_in_front_of_the_fish() -> void:
+	var l := _built([PIECE])
+	var s: Sprite2D = l.fronts()[0]
+	# With the boat here the plant stands at the right of the view, well clear of the boat.
+	var boat_x := 740.0
+	_run(l, boat_x, 1.0, CoastCamera.HOME_Y, func(_t): return Vector2(40, 200))
+	check(_progress(s) == 0.0, "a fish fought on the far side of the view leaves the plant whole")
+	_run(l, boat_x, 1.0, CoastCamera.HOME_Y, func(_t): return Vector2(400, 200))
+	check(_progress(s) == 1.0, "and the plant breaks away from in front of a fish fought behind it")
+	_run(l, boat_x, 1.0)
+	check(_progress(s) == 0.0, "coming back once the fight is over")
+	l.free()
+
+
+func test_a_fish_darting_at_the_edge_of_a_piece_never_leaves_it_half_broken() -> void:
+	var l := _built([PIECE])
+	var s: Sprite2D = l.fronts()[0]
+	var boat_x := 740.0
+	_run(l, boat_x, 0.1)
+	var edge := s.position.x + ParallaxLayers.used_rect(s.texture).position.x - ParallaxLayers.FRONT_ROOM - 24.0
+	# The fish darts seven pixels either side of the edge of the room the plant keeps, as a fish on the line does.
+	_run(l, boat_x, 2.0, CoastCamera.HOME_Y, func(t): return Vector2(edge + 7.0 * sin(t * 9.0), 200))
+	check(_progress(s) == 1.0, "the plant stays broken away while the fish darts in and out of its room")
 	l.free()
 
 
@@ -90,12 +113,12 @@ func test_a_piece_never_shows_the_edge_it_stands_on() -> void:
 	var bottom: Sprite2D = l.fronts()[0]
 	var top: Sprite2D = l.fronts()[1]
 	for cam_y in [CoastCamera.HOME_Y, CoastCamera.ROW_SEA - Nav.view().y, CoastCamera.HOME_Y - 50.0, 300.0]:
-		_run(l, 600.0, 0.1, false, cam_y)
+		_run(l, 600.0, 0.1, cam_y)
 		check(_rows(bottom).y >= Nav.view().y, "a plant standing at the bottom reaches below the view with the camera at %d" % cam_y)
 		check(_rows(top).x <= 0.0, "a branch hanging from the top reaches above the view with the camera at %d" % cam_y)
-	_run(l, 600.0, 0.1, false, CoastCamera.ROW_SEA - Nav.view().y)
+	_run(l, 600.0, 0.1, CoastCamera.ROW_SEA - Nav.view().y)
 	check(_rows(bottom).x < Nav.view().y - 20.0, "the plant at the bottom still stands in the view while he rows with the view raised")
-	_run(l, 600.0, 1.0, false, 300.0)
+	_run(l, 600.0, 1.0, 300.0)
 	var dipped := top.position.y
 	check(_progress(bottom) == 1.0, "with the view down in the water the plant at the bottom has broken away")
 	_run(l, 600.0, 1.0)
@@ -173,10 +196,10 @@ func test_a_plant_standing_up_from_below_keeps_its_land_on_the_waterline() -> vo
 	var s: Sprite2D = l.fronts()[0]
 	var waterline := s.texture.get_height() - ParallaxLayers.FRONT_DEPTH
 	for cam_y in [CoastCamera.HOME_Y, CoastCamera.ROW_SEA - Nav.view().y, CoastCamera.HOME_Y - 40.0]:
-		_run(l, 600.0, 0.1, false, cam_y)
+		_run(l, 600.0, 0.1, cam_y)
 		check(absf(s.position.y + waterline + cam_y) < 0.01, "the bank's waterline lies on the sea's with the camera at %d" % cam_y)
 		check(s.position.y + s.texture.get_height() >= Nav.view().y, "and the bank runs on below the view with the camera at %d" % cam_y)
-	_run(l, 600.0, 0.1, false, CoastCamera.HOME_Y + 20.0)
+	_run(l, 600.0, 0.1, CoastCamera.HOME_Y + 20.0)
 	check(s.position.y + s.texture.get_height() >= Nav.view().y, "the bank still runs below the view as the view starts to dip")
 	l.free()
 

@@ -25,6 +25,8 @@ const FRONT_SECONDS := 0.6
 const FRONT_CELL := 2.0
 ## How near the boat or the float may come to a plant in front before it breaks away.
 const FRONT_ROOM := 24.0
+## How much farther off things must go before a broken plant comes back, so a fish darting on the line never leaves it half broken.
+const FRONT_HOLD := 20.0
 ## How far the view may dip into the water before the plants standing at the bottom break away.
 const FRONT_DIP := 24.0
 ## Rows of the bank under a plant standing at the bottom that lie below its waterline, as make_front.py paints them.
@@ -61,9 +63,8 @@ var _reflections: Array = []
 var _swaying: Array = []
 ## The plants in front: {"node", "x", "factor", "edge", "used", "progress"}.
 var _fronts: Array = []
-## What the plants in front must not hide this frame, in view pixels, and whether a fish is being fought.
+## What the plants in front must not hide this frame, in view pixels.
 var _clear: Array = []
-var _fight := false
 var _front_time := 0.0
 var _bed_look: ShaderMaterial
 var time := 0.0
@@ -368,10 +369,9 @@ func _front(l: Dictionary) -> void:
 		"edge": str(l["front"]), "used": used, "progress": 0.0})
 
 
-## What the plants in front must keep clear of this frame, as rectangles in view pixels, and whether a fish is on.
-func keep_clear(rects: Array, fight: bool) -> void:
+## What the plants in front must keep clear of this frame, as rectangles in view pixels.
+func keep_clear(rects: Array) -> void:
 	_clear = rects
-	_fight = fight
 
 
 func fronts() -> Array:
@@ -399,8 +399,9 @@ func _place_fronts(cam: Vector2) -> void:
 			y = maxf(-cam.y - (size.y - FRONT_DEPTH), view.y - used.end.y)
 		s.position = Vector2(x, y)
 		s.visible = not Windowing.strip
-		var area := Rect2(s.position + Vector2(used.position), Vector2(used.size)).grow(FRONT_ROOM)
-		var away := _fight or (bottom and lift < -FRONT_DIP) or _clear.any(func(r: Rect2): return area.intersects(r, true))
+		var hold := FRONT_HOLD if f["progress"] > 0.0 else 0.0
+		var area := Rect2(s.position + Vector2(used.position), Vector2(used.size)).grow(FRONT_ROOM + hold)
+		var away := (bottom and lift < hold - FRONT_DIP) or _clear.any(func(r: Rect2): return area.intersects(r, true))
 		f["progress"] = move_toward(f["progress"], 1.0 if away else 0.0, dt / FRONT_SECONDS)
 		s.material.set_shader_parameter("progress", f["progress"])
 ## The look of a piece lying on the seabed, its colours mostly drained by the murky water; one is shared by them all.

@@ -620,7 +620,7 @@ func _fight_step(delta: float, reeling: bool) -> void:
 func relayout() -> void:
 	_sky.follow(camera.cam, hour, weather)
 	_layers.time = _time
-	_layers.keep_clear(_kept_clear(), fight != null)
+	_layers.keep_clear(_kept_clear())
 	_layers.place(camera.cam)
 	_floor.place_at(camera.cam)
 	_water.cam = camera.cam
@@ -645,11 +645,14 @@ func relayout() -> void:
 	_water.queue_redraw()
 
 
-## What the plants in front of the view must not hide, in view pixels: the boat, the float or the hook, and the buttons
-## along the bottom of the screen.
+## What the plants in front of the view must not hide, in view pixels: the boat, the float or the hook, the fish being
+## fought, and the buttons along the bottom of the screen.
 func _kept_clear() -> Array:
 	var cam := camera.cam
 	var out: Array = [Rect2(boat_x - cam.x, 0.0, _boat.width(), Nav.view().y), Rect2((flying() if flight > 0.0 else hook) - cam, Vector2.ZERO)]
+	if fight != null:
+		var size := swimmers.texture_for(fight.fish).get_size()
+		out.append(Rect2(_line.fish_at() - cam - size / 2.0, size))
 	if Nav.ui:
 		# The interface's buttons are looked up again only when a node has come or gone, not every frame.
 		if _buttons_stale:
