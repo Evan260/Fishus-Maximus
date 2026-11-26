@@ -373,6 +373,25 @@ static func window_open() -> bool:
 	return Nav.ui != null and Nav.ui.has_node("Window")
 
 
+## Any window covers a phone's short screen except one hung beside a control, as the tackle is above the boat's bar.
+static func window_covers() -> bool:
+	return Windowing.phone and window_open() and not Nav.ui.get_node("Window").has_meta("hung")
+
+
+## Puts the money in the open window's heading on a phone, where the window hides the bar that shows it.
+static func purse() -> void:
+	if not Windowing.phone or not window_open():
+		return
+	var close: Control = Nav.ui.get_node("Window").find_child("Close", true, false)
+	var money := label(close.get_parent(), "", "MutedLabel")
+	money.name = "Purse"
+	close.get_parent().move_child(money, close.get_index())
+	var show := func(): money.text = coins_text(int(Game.state["denarii"]))
+	show.call()
+	Game.changed.connect(show)
+	money.tree_exiting.connect(func(): Game.changed.disconnect(show))
+
+
 ## One line of a list: text on the left, and a button on the right when there is something to do.
 static func row(list: Control, text: String, action_text := "", action := Callable(), enabled := true) -> HBoxContainer:
 	var r := HBoxContainer.new()

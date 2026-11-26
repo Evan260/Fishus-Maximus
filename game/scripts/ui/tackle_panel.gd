@@ -49,6 +49,7 @@ static func _hang_above(window: Control, under: Control) -> void:
 	window.offset_top = y
 	window.offset_right = x + size.x
 	window.offset_bottom = y + size.y
+	window.set_meta("hung", true)
 
 
 static func _grid(list: Control) -> GridContainer:

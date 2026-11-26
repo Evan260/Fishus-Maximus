@@ -126,17 +126,17 @@ func enter(args: Dictionary) -> void:
 func _build_ui() -> void:
 	var bar := PanelContainer.new()
 	bar.position = Vector2(4, 4) + Windowing.safe_top_left
-	Nav.ui.add_child(bar)
+	Nav.bars().add_child(bar)
 	_top = Ui.label(bar, "")
 	# Each button is as wide as its words need, and the next one stands to its left.
 	var right := 4.0
-	var back := Ui.button(Nav.ui, "Back to the boat", go_back)
+	var back := Ui.button(Nav.bars(), "Back to the boat", go_back)
 	Ui.hang(back, "bottom_right", Vector2(right, 4), Vector2(108, 18))
 	right += maxf(108.0, back.get_combined_minimum_size().x) + 4.0
-	var ponds := Ui.button(Nav.ui, "To the pond", func(): Nav.go("shore"))
+	var ponds := Ui.button(Nav.bars(), "To the pond", func(): Nav.go("shore"))
 	Ui.hang(ponds, "bottom_right", Vector2(right, 4), Vector2(88, 18))
 	right += maxf(88.0, ponds.get_combined_minimum_size().x) + 4.0
-	_sleep = Ui.button(Nav.ui, "Sleep till dawn", _sleep_now)
+	_sleep = Ui.button(Nav.bars(), "Sleep till dawn", _sleep_now)
 	Ui.hang(_sleep, "bottom_right", Vector2(right, 4), Vector2(88, 18))
 	if not Dev.has("no-hud"):
 		GuideNote.add(self, "town")

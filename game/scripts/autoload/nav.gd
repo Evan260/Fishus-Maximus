@@ -87,6 +87,26 @@ func _ready() -> void:
 	top.add_child(_fade)
 
 
+func _process(_delta: float) -> void:
+	if ui.has_node("Bars"):
+		# A window fills a phone's short screen, so the bars round it would only peek out from behind it.
+		ui.get_node("Bars").visible = not Ui.window_covers()
+
+
+## The screen's panels and buttons round the view's edges, kept apart from `ui` so a phone can hide them behind a window.
+func bars() -> Control:
+	var b := ui.get_node_or_null("Bars") as Control
+	if b == null or b.is_queued_for_deletion():
+		if b:
+			b.name = "Going"
+		b = Control.new()
+		b.name = "Bars"
+		b.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ui.add_child(b)
+		b.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	return b
+
+
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("close_panel") and not SettingsPanel.waiting_for_key():
 		if back_out():

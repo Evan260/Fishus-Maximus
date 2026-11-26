@@ -5,6 +5,7 @@ class_name PondPanel
 
 static func open(view: PondView) -> void:
 	var list := Ui.window(view.tr("The fish pond"), 330, 210)
+	Ui.purse()
 	var price := Ponds.next_price(Game.state)
 	var stage := Ponds.stage(Game.state)
 	if not Ponds.dug(Game.state):

@@ -116,12 +116,12 @@ func enter(_args: Dictionary) -> void:
 	_build()
 	var bar := PanelContainer.new()
 	bar.position = Vector2(4, 4) + Windowing.safe_top_left
-	Nav.ui.add_child(bar)
+	Nav.bars().add_child(bar)
 	_top = Ui.label(bar, "")
 	_names = Control.new()
 	_names.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	Nav.ui.add_child(_names)
-	var back := Ui.button(Nav.ui, tr("Back to town"), go_back)
+	var back := Ui.button(Nav.bars(), tr("Back to town"), go_back)
 	Ui.hang(back, "bottom_right", Vector2(4, 4), Vector2(90, 18))
 	Windowing.view_changed.connect(_relayout)
 	Game.changed.connect(_refresh)

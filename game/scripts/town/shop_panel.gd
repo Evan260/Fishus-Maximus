@@ -9,6 +9,7 @@ const FISH_TILE := Vector2(48, 40)
 
 static func market() -> void:
 	var list := Ui.window("The fish market", 320, 210)
+	Ui.purse()
 	if Game.state["hold"].is_empty():
 		Ui.label(list, "Your hold is empty.", "MutedLabel")
 		hire_row(list)
@@ -41,6 +42,7 @@ static func market() -> void:
 
 static func netmaker() -> void:
 	var list := Ui.window("The netmaker", 320, 210)
+	Ui.purse()
 	Ui.label(list, Ui.upper(TranslationServer.translate("Bait (box %d of %d)") % [Shop.bait_count(Game.state), Shop.bait_capacity(Game.state)]), "Heading")
 	var baits := _grid(list, TILE)
 	for id in Data.bait:
@@ -108,6 +110,7 @@ static func hire_row(list: Control) -> void:
 
 static func boatwright() -> void:
 	var list := Ui.window("The boatwright", 320, 200)
+	Ui.purse()
 	var boats := _grid(list, BOAT_TILE)
 	for id in Data.boats:
 		var b: Dictionary = Data.boats[id]
@@ -124,6 +127,7 @@ static func boatwright() -> void:
 
 static func goldsmith() -> void:
 	var list := Ui.window("The goldsmith", 300, 160)
+	Ui.purse()
 	Ui.label(list, "Finery for a named pond fish.", "MutedLabel")
 	var finery := _grid(list, TILE)
 	for id in Data.gear:

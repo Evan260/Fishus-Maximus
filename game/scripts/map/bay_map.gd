@@ -71,12 +71,12 @@ func enter(_args: Dictionary) -> void:
 	_stage.add_child(_painter)
 	Windowing.view_changed.connect(_place)
 	_place()
-	var stay := Ui.button(Nav.ui, "Stay here", go_back)
+	var stay := Ui.button(Nav.bars(), "Stay here", go_back)
 	Ui.hang(stay, "bottom_right", Vector2(4, 4), Vector2(70, 18))
 	var day := Clock.day_of(float(Game.state["time"]))
 	var note := PanelContainer.new()
 	note.position = Vector2(4, 4) + Windowing.safe_top_left
-	Nav.ui.add_child(note)
+	Nav.bars().add_child(note)
 	var events := Events.on(day).map(func(e): return tr({"tuna_run": "the tuna are running", "neptunalia": "the Neptunalia contest in the harbour",
 		"saturnalia": "the Saturnalia feasts", "pond_show": "the pond show", "dolphins": "dolphins in the bay"}[e]))
 	var when := tr("Day %d, %s, %s") % [day + 1, tr(Clock.season(day)), tr(Weather.for_day(int(Game.state["seed"]), day))]

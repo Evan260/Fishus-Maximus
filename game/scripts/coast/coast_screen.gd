@@ -139,7 +139,7 @@ func enter(args: Dictionary) -> void:
 	dog.setup(self)
 	if Nav.ui and not Dev.has("no-hud"):
 		hud = Hud.new()
-		Nav.ui.add_child(hud)
+		Nav.bars().add_child(hud)
 		hud.setup(self)
 	Windowing.view_changed.connect(_on_view_changed)
 	_on_view_changed()
@@ -151,14 +151,14 @@ func enter(args: Dictionary) -> void:
 		else:
 			Toast.say(tr("Your uncle's skiff. Hold %s or the mouse to cast, %s and %s to row.") % [Controls.key_name("cast"), Controls.key_name("row_left"), Controls.key_name("row_right")])
 	if Nav.ui and not Dev.has("no-hud"):
-		_sail = Ui.tile(Nav.ui, ItemArt.of("bay_map"), "", "Bay map: sail to another fishing place.", func():
+		_sail = Ui.tile(Nav.bars(), ItemArt.of("bay_map"), "", "Bay map: sail to another fishing place.", func():
 			if fight == null:
 				prepare_to_leave()
 				Nav.go("map"), true, false, Hud.tile())
 		_sail.name = "BayMap"
 		Ui.hang(_sail, "bottom_left", Vector2(4, 4), Hud.tile())
 	if place_id == "harbour" and Nav.ui and not Dev.has("no-hud"):
-		_ashore = Ui.button(Nav.ui, "Go ashore", go_ashore)
+		_ashore = Ui.button(Nav.bars(), "Go ashore", go_ashore)
 		Ui.hang(_ashore, "bottom_right", Vector2(4, 4), Vector2(76, Hud.tile().y))
 	# A phone has no keys to row with, so it rows with an arrow at each side, where the thumbs rest.
 	if Windowing.phone and Nav.ui and not Dev.has("no-hud"):
@@ -183,7 +183,7 @@ func _row_arrow(name: String, dir: float) -> Button:
 	b.icon = Ui.arrow(dir)
 	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	b.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-	Nav.ui.add_child(b)
+	Nav.bars().add_child(b)
 	Ui.hang(b, "bottom_left" if dir < 0.0 else "bottom_right", Vector2(4, 8 + Hud.tile().y), Hud.tile())
 	return b
 

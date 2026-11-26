@@ -5,6 +5,7 @@ class_name GarumPanel
 
 static func open() -> void:
 	var list := Ui.window("The garum works", 340, 214)
+	Ui.purse()
 	var day := Clock.day_of(float(Game.state["time"]))
 	var export := Garum.export_day(day)
 	var ship: String = TranslationServer.translate("The export ship is in the harbour today.") if export else ship_text(day)

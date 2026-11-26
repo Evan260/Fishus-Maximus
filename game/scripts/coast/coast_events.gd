@@ -39,7 +39,7 @@ func refresh() -> void:
 			add_child(s)
 			_dolphins.append({"x": randf_range(0, Nav.view().x), "phase": i * 1.7, "speed": randf_range(30, 45), "sprite": s})
 	if "tuna_run" in events and screen.place_id == "open_bay" and Nav.ui and int(Game.state.get("tuna_haul_day", -1)) != day:
-		_haul_button = Ui.button(Nav.ui, "Join the town's net", _open_haul)
+		_haul_button = Ui.button(Nav.bars(), "Join the town's net", _open_haul)
 		Ui.hang(_haul_button, "top_right", Vector2(4, 38), Vector2(120, 18))
 		_haul_button.visible = not Windowing.strip
 	if "neptunalia" in events and screen.place_id == "harbour":
