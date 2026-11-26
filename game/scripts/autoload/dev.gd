@@ -137,7 +137,7 @@ func open_panel(window: String) -> void:
 
 ## The settings tab named in any capitals, or the one already chosen when no tab has that name.
 func settings_tab(name: String) -> String:
-	for t in SettingsPanel.TABS:
+	for t in SettingsPanel.TABS + SettingsPanel.PHONE_TABS:
 		if t.to_lower() == name.to_lower():
 			return t
 	return SettingsPanel.tab

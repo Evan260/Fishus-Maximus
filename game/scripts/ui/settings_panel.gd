@@ -1,9 +1,11 @@
 class_name SettingsPanel
 ## Settings in four tabs, Sound, Display, Gameplay and Keys, opened from the title and the boat. Each row names a
 ## setting on the left and has one button on the right: On or Off, or the choice it is at, which a click steps on.
-## A phone leaves out what only a computer has: the keys, the window, the strip, a music folder and a taskbar.
+## A phone leaves out what only a computer has: the keys, the window, the strip, a music folder and a taskbar, and has
+## a Notifications tab instead of the keys, since only a phone is sent reminders while the game is put away.
 
 const TABS := ["Sound", "Display", "Gameplay", "Keys"]
+const PHONE_TABS := ["Sound", "Display", "Gameplay", "Notifications"]
 const UI_SIZES := {-1: "Smaller", 0: "Normal", 1: "Larger", 2: "Largest"}
 ## Each language's name in that language, for the language list.
 const NATIVE_NAMES := {"en": "English", "fr": "Français", "de": "Deutsch", "es": "Español", "it": "Italiano", "pt_BR": "Português (BR)",
@@ -54,14 +56,16 @@ static func open() -> void:
 			_display(page)
 		"Gameplay":
 			_gameplay(page)
+		"Notifications":
+			_notifications(page)
 		_:
 			_keys(page)
 	_scroll.set_deferred("scroll_vertical", kept)
 
 
-## The tabs shown: a phone has no keyboard to change keys on.
+## The tabs shown: a phone has no keyboard to change keys on, and has reminders to set instead.
 static func tabs() -> Array:
-	return TABS.slice(0, 3) if Windowing.phone else TABS
+	return PHONE_TABS if Windowing.phone else TABS
 
 
 static func is_settings_open() -> bool:
@@ -146,6 +150,24 @@ static func _gameplay(page: VBoxContainer) -> void:
 	# Google Play and the App Store ask for the privacy policy to be reachable from inside the game.
 	if Windowing.phone:
 		Ui.setting(page, "Privacy policy", "Open", func(): open_url.call(String(Data.value("privacy_policy", ""))), WIDTH)
+
+
+## The reminders a phone sends while the game is put away, off until the player taps Allow; the phone is only asked
+## about its permission while this tab is open.
+static func _notifications(page: VBoxContainer) -> void:
+	if not Settings.reminders:
+		Ui.setting(page, "Notifications are off", "Allow", func():
+			PhoneServices.allow()
+			open(), WIDTH).get_parent().name = "allow"
+	elif not PhoneServices.notifications_allowed():
+		# A phone that has said no once only changes its mind in its own settings.
+		Ui.setting(page, "Your phone has notifications turned off for this game", "Phone settings",
+			func(): PhoneServices.open_notification_settings(), WIDTH).get_parent().name = "phone_settings"
+	_toggle(page, "Your pots are full", "remind_pots")
+	_toggle(page, "Your boat has stopped fishing", "remind_boat")
+	var about := Ui.label(page, "While the game is put away, your phone can tell you when your pots and your boat need you.", "MutedLabel")
+	about.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	about.custom_minimum_size.x = WIDTH
 
 
 ## Every translated language, named in its own words and letters, so a player can find theirs whatever is showing.

@@ -273,7 +273,7 @@ func test_a_phone_leaves_out_the_computers_settings() -> void:
 	SettingsPanel.tab = "Sound"
 	SettingsPanel.open()
 	var tabs: Array = Nav.ui.get_node("Window").find_children("*", "Button", true, false).filter(func(b): return b.toggle_mode and b.get_parent().name != "Languages").map(func(b): return b.text)
-	check(tabs == ["Sound", "Display", "Gameplay"], "a phone has no keys to change: %s" % [tabs])
+	check(tabs == ["Sound", "Display", "Gameplay", "Notifications"], "a phone has no keys to change, and has its reminders instead: %s" % [tabs])
 	var rows := func(tab: String) -> Array:
 		SettingsPanel.tab = tab
 		SettingsPanel.open()

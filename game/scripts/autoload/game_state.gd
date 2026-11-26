@@ -9,12 +9,18 @@ const VERSION := 2
 var state := {}
 ## Plays by the demo's limits without a demo build, for the tests.
 var acts_as_demo := false
+## The wall clock, which keeps running while the game is put away; the tests swap in their own.
+var wall_clock: Callable = Time.get_unix_time_from_system
 var _check_left := 2.0
+## The wall clock at the last frame, or 0 when the next frame is the first since a game was loaded, caught up or shown.
+var _last_wall := 0.0
 
 
 func _ready() -> void:
 	FullGame.changed.connect(_on_full_game_changed)
 	FullGame.finished.connect(func(result: String) -> void: DemoEnd.store_result(result))
+	# The seconds spent building a new screen are not time away.
+	Nav.screen_changed.connect(func(_screen: String) -> void: _last_wall = 0.0)
 
 
 ## Whether this is the free demo, exported with the `demo` feature, or a phone that has not bought the full game.
@@ -173,37 +179,42 @@ func show_demo_end() -> bool:
 	return true
 
 
-## Lets the time since the game was last saved pass, up to the cap; says how many minutes of game time that was.
-func catch_up() -> float:
+## Lets the time away pass, up to the cap: the time since the game was last saved, or `seconds` when given; says how
+## many minutes of game time that was.
+func catch_up(seconds := -1.0) -> float:
 	var now := Time.get_unix_time_from_system()
-	var minutes := Clock.away(now - float(state.get("last_real_time", now)))
+	var minutes := Clock.away(now - float(state.get("last_real_time", now)) if seconds < 0.0 else seconds)
+	var rng := Away.rng(state)
 	state["last_real_time"] = now
+	_last_wall = 0.0
 	if minutes > 0.0:
-		var rng := Seeds.rng(int(state["seed"]), "away", int(now))
-		# The time away is lived an hour of the clock at a time, so each catch keeps to the hour, season and weather it was made in.
+		# No one is ashore while the game is away, just as in a game closed and opened again.
+		var ashore = state.get("_ashore")
+		state.erase("_ashore")
 		var left := minutes
 		while left > 0.0:
-			var t := float(state["time"])
-			var step := minf(left, Clock.minutes_for_hours(t, 1.0))
-			World.advance(state, step, rng)
-			_fish_away(step, t + step / 2.0, rng)
-			left -= step
+			left -= Away.step(state, left, rng)
+		if ashore != null:
+			state["_ashore"] = ashore
 	return minutes
 
 
-## What the boat left fishing on its own catches in `minutes` of time away around the time `t`.
-func _fish_away(minutes: float, t: float, rng: RandomNumberGenerator) -> void:
-	if not state.has("idle"):
-		return
-	var idle: Dictionary = state["idle"]
-	var bait := str(idle["bait"])
-	var left := int(state["bait"].get(bait, 0)) if bait != "" else 0
-	var day := Clock.day_of(t)
-	var weather := str(state.get("weather", "clear")) if day == Clock.day_of(float(state["time"])) else Weather.for_day(int(state["seed"]), day)
-	for c in Idle.catches(minutes, str(idle["place"]), float(idle["depth"]), bait, mini(Hold.room(state), left), rng,
-			Clock.hour(t), Clock.season(day), weather, float(idle.get("water", INF))):
-		Catches.record(state, c["fish"], float(c["pounds"]), false)
-		state["bait"][bait] = int(state["bait"][bait]) - 1
+## Godot shortens a long frame's delta, so the time a game spends put away on a phone, or open on a computer that
+## sleeps, shows only on the wall clock, and is then lived as time away.
+func _watch_clock() -> void:
+	var now: float = wall_clock.call()
+	var gap := now - _last_wall
+	var first := _last_wall <= 0.0
+	_last_wall = now
+	if not first and gap > Data.num("time.long_frame_seconds", 10) and away_counts():
+		catch_up(gap)
+		changed.emit()
+
+
+## Whether time away counts for the game in memory: one being played from its slot, not one on the title, which loads
+## it afresh, nor one made up for checks.
+func away_counts() -> bool:
+	return not state.is_empty() and Saves.enabled and Saves.slot > 0 and Nav.current_name != "title"
 
 
 ## Earns every achievement newly met: sent to Steam, its card slid in, and the logbook's pages ticked if they are open.
@@ -219,6 +230,7 @@ func earn_achievements() -> void:
 func _process(delta: float) -> void:
 	if state.is_empty() or Dev.has("run-tests"):
 		return
+	_watch_clock()
 	_check_left -= delta
 	if _check_left > 0.0:
 		return

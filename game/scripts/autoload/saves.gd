@@ -2,6 +2,9 @@ extends Node
 ## Three save slots, saved every minute and as the window closes, as Farmus Maximus saves: each save is written to a
 ## temporary file and read back before it replaces anything, and the last few saves are kept as rolling backups.
 
+## A save has been written, so the game on disk is now the one in memory.
+signal saved
+
 const SLOTS := 3
 const BACKUPS := 3
 ## Seconds the newest backup must have aged before the backups move along, so each really is an older copy.
@@ -63,6 +66,7 @@ func save(n: int = -1) -> bool:
 	if not _move(tmp, path):
 		return false
 	slot = n
+	saved.emit()
 	return true
 
 

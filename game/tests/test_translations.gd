@@ -141,7 +141,7 @@ func _built() -> Array:
 	built += Array(Clock.SEASONS)
 	for season in Data.weather:
 		built += Data.weather[season].keys()
-	built += Hud.METHOD_TIPS.values() + SettingsPanel.TABS + SettingsPanel.UI_SIZES.values() + LogbookPanel.SHORT.values()
+	built += Hud.METHOD_TIPS.values() + SettingsPanel.TABS + SettingsPanel.PHONE_TABS + SettingsPanel.UI_SIZES.values() + LogbookPanel.SHORT.values()
 	built += load("res://scripts/town/town_screen.gd").BUILDINGS.values()
 	return built
 

@@ -33,6 +33,7 @@ Awards="*res://scripts/autoload/awards.gd"
 Windowing="*res://scripts/autoload/windowing.gd"
 Audio="*res://scripts/autoload/audio.gd"
 Landscape="*res://scripts/autoload/landscape.gd"
+PhoneServices="*res://scripts/autoload/phone_services.gd"
 
 [display]
 

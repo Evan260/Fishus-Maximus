@@ -5,7 +5,8 @@
 		"dawn_hour": 5,
 		"dusk_hour": 20,
 		"season_days": 7,
-		"away_cap_hours": 8
+		"away_cap_hours": 8,
+		"long_frame_seconds": 10
 	},
 	"start": {
 		"denarii": 20,

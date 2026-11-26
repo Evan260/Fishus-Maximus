@@ -1,7 +1,7 @@
 extends Node
 ## The player's settings, kept apart from the save slots so they apply to every game: the volumes, the window, the
-## interface size, the units weights are shown in, gentle fishing, the text size, old Rufus's guide, the tips and the
-## language.
+## interface size, the units weights are shown in, gentle fishing, the text size, old Rufus's guide, the tips, the
+## language and a phone's reminders.
 
 signal changed
 
@@ -23,6 +23,11 @@ var reduced_motion := false
 var background_sound := "full"
 ## Flashes the taskbar when a fish bites or an achievement is earned while the player is in another window.
 var notifications := true
+## Whether the player has tapped Allow on a phone's Notifications tab; until then the phone is sent no reminders.
+var reminders := false
+## The reminders a phone may send while the game is put away: the pots full, and the boat stopped fishing.
+var remind_pots := true
+var remind_boat := true
 ## How large the interface is drawn: -1 Smaller, 0 Normal (a step under the game's own size), 1 Larger (the game's
 ## own size) or 2 Largest, each a step larger on a small screen (`Nav.SMALL_ZOOM`).
 var ui_scale_step := 0
@@ -76,6 +81,9 @@ func read_from(cfg: ConfigFile) -> void:
 	large_text = cfg.get_value("play", "large_text", large_text)
 	reduced_motion = cfg.get_value("play", "reduced_motion", reduced_motion)
 	notifications = cfg.get_value("play", "notifications", notifications)
+	reminders = cfg.get_value("phone", "reminders", reminders)
+	remind_pots = cfg.get_value("phone", "pots", remind_pots)
+	remind_boat = cfg.get_value("phone", "boat", remind_boat)
 	var quiet := str(cfg.get_value("sound", "background_sound", background_sound))
 	background_sound = quiet if quiet in ["full", "quieter", "muted"] else "full"
 	guide = cfg.get_value("play", "guide", guide)
@@ -158,6 +166,9 @@ func write_to(cfg: ConfigFile) -> void:
 	cfg.set_value("play", "large_text", large_text)
 	cfg.set_value("play", "reduced_motion", reduced_motion)
 	cfg.set_value("play", "notifications", notifications)
+	cfg.set_value("phone", "reminders", reminders)
+	cfg.set_value("phone", "pots", remind_pots)
+	cfg.set_value("phone", "boat", remind_boat)
 	cfg.set_value("sound", "background_sound", background_sound)
 	cfg.set_value("play", "guide", guide)
 	cfg.set_value("play", "tooltips", tooltips)

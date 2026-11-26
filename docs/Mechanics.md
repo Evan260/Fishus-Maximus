@@ -20,11 +20,12 @@ The tone is warm and a little funny, and the jokes are true:
 - **A day** runs 20 minutes from dawn to dusk, then a short night of 5 minutes. The light changes through dawn, morning, midday, afternoon, the sunset and night, and each hour has its own fish.
 - **A season** is 7 days and **a year** is 28: spring, summer, autumn and winter. The game starts on the first morning of spring, AD 72.
 - **Sleeping** at the cottage by the garum works skips the rest of the night.
-- **While the game is closed**, up to 8 hours count:
+- **While the game is closed**, or put away on a phone, or left open on a computer that sleeps, up to 8 hours count:
   - the traps fill;
   - the garum ferments;
   - the pond fish grow and are fed if a feeder is hired;
   - the boat goes on fishing if it was left fishing on its own, each hour away bringing the fish of that hour, season and weather.
+- **Reminders on a phone** come only once the player taps Allow on Settings > Notifications: while the game is put away, the phone says once when every pot set is full and once when the boat left fishing on its own stops, its hold full or its bait gone. Each is worked out as the game is put away by playing the time away ahead, just as the return will play it, so it tells what the player then finds; none comes past the 8 hours or while the game is open, and either kind can be turned off.
 
 ## Places
 

@@ -9,12 +9,18 @@ What the answers rest on, from the code and the built bundle (builds/android/Fis
 - The game itself sends nothing anywhere: no HTTP, sockets, analytics, crash reporting or ads anywhere in its code.
 - Saves, settings and whether the full game is owned are files on the phone (user://).
 - Google Play Billing sells the one product, full_game. The game asks Play only for the price and whether it is owned.
-- The SlowSunday phone plugin carries the Play Games library and notifications for Farmus Maximus, but this game
-  never calls either: its Play Games app id is blank, so Play Games never starts (the plugin removes its start-up
-  provider from the manifest), and it schedules no notifications.
-- Permissions in the bundle's manifest: INTERNET and ACCESS_NETWORK_STATE (from the Play Billing Library),
-  com.android.vending.BILLING, POST_NOTIFICATIONS and RECEIVE_BOOT_COMPLETED (from the plugin, unused here), and the
-  app's own DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION (from AndroidX). No AD_ID.
+- The SlowSunday phone plugin carries the Play Games library, which this game never calls: its Play Games app id is
+  blank, so Play Games never starts (the plugin removes its start-up provider from the manifest).
+- Reminders are local notifications. As the phone puts the game away, the game works out on the phone when its
+  pots will be full and when its boat will stop fishing, and hands Android's own alarm service the words to show
+  then; they are cancelled when the game comes back. Nothing about them goes to a server or anyone else, and none
+  is sent until the player taps Allow in Settings > Notifications.
+- Permissions in the manifest: INTERNET and ACCESS_NETWORK_STATE (from the Play Billing Library),
+  com.android.vending.BILLING, POST_NOTIFICATIONS (the reminders, asked for only when the player taps Allow),
+  RECEIVE_BOOT_COMPLETED (so reminders still waiting when the phone restarts are set again), and the app's own
+  DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION (from AndroidX). No AD_ID, and no exact alarms: the reminders use
+  Android's ordinary alarms. Checked in the debug APK of 26 November 2026; a bundle built since has the same
+  manifest.
 
 
 1. PRIVACY POLICY
@@ -113,7 +119,8 @@ is not "collection" in Google's sense. The Play Billing Library talks to Google 
 says that for a payment service such as Google Play's billing system "you don't need to declare collection of the
 data that the payment service collects in connection with its processing of financial transactions", as long as the
 app never sees that data and the service collects it under its own terms, which is the case here. The Play Games
-library never starts, so it sends nothing.
+library never starts, so it sends nothing. The reminders are made and shown on the phone and send nothing
+anywhere, so they are not collection either.
 Play then skips the other questions, and the listing reads "No data collected" and "No data shared with third
 parties".
 
@@ -153,5 +160,6 @@ FORMS PLAY ONLY SHOWS WHEN THEY APPLY (none apply)
 HOW FISHUS DIFFERS FROM THE OTHER THREE
 
 - The plainest rating of the four: no alcohol references (Farmus and Mosaicus have wine) and no combat (Legionus).
-- Like Mosaicus and Legionus, no notifications and no Play Games, so Data safety is always "No data collected".
-  Farmus changes once its Play Games app id is set.
+- Like Mosaicus and Legionus, no Play Games, so Data safety is always "No data collected". Unlike them it sends
+  notifications, its reminders, but they are local and send nothing. Farmus changes once its Play Games app id is
+  set.
