@@ -63,9 +63,11 @@ static func open() -> void:
 	_scroll.set_deferred("scroll_vertical", kept)
 
 
-## The tabs shown: a phone has no keyboard to change keys on, and has reminders to set instead.
+## The tabs shown: a phone has no keyboard to change keys on, and has reminders to set instead when it can be sent them.
 static func tabs() -> Array:
-	return PHONE_TABS if Windowing.phone else TABS
+	if not Windowing.phone:
+		return TABS
+	return PHONE_TABS if PhoneServices.can_remind() else PHONE_TABS.slice(0, 3)
 
 
 static func is_settings_open() -> bool:

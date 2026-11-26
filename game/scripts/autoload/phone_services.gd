@@ -27,6 +27,12 @@ func _notification(what: int) -> void:
 		came_back()
 
 
+## Whether reminders can be sent: an Android build with the plugin, or a computer previewing a phone; an iPhone has no
+## plugin for them yet.
+func can_remind() -> bool:
+	return _phone != null or not OS.has_feature("mobile")
+
+
 func put_away() -> void:
 	if _phone == null:
 		return
