@@ -46,6 +46,9 @@ func _ready() -> void:
 			Game.new_game("Marcus", "mutt")
 			Game.state["guide"]["finished"] = true
 		Story.add_reputation(Game.state, int(Dev.get_arg("reputation")) - int(Game.state["reputation"]))
+	# A player's launch fades into the title from the loading screen; checks with flags start on the screen unless --boot asks.
+	if Dev.args.is_empty() or Dev.has("boot"):
+		add_child(load("res://scripts/ui/boot_cover.gd").new())
 	Nav.go.call_deferred(Dev.get_arg("screen", "title"), Dev.args)
 	if Dev.has("strip"):
 		Windowing.set_strip.call_deferred(true)
