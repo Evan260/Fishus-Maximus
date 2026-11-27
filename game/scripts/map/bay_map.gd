@@ -133,9 +133,9 @@ func _local(p: Vector2) -> Vector2:
 	return _stage.get_global_transform_with_canvas().affine_inverse() * p
 
 
-## A pin's radius in map pixels; a phone's small screen needs nearly twice a computer's for the pins to be seen and hit.
+## A pin's radius in map pixels; a phone's small screen needs half as much again as a computer's for the pins to be seen and hit.
 static func pin_radius() -> float:
-	return 11.0 if Windowing.phone else 6.0
+	return 9.0 if Windowing.phone else 6.0
 
 
 func _draw_pins() -> void:
