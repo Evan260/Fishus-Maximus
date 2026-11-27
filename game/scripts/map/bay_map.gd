@@ -116,7 +116,7 @@ func _pins() -> Dictionary:
 
 ## How far from a pin a press still finds it: a mouse must be on the pin, and a finger half a fingertip from it.
 func _reach() -> float:
-	return maxf(9.0, Windowing.finger_game_px() / 2.0)
+	return maxf(maxf(9.0, pin_radius() + 2.0), Windowing.finger_game_px() / 2.0)
 
 
 func _process(_delta: float) -> void:
@@ -133,17 +133,25 @@ func _local(p: Vector2) -> Vector2:
 	return _stage.get_global_transform_with_canvas().affine_inverse() * p
 
 
+## A pin's radius in map pixels; a phone's small screen needs nearly twice a computer's for the pins to be seen and hit.
+static func pin_radius() -> float:
+	return 11.0 if Windowing.phone else 6.0
+
+
 func _draw_pins() -> void:
+	var r := pin_radius()
+	var k := r / 6.0
 	for id in Data.places:
 		var at := _pin(id)
 		var locked := locked_reason(Game.state, id) != ""
 		var here: bool = id == Game.state["place"]
-		Pixels.disc(_painter, at + Vector2(1, 1), 6.0, Color(0, 0, 0, 0.35))
-		Pixels.disc(_painter, at, 6.0, UiTheme.CREAM)
-		Pixels.disc(_painter, at, 5.0, UiTheme.MUTED if locked else (UiTheme.GOLD if here else UiTheme.RED))
-		Pixels.disc(_painter, at, 2.0, UiTheme.CREAM)
+		Pixels.disc(_painter, at + Vector2(1, 1), r, Color(0, 0, 0, 0.35))
+		Pixels.disc(_painter, at, r, UiTheme.CREAM)
+		Pixels.disc(_painter, at, r - roundf(k), UiTheme.MUTED if locked else (UiTheme.GOLD if here else UiTheme.RED))
+		Pixels.disc(_painter, at, roundf(2.0 * k), UiTheme.CREAM)
 		if locked:
-			_painter.draw_rect(Rect2(at + Vector2(-2, -1), Vector2(4, 3)), UiTheme.INK)
+			var lock := (Vector2(4, 3) * k).round()
+			_painter.draw_rect(Rect2((at - Vector2(lock.x / 2.0, lock.y / 3.0)).round(), lock), UiTheme.INK)
 	if _hover != "":
 		var reason := locked_reason(Game.state, _hover)
 		var text: String = tr("%s: %s") % [Data.name_of(Data.places[_hover]), reason] if reason != "" else Data.name_of(Data.places[_hover])
