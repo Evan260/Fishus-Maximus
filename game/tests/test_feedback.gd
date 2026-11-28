@@ -20,7 +20,7 @@ func test_the_buttons_along_the_bottom_line_up() -> void:
 	Nav.port.add_child(s)
 	s.enter({"place": "harbour"})
 	var edges := []
-	for c in Nav.ui.get_children():
+	for c in Nav.ui.get_children() + Nav.bars().get_children():
 		if c is Button and (c == s._sail or c.text == "Go ashore"):
 			edges.append([c.text, c.offset_top, c.offset_top + maxf(c.offset_bottom - c.offset_top, c.get_combined_minimum_size().y)])
 		if c is Hud:
