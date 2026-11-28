@@ -1,0 +1,136 @@
+FISHUS MAXIMUS: APP STORE LISTING TEXT
+
+For App Store Connect (appstoreconnect.apple.com) > Apps > Fishus Maximus. The name, subtitle, category and age rating
+are under App Information, the privacy answers under App Privacy, and the promotional text, description and keywords
+on the version being prepared. Each count is the number of characters Apple counts for that field, line breaks
+included, against the field's limit. The description is store/google_play/listing.txt's full description with only the
+changes listed under it, and none of the text names another platform or says "demo" or "trial" (App Review guidelines
+2.2 and 2.3.10).
+
+
+NAME (28 of 30 characters, already set)
+
+Fishus Maximus: Cozy Fishing
+
+
+SUBTITLE (28 of 30 characters)
+
+Fish the Roman Bay of Naples
+
+
+PROMOTIONAL TEXT (162 of 170 characters)
+
+Row out at dawn on the Bay of Naples and watch the fish swim under your boat. Sixty Roman fish, twelve legends and a pond of your own. Free to start, with no ads.
+
+
+DESCRIPTION (3,509 of 4,000 characters)
+
+Your uncle has left you his old boat. The bay is full of fish.
+
+Fishus Maximus is a cozy fishing game set on the Bay of Naples in AD 72, in a little harbour town with Vesuvius green and quiet behind it. Row out at dawn, watch the fish swim under your boat, and bring them in one by one. The Romans were mad about fish, and the catch is only the start: keep the finest alive in your own pond, fill the town's orders, and make garum from the rest.
+
+Free to start, one purchase for the whole game
+Download Fishus Maximus for free and fish the harbour and the rocky shore through the first two chapters. One purchase unlocks the whole bay: the oyster beds of the Lucrine Lake, the open bay, the sea caves of Capri and the deep water off Cape Misenum, with bigger boats, more bait and gear, and a wider pond. Your game carries straight on. No ads, ever, and nothing else for sale.
+
+Made for touch
+Hold a finger on the water and lift it to cast, tap to strike, and hold to reel. Slide up or down the water to set your bait's depth, and hold the arrows at either side of the screen to row. Aim the net and the trident with your finger and let go to throw. Old Rufus's lessons show you each one as you go.
+
+A rod, a float and a fish that fights back
+• The view is cut through at the waterline, so you see every fish you are fishing for: what comes to look at your bait, what nibbles, and what finally takes it.
+• Wait for the float to go under, strike, then give line while the fish runs and reel while it rests. Big fish leap clear of the water.
+• Every catch is hung out on a painted linen banner with its weight and grade, and a starfish when it is new to your logbook.
+• Four ways to fish: the rod and line, wicker pots set on the seabed, a cast net over a shoal, and the trident at night by the light of the lamp.
+• Gentle fishing in the settings keeps the line from snapping, for a calmer evening.
+
+Sixty kinds of fish, all ones the Romans knew
+Red mullet, gilt-head bream, moray eels, octopus, tuna, swordfish and many more, each with its own places, hours, seasons, weather and favourite bait. Your logbook keeps every fish you catch and your best weight for each. Twelve legends come from the old stories, from the giant octopus of Carteia to a moray so old it answers to its name. The townsfolk drop the clues.
+
+A pond of your own
+Dig a fish pond into the rock by the beach and widen it as the chapters open. Give it rocks, caves for the morays, weed, sand, shade and a freshwater spring. Feed your fish, watch them grow and breed, and name your favourites. Ring the bell and the named ones swim to the front.
+
+The harbour town
+• Sell your catch at the fish market, where a varied catch pays best.
+• Fill orders from the harbour board and from six regular clients with stories of their own, Trimalchio and his banquets among them.
+• Restore your uncle's garum works tank by tank and make the sauce the Romans put on everything.
+• Save for a bigger boat, from the rowing skiff to the big boat with its lantern.
+
+Little joys
+• Choose your dog's breed, coat and name. It rides in the boat, barks at a bite and wags when you pet it.
+• Set the fisherman fishing on his own, and he keeps at it while you are away.
+• Dolphins, the tuna run in spring, the Neptunalia fishing contest in July and the pond show.
+• Calm harp music, lapping water, gulls by day and cicadas at dusk.
+• 42 achievements, three saves, and play in 14 languages.
+
+No timers and no failure. Just a quiet Roman bay and whatever is biting today.
+
+Changed from the Google Play text: nothing, since the Play text names no other platform and nothing the iPhone build
+lacks, so it is used as it stands.
+
+
+KEYWORDS (100 of 100 characters)
+
+rome,ancient,boat,sea,ocean,angler,bait,reel,aquarium,pond,relaxing,idle,pixel,simulator,offline,dog
+
+Apple already searches the name and subtitle, so none of their words, or their plurals, are repeated here.
+
+
+CATEGORY
+
+Primary category: Games
+Subcategories: Simulation and Casual
+Why: A fishing, pond-keeping and trading game played at a calm pace, with no timers or failure.
+
+
+AGE RATING (App Information > Age Rating; these answers give 4+)
+
+Every content answer is None, so Apple's table gives 4+.
+
+Content, each None, Infrequent or Mild, or Frequent or Intense:
+- Alcohol, Tobacco, or Drug Use or References (alcoholTobaccoOrDrugUseOrReferences): None. An innkeeper and a tavern
+  cook are among the townsfolk, but no drink is named or shown, and there is no tobacco or drugs.
+- Contests (contests): None. Single player with no leaderboards; the Neptunalia fishing contest and the pond show are
+  against townsfolk the game plays, not other players.
+- Simulated Gambling (gamblingSimulated): None. The contest and the pond show are won by the catch, with nothing
+  staked.
+- Guns or Other Weapons (gunsOrOtherWeapons): None. The trident is fishing gear, thrown only at fish as the net is,
+  never at people or in a fight.
+- Horror/Fear Themes (horrorOrFearThemes): None. Storms and night fishing are calm, and the legends are big fish from
+  old stories.
+- Mature or Suggestive Themes (matureOrSuggestiveThemes): None. A harbour town's fishing and trade, with no mature or
+  suggestive themes.
+- Medical or Treatment Information (medicalOrTreatmentInformation): None. No medical content.
+- Profanity or Crude Humor (profanityOrCrudeHumor): None. No profanity or crude humour.
+- Graphic Sexual Content and Nudity (sexualContentGraphicAndNudity): None. No sexual content or nudity.
+- Sexual Content or Nudity (sexualContentOrNudity): None. No sexual content or nudity.
+- Cartoon or Fantasy Violence (violenceCartoonOrFantasy): None. Fishing only: fish are hooked, potted, netted or taken
+  with the trident and landed with no blood or injury shown.
+- Realistic Violence (violenceRealistic): None. No fighting between people or animals.
+- Prolonged Graphic or Sadistic Realistic Violence (violenceRealisticProlongedGraphicOrSadistic): None. No violence of
+  any kind.
+
+Features and controls, each Yes or No:
+- Advertising (advertising): No. No ads of any kind, and no ad library in the build.
+- Age Assurance (ageAssurance): No. The game never asks for, estimates or checks anyone's age.
+- Dating and Relationships (datingAndRelationships): No. Single player, with no dating, matching or romantic
+  companion.
+- Gambling (gambling): No. Nothing can be bet, with real money or otherwise; the one purchase buys the full game.
+- Health or Wellness Topics (healthOrWellnessTopics): No. No self-care, diet or exercise advice.
+- Loot Boxes (lootBox): No. The one purchase unlocks the full game; nothing random is sold.
+- Messaging and Chat (messagingAndChat): No. Single player, with no way to talk to other players.
+- Parental Controls (parentalControls): No. The game has no parental control settings of its own.
+- Shared Location (sharedLocation): No. The game never reads the player's location.
+- Social Media (socialMedia): No. No feeds, posting, likes or sharing.
+- Unrestricted Web Access (unrestrictedWebAccess): No. No browser inside the game; the Privacy policy button opens
+  that one page in the phone's own browser.
+- User-Generated Content (userGeneratedContent): No. The dog's and the fish's names stay on the device and are never
+  shown to anyone else.
+
+
+APP PRIVACY
+
+Data Not Collected is the true answer. The iPhone and iPad build's only native plugin is SlowSundayStore, which asks
+StoreKit for the full game's price, buys it and restores it; the purchase is handled by Apple, which does not count as
+collection by the developer. The game has no networking, analytics, crash reporting or ads in its code, on iPhone and
+iPad it has no Game Center and sends no notifications, its iOS export has tracking switched off, and saves, settings
+and the record of the purchase are files on the device that never leave it. The Google Play build's local reminders do
+not exist in the iPhone and iPad build.
