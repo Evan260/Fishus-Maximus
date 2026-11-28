@@ -100,6 +100,20 @@ func test_the_store_is_asked_for_the_price_once_it_connects() -> void:
 	_done()
 
 
+func test_the_app_store_sells_it_under_the_games_own_id() -> void:
+	var id := "com.slowsunday.example.full_game"
+	check(_full().get_script().apple_product("com.slowsunday.example") == id, "the App Store's id is the game's bundle id followed by .full_game")
+	var store := _shop()
+	_full().use_store(store, id)
+	store.billing_connected.emit()
+	check(store.calls.has(["query_price", id]), "the App Store is asked for the price under the game's own id")
+	store.purchase_finished.emit("full_game", "purchased")
+	check(_full().locked(), "Google Play's id opens nothing there")
+	store.owned_found.emit(PackedStringArray([id]))
+	check(_full().owned() and not _full().locked(), "the game's own id opens the full game")
+	_done()
+
+
 func test_not_owned_plays_by_the_demos_limits() -> void:
 	var store := _shop()
 	check(_full().sold_here() and _full().locked(), "a phone that has not bought the full game is locked")
